@@ -33,8 +33,46 @@ STATIC = ROOT / "static"
 RUNS = ROOT / "runs"
 
 
+# Origins permitted to call the recognizer cross-origin. The frontend
+# integration we care about is cube-snap (jeffhuber.github.io and the
+# Vite dev server). 127.0.0.1 is included for parity with localhost
+# since browsers treat them as different origins.
+_ALLOWED_ORIGIN_PATTERNS = (
+    re.compile(r"^https://jeffhuber\.github\.io$"),
+    re.compile(r"^http://localhost(?::\d+)?$"),
+    re.compile(r"^http://127\.0\.0\.1(?::\d+)?$"),
+)
+
+
+def _origin_is_allowed(origin: Optional[str]) -> bool:
+    if not origin:
+        return False
+    return any(pattern.match(origin) for pattern in _ALLOWED_ORIGIN_PATTERNS)
+
+
 class RubikHandler(BaseHTTPRequestHandler):
     recognizer = WhiteUpRecognizer()
+
+    def end_headers(self) -> None:
+        # Inject CORS headers on every response, regardless of how it was
+        # produced (our _send_json/_send_file paths AND the built-in
+        # send_error path). Echo back the Origin if it's on the
+        # allowlist; otherwise omit (browser will block, which is what
+        # we want from an unknown origin).
+        origin = self.headers.get("Origin") if hasattr(self, "headers") else None
+        if _origin_is_allowed(origin):
+            self.send_header("Access-Control-Allow-Origin", origin)
+            self.send_header("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+            self.send_header("Access-Control-Allow-Headers", "Content-Type")
+            self.send_header("Access-Control-Max-Age", "86400")
+            self.send_header("Vary", "Origin")
+        super().end_headers()
+
+    def do_OPTIONS(self) -> None:
+        # Preflight. The CORS headers attached in end_headers() are what
+        # the browser actually inspects; the body is empty.
+        self.send_response(HTTPStatus.NO_CONTENT)
+        self.end_headers()
 
     def do_GET(self) -> None:
         path = self.path.split("?", 1)[0]

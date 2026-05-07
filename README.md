@@ -12,6 +12,46 @@ Batch mode can compare results against CSV, TSV, or JSON ground-truth files. JSO
 `setName` and `corrected` fields are supported directly, including unique legal net exports that
 need to be canonicalized into standard URFDLB order.
 
+## Architecture
+
+The app is split into a small local UI/API layer, a CV pipeline, and a cube-constraint recognition
+layer. The core design is to collect many plausible interpretations from noisy image evidence,
+then accept only interpretations that can become a legal Rubik's cube state.
+
+```mermaid
+flowchart TD
+    User["User uploads A/B images or batch"] --> App["app.py<br/>Web server + CLI"]
+
+    App --> Dataset["dataset.py<br/>Pair images<br/>Parse ground truth"]
+    App --> Recognizer["WhiteUpRecognizer<br/>recognizer.py"]
+
+    Recognizer --> PipelineA["image_pipeline.py<br/>Analyze Image A<br/>U/white anchor"]
+    Recognizer --> PipelineB["image_pipeline.py<br/>Analyze Image B<br/>D/yellow anchor"]
+
+    PipelineA --> CV["CV pipeline<br/>EXIF normalize<br/>ROI detection<br/>Sticker components<br/>Patch sampling<br/>Face-grid fitting"]
+    PipelineB --> CV
+
+    CV --> Colors["colors.py<br/>HSV hints<br/>Lab distance<br/>Adaptive palette calibration"]
+
+    Colors --> FaceModels["Face-grid candidates<br/>3x3 lattice scoring<br/>Non-overlap pruning<br/>Side-pair ranking"]
+
+    FaceModels --> Orientation["geometry.py<br/>Square transforms<br/>Nearest-edge adjacency<br/>Canonical face orientation"]
+
+    Orientation --> Merge["Two-view merge<br/>Combine A/B faces<br/>Reject conflicts"]
+
+    Merge --> StateSearch["State generation<br/>Balanced facelet variants<br/>Cubie-level repair candidates"]
+
+    StateSearch --> Validation["validation.py<br/>Counts<br/>Centers<br/>Legal pieces<br/>Orientations<br/>Parity"]
+
+    Validation --> Result["Result JSON<br/>54-char URFDLB or rejection"]
+
+    Result --> Artifacts["runs/pairs or runs/batches<br/>result.json<br/>debug.json<br/>samples.csv<br/>overlays<br/>batch reports"]
+```
+
+The recognizer does not simply "read 54 colors." It first builds candidate face grids and color
+labels from the images, then uses cube geometry, fixed center opposites, side adjacency, and legal
+piece constraints to choose or reject a final state.
+
 ## Recognition Contract
 
 - The output is standard solver notation in `URFDLB` order, exactly 54 characters long.

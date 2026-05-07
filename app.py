@@ -109,6 +109,15 @@ class RubikHandler(BaseHTTPRequestHandler):
             image_b = _first_field(fields, "imageB")
             expected = _text_field(fields, "expectedState")
             set_id = _text_field(fields, "setId")
+            # `?slim=1` returns a stripped-down payload with the heavy
+            # debug fields (overlays + diagnostics) omitted. Used by
+            # the cube-snap Fixer integration where the response is
+            # several MB without it (mostly base64-encoded overlay
+            # PNGs the embedded UI never consumes), and where the
+            # browser tends to drop the connection on the long
+            # download. Default unchanged so the debugger's own
+            # static UI keeps the rich response.
+            slim = self._query_flag("slim")
             if not image_a or not image_b:
                 self._send_json(
                     {
@@ -129,6 +138,8 @@ class RubikHandler(BaseHTTPRequestHandler):
                 ),
                 expected_state=expected,
             )
+            if slim:
+                _strip_heavy_fields(payload)
             self._send_json(payload)
         except Exception as exc:  # Defensive API boundary for local debugging.
             # Print the full traceback to stderr so the operator running
@@ -168,6 +179,25 @@ class RubikHandler(BaseHTTPRequestHandler):
                 },
                 HTTPStatus.INTERNAL_SERVER_ERROR,
             )
+
+    def _query_flag(self, name: str) -> bool:
+        """Return True if `name` appears in the URL query string with a
+        truthy value ("1", "true", "yes" — case-insensitive). Bare
+        presence (`?slim`) also counts as true.
+        """
+        if "?" not in self.path:
+            return False
+        query = self.path.split("?", 1)[1]
+        for pair in query.split("&"):
+            if not pair:
+                continue
+            key, _, value = pair.partition("=")
+            if key.lower() != name.lower():
+                continue
+            if value == "":
+                return True
+            return value.lower() in ("1", "true", "yes")
+        return False
 
     def _send_run_file(self, request_path: str) -> None:
         relative = Path(unquote(request_path.removeprefix("/runs/")))
@@ -298,6 +328,28 @@ def recognize_and_persist(recognizer: WhiteUpRecognizer, pair: ImagePair, expect
     run_info = save_run(pair, payload, result, expected_state)
     payload.update(run_info)
     return payload
+
+
+def _strip_heavy_fields(payload: Dict) -> None:
+    """Remove the bulkiest debug fields in place. Used by the slim API
+    response mode (`?slim=1` on /api/recognize). The on-disk run files
+    written by save_run() are NOT affected — only what's returned to
+    the HTTP client is reduced.
+
+    Removes:
+      - overlays      base64-encoded PNGs of per-image diagnostic
+                      visualizations (typically a few MB).
+      - diagnostics   per-image grid/orientation breakdown that the
+                      cube-snap Fixer doesn't consume.
+      - imageA/imageB summaries — kept lightweight by upstream code
+                      already (just sticker/grid counts) so retained.
+
+    Leaves status / state / confidence / reason / failedChecks /
+    candidates / runId / runUrl / artifacts / evaluation intact —
+    everything callers actually need to drive a UI flow.
+    """
+    for key in ("overlays", "diagnostics"):
+        payload.pop(key, None)
 
 
 def run_batch(

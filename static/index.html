@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rubik Two-View Recognizer</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="workbench" aria-labelledby="title">
+        <div class="heading">
+          <h1 id="title">Rubik Two-View Recognizer</h1>
+          <p>Upload image A with white up, then image B after the flip with yellow visible. The app returns a URFDLB state only when the detected cube is legal.</p>
+        </div>
+
+        <form id="recognizeForm" class="panel">
+          <h2>Single Pair</h2>
+          <label>
+            <span>Image A</span>
+            <input id="imageA" type="file" name="imageA" accept="image/*" required />
+          </label>
+          <label>
+            <span>Image B</span>
+            <input id="imageB" type="file" name="imageB" accept="image/*" required />
+          </label>
+          <button type="submit">Recognize</button>
+        </form>
+
+        <form id="batchForm" class="panel">
+          <h2>Batch</h2>
+          <label class="dropZone" id="dropZone">
+            <span>Drop Images</span>
+            <input id="batchImages" type="file" name="images" accept="image/*" multiple />
+          </label>
+          <label>
+            <span>Ground Truth CSV/TSV/JSON</span>
+            <input id="groundTruth" type="file" name="groundTruth" accept=".csv,.tsv,.json,application/json,text/csv,text/tab-separated-values" />
+          </label>
+          <button type="submit">Run Batch</button>
+        </form>
+
+        <section class="result" aria-live="polite">
+          <div class="resultHeader">
+            <h2 id="status">Ready</h2>
+            <button id="copyState" type="button" disabled>Copy</button>
+          </div>
+          <code id="state"></code>
+          <pre id="details"></pre>
+        </section>
+      </section>
+
+      <section class="batchResults" aria-label="Batch results">
+        <div class="resultHeader">
+          <h2>Batch Results</h2>
+          <a id="batchReport" href="#" hidden>Report</a>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Set</th>
+              <th>Status</th>
+              <th>Exact</th>
+              <th>Confidence</th>
+              <th>State</th>
+              <th>Run</th>
+            </tr>
+          </thead>
+          <tbody id="batchRows"></tbody>
+        </table>
+      </section>
+
+      <section id="overlays" class="overlays" aria-label="Recognition overlays"></section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>

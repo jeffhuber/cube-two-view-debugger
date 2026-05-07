@@ -1,0 +1,21 @@
+{
+  "fixtureSet": "white-up-sample-pairs",
+  "requiredCapture": "white-up",
+  "notation": {
+    "U": "white",
+    "R": "red",
+    "F": "green",
+    "D": "yellow",
+    "L": "orange",
+    "B": "blue"
+  },
+  "pairs": [
+    {
+      "id": "set-16",
+      "imageA": "/Users/jhuber/Downloads/Set 16 - A - white up IMG_6709.JPG",
+      "imageB": "/Users/jhuber/Downloads/Set 16 - B - white up IMG_6710.JPG",
+      "knownState": null,
+      "notes": "Image-only calibration pair. Use for detection and overlay tuning, not exact accuracy scoring."
+    }
+  ]
+}

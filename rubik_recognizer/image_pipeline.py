@@ -1,0 +1,821 @@
+from __future__ import annotations
+
+import base64
+import io
+import math
+from collections import deque
+from dataclasses import dataclass
+from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+
+import numpy as np
+from PIL import Image, ImageDraw, ImageFilter, ImageOps
+
+from .colors import ColorMatch, RGB, classify_rgb
+
+
+Point = Tuple[float, float]
+
+FACE_GRID_ANCHORS = ("U", "D")
+FACE_GRID_SIDE_PAIRS = (("F", "R"), ("R", "B"), ("B", "L"), ("L", "F"))
+MAX_RESCUE_GRID_COMPONENT_OVERLAP = 3
+MAX_RESCUE_FACE_CANDIDATES = 48
+MAX_RESCUE_TRIPLES = 12
+
+
+@dataclass
+class Sticker:
+    id: int
+    center: Point
+    bbox: Tuple[float, float, float, float]
+    rgb: RGB
+    match: ColorMatch
+    area: int
+    source: str = "component"
+    shape_angle: Optional[float] = None
+
+    @property
+    def face(self) -> str:
+        return self.match.face
+
+
+@dataclass
+class FaceGrid:
+    id: int
+    stickers: List[List[Sticker]]
+    points: List[List[Point]]
+    matched_count: int
+    fit_error: float
+
+    @property
+    def center_sticker(self) -> Sticker:
+        return self.stickers[1][1]
+
+    @property
+    def center_face(self) -> str:
+        return self.center_sticker.face
+
+
+@dataclass
+class ImageAnalysis:
+    width: int
+    height: int
+    roi: Tuple[int, int, int, int]
+    stickers: List[Sticker]
+    grids: List[FaceGrid]
+    overlay_data_url: str
+    warnings: List[str]
+
+    def summary(self) -> Dict:
+        return {
+            "width": self.width,
+            "height": self.height,
+            "roi": self.roi,
+            "stickers": len(self.stickers),
+            "grids": [
+                {
+                    "id": grid.id,
+                    "centerFace": grid.center_face,
+                    "centerColor": grid.center_sticker.match.color,
+                    "matchedCount": grid.matched_count,
+                    "fitError": round(grid.fit_error, 2),
+                }
+                for grid in self.grids
+            ],
+            "warnings": self.warnings,
+        }
+
+
+def analyze_image(image_bytes: bytes) -> ImageAnalysis:
+    image = _load_image(image_bytes)
+    process_image, scale = _resize_for_processing(image, max_side=1150)
+    arr = np.asarray(process_image).astype(np.uint8)
+    roi = _find_cube_roi(arr)
+    stickers = _find_stickers(arr, roi)
+    grids = _fit_face_grids(stickers, arr, scale)
+    warnings = []
+    if len(stickers) < 18:
+        warnings.append("Few sticker candidates detected.")
+    if len(grids) < 3:
+        warnings.append("Could not fit three visible 3x3 face grids.")
+    overlay = _make_overlay(process_image, roi, stickers, grids)
+    return ImageAnalysis(
+        width=image.width,
+        height=image.height,
+        roi=roi,
+        stickers=stickers,
+        grids=grids,
+        overlay_data_url=overlay,
+        warnings=warnings,
+    )
+
+
+def _load_image(image_bytes: bytes) -> Image.Image:
+    with Image.open(io.BytesIO(image_bytes)) as img:
+        return ImageOps.exif_transpose(img).convert("RGB")
+
+
+def _resize_for_processing(image: Image.Image, max_side: int) -> Tuple[Image.Image, float]:
+    side = max(image.size)
+    if side <= max_side:
+        return image.copy(), 1.0
+    scale = max_side / float(side)
+    size = (int(image.width * scale), int(image.height * scale))
+    return image.resize(size, Image.Resampling.LANCZOS), scale
+
+
+def _find_cube_roi(arr: np.ndarray) -> Tuple[int, int, int, int]:
+    hsv = _rgb_to_hsv_arrays(arr)
+    sat = hsv[:, :, 1]
+    val = hsv[:, :, 2]
+    saturated = (sat > 0.23) & (val > 0.20)
+    if saturated.sum() < 200:
+        return 0, 0, arr.shape[1], arr.shape[0]
+
+    mask_img = Image.fromarray((saturated * 255).astype(np.uint8), mode="L")
+    join = max(21, int(max(arr.shape[:2]) * 0.055) | 1)
+    mask_img = mask_img.filter(ImageFilter.MaxFilter(join))
+    comps = _connected_components(np.asarray(mask_img) > 0, min_area=250)
+    if not comps:
+        return 0, 0, arr.shape[1], arr.shape[0]
+
+    height, width = arr.shape[:2]
+    best = max(comps, key=lambda comp: _roi_score(comp, saturated, width, height))
+    x0, y0, x1, y1 = best["bbox"]
+    pad = int(max(x1 - x0, y1 - y0) * 0.12)
+    return max(0, x0 - pad), max(0, y0 - pad), min(width, x1 + pad), min(height, y1 + pad)
+
+
+def _roi_score(comp: Dict, saturated: np.ndarray, width: int, height: int) -> float:
+    x0, y0, x1, y1 = comp["bbox"]
+    colored = saturated[y0:y1, x0:x1].sum()
+    cx = ((x0 + x1) / 2.0) / width
+    cy = ((y0 + y1) / 2.0) / height
+    center_bonus = 1.0 - min(1.0, math.hypot(cx - 0.55, cy - 0.5))
+    return float(colored) * (1.0 + center_bonus)
+
+
+def _find_stickers(arr: np.ndarray, roi: Tuple[int, int, int, int]) -> List[Sticker]:
+    x0, y0, x1, y1 = roi
+    hsv = _rgb_to_hsv_arrays(arr)
+    sat = hsv[:, :, 1]
+    val = hsv[:, :, 2]
+    dark = val < 0.18
+    colored = (sat > 0.16) & (val > 0.26)
+    white_like = (sat < 0.20) & (val > 0.62)
+    mask = (colored | white_like) & ~dark
+
+    roi_mask = np.zeros(mask.shape, dtype=bool)
+    roi_mask[y0:y1, x0:x1] = True
+    mask &= roi_mask
+
+    comps = _connected_components(mask, min_area=max(30, int(arr.shape[0] * arr.shape[1] * 0.000035)))
+    stickers: List[Sticker] = []
+    max_dim = max(arr.shape[:2])
+    min_size = max(5, max_dim * 0.006)
+    max_size = max_dim * 0.24
+
+    for comp in comps:
+        bx0, by0, bx1, by1 = comp["bbox"]
+        width = bx1 - bx0
+        height = by1 - by0
+        if width < min_size or height < min_size or width > max_size or height > max_size:
+            continue
+        if bx0 <= x0 + 2 or by0 <= y0 + 2 or bx1 >= x1 - 2 or by1 >= y1 - 2:
+            continue
+        aspect = width / float(max(height, 1))
+        if aspect < 0.25 or aspect > 4.0:
+            continue
+        fill = comp["area"] / float(max(width * height, 1))
+        if fill < 0.20:
+            continue
+
+        pixels = arr[comp["ys"], comp["xs"]]
+        rgb = tuple(int(v) for v in np.median(pixels, axis=0))  # type: ignore[assignment]
+        match = classify_rgb(rgb)
+        # Large white table/background fragments tend to be low-saturation and high-fill.
+        if match.color == "white" and comp["area"] > arr.shape[0] * arr.shape[1] * 0.018:
+            continue
+        stickers.append(
+            Sticker(
+                id=len(stickers),
+                center=((bx0 + bx1) / 2.0, (by0 + by1) / 2.0),
+                bbox=(bx0, by0, bx1, by1),
+                rgb=rgb,
+                match=match,
+                area=comp["area"],
+                shape_angle=_component_shape_angle(comp),
+            )
+        )
+
+    return _filter_cube_sticker_cluster(_dedupe_stickers(stickers))
+
+
+def _dedupe_stickers(stickers: List[Sticker]) -> List[Sticker]:
+    kept: List[Sticker] = []
+    for sticker in sorted(stickers, key=lambda s: s.area, reverse=True):
+        sx0, sy0, sx1, sy1 = sticker.bbox
+        sw = sx1 - sx0
+        sh = sy1 - sy0
+        if any(math.hypot(sticker.center[0] - k.center[0], sticker.center[1] - k.center[1]) < 0.35 * max(sw, sh) for k in kept):
+            continue
+        sticker.id = len(kept)
+        kept.append(sticker)
+    return sorted(kept, key=lambda s: (s.center[1], s.center[0]))
+
+
+def _filter_cube_sticker_cluster(stickers: List[Sticker]) -> List[Sticker]:
+    if len(stickers) < 18:
+        return stickers
+
+    spacing = _estimate_spacing(np.array([sticker.center for sticker in stickers], dtype=float))
+    if spacing <= 0:
+        return stickers
+    threshold = max(40.0, spacing * 3.1)
+
+    components: List[List[int]] = []
+    seen = set()
+    for index, sticker in enumerate(stickers):
+        if index in seen:
+            continue
+        stack = [index]
+        seen.add(index)
+        component = []
+        while stack:
+            current = stack.pop()
+            component.append(current)
+            cx, cy = stickers[current].center
+            for other, candidate in enumerate(stickers):
+                if other in seen:
+                    continue
+                ox, oy = candidate.center
+                if math.hypot(cx - ox, cy - oy) <= threshold:
+                    seen.add(other)
+                    stack.append(other)
+        components.append(component)
+
+    if len(components) <= 1:
+        return stickers
+
+    largest = max(components, key=len)
+    if len(largest) < max(12, int(len(stickers) * 0.55)):
+        return stickers
+
+    filtered = [stickers[index] for index in sorted(largest)]
+    for index, sticker in enumerate(filtered):
+        sticker.id = index
+    return filtered
+
+
+def _component_shape_angle(comp: Dict) -> Optional[float]:
+    xs = comp.get("xs")
+    ys = comp.get("ys")
+    if xs is None or ys is None or len(xs) < 5:
+        return None
+    points = np.column_stack([xs, ys]).astype(float)
+    points -= points.mean(axis=0)
+    try:
+        covariance = np.cov(points.T)
+        values, vectors = np.linalg.eigh(covariance)
+    except np.linalg.LinAlgError:
+        return None
+    axis = vectors[:, int(np.argmax(values))]
+    return math.degrees(math.atan2(float(axis[1]), float(axis[0]))) % 180.0
+
+
+def _fit_face_grids(stickers: List[Sticker], arr: np.ndarray, scale: float) -> List[FaceGrid]:
+    if len(stickers) < 9:
+        return []
+    points = np.array([sticker.center for sticker in stickers], dtype=float)
+    spacing = _estimate_spacing(points)
+    if spacing <= 0:
+        return []
+
+    candidates = _grid_candidates(points, list(range(len(stickers))), spacing, arr, stickers)
+    selected = _add_supplemental_grids(_select_grid_combo(candidates), candidates, max_grids=24)
+    grids: List[FaceGrid] = []
+    for grid_id, candidate in enumerate(selected):
+        matched_indices = set(candidate["matched"])
+        sampled = _sample_grid_stickers(arr, candidate["centers"], candidate.get("cell_matches"), stickers, matched_indices, scale)
+        grids.append(
+            FaceGrid(
+                id=grid_id,
+                stickers=sampled,
+                points=candidate["centers"],
+                matched_count=candidate["matched_count"],
+                fit_error=candidate["error"],
+            )
+        )
+    return grids
+
+
+def _estimate_spacing(points: np.ndarray) -> float:
+    nearest = []
+    for i, point in enumerate(points):
+        distances = [float(np.linalg.norm(point - other)) for j, other in enumerate(points) if i != j]
+        if distances:
+            nearest.append(min(distances))
+    if not nearest:
+        return 0.0
+    return float(np.median(nearest))
+
+
+def _best_grid_for_indices(points: np.ndarray, indices: List[int], spacing: float) -> Optional[Dict]:
+    candidates = _grid_candidates(points, indices, spacing, arr=None, source_stickers=None)
+    return candidates[0] if candidates else None
+
+
+def _grid_candidates(
+    points: np.ndarray,
+    indices: List[int],
+    spacing: float,
+    arr: Optional[np.ndarray],
+    source_stickers: Optional[Sequence[Sticker]] = None,
+) -> List[Dict]:
+    seen: Dict[Tuple[int, ...], Dict] = {}
+    min_len = spacing * 0.55
+    max_len = spacing * 1.85
+    candidates = indices[:]
+    attempts = 0
+    max_attempts = 14000
+    for anchor_idx in candidates:
+        anchor = points[anchor_idx]
+        neighbor_vectors = []
+        for other_idx in candidates:
+            if other_idx == anchor_idx:
+                continue
+            vec = points[other_idx] - anchor
+            length = float(np.linalg.norm(vec))
+            if min_len <= length <= max_len:
+                neighbor_vectors.append((length, vec))
+        neighbor_vectors = [vec for _, vec in sorted(neighbor_vectors, key=lambda item: item[0])[:10]]
+        for u in neighbor_vectors:
+            for v in neighbor_vectors:
+                attempts += 1
+                if attempts > max_attempts:
+                    return best
+                if np.allclose(u, v):
+                    continue
+                cos = abs(float(np.dot(u, v)) / max(np.linalg.norm(u) * np.linalg.norm(v), 1.0))
+                if cos > 0.86:
+                    continue
+                for ar in range(3):
+                    for ac in range(3):
+                        origin = anchor - ar * u - ac * v
+                        result = _score_grid(points, indices, origin, u, v, spacing)
+                        if result["matched_count"] < 5:
+                            continue
+                        _annotate_candidate(result, arr, points, source_stickers)
+                        key = tuple(sorted(result["matched"]))
+                        current = seen.get(key)
+                        if current is None or _candidate_rank(result) > _candidate_rank(current):
+                            seen[key] = result
+    return sorted(seen.values(), key=_candidate_rank, reverse=True)[:220]
+
+
+def _annotate_candidate(candidate: Dict, arr: Optional[np.ndarray], points: np.ndarray, source_stickers: Optional[Sequence[Sticker]]) -> None:
+    candidate["shape_spread"] = _candidate_shape_spread(candidate, source_stickers)
+    centers = candidate["centers"]
+    if arr is None:
+        candidate["center_face"] = "?"
+        return
+    center_idx = candidate.get("cell_matches", [[None] * 3 for _ in range(3)])[1][1]
+    if center_idx is None:
+        candidate["center_face"] = "?"
+        candidate["center_confidence"] = 0.0
+        return
+    cx, cy = points[center_idx]
+    spacing = _grid_spacing(centers)
+    rgb = _sample_patch(arr, cx, cy, max(3, int(spacing * 0.16)), avoid_core=True)
+    match = classify_rgb(rgb)
+    candidate["center_rgb"] = rgb
+    candidate["center_face"] = match.face
+    candidate["center_confidence"] = match.confidence
+
+
+def _candidate_rank(candidate: Dict) -> float:
+    spread = min(65.0, float(candidate.get("shape_spread", 45.0)))
+    return float(candidate["matched_count"]) * 18.0 - float(candidate["error"]) * 1.25 - spread * 1.25
+
+
+def _candidate_shape_spread(candidate: Dict, source_stickers: Optional[Sequence[Sticker]]) -> float:
+    if not source_stickers:
+        return 45.0
+    angles = []
+    for idx in candidate.get("matched", []):
+        if 0 <= idx < len(source_stickers):
+            angle = source_stickers[idx].shape_angle
+            if angle is not None:
+                angles.append(angle)
+    if len(angles) < 4:
+        return 45.0
+    return _undirected_angle_spread(angles)
+
+
+def _undirected_angle_spread(angles: Sequence[float]) -> float:
+    if not angles:
+        return 45.0
+    doubled = [math.radians(angle * 2.0) for angle in angles]
+    x = sum(math.cos(angle) for angle in doubled) / len(doubled)
+    y = sum(math.sin(angle) for angle in doubled) / len(doubled)
+    concentration = max(1e-6, min(1.0, math.hypot(x, y)))
+    circular_std = math.sqrt(max(0.0, -2.0 * math.log(concentration)))
+    return math.degrees(circular_std) / 2.0
+
+
+def _select_grid_combo(candidates: List[Dict]) -> List[Dict]:
+    if len(candidates) <= 3:
+        return candidates
+    best_combo: Optional[Tuple[Dict, Dict, Dict]] = None
+    best_score = float("-inf")
+    pool = candidates[:70]
+    for i in range(len(pool)):
+        a = pool[i]
+        a_set = set(a["matched"])
+        for j in range(i + 1, len(pool)):
+            b = pool[j]
+            b_set = set(b["matched"])
+            ab_overlap = len(a_set & b_set)
+            if ab_overlap > 5:
+                continue
+            for k in range(j + 1, len(pool)):
+                c = pool[k]
+                c_set = set(c["matched"])
+                overlap = ab_overlap + len(a_set & c_set) + len(b_set & c_set)
+                if overlap > 7:
+                    continue
+                combo = (a, b, c)
+                score = _combo_score(combo, overlap)
+                if score > best_score:
+                    best_score = score
+                    best_combo = combo
+    if best_combo is None:
+        return candidates[:3]
+    return sorted(best_combo, key=lambda item: item["centers"][1][1])
+
+
+def _add_supplemental_grids(selected: List[Dict], candidates: List[Dict], max_grids: int) -> List[Dict]:
+    enriched = list(selected)
+    selected_keys = {_candidate_key(candidate) for candidate in enriched}
+    enriched = _add_low_overlap_triple_grids(enriched, candidates, max_grids)
+    selected_faces = {candidate.get("center_face") for candidate in enriched}
+    selected_keys = {_candidate_key(candidate) for candidate in enriched}
+    for candidate in candidates:
+        if len(enriched) >= max_grids:
+            break
+        face = candidate.get("center_face")
+        key = _candidate_key(candidate)
+        if key in selected_keys or face in selected_faces or face not in {"U", "R", "F", "D", "L", "B"}:
+            continue
+        if any(len(set(candidate["matched"]) & set(existing["matched"])) > 6 for existing in enriched):
+            continue
+        enriched.append(candidate)
+        selected_faces.add(face)
+        selected_keys.add(key)
+    for candidate in candidates:
+        if len(enriched) >= max_grids:
+            break
+        face = candidate.get("center_face")
+        key = _candidate_key(candidate)
+        if key in selected_keys or face not in {"U", "R", "F", "D", "L", "B"}:
+            continue
+        if any(len(set(candidate["matched"]) & set(existing["matched"])) > 7 for existing in enriched):
+            continue
+        enriched.append(candidate)
+        selected_keys.add(key)
+    return sorted(enriched, key=lambda item: item["centers"][1][1])
+
+
+def _add_low_overlap_triple_grids(enriched: List[Dict], candidates: List[Dict], max_grids: int) -> List[Dict]:
+    if len(enriched) >= max_grids:
+        return enriched
+
+    grouped: Dict[str, List[Dict]] = {face: [] for face in {"U", "R", "F", "D", "L", "B"}}
+    for candidate in candidates:
+        face = candidate.get("center_face")
+        if face in grouped:
+            grouped[face].append(candidate)
+
+    triples: List[Tuple[float, Tuple[Dict, Dict, Dict]]] = []
+    for anchor_face in FACE_GRID_ANCHORS:
+        for side_a, side_b in FACE_GRID_SIDE_PAIRS:
+            for anchor in grouped[anchor_face][:MAX_RESCUE_FACE_CANDIDATES]:
+                for first in grouped[side_a][:MAX_RESCUE_FACE_CANDIDATES]:
+                    for second in grouped[side_b][:MAX_RESCUE_FACE_CANDIDATES]:
+                        triple = (anchor, first, second)
+                        if len({_candidate_key(candidate) for candidate in triple}) < 3:
+                            continue
+                        overlap = _candidate_component_overlap(triple)
+                        if overlap > MAX_RESCUE_GRID_COMPONENT_OVERLAP:
+                            continue
+                        score = _combo_score(triple, overlap) + sum(_candidate_rank(candidate) for candidate in triple) * 0.15
+                        triples.append((score, triple))
+
+    if not triples:
+        return enriched
+
+    selected_keys = {_candidate_key(candidate) for candidate in enriched}
+    selected_triples = sorted(triples, key=lambda item: item[0], reverse=True)[:MAX_RESCUE_TRIPLES]
+    for _, triple in selected_triples:
+        for candidate in sorted(triple, key=_candidate_rank, reverse=True):
+            if len(enriched) >= max_grids:
+                return enriched
+            key = _candidate_key(candidate)
+            if key in selected_keys:
+                continue
+            enriched.append(candidate)
+            selected_keys.add(key)
+    return enriched
+
+
+def _candidate_key(candidate: Dict) -> Tuple[int, ...]:
+    return tuple(sorted(candidate.get("matched", [])))
+
+
+def _candidate_component_overlap(candidates: Sequence[Dict]) -> int:
+    matched_sets = [set(candidate.get("matched", [])) for candidate in candidates]
+    overlap = 0
+    for i, first in enumerate(matched_sets):
+        for second in matched_sets[i + 1 :]:
+            overlap += len(first & second)
+    return overlap
+
+
+def _combo_score(combo: Sequence[Dict], overlap: int) -> float:
+    matched = sum(float(candidate["matched_count"]) for candidate in combo)
+    error = sum(float(candidate["error"]) for candidate in combo)
+    shape_spread = sum(min(65.0, float(candidate.get("shape_spread", 45.0))) for candidate in combo)
+    center_faces = [candidate.get("center_face", "?") for candidate in combo]
+    distinct_centers = len(set(center_faces))
+    anchor_bonus = 70.0 * len({face for face in center_faces if face in {"U", "D"}})
+    side_bonus = 8.0 * len({face for face in center_faces if face in {"R", "F", "L", "B"}})
+    return matched * 36.0 - error * 1.7 - shape_spread * 0.9 + distinct_centers * 24.0 + anchor_bonus + side_bonus - overlap * 18.0
+
+
+def _score_grid(points: np.ndarray, indices: List[int], origin: np.ndarray, u: np.ndarray, v: np.ndarray, spacing: float) -> Dict:
+    centers: List[List[Point]] = []
+    cell_matches: List[List[Optional[int]]] = []
+    matched = []
+    errors = []
+    tolerance = max(12.0, spacing * 0.44)
+    available = set(indices)
+    for r in range(3):
+        row = []
+        match_row: List[Optional[int]] = []
+        for c in range(3):
+            predicted = origin + r * u + c * v
+            row.append((float(predicted[0]), float(predicted[1])))
+            best_idx = None
+            best_dist = tolerance
+            for idx in available:
+                dist = float(np.linalg.norm(points[idx] - predicted))
+                if dist < best_dist:
+                    best_idx = idx
+                    best_dist = dist
+            if best_idx is not None:
+                matched.append(best_idx)
+                errors.append(best_dist)
+                available.remove(best_idx)
+            match_row.append(best_idx)
+        centers.append(row)
+        cell_matches.append(match_row)
+    result = {
+        "centers": centers,
+        "cell_matches": cell_matches,
+        "matched": matched,
+        "matched_count": len(matched),
+        "error": float(np.mean(errors) if errors else 9999.0),
+    }
+    refined = _refine_grid_homography(points, indices, result, spacing)
+    if refined and _candidate_rank(refined) > _candidate_rank(result):
+        return refined
+    return result
+
+
+def _refine_grid_homography(points: np.ndarray, indices: List[int], candidate: Dict, spacing: float) -> Optional[Dict]:
+    src = []
+    dst = []
+    for r, row in enumerate(candidate["cell_matches"]):
+        for c, idx in enumerate(row):
+            if idx is None:
+                continue
+            src.append((float(c), float(r)))
+            dst.append(tuple(float(v) for v in points[idx]))
+    if len(src) < 4 or _canonical_points_degenerate(src):
+        return None
+    homography = _fit_homography(np.array(src, dtype=float), np.array(dst, dtype=float))
+    if homography is None:
+        return None
+
+    centers: List[List[Point]] = []
+    for r in range(3):
+        row = []
+        for c in range(3):
+            projected = homography @ np.array([float(c), float(r), 1.0])
+            if abs(projected[2]) < 1e-6:
+                return None
+            row.append((float(projected[0] / projected[2]), float(projected[1] / projected[2])))
+        centers.append(row)
+    return _score_grid_centers(points, indices, centers, spacing)
+
+
+def _score_grid_centers(points: np.ndarray, indices: List[int], centers: List[List[Point]], spacing: float) -> Dict:
+    tolerance = max(12.0, spacing * 0.46)
+    available = set(indices)
+    matched = []
+    errors = []
+    cell_matches: List[List[Optional[int]]] = []
+    for row in centers:
+        match_row: List[Optional[int]] = []
+        for center in row:
+            predicted = np.array(center, dtype=float)
+            best_idx = None
+            best_dist = tolerance
+            for idx in available:
+                dist = float(np.linalg.norm(points[idx] - predicted))
+                if dist < best_dist:
+                    best_idx = idx
+                    best_dist = dist
+            if best_idx is not None:
+                matched.append(best_idx)
+                errors.append(best_dist)
+                available.remove(best_idx)
+            match_row.append(best_idx)
+        cell_matches.append(match_row)
+    return {
+        "centers": centers,
+        "cell_matches": cell_matches,
+        "matched": matched,
+        "matched_count": len(matched),
+        "error": float(np.mean(errors) if errors else 9999.0),
+    }
+
+
+def _fit_homography(src: np.ndarray, dst: np.ndarray) -> Optional[np.ndarray]:
+    rows = []
+    for (x, y), (u, v) in zip(src, dst):
+        rows.append([-x, -y, -1.0, 0.0, 0.0, 0.0, u * x, u * y, u])
+        rows.append([0.0, 0.0, 0.0, -x, -y, -1.0, v * x, v * y, v])
+    matrix = np.array(rows, dtype=float)
+    try:
+        _, _, vh = np.linalg.svd(matrix)
+    except np.linalg.LinAlgError:
+        return None
+    homography = vh[-1].reshape(3, 3)
+    if abs(homography[2, 2]) > 1e-9:
+        homography = homography / homography[2, 2]
+    if not np.isfinite(homography).all():
+        return None
+    return homography
+
+
+def _canonical_points_degenerate(points: Sequence[Tuple[float, float]]) -> bool:
+    xs = {point[0] for point in points}
+    ys = {point[1] for point in points}
+    return len(xs) < 2 or len(ys) < 2
+
+
+def _sample_grid_stickers(
+    arr: np.ndarray,
+    centers: List[List[Point]],
+    cell_matches: Optional[List[List[Optional[int]]]],
+    source_stickers: List[Sticker],
+    matched_indices: Iterable[int],
+    scale: float,
+) -> List[List[Sticker]]:
+    spacing = _grid_spacing(centers)
+    radius = max(3, int(spacing * 0.16))
+    matched_set = set(matched_indices)
+    rows: List[List[Sticker]] = []
+    next_id = 1000
+    for r in range(3):
+        row: List[Sticker] = []
+        for c in range(3):
+            cx, cy = centers[r][c]
+            matched_idx = cell_matches[r][c] if cell_matches and cell_matches[r][c] in matched_set else None
+            if matched_idx is not None:
+                source = source_stickers[matched_idx]
+                sample_x, sample_y = source.center
+                rgb = _sample_patch(arr, sample_x, sample_y, radius, avoid_core=(r == 1 and c == 1))
+                match = classify_rgb(rgb)
+                sticker = Sticker(source.id, source.center, source.bbox, rgb, match, source.area, source.source, source.shape_angle)
+            else:
+                rgb = _sample_patch(arr, cx, cy, radius, avoid_core=(r == 1 and c == 1))
+                match = classify_rgb(rgb)
+                bbox = (cx - radius, cy - radius, cx + radius, cy + radius)
+                sticker = Sticker(next_id, (cx, cy), bbox, rgb, match, radius * radius, "grid_sample")
+                next_id += 1
+            row.append(sticker)
+        rows.append(row)
+    return rows
+
+
+def _sample_patch(arr: np.ndarray, cx: float, cy: float, radius: int, avoid_core: bool) -> RGB:
+    height, width = arr.shape[:2]
+    x0, x1 = max(0, int(cx - radius)), min(width, int(cx + radius + 1))
+    y0, y1 = max(0, int(cy - radius)), min(height, int(cy + radius + 1))
+    patch = arr[y0:y1, x0:x1]
+    if patch.size == 0:
+        return 0, 0, 0
+    yy, xx = np.ogrid[y0:y1, x0:x1]
+    dist = np.sqrt((xx - cx) ** 2 + (yy - cy) ** 2)
+    mask = dist <= radius
+    if avoid_core:
+        mask &= dist >= radius * 0.38
+    pixels = patch[mask]
+    if len(pixels) == 0:
+        pixels = patch.reshape(-1, 3)
+    return tuple(int(v) for v in np.median(pixels, axis=0))  # type: ignore[return-value]
+
+
+def _grid_spacing(centers: List[List[Point]]) -> float:
+    distances = []
+    for r in range(3):
+        for c in range(2):
+            distances.append(math.hypot(centers[r][c][0] - centers[r][c + 1][0], centers[r][c][1] - centers[r][c + 1][1]))
+    for r in range(2):
+        for c in range(3):
+            distances.append(math.hypot(centers[r][c][0] - centers[r + 1][c][0], centers[r][c][1] - centers[r + 1][c][1]))
+    return float(np.median(distances)) if distances else 12.0
+
+
+def _rgb_to_hsv_arrays(arr: np.ndarray) -> np.ndarray:
+    rgb = arr.astype(float) / 255.0
+    r, g, b = rgb[:, :, 0], rgb[:, :, 1], rgb[:, :, 2]
+    maxc = np.max(rgb, axis=2)
+    minc = np.min(rgb, axis=2)
+    delta = maxc - minc
+    sat = np.where(maxc == 0, 0, delta / np.maximum(maxc, 1e-6))
+    hue = np.zeros_like(maxc)
+    nonzero = delta > 1e-6
+    safe_delta = np.where(nonzero, delta, 1.0)
+    hue = np.where((maxc == r) & nonzero, ((g - b) / safe_delta) % 6, hue)
+    hue = np.where((maxc == g) & nonzero, ((b - r) / safe_delta) + 2, hue)
+    hue = np.where((maxc == b) & nonzero, ((r - g) / safe_delta) + 4, hue)
+    hue /= 6.0
+    return np.dstack([hue, sat, maxc])
+
+
+def _connected_components(mask: np.ndarray, min_area: int) -> List[Dict]:
+    height, width = mask.shape
+    visited = np.zeros(mask.shape, dtype=bool)
+    comps: List[Dict] = []
+    true_points = np.argwhere(mask)
+    for sy, sx in true_points:
+        if visited[sy, sx]:
+            continue
+        queue = deque([(int(sx), int(sy))])
+        visited[sy, sx] = True
+        xs = []
+        ys = []
+        while queue:
+            x, y = queue.popleft()
+            xs.append(x)
+            ys.append(y)
+            for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                if 0 <= nx < width and 0 <= ny < height and mask[ny, nx] and not visited[ny, nx]:
+                    visited[ny, nx] = True
+                    queue.append((nx, ny))
+        if len(xs) >= min_area:
+            xs_arr = np.array(xs, dtype=int)
+            ys_arr = np.array(ys, dtype=int)
+            comps.append(
+                {
+                    "area": len(xs),
+                    "bbox": (int(xs_arr.min()), int(ys_arr.min()), int(xs_arr.max() + 1), int(ys_arr.max() + 1)),
+                    "xs": xs_arr,
+                    "ys": ys_arr,
+                }
+            )
+    return comps
+
+
+def _make_overlay(image: Image.Image, roi: Tuple[int, int, int, int], stickers: List[Sticker], grids: List[FaceGrid]) -> str:
+    overlay = image.copy()
+    draw = ImageDraw.Draw(overlay, "RGBA")
+    draw.rectangle(roi, outline=(48, 120, 255, 210), width=3)
+    for sticker in stickers:
+        color = _face_draw_color(sticker.face)
+        draw.rectangle(sticker.bbox, outline=color, width=2)
+        draw.text((sticker.center[0] + 3, sticker.center[1] + 3), f"{sticker.id}:{sticker.face}", fill=(0, 0, 0, 230))
+    for grid in grids:
+        grid_color = _face_draw_color(grid.center_face)
+        for r in range(3):
+            for c in range(3):
+                cx, cy = grid.points[r][c]
+                draw.ellipse((cx - 5, cy - 5, cx + 5, cy + 5), fill=grid_color)
+                draw.text((cx + 6, cy - 7), f"{grid.id}{r}{c}", fill=(0, 0, 0, 235))
+    buf = io.BytesIO()
+    overlay.thumbnail((1200, 1200))
+    overlay.save(buf, format="PNG")
+    return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
+
+
+def _face_draw_color(face: str) -> Tuple[int, int, int, int]:
+    return {
+        "U": (255, 255, 255, 240),
+        "R": (220, 35, 35, 240),
+        "F": (20, 165, 80, 240),
+        "D": (245, 220, 35, 240),
+        "L": (245, 130, 35, 240),
+        "B": (50, 90, 220, 240),
+    }.get(face, (255, 0, 255, 240))

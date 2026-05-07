@@ -9,6 +9,8 @@ import io
 import json
 import mimetypes
 import re
+import sys
+import traceback
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -129,6 +131,13 @@ class RubikHandler(BaseHTTPRequestHandler):
             )
             self._send_json(payload)
         except Exception as exc:  # Defensive API boundary for local debugging.
+            # Print the full traceback to stderr so the operator running
+            # the server can diagnose immediately. The HTTP response only
+            # carries str(exc) (no traceback) to avoid leaking filesystem
+            # paths to clients in case the server is ever exposed beyond
+            # localhost. For local debugging the terminal log is the
+            # primary surface.
+            traceback.print_exc(file=sys.stderr)
             self._send_json(
                 {
                     "status": "rejected",
@@ -149,6 +158,7 @@ class RubikHandler(BaseHTTPRequestHandler):
             batch = run_batch(self.recognizer, pairs, ground_truth, unpaired)
             self._send_json(batch)
         except Exception as exc:
+            traceback.print_exc(file=sys.stderr)
             self._send_json(
                 {
                     "status": "rejected",

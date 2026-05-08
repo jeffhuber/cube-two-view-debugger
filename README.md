@@ -69,10 +69,14 @@ piece constraints to choose or reject a final state.
 
 ## Run
 
-Use the bundled Codex Python runtime because it includes Pillow and NumPy:
+Use a Python ≥ 3.11 environment with the pinned versions in
+`requirements.txt`. Recommended setup with conda:
 
 ```sh
-/Users/jhuber/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 app.py
+conda create -n cube python=3.11 -y
+conda activate cube
+pip install -r requirements.txt
+python app.py
 ```
 
 Then open:
@@ -80,6 +84,56 @@ Then open:
 ```text
 http://127.0.0.1:8080/
 ```
+
+The startup banner reports which Python / Pillow / NumPy / git SHA the
+server is running with. Loud warnings appear on stderr if any of those
+are below the pinned minimums.
+
+The Codex bundled Python runtime also works (uses similar pinned versions):
+
+```sh
+/Users/jhuber/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 app.py
+```
+
+### Pinned dependencies
+
+The classical-CV pipeline is unusually sensitive to Pillow's libjpeg
+backend and NumPy's BLAS path — same source code, different versions
+of these libraries can shift the recognizer's output by **~20 stickers
+out of 54** on hard-lighting images. We saw this in the wild: Set 29
+scored 29/54 with `pillow==11.3.0 + numpy==2.3.1` and 50/54 with
+`pillow==12.2.0 + numpy==2.3.5`, on identical Python 3.11 and identical
+recognizer code.
+
+`requirements.txt` pins the lower bounds we've validated. If the server
+is started under older versions, it prints a startup warning and
+recognition runs at degraded accuracy with no other indication.
+
+### Diagnostics
+
+`GET /api/diag` returns the runtime stack the server is actually on:
+
+```sh
+curl -s http://127.0.0.1:8080/api/diag | python3 -m json.tool
+```
+
+Sample output:
+
+```json
+{
+  "python": {"version": "3.11.13", "executable": "...", "implementation": "cpython"},
+  "libraries": {"numpy": "2.3.5", "pillow": "12.2.0"},
+  "minimums":  {"python": "3.11", "numpy": "2.3.5", "pillow": "12.2"},
+  "git": {"sha": "6cc6f9c", "cwd": "/path/to/cube-two-view-debugger"}
+}
+```
+
+Every `POST /api/recognize` response also carries a `runtime` block
+with the same fields plus `imageA` / `imageB` fingerprints (SHA256,
+byte size, decoded width/height, format) so a saved recognition JSON
+self-documents what stack and what input bytes produced it. Use this
+when debugging "why did this score 26/54 instead of 50?" — the answer
+is in the saved JSON, not in re-running.
 
 ## CLI Probe
 

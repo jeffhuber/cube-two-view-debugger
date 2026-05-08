@@ -1,0 +1,14 @@
+# Pinned to versions where the recognizer's classical-CV pipeline gives
+# the strongest accuracy across the cube-snap test corpus. Older PIL +
+# numpy combos silently degrade by ~20 stickers on hard-lighting images
+# (measured on Set 29: 29/54 with PIL 11.3 + numpy 2.3.1, vs 50/54 with
+# PIL 12.2 + numpy 2.3.5 — same code, same Python). The recognizer's
+# float-sensitive grid scoring + repair tie-breaking depends on
+# Pillow's libjpeg decode and numpy's BLAS path, so version drift here
+# matters more than usual.
+#
+# Use Python >= 3.11 (the recognizer uses int.bit_count which is 3.10+,
+# and we've only validated 3.11 / 3.12 — older Python may produce
+# different repair-step results even when imports succeed).
+pillow>=12.2.0,<13
+numpy>=2.3.5,<3

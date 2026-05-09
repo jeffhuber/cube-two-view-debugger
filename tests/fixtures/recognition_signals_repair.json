@@ -59,6 +59,8 @@
       {
         "state": "LLBRUFUFLULDDRUDFLRDFRFBRLRBDFFDRRUUFDFRLUBUDLBDBBBBLU",
         "confidence": 0.7301,
+        "baseConfidence": 0.7891,
+        "repairRankingPenalty": 0.059,
         "rawMergedScore": 128.4,
         "repairCost": 15.25,
         "repairChanges": 4,
@@ -98,6 +100,8 @@
       {
         "state": "LLBRUFUFLULDDRUDFLRDFRFBRLRBDFFDRRUUFDFRLUBUDLBDBBBBLD",
         "confidence": 0.7013,
+        "baseConfidence": 0.7923,
+        "repairRankingPenalty": 0.091,
         "rawMergedScore": 127.1,
         "repairCost": 17.5,
         "repairChanges": 5,
@@ -124,6 +128,8 @@
     "selectedRepairCandidate": {
       "state": "LLBRUFUFLULDDRUDFLRDFRFBRLRBDFFDRRUUFDFRLUBUDLBDBBBBLU",
       "confidence": 0.7301,
+      "baseConfidence": 0.7891,
+      "repairRankingPenalty": 0.059,
       "rawMergedScore": 128.4,
       "repairCost": 15.25,
       "repairChanges": 4,

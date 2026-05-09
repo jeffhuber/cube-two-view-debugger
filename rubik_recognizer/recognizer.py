@@ -72,9 +72,21 @@ MAX_DIAGNOSTIC_EXAMPLES = 8
 SUSPECT_GRID_SAMPLE_THRESHOLD = 2.5
 MAX_SUSPECT_SAMPLE_ALTERNATIVE_DELTA = 58.0
 MAX_TRIPLE_COMPONENT_OVERLAP = 3
+MAX_REPAIR_RANKING_PENALTY = 0.18
 REPAIR_ADJACENT_COLOR_PAIRS = {frozenset(("red", "orange")), frozenset(("green", "blue"))}
 VALID_EDGE_COLOR_SETS = {frozenset(colors) for colors in EDGE_COLORS}
 VALID_CORNER_COLOR_SETS = {frozenset(colors) for colors in CORNER_COLORS}
+REPAIR_CONFLICT_PENALTY_WEIGHTS = {
+    "missingCorners": 0.024,
+    "duplicateColorCorners": 0.02,
+    "missingUdCorners": 0.018,
+    "invalidCorners": 0.024,
+    "missingEdges": 0.018,
+    "duplicateColorEdges": 0.014,
+    "invalidEdges": 0.016,
+    "duplicateCornerCubies": 0.018,
+    "duplicateEdgeCubies": 0.012,
+}
 PIECE_CONFLICT_KEYS = (
     "missingCorners",
     "duplicateColorCorners",
@@ -294,11 +306,21 @@ class WhiteUpRecognizer:
             state, repair_cost, changes = _legal_repaired_state_from_faces(merged) or (None, 0.0, 0)
             if state is None:
                 continue
-            confidence = _state_confidence(merged) - repair_cost / 650.0 - changes * 0.006
+            conflicts = _piece_conflict_summary(merged)
+            base_confidence = _state_confidence(merged) - repair_cost / 650.0 - changes * 0.006
+            penalty = _repair_ranking_penalty(
+                conflicts,
+                merged,
+                repair_cost=repair_cost,
+                repair_changes=changes,
+            )
+            confidence = base_confidence - penalty
             confidence = max(0.5, confidence)
             detail = {
                 "state": state,
                 "confidence": confidence,
+                "baseConfidence": base_confidence,
+                "repairRankingPenalty": penalty,
                 "rawMergedScore": raw_score,
                 "repairCost": repair_cost,
                 "repairChanges": changes,
@@ -312,7 +334,7 @@ class WhiteUpRecognizer:
                 "selectionScoreB": merged.get("_selection_score_b"),
                 "orientationRankA": merged.get("_orientation_rank_a"),
                 "orientationRankB": merged.get("_orientation_rank_b"),
-                "preRepairConflicts": _piece_conflict_summary(merged),
+                "preRepairConflicts": conflicts,
                 "preRepairFaceCounts": _primary_face_counts(merged),
             }
             current = candidates.get(state)
@@ -407,7 +429,19 @@ def _repair_signal_summary(repair_details: Sequence[Dict[str, Any]], selected_st
 
 def _public_repair_detail(item: Dict[str, Any]) -> Dict[str, Any]:
     public = dict(item)
-    for key in ("confidence", "rawMergedScore", "repairCost", "scoreA", "scoreB", "orientationScoreA", "orientationScoreB", "selectionScoreA", "selectionScoreB"):
+    for key in (
+        "confidence",
+        "baseConfidence",
+        "repairRankingPenalty",
+        "rawMergedScore",
+        "repairCost",
+        "scoreA",
+        "scoreB",
+        "orientationScoreA",
+        "orientationScoreB",
+        "selectionScoreA",
+        "selectionScoreB",
+    ):
         if public.get(key) is not None:
             public[key] = round(float(public[key]), 4)
     return public
@@ -1139,6 +1173,41 @@ def _piece_conflict_summary(faces: Dict[str, List[List[Any]]]) -> Dict[str, int]
         )
     )
     return {key: summary[key] for key in PIECE_CONFLICT_KEYS}
+
+
+def _repair_ranking_penalty(
+    conflicts: Dict[str, int],
+    faces: Dict[str, List[List[Any]]],
+    *,
+    repair_cost: float,
+    repair_changes: int,
+) -> float:
+    conflict_penalty = sum(conflicts.get(key, 0) * weight for key, weight in REPAIR_CONFLICT_PENALTY_WEIGHTS.items())
+    orientation_penalty = min(
+        0.035,
+        0.001
+        * (
+            _nonnegative_int(faces.get("_orientation_rank_a"))
+            + _nonnegative_int(faces.get("_orientation_rank_b"))
+        ),
+    )
+    face_count_penalty = 0.003 * _face_count_deviation(_primary_face_counts(faces))
+    heavy_repair_penalty = max(0, repair_changes - 4) * 0.004 + max(0.0, repair_cost - 35.0) / 900.0
+    return min(
+        MAX_REPAIR_RANKING_PENALTY,
+        conflict_penalty + orientation_penalty + face_count_penalty + heavy_repair_penalty,
+    )
+
+
+def _nonnegative_int(value: Any) -> int:
+    try:
+        return max(0, int(value))
+    except (TypeError, ValueError):
+        return 0
+
+
+def _face_count_deviation(counts: Dict[str, int]) -> int:
+    return sum(abs(counts.get(face, 0) - 9) for face in FACE_ORDER) + counts.get("unknown", 0)
 
 
 def _primary_face_counts(faces: Dict[str, List[List[Any]]]) -> Dict[str, int]:

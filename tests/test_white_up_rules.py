@@ -5,6 +5,7 @@ from rubik_recognizer.recognizer import (
     PIECE_CONFLICT_KEYS,
     RecognitionResult,
     _prefer_calibrated_result,
+    _repair_ranking_penalty,
     _white_up_checks,
 )
 
@@ -162,3 +163,43 @@ def test_recognition_signal_sample_fixtures_have_stable_shape():
     conflicts = repair_signals["topRepairCandidates"][0]["preRepairConflicts"]
     for key in PIECE_CONFLICT_KEYS:
         assert key in conflicts
+
+    assert repair_signals["topRepairCandidates"][0]["baseConfidence"] > repair_signals["topRepairCandidates"][0]["confidence"]
+    assert repair_signals["topRepairCandidates"][0]["repairRankingPenalty"] > 0
+
+
+def test_repair_ranking_penalty_prefers_cleaner_pre_repair_pieces():
+    clean = {key: 0 for key in PIECE_CONFLICT_KEYS}
+    clean["validCorners"] = 8
+    clean["validEdges"] = 12
+    clean["totalConflicts"] = 0
+    conflicted = dict(clean)
+    conflicted.update(
+        {
+            "invalidCorners": 2,
+            "invalidEdges": 1,
+            "duplicateCornerCubies": 1,
+            "validCorners": 6,
+            "validEdges": 11,
+            "totalConflicts": 4,
+        }
+    )
+    faces = {"_orientation_rank_a": 0, "_orientation_rank_b": 0}
+
+    assert _repair_ranking_penalty(conflicted, faces, repair_cost=10.0, repair_changes=2) > _repair_ranking_penalty(
+        clean,
+        faces,
+        repair_cost=10.0,
+        repair_changes=2,
+    )
+
+
+def test_repair_ranking_penalty_is_continuous_not_a_hard_reject():
+    conflicts = {key: 3 for key in PIECE_CONFLICT_KEYS}
+    conflicts["validCorners"] = 0
+    conflicts["validEdges"] = 0
+    faces = {"_orientation_rank_a": 10, "_orientation_rank_b": 10}
+
+    penalty = _repair_ranking_penalty(conflicts, faces, repair_cost=95.0, repair_changes=12)
+
+    assert 0 < penalty <= 0.18

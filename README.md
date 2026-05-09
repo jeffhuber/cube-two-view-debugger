@@ -272,10 +272,14 @@ Every recognition run writes an artifact directory under `runs/pairs/<runId>/`:
 API responses and `result.json` include `recognitionSignals.schemaVersion: 1`, a small diagnostics
 block that is also retained by `?slim=1`. Direct legal runs include selected grid quality and
 `repairPathUsed: false`; repair-path-only fields such as `topRepairCandidates`,
-`selectedRepairCandidate`, `repairCost`, `repairChanges`, and `preRepairConflicts` are optional.
+`selectedRepairCandidate`, `repairCost`, `repairChanges`, `baseConfidence`,
+`repairRankingPenalty`, and `preRepairConflicts` are optional.
 Each repair candidate uses the same conflict shape so downstream tools can compare alternates
 without loading the heavier `debug.json`. `topRepairCandidates` returns up to 8 entries sorted by
-descending final confidence; `selectedRepairCandidate` is the chosen winner. `preRepairConflicts`
+descending final confidence after the repair ranking penalty; `selectedRepairCandidate` is the
+chosen winner. `baseConfidence` is the pre-penalty repair confidence, and
+`repairRankingPenalty` is a continuous score derived from pre-repair piece conflicts, face-count
+deviation, orientation rank, and heavier repair paths. `preRepairConflicts`
 contains stable integer keys for missing, duplicate-color, invalid, and duplicate-cubie corner/edge
 counts plus `validCorners`, `validEdges`, and `totalConflicts`; absent conflicts are reported as `0`.
 Sample slim payloads live in `tests/fixtures/recognition_signals_direct.json` and

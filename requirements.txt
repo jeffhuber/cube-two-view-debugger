@@ -1,0 +1,4 @@
+# Pinned because CV scoring and repair tie-breaking are sensitive to image
+# decoding, array math, and floating point behavior.
+Pillow==12.2.0
+numpy==2.3.5

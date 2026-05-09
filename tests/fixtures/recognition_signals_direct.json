@@ -1,0 +1,59 @@
+{
+  "status": "success",
+  "state": "LLBRUFUFLULDDRUDFLRDFRFBRLRBDFFDRRUUFDFRLUBUDLBDBBBBLU",
+  "confidence": 0.8124,
+  "reason": "Recognized a unique legal white-up cube state. Adaptive pair color calibration was used.",
+  "failedChecks": [],
+  "candidates": 186348,
+  "recognitionSignals": {
+    "schemaVersion": 1,
+    "repairPathUsed": false,
+    "repairCandidateCount": 0,
+    "selectedGridQuality": {
+      "imageA": {
+        "U": {
+          "gridId": 11,
+          "centerFace": "U",
+          "matchedCount": 7,
+          "fitError": 0.77,
+          "quality": 100.0,
+          "gridSamples": 9,
+          "badSamples": 0,
+          "suspectSamples": 0.0
+        },
+        "F": {
+          "gridId": 4,
+          "centerFace": "F",
+          "matchedCount": 7,
+          "fitError": 1.42,
+          "quality": 98.58,
+          "gridSamples": 9,
+          "badSamples": 0,
+          "suspectSamples": 0.0
+        }
+      },
+      "imageB": {
+        "D": {
+          "gridId": 7,
+          "centerFace": "D",
+          "matchedCount": 9,
+          "fitError": 0.95,
+          "quality": 100.0,
+          "gridSamples": 9,
+          "badSamples": 0,
+          "suspectSamples": 0.0
+        },
+        "B": {
+          "gridId": 12,
+          "centerFace": "B",
+          "matchedCount": 8,
+          "fitError": 1.17,
+          "quality": 98.83,
+          "gridSamples": 9,
+          "badSamples": 0,
+          "suspectSamples": 0.0
+        }
+      }
+    }
+  }
+}

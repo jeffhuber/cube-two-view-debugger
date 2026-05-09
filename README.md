@@ -69,10 +69,13 @@ piece constraints to choose or reject a final state.
 
 ## Run
 
-Use the bundled Codex Python runtime because it includes Pillow and NumPy:
+Use a project-local virtual environment so Pillow/NumPy versions stay stable across CLI,
+web-server, and test runs:
 
 ```sh
-/Users/jhuber/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 app.py
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python app.py
 ```
 
 Then open:
@@ -86,7 +89,7 @@ http://127.0.0.1:8080/
 You can also analyze a pair directly:
 
 ```sh
-/Users/jhuber/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 app.py --analyze \
+.venv/bin/python app.py --analyze \
   "/Users/jhuber/Downloads/Set 16 - A - white up IMG_6709.JPG" \
   "/Users/jhuber/Downloads/Set 16 - B - white up IMG_6710.JPG"
 ```
@@ -94,13 +97,23 @@ You can also analyze a pair directly:
 Batch a directory of A/B image sets:
 
 ```sh
-/Users/jhuber/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 app.py --batch \
+.venv/bin/python app.py --batch \
   "/Users/jhuber/Downloads/cube-samples" \
   --ground-truth "/Users/jhuber/Downloads/ground-truth.json"
 ```
 
 The web UI also supports multi-file selection and drag/drop. Image names with `A` and `B`
 markers are paired by set name; otherwise files are paired in sorted order.
+
+Run tests with:
+
+```sh
+.venv/bin/python tests/run_tests.py
+```
+
+If launched with bare `python3 tests/run_tests.py`, the test runner will try to re-exec through
+`CUBE_PYTHON`, `.venv/bin/python`, or the bundled Codex runtime before failing with setup
+instructions. Do not install these dependencies into macOS system Python just for this project.
 
 ## How Recognition Works
 
@@ -196,6 +209,18 @@ Every recognition run writes an artifact directory under `runs/pairs/<runId>/`:
 - `samples.csv`: detected and sampled stickers with RGB/classification data.
 - `imageA_overlay.png` and `imageB_overlay.png`: ROI, sticker components, candidate grid cells,
   and labels overlaid on the input images.
+
+API responses and `result.json` include `recognitionSignals.schemaVersion: 1`, a small diagnostics
+block that is also retained by `?slim=1`. Direct legal runs include selected grid quality and
+`repairPathUsed: false`; repair-path-only fields such as `topRepairCandidates`,
+`selectedRepairCandidate`, `repairCost`, `repairChanges`, and `preRepairConflicts` are optional.
+Each repair candidate uses the same conflict shape so downstream tools can compare alternates
+without loading the heavier `debug.json`. `topRepairCandidates` returns up to 8 entries sorted by
+descending final confidence; `selectedRepairCandidate` is the chosen winner. `preRepairConflicts`
+contains stable integer keys for missing, duplicate-color, invalid, and duplicate-cubie corner/edge
+counts plus `validCorners`, `validEdges`, and `totalConflicts`; absent conflicts are reported as `0`.
+Sample slim payloads live in `tests/fixtures/recognition_signals_direct.json` and
+`tests/fixtures/recognition_signals_repair.json`.
 
 Batch runs write `runs/batches/<batchId>/batch_result.json` and `batch_report.html`. When ground
 truth is supplied, each row includes exact-match and Hamming-distance evaluation.

@@ -75,6 +75,20 @@ MAX_TRIPLE_COMPONENT_OVERLAP = 3
 REPAIR_ADJACENT_COLOR_PAIRS = {frozenset(("red", "orange")), frozenset(("green", "blue"))}
 VALID_EDGE_COLOR_SETS = {frozenset(colors) for colors in EDGE_COLORS}
 VALID_CORNER_COLOR_SETS = {frozenset(colors) for colors in CORNER_COLORS}
+PIECE_CONFLICT_KEYS = (
+    "missingCorners",
+    "duplicateColorCorners",
+    "missingUdCorners",
+    "invalidCorners",
+    "missingEdges",
+    "duplicateColorEdges",
+    "invalidEdges",
+    "duplicateCornerCubies",
+    "duplicateEdgeCubies",
+    "validCorners",
+    "validEdges",
+    "totalConflicts",
+)
 
 
 @dataclass
@@ -87,6 +101,7 @@ class RecognitionResult:
     image_a: Optional[ImageAnalysis] = None
     image_b: Optional[ImageAnalysis] = None
     candidates: int = 0
+    recognition_signals: Optional[Dict[str, Any]] = None
 
     def to_api_dict(self, include_overlays: bool = True) -> Dict:
         payload = {
@@ -97,6 +112,8 @@ class RecognitionResult:
             "failedChecks": self.failed_checks or [],
             "candidates": self.candidates,
         }
+        if self.recognition_signals:
+            payload["recognitionSignals"] = self.recognition_signals
         if self.image_a:
             payload["imageA"] = self.image_a.summary()
             payload["imageAAssignments"] = _assignment_summary(self.image_a, "U")
@@ -152,12 +169,14 @@ class WhiteUpRecognizer:
         return result
 
     def _recognize_from_analyses(self, analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> RecognitionResult:
+        recognition_signals = _base_recognition_signals(analysis_a, analysis_b)
         checks = _white_up_checks(analysis_a, analysis_b)
         if checks:
             return RecognitionResult(
                 status="rejected",
                 reason=_reason_for_checks(checks),
                 failed_checks=checks,
+                recognition_signals=recognition_signals,
             )
 
         candidates = self._state_candidates(analysis_a, analysis_b)
@@ -184,12 +203,14 @@ class WhiteUpRecognizer:
                     confidence=confidence,
                     reason="Recognized a unique legal white-up cube state.",
                     candidates=len(candidates),
+                    recognition_signals=recognition_signals,
                 )
             return RecognitionResult(
                 status="rejected",
                 reason="The only candidate failed cube legality validation.",
                 failed_checks=validation.errors,
                 candidates=len(candidates),
+                recognition_signals=recognition_signals,
             )
 
         if len(unique) > 1:
@@ -201,15 +222,19 @@ class WhiteUpRecognizer:
                     confidence=ranked_unique[0][1],
                     reason="Recognized the highest-scoring legal white-up cube state.",
                     candidates=len(candidates),
+                    recognition_signals=recognition_signals,
                 )
             return RecognitionResult(
                 status="rejected",
                 reason="Multiple legal cube states match the visible stickers.",
                 failed_checks=["ambiguous_legal_completion"],
                 candidates=len(candidates),
+                recognition_signals=recognition_signals,
             )
 
-        repair_candidates = self._legal_repair_candidates(analysis_a, analysis_b)
+        repair_details = self._legal_repair_candidate_details(analysis_a, analysis_b)
+        repair_candidates = [(item["state"], item["confidence"]) for item in repair_details]
+        recognition_signals.update(_repair_signal_summary(repair_details))
         if repair_candidates:
             candidates.extend(repair_candidates)
             repaired_unique = {}
@@ -225,16 +250,19 @@ class WhiteUpRecognizer:
                     confidence=confidence,
                     reason="Recognized a legal white-up cube state after cubie-level color repair.",
                     candidates=len(candidates),
+                    recognition_signals={**recognition_signals, **_repair_signal_summary(repair_details, selected_state=state)},
                 )
             if len(repaired_unique) > 1:
                 ranked_repaired = sorted(repaired_unique.items(), key=lambda item: item[1], reverse=True)
                 if ranked_repaired[0][1] > ranked_repaired[1][1]:
+                    state = ranked_repaired[0][0]
                     return RecognitionResult(
                         status="success",
-                        state=ranked_repaired[0][0],
+                        state=state,
                         confidence=ranked_repaired[0][1],
                         reason="Recognized the highest-scoring legal cube state after cubie-level color repair.",
                         candidates=len(candidates),
+                        recognition_signals={**recognition_signals, **_repair_signal_summary(repair_details, selected_state=state)},
                     )
 
         return RecognitionResult(
@@ -242,6 +270,7 @@ class WhiteUpRecognizer:
             reason="No legal cube state matched the detected stickers.",
             failed_checks=_summarize_validation_errors(invalid_reasons),
             candidates=len(candidates),
+            recognition_signals=recognition_signals,
         )
 
     def _state_candidates(self, analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> List[Tuple[str, float]]:
@@ -255,16 +284,41 @@ class WhiteUpRecognizer:
         return candidates
 
     def _legal_repair_candidates(self, analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> List[Tuple[str, float]]:
+        return [(item["state"], item["confidence"]) for item in self._legal_repair_candidate_details(analysis_a, analysis_b)]
+
+    def _legal_repair_candidate_details(self, analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> List[Dict[str, Any]]:
         options_a = _oriented_face_options(analysis_a, "U")
         options_b = _oriented_face_options(analysis_b, "D")
-        candidates: Dict[str, float] = {}
-        for _, merged in _repair_merged_face_candidates(options_a, options_b)[:MAX_LEGAL_REPAIR_EVALUATED_MERGES]:
+        candidates: Dict[str, Dict[str, Any]] = {}
+        for raw_score, merged in _repair_merged_face_candidates(options_a, options_b)[:MAX_LEGAL_REPAIR_EVALUATED_MERGES]:
             state, repair_cost, changes = _legal_repaired_state_from_faces(merged) or (None, 0.0, 0)
             if state is None:
                 continue
             confidence = _state_confidence(merged) - repair_cost / 650.0 - changes * 0.006
-            candidates[state] = max(candidates.get(state, 0.0), max(0.5, confidence))
-        return sorted(candidates.items(), key=lambda item: item[1], reverse=True)[:MAX_LEGAL_REPAIR_RETURNED]
+            confidence = max(0.5, confidence)
+            detail = {
+                "state": state,
+                "confidence": confidence,
+                "rawMergedScore": raw_score,
+                "repairCost": repair_cost,
+                "repairChanges": changes,
+                "sidePairA": _side_pair_key(merged.get("_side_pair_a")),
+                "sidePairB": _side_pair_key(merged.get("_side_pair_b")),
+                "scoreA": merged.get("_score_a"),
+                "scoreB": merged.get("_score_b"),
+                "orientationScoreA": merged.get("_orientation_score_a"),
+                "orientationScoreB": merged.get("_orientation_score_b"),
+                "selectionScoreA": merged.get("_selection_score_a"),
+                "selectionScoreB": merged.get("_selection_score_b"),
+                "orientationRankA": merged.get("_orientation_rank_a"),
+                "orientationRankB": merged.get("_orientation_rank_b"),
+                "preRepairConflicts": _piece_conflict_summary(merged),
+                "preRepairFaceCounts": _primary_face_counts(merged),
+            }
+            current = candidates.get(state)
+            if current is None or confidence > current["confidence"]:
+                candidates[state] = detail
+        return sorted(candidates.values(), key=lambda item: item["confidence"], reverse=True)[:MAX_LEGAL_REPAIR_RETURNED]
 
 
 def _prefer_calibrated_result(calibrated: RecognitionResult, raw: RecognitionResult) -> bool:
@@ -305,6 +359,58 @@ def recognition_diagnostics(analysis_a: ImageAnalysis, analysis_b: ImageAnalysis
             **candidate_counts,
         },
     }
+
+
+def _base_recognition_signals(analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> Dict[str, Any]:
+    return {
+        "schemaVersion": 1,
+        "repairPathUsed": False,
+        "repairCandidateCount": 0,
+        "selectedGridQuality": {
+            "imageA": _selected_grid_quality(analysis_a, "U"),
+            "imageB": _selected_grid_quality(analysis_b, "D"),
+        },
+    }
+
+
+def _selected_grid_quality(analysis: ImageAnalysis, anchor: str) -> Dict[str, Dict[str, Any]]:
+    return {
+        face: _grid_signal_summary(grid)
+        for face, grid in _assigned_grid_by_face(analysis, anchor).items()
+    }
+
+
+def _grid_signal_summary(grid: FaceGrid) -> Dict[str, Any]:
+    return {
+        "gridId": grid.id,
+        "centerFace": grid.center_face,
+        "matchedCount": grid.matched_count,
+        "fitError": round(grid.fit_error, 3),
+        "quality": round(_grid_quality_score(grid), 3),
+        "gridSamples": _grid_sample_count(grid),
+        "badSamples": _grid_bad_sample_count(grid),
+        "suspectSamples": round(_grid_suspect_sample_score(grid), 3),
+    }
+
+
+def _repair_signal_summary(repair_details: Sequence[Dict[str, Any]], selected_state: Optional[str] = None) -> Dict[str, Any]:
+    selected = next((item for item in repair_details if item.get("state") == selected_state), None) if selected_state else None
+    summary: Dict[str, Any] = {
+        "repairPathUsed": bool(selected_state),
+        "repairCandidateCount": len(repair_details),
+        "topRepairCandidates": [_public_repair_detail(item) for item in repair_details[:MAX_LEGAL_REPAIR_RETURNED]],
+    }
+    if selected is not None:
+        summary["selectedRepairCandidate"] = _public_repair_detail(selected)
+    return summary
+
+
+def _public_repair_detail(item: Dict[str, Any]) -> Dict[str, Any]:
+    public = dict(item)
+    for key in ("confidence", "rawMergedScore", "repairCost", "scoreA", "scoreB", "orientationScoreA", "orientationScoreB", "selectionScoreA", "selectionScoreB"):
+        if public.get(key) is not None:
+            public[key] = round(float(public[key]), 4)
+    return public
 
 
 def _orientation_diagnostics(analysis: ImageAnalysis, anchor: str, options: Sequence[Dict[str, List[List[Any]]]]) -> Dict[str, Any]:
@@ -567,25 +673,25 @@ def _oriented_face_options(analysis: ImageAnalysis, anchor: str) -> List[Dict[st
     if len(side_faces) < 2:
         return []
 
-    ranked_results: List[Tuple[float, Tuple[str, ...], float, Dict[str, List[List[Any]]]]] = []
+    ranked_results: List[Tuple[float, Tuple[str, ...], float, int, Dict[str, List[List[Any]]]]] = []
     for triple_score, subset in _ranked_visible_face_triples(grids_by_face, anchor):
         side_pair = tuple(sorted(face for face in subset if face in SIDE_NEIGHBORS))
         for rank, (orientation_score, option) in enumerate(
             _oriented_options_for_grid_map(subset, anchor)[:MAX_ORIENTATION_VARIANTS_PER_TRIPLE]
         ):
             selection_score = triple_score - rank * 0.02
-            ranked_results.append((selection_score, side_pair, orientation_score, option))
+            ranked_results.append((selection_score, side_pair, orientation_score, rank, option))
     ranked_results.sort(key=lambda item: item[0], reverse=True)
 
     scored_options = []
     seen = set()
     side_pair_counts: Counter[Tuple[str, ...]] = Counter()
-    side_pair_kinds = {side_pair for _, side_pair, _, _ in ranked_results}
+    side_pair_kinds = {side_pair for _, side_pair, _, _, _ in ranked_results}
     per_side_pair_limit = min(
         MAX_ORIENTED_OPTIONS_PER_SIDE_PAIR,
         max(24, math.ceil(MAX_ORIENTED_OPTIONS_PER_IMAGE / max(1, len(side_pair_kinds)))),
     )
-    for selection_score, side_pair, orientation_score, option in ranked_results:
+    for selection_score, side_pair, orientation_score, orientation_rank, option in ranked_results:
         signature = (side_pair, _face_signature(option))
         if signature in seen:
             continue
@@ -595,6 +701,9 @@ def _oriented_face_options(analysis: ImageAnalysis, anchor: str) -> List[Dict[st
         side_pair_counts[side_pair] += 1
         scored = dict(option)
         scored["_score"] = selection_score + orientation_score * ORIENTATION_SCORE_WEIGHT
+        scored["_selection_score"] = selection_score
+        scored["_orientation_score"] = orientation_score
+        scored["_orientation_rank"] = orientation_rank
         scored["_side_pair"] = side_pair
         scored_options.append(scored)
         if len(scored_options) >= MAX_ORIENTED_OPTIONS_PER_IMAGE:
@@ -978,6 +1087,73 @@ def _visible_piece_colors(faces: Dict[str, List[List[Any]]], indices: Sequence[i
     return tuple(colors)
 
 
+def _piece_conflict_summary(faces: Dict[str, List[List[Any]]]) -> Dict[str, int]:
+    summary = Counter()
+    corner_sets: Counter[frozenset[str]] = Counter()
+    edge_sets: Counter[frozenset[str]] = Counter()
+
+    for indices in CORNER_FACELETS:
+        colors = _visible_piece_colors(faces, indices)
+        if colors is None:
+            summary["missingCorners"] += 1
+            continue
+        color_set = frozenset(colors)
+        if len(set(colors)) != len(colors):
+            summary["duplicateColorCorners"] += 1
+        if not any(color in {"U", "D"} for color in colors):
+            summary["missingUdCorners"] += 1
+        if color_set in VALID_CORNER_COLOR_SETS:
+            corner_sets[color_set] += 1
+        else:
+            summary["invalidCorners"] += 1
+
+    for indices in EDGE_FACELETS:
+        colors = _visible_piece_colors(faces, indices)
+        if colors is None:
+            summary["missingEdges"] += 1
+            continue
+        color_set = frozenset(colors)
+        if len(set(colors)) != len(colors):
+            summary["duplicateColorEdges"] += 1
+        if color_set in VALID_EDGE_COLOR_SETS:
+            edge_sets[color_set] += 1
+        else:
+            summary["invalidEdges"] += 1
+
+    summary["duplicateCornerCubies"] = sum(count - 1 for count in corner_sets.values() if count > 1)
+    summary["duplicateEdgeCubies"] = sum(count - 1 for count in edge_sets.values() if count > 1)
+    summary["validCorners"] = sum(corner_sets.values())
+    summary["validEdges"] = sum(edge_sets.values())
+    summary["totalConflicts"] = sum(
+        summary[key]
+        for key in (
+            "missingCorners",
+            "duplicateColorCorners",
+            "missingUdCorners",
+            "invalidCorners",
+            "missingEdges",
+            "duplicateColorEdges",
+            "invalidEdges",
+            "duplicateCornerCubies",
+            "duplicateEdgeCubies",
+        )
+    )
+    return {key: summary[key] for key in PIECE_CONFLICT_KEYS}
+
+
+def _primary_face_counts(faces: Dict[str, List[List[Any]]]) -> Dict[str, int]:
+    counts = Counter()
+    for face in FACE_ORDER:
+        matrix = faces.get(face)
+        if matrix is None:
+            continue
+        for row in matrix:
+            for facelet in row:
+                color = _primary_facelet_color(facelet)
+                counts[color if color in FACE_ORDER else "unknown"] += 1
+    return {face: counts[face] for face in (*FACE_ORDER, "unknown") if counts[face]}
+
+
 def _primary_facelet_color(facelet: Any) -> Optional[str]:
     if isinstance(facelet, str):
         return facelet if facelet in FACE_ORDER else None
@@ -1131,6 +1307,14 @@ def _assignment_summary(analysis: ImageAnalysis, anchor: str) -> Dict[str, Dict[
 
 def _merge_faces(a: Dict[str, List[List[Any]]], b: Dict[str, List[List[Any]]]) -> Optional[Dict[str, List[List[Any]]]]:
     merged: Dict[str, Any] = {"_score": float(a.get("_score", 0.0)) + float(b.get("_score", 0.0))}
+    merged["_score_a"] = a.get("_score")
+    merged["_score_b"] = b.get("_score")
+    merged["_selection_score_a"] = a.get("_selection_score")
+    merged["_selection_score_b"] = b.get("_selection_score")
+    merged["_orientation_score_a"] = a.get("_orientation_score")
+    merged["_orientation_score_b"] = b.get("_orientation_score")
+    merged["_orientation_rank_a"] = a.get("_orientation_rank")
+    merged["_orientation_rank_b"] = b.get("_orientation_rank")
     merged["_side_pair_a"] = a.get("_side_pair")
     merged["_side_pair_b"] = b.get("_side_pair")
     for face, matrix in a.items():

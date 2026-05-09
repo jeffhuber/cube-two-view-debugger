@@ -1,4 +1,12 @@
-from rubik_recognizer.recognizer import RecognitionResult, _prefer_calibrated_result, _white_up_checks
+import json
+from pathlib import Path
+
+from rubik_recognizer.recognizer import (
+    PIECE_CONFLICT_KEYS,
+    RecognitionResult,
+    _prefer_calibrated_result,
+    _white_up_checks,
+)
 
 
 class StubGrid:
@@ -88,3 +96,69 @@ def test_same_tier_calibrated_result_needs_clear_margin():
     calibrated = RecognitionResult(status="success", confidence=0.82, reason="Recognized a legal white-up cube state after cubie-level color repair.")
 
     assert not _prefer_calibrated_result(calibrated, raw)
+
+
+def test_recognition_result_exposes_additive_signals():
+    result = RecognitionResult(
+        status="success",
+        state="U" * 54,
+        recognition_signals={
+            "repairPathUsed": True,
+            "repairCandidateCount": 1,
+            "topRepairCandidates": [{"state": "U" * 54, "repairCost": 1.25}],
+        },
+    )
+
+    payload = result.to_api_dict(include_overlays=False)
+
+    assert payload["recognitionSignals"]["repairPathUsed"] is True
+    assert payload["recognitionSignals"]["topRepairCandidates"][0]["repairCost"] == 1.25
+
+
+def test_recognition_signals_support_versioned_repair_candidate_conflicts():
+    result = RecognitionResult(
+        status="success",
+        state="U" * 54,
+        recognition_signals={
+            "schemaVersion": 1,
+            "repairPathUsed": True,
+            "repairCandidateCount": 1,
+            "topRepairCandidates": [
+                {
+                    "state": "U" * 54,
+                    "repairCost": 1.25,
+                    "repairChanges": 2,
+                    "preRepairConflicts": {"invalidCorners": 0, "invalidEdges": 1, "totalConflicts": 1},
+                }
+            ],
+        },
+    )
+
+    signals = result.to_api_dict(include_overlays=False)["recognitionSignals"]
+
+    assert signals["schemaVersion"] == 1
+    assert signals["topRepairCandidates"][0]["preRepairConflicts"]["invalidCorners"] == 0
+    assert signals["topRepairCandidates"][0]["preRepairConflicts"]["invalidEdges"] == 1
+
+
+def test_recognition_signal_sample_fixtures_have_stable_shape():
+    fixture_dir = Path(__file__).parent / "fixtures"
+    direct = json.loads((fixture_dir / "recognition_signals_direct.json").read_text())
+    repair = json.loads((fixture_dir / "recognition_signals_repair.json").read_text())
+
+    direct_signals = direct["recognitionSignals"]
+    repair_signals = repair["recognitionSignals"]
+
+    assert direct_signals["schemaVersion"] == 1
+    assert direct_signals["repairPathUsed"] is False
+    assert "topRepairCandidates" not in direct_signals
+    assert "selectedRepairCandidate" not in direct_signals
+
+    assert repair_signals["schemaVersion"] == 1
+    assert repair_signals["repairPathUsed"] is True
+    assert repair_signals["topRepairCandidates"]
+    assert repair_signals["selectedRepairCandidate"]["state"] == repair_signals["topRepairCandidates"][0]["state"]
+
+    conflicts = repair_signals["topRepairCandidates"][0]["preRepairConflicts"]
+    for key in PIECE_CONFLICT_KEYS:
+        assert key in conflicts

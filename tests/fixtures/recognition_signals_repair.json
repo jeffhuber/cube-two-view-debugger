@@ -1,0 +1,164 @@
+{
+  "status": "success",
+  "state": "LLBRUFUFLULDDRUDFLRDFRFBRLRBDFFDRRUUFDFRLUBUDLBDBBBBLU",
+  "confidence": 0.7301,
+  "reason": "Recognized the highest-scoring legal cube state after cubie-level color repair. Adaptive pair color calibration was used.",
+  "failedChecks": [],
+  "candidates": 387208,
+  "recognitionSignals": {
+    "schemaVersion": 1,
+    "repairPathUsed": true,
+    "repairCandidateCount": 8,
+    "selectedGridQuality": {
+      "imageA": {
+        "U": {
+          "gridId": 16,
+          "centerFace": "U",
+          "matchedCount": 9,
+          "fitError": 0.61,
+          "quality": 100.0,
+          "gridSamples": 9,
+          "badSamples": 0,
+          "suspectSamples": 0.0
+        },
+        "F": {
+          "gridId": 3,
+          "centerFace": "F",
+          "matchedCount": 5,
+          "fitError": 1.76,
+          "quality": 90.46,
+          "gridSamples": 9,
+          "badSamples": 1,
+          "suspectSamples": 2.0
+        }
+      },
+      "imageB": {
+        "D": {
+          "gridId": 6,
+          "centerFace": "D",
+          "matchedCount": 8,
+          "fitError": 0.54,
+          "quality": 100.0,
+          "gridSamples": 9,
+          "badSamples": 0,
+          "suspectSamples": 0.0
+        },
+        "L": {
+          "gridId": 11,
+          "centerFace": "L",
+          "matchedCount": 8,
+          "fitError": 8.13,
+          "quality": 83.87,
+          "gridSamples": 9,
+          "badSamples": 2,
+          "suspectSamples": 1.0
+        }
+      }
+    },
+    "topRepairCandidates": [
+      {
+        "state": "LLBRUFUFLULDDRUDFLRDFRFBRLRBDFFDRRUUFDFRLUBUDLBDBBBBLU",
+        "confidence": 0.7301,
+        "rawMergedScore": 128.4,
+        "repairCost": 15.25,
+        "repairChanges": 4,
+        "sidePairA": "F/R",
+        "sidePairB": "B/L",
+        "scoreA": 72.8,
+        "scoreB": 55.6,
+        "orientationScoreA": 31.2,
+        "orientationScoreB": 24.4,
+        "selectionScoreA": 41.6,
+        "selectionScoreB": 31.2,
+        "orientationRankA": 0,
+        "orientationRankB": 1,
+        "preRepairFaceCounts": {
+          "U": 9,
+          "R": 9,
+          "F": 9,
+          "D": 9,
+          "L": 9,
+          "B": 9
+        },
+        "preRepairConflicts": {
+          "missingCorners": 0,
+          "duplicateColorCorners": 0,
+          "missingUdCorners": 0,
+          "invalidCorners": 0,
+          "missingEdges": 0,
+          "duplicateColorEdges": 1,
+          "invalidEdges": 1,
+          "duplicateCornerCubies": 1,
+          "duplicateEdgeCubies": 2,
+          "validCorners": 8,
+          "validEdges": 11,
+          "totalConflicts": 5
+        }
+      },
+      {
+        "state": "LLBRUFUFLULDDRUDFLRDFRFBRLRBDFFDRRUUFDFRLUBUDLBDBBBBLD",
+        "confidence": 0.7013,
+        "rawMergedScore": 127.1,
+        "repairCost": 17.5,
+        "repairChanges": 5,
+        "sidePairA": "F/R",
+        "sidePairB": "B/L",
+        "orientationRankA": 1,
+        "orientationRankB": 1,
+        "preRepairConflicts": {
+          "missingCorners": 0,
+          "duplicateColorCorners": 0,
+          "missingUdCorners": 0,
+          "invalidCorners": 1,
+          "missingEdges": 0,
+          "duplicateColorEdges": 1,
+          "invalidEdges": 2,
+          "duplicateCornerCubies": 2,
+          "duplicateEdgeCubies": 2,
+          "validCorners": 7,
+          "validEdges": 10,
+          "totalConflicts": 8
+        }
+      }
+    ],
+    "selectedRepairCandidate": {
+      "state": "LLBRUFUFLULDDRUDFLRDFRFBRLRBDFFDRRUUFDFRLUBUDLBDBBBBLU",
+      "confidence": 0.7301,
+      "rawMergedScore": 128.4,
+      "repairCost": 15.25,
+      "repairChanges": 4,
+      "sidePairA": "F/R",
+      "sidePairB": "B/L",
+      "scoreA": 72.8,
+      "scoreB": 55.6,
+      "orientationScoreA": 31.2,
+      "orientationScoreB": 24.4,
+      "selectionScoreA": 41.6,
+      "selectionScoreB": 31.2,
+      "orientationRankA": 0,
+      "orientationRankB": 1,
+      "preRepairFaceCounts": {
+        "U": 9,
+        "R": 9,
+        "F": 9,
+        "D": 9,
+        "L": 9,
+        "B": 9
+      },
+      "preRepairConflicts": {
+        "missingCorners": 0,
+        "duplicateColorCorners": 0,
+        "missingUdCorners": 0,
+        "invalidCorners": 0,
+        "missingEdges": 0,
+        "duplicateColorEdges": 1,
+        "invalidEdges": 1,
+        "duplicateCornerCubies": 1,
+        "duplicateEdgeCubies": 2,
+        "validCorners": 8,
+        "validEdges": 11,
+        "totalConflicts": 5
+      }
+    }
+  }
+}

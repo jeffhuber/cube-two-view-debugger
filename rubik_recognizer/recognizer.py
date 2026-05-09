@@ -72,6 +72,9 @@ MAX_DIAGNOSTIC_EXAMPLES = 8
 SUSPECT_GRID_SAMPLE_THRESHOLD = 2.5
 MAX_SUSPECT_SAMPLE_ALTERNATIVE_DELTA = 58.0
 MAX_TRIPLE_COMPONENT_OVERLAP = 3
+# Tuned on labeled sets 12/14/15/24/26/27/28/29/31: large enough to
+# down-rank conflicted repair winners, but capped so repair candidates remain
+# comparable instead of being rejected by one binary threshold.
 MAX_REPAIR_RANKING_PENALTY = 0.18
 REPAIR_ADJACENT_COLOR_PAIRS = {frozenset(("red", "orange")), frozenset(("green", "blue"))}
 VALID_EDGE_COLOR_SETS = {frozenset(colors) for colors in EDGE_COLORS}

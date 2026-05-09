@@ -4,18 +4,23 @@ import argparse
 import base64
 import csv
 import datetime as dt
+import hashlib
 import html
 import io
 import json
 import mimetypes
 import re
+import subprocess
 import sys
 import traceback
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 from urllib.parse import unquote
+
+import numpy as _np  # noqa: F401  -- needed for runtime diag block
+import PIL as _PIL   # noqa: F401  -- ditto
 
 from rubik_recognizer.dataset import (
     ImagePair,
@@ -87,6 +92,16 @@ class RubikHandler(BaseHTTPRequestHandler):
         if path == "/api/runs":
             self._send_json({"runs": list_saved_runs()})
             return
+        if path == "/api/diag":
+            # Reports the runtime stack the recognizer is actually running
+            # under: Python version, key library versions, git SHA, working
+            # directory. Was added because subtle PIL / NumPy version drift
+            # silently degrades recognition accuracy by ~20 stickers on
+            # hard-lighting images, and the only way to debug that
+            # post-hoc is to know what was running. See README "Pinned
+            # dependencies" section.
+            self._send_json(_runtime_diag())
+            return
         if path.startswith("/runs/"):
             self._send_run_file(path)
             return
@@ -138,6 +153,12 @@ class RubikHandler(BaseHTTPRequestHandler):
                 ),
                 expected_state=expected,
             )
+            # Attach a per-request runtime block (input-image SHA256 +
+            # byte size + decoded dimensions, and the same env info
+            # /api/diag returns). When a saved recognition is later
+            # questioned ("why did this score 26/54 instead of 50?"),
+            # the JSON itself answers what env produced it.
+            payload["runtime"] = _per_request_runtime(image_a[1], image_b[1])
             if slim:
                 _strip_heavy_fields(payload)
             self._send_json(payload)
@@ -265,6 +286,138 @@ class RubikHandler(BaseHTTPRequestHandler):
         print("[rubik-app] " + fmt % args)
 
 
+# ---------------------------------------------------------------------------
+# Runtime diagnostics
+#
+# The recognizer's output is dependency-sensitive: PIL's libjpeg-backed
+# decode and numpy's BLAS path can shift sticker classification by 20+
+# stickers on hard-lighting images, with the same source code and same
+# Python major version. So every API caller needs an easy way to ask
+# "what stack is this server actually running?". Two surfaces:
+#
+#   GET /api/diag                       → standalone diagnostics
+#   POST /api/recognize → response.runtime  → diagnostics for THIS call,
+#                                              including image fingerprint
+#
+# Both share _runtime_diag(); _per_request_runtime() adds image fingerprints.
+
+# Pinned in requirements.txt; we softly enforce here so a degraded env
+# is loud rather than silent.
+_MIN_PIL = (12, 2)
+_MIN_NUMPY = (2, 3, 5)
+_MIN_PYTHON = (3, 11)
+
+
+def _version_tuple(s: str) -> Tuple[int, ...]:
+    """Parse "12.2.0" / "2.3.5" / "12.2" into an int tuple. Anything
+    non-numeric in a part (e.g. "1.2.0a1") is dropped."""
+    out: List[int] = []
+    for part in s.split("."):
+        digits = "".join(c for c in part if c.isdigit())
+        if not digits:
+            break
+        out.append(int(digits))
+    return tuple(out)
+
+
+def _git_sha() -> Optional[str]:
+    """Short git SHA of the recognizer's working tree, if available."""
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            cwd=str(ROOT),
+            capture_output=True,
+            text=True,
+            timeout=2,
+        )
+        if result.returncode == 0:
+            return result.stdout.strip() or None
+    except (OSError, subprocess.SubprocessError):
+        pass
+    return None
+
+
+def _runtime_diag() -> Dict[str, Any]:
+    """Stable JSON-serialisable description of the recognizer's runtime."""
+    return {
+        "python": {
+            "version": ".".join(str(p) for p in sys.version_info[:3]),
+            "executable": sys.executable,
+            "implementation": sys.implementation.name,
+        },
+        "libraries": {
+            "numpy": _np.__version__,
+            "pillow": _PIL.__version__,
+        },
+        "minimums": {
+            "python": ".".join(str(p) for p in _MIN_PYTHON),
+            "numpy": ".".join(str(p) for p in _MIN_NUMPY),
+            "pillow": ".".join(str(p) for p in _MIN_PIL),
+        },
+        "git": {
+            "sha": _git_sha(),
+            "cwd": str(ROOT),
+        },
+    }
+
+
+def _image_fingerprint(image_bytes: bytes) -> Dict[str, Any]:
+    """SHA256 + size + decoded dims of an uploaded image. Lets a saved
+    recognition be tied back to its exact input, even after the source
+    file changes on disk."""
+    fp: Dict[str, Any] = {
+        "bytes": len(image_bytes),
+        "sha256": hashlib.sha256(image_bytes).hexdigest(),
+    }
+    try:
+        from PIL import Image
+        with Image.open(io.BytesIO(image_bytes)) as img:
+            fp["decodedWidth"] = img.width
+            fp["decodedHeight"] = img.height
+            if img.format:
+                fp["format"] = img.format
+    except Exception as exc:  # Don't fail the recognition over diag.
+        fp["decodeError"] = str(exc)
+    return fp
+
+
+def _per_request_runtime(image_a_bytes: bytes, image_b_bytes: bytes) -> Dict[str, Any]:
+    """Same env block as /api/diag, plus per-image fingerprint metadata."""
+    return {
+        **_runtime_diag(),
+        "imageA": _image_fingerprint(image_a_bytes),
+        "imageB": _image_fingerprint(image_b_bytes),
+    }
+
+
+def _check_runtime_versions() -> List[str]:
+    """Compare current Python/PIL/numpy versions to the pinned minimums.
+    Returns a list of human-readable warnings (empty if all minimums met).
+    Does NOT abort startup — degraded envs still work, just badly. The
+    operator decides whether to upgrade."""
+    warnings: List[str] = []
+    py = sys.version_info[:3]
+    if py < _MIN_PYTHON:
+        warnings.append(
+            f"Python {'.'.join(str(p) for p in py)} is below the recommended "
+            f"{'.'.join(str(p) for p in _MIN_PYTHON)} — recognizer accuracy "
+            "will silently degrade by ~20 stickers on hard-lighting images."
+        )
+    pil_v = _version_tuple(_PIL.__version__)
+    if pil_v and pil_v < _MIN_PIL:
+        warnings.append(
+            f"Pillow {_PIL.__version__} is below the recommended "
+            f"{'.'.join(str(p) for p in _MIN_PIL)} — see requirements.txt."
+        )
+    np_v = _version_tuple(_np.__version__)
+    if np_v and np_v < _MIN_NUMPY:
+        warnings.append(
+            f"numpy {_np.__version__} is below the recommended "
+            f"{'.'.join(str(p) for p in _MIN_NUMPY)} — see requirements.txt."
+        )
+    return warnings
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--host", default="127.0.0.1")
@@ -300,8 +453,22 @@ def main() -> None:
         print(json.dumps(run_batch(WhiteUpRecognizer(), pairs, ground_truth, unpaired), indent=2))
         return
 
+    # Loud warning at startup if Python/PIL/numpy are below the pinned
+    # minimums. These differences silently degrade recognition accuracy
+    # — see requirements.txt commentary for the measured impact.
+    for warning in _check_runtime_versions():
+        print(f"[rubik-app] WARNING: {warning}", file=sys.stderr)
+
     server = ThreadingHTTPServer((args.host, args.port), RubikHandler)
-    print(f"Serving white-up Rubik recognizer at http://{args.host}:{args.port}/")
+    diag = _runtime_diag()
+    print(
+        f"Serving white-up Rubik recognizer at http://{args.host}:{args.port}/  "
+        f"[python {diag['python']['version']}, "
+        f"pillow {diag['libraries']['pillow']}, "
+        f"numpy {diag['libraries']['numpy']}"
+        + (f", git {diag['git']['sha']}" if diag['git']['sha'] else "")
+        + "]"
+    )
     server.serve_forever()
 
 

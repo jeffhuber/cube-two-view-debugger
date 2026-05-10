@@ -400,8 +400,15 @@ def _recognition_category_payload(result: RecognitionResult) -> Dict[str, str]:
 
     selected = signals.get("selectedRepairCandidate") or {}
     penalty = _float_signal(selected.get("repairRankingPenalty"))
-    repair_candidate_count = _int_signal(signals.get("repairCandidateCount"))
-    if result.confidence <= REPAIR_RETAKE_CONFIDENCE_THRESHOLD or repair_candidate_count < REPAIR_RETAKE_MIN_CANDIDATES:
+    # The "heavily-pruned candidate pool" gate is anchored on the total
+    # number of merged grid combinations the recognizer evaluated, not on
+    # the count of repair-tier survivors. `signals.repairCandidateCount`
+    # is the latter (single-digit in observed corpus runs); `result.candidates`
+    # is the former (10K-380K range in healthy recognitions, ~12K on Set 31's
+    # heavily-pruned case). 50K threshold matches the Set 31 floor without
+    # tripping every repair-path success.
+    total_candidate_count = _int_signal(result.candidates)
+    if result.confidence <= REPAIR_RETAKE_CONFIDENCE_THRESHOLD or total_candidate_count < REPAIR_RETAKE_MIN_CANDIDATES:
         return {
             "category": "reject_retake",
             "reason": "repair_path_floor_confidence_or_too_few_candidates",
@@ -420,13 +427,31 @@ def _recognition_category_payload(result: RecognitionResult) -> Dict[str, str]:
     }
 
 
+# Faces actually exposed in each photo of a white-up two-view capture.
+# Image A (U-anchored) shows the U/R/F faces of the cube; image B (D-anchored,
+# 180-degree flip) shows D/L/B. The recognizer's selectedGridQuality block
+# also reports candidate grids for non-visible face slots (artifact detections
+# from the back colors visible through silhouette edges, lighting glints on
+# adjacent stickers, etc.). Those artifact grids should not factor into the
+# success_clean weak-grid gate -- they aren't part of the recognition's
+# selected visible-face triple, and demoting on their fit-error would reject
+# clean direct-legal recognitions like Set 32's 54/54 result.
+VISIBLE_FACES_BY_IMAGE: Dict[str, frozenset] = {
+    "imageA": frozenset(("U", "R", "F")),
+    "imageB": frozenset(("D", "L", "B")),
+}
+
+
 def _weak_selected_grid_count(signals: Dict[str, Any]) -> int:
     count = 0
     quality_by_image = signals.get("selectedGridQuality") or {}
-    for image_quality in quality_by_image.values():
+    for image_key, image_quality in quality_by_image.items():
         if not isinstance(image_quality, dict):
             continue
-        for grid in image_quality.values():
+        visible = VISIBLE_FACES_BY_IMAGE.get(image_key, frozenset())
+        for face_key, grid in image_quality.items():
+            if face_key not in visible:
+                continue
             if not isinstance(grid, dict):
                 continue
             matched_count = _int_signal(grid.get("matchedCount"))

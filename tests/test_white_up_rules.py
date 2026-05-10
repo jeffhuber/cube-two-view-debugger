@@ -206,6 +206,7 @@ def test_recognition_category_marks_low_penalty_repair_as_high_confidence():
         state=payload["state"],
         confidence=payload["confidence"],
         reason=payload["reason"],
+        candidates=payload["candidates"],
         recognition_signals=payload["recognitionSignals"],
     )
 
@@ -227,6 +228,7 @@ def test_recognition_category_marks_moderate_repair_as_high_confidence():
         state=payload["state"],
         confidence=0.655,
         reason=payload["reason"],
+        candidates=payload["candidates"],
         recognition_signals=signals,
     )
 
@@ -241,13 +243,13 @@ def test_recognition_category_downgrades_high_penalty_repair_to_manual_review():
     signals = json.loads(json.dumps(payload["recognitionSignals"]))
     selected = signals["selectedRepairCandidate"]
     selected["repairRankingPenalty"] = 0.18
-    signals["repairCandidateCount"] = 100_000
     signals["topRepairCandidates"][0] = selected
     result = RecognitionResult(
         status=payload["status"],
         state=payload["state"],
         confidence=0.61,
         reason=payload["reason"],
+        candidates=payload["candidates"],
         recognition_signals=signals,
     )
 
@@ -261,12 +263,15 @@ def test_recognition_category_marks_floor_confidence_repair_as_retake():
     fixture_dir = Path(__file__).parent / "fixtures"
     payload = json.loads((fixture_dir / "recognition_signals_repair.json").read_text())
     signals = json.loads(json.dumps(payload["recognitionSignals"]))
-    signals["repairCandidateCount"] = 12_101
     result = RecognitionResult(
         status=payload["status"],
         state=payload["state"],
         confidence=0.50,
         reason=payload["reason"],
+        # Match Set 31's heavily-pruned candidate pool; the gate fires
+        # via the confidence floor as well, but pinning candidates
+        # documents the second clause too.
+        candidates=12_101,
         recognition_signals=signals,
     )
 
@@ -274,6 +279,124 @@ def test_recognition_category_marks_floor_confidence_repair_as_retake():
 
     assert category["category"] == "reject_retake"
     assert category["reason"] == "repair_path_floor_confidence_or_too_few_candidates"
+
+
+def test_recognition_category_marks_low_total_candidate_count_as_retake():
+    """Set 31 fingerprint: heavily-pruned upstream candidate pool with
+    confidence above the floor. The retake gate should fire on candidate
+    count alone, even when confidence is healthy enough to clear 0.50."""
+    fixture_dir = Path(__file__).parent / "fixtures"
+    payload = json.loads((fixture_dir / "recognition_signals_repair.json").read_text())
+    signals = json.loads(json.dumps(payload["recognitionSignals"]))
+    result = RecognitionResult(
+        status=payload["status"],
+        state=payload["state"],
+        # Above the 0.50 floor — only the candidate-count clause fires.
+        confidence=0.55,
+        reason=payload["reason"],
+        candidates=12_101,
+        recognition_signals=signals,
+    )
+
+    category = _recognition_category_payload(result)
+
+    assert category["category"] == "reject_retake"
+    assert category["reason"] == "repair_path_floor_confidence_or_too_few_candidates"
+
+
+def test_recognition_category_ignores_artifact_grids_in_weak_count():
+    """A clean direct-legal recognition (Set 32 fingerprint) should land
+    in success_clean even when selectedGridQuality reports weak fitError
+    or low quality on grid slots that AREN'T part of the visible-face
+    triple. Image A exposes U/R/F; the recognizer also records candidate
+    grids for B/L slots as artifacts (back faces glimpsed through the
+    silhouette, glints, etc.) — those should not count toward the
+    weak-grid gate."""
+    signals = {
+        "schemaVersion": 1,
+        "repairPathUsed": False,
+        "repairCandidateCount": 0,
+        "selectedGridQuality": {
+            "imageA": {
+                "U": {"gridId": 1, "centerFace": "U", "matchedCount": 9, "fitError": 0.5,
+                      "quality": 150.0, "gridSamples": 9, "badSamples": 0, "suspectSamples": 0.0},
+                "R": {"gridId": 2, "centerFace": "R", "matchedCount": 9, "fitError": 0.5,
+                      "quality": 150.0, "gridSamples": 9, "badSamples": 0, "suspectSamples": 0.0},
+                "F": {"gridId": 3, "centerFace": "F", "matchedCount": 9, "fitError": 0.5,
+                      "quality": 150.0, "gridSamples": 9, "badSamples": 0, "suspectSamples": 0.0},
+                # Artifact grid in non-visible slot — should NOT count as weak.
+                "L": {"gridId": 4, "centerFace": "L", "matchedCount": 9, "fitError": 16.4,
+                      "quality": 96.5, "gridSamples": 9, "badSamples": 0, "suspectSamples": 0.0},
+            },
+            "imageB": {
+                "D": {"gridId": 5, "centerFace": "D", "matchedCount": 9, "fitError": 0.5,
+                      "quality": 150.0, "gridSamples": 9, "badSamples": 0, "suspectSamples": 0.0},
+                "L": {"gridId": 6, "centerFace": "L", "matchedCount": 9, "fitError": 0.5,
+                      "quality": 150.0, "gridSamples": 9, "badSamples": 0, "suspectSamples": 0.0},
+                "B": {"gridId": 7, "centerFace": "B", "matchedCount": 9, "fitError": 0.5,
+                      "quality": 150.0, "gridSamples": 9, "badSamples": 0, "suspectSamples": 0.0},
+                # Another artifact in a non-visible slot.
+                "F": {"gridId": 8, "centerFace": "F", "matchedCount": 6, "fitError": 0.3,
+                      "quality": 10.9, "gridSamples": 9, "badSamples": 0, "suspectSamples": 0.0},
+            },
+        },
+    }
+    result = RecognitionResult(
+        status="success",
+        state="U" * 9 + "R" * 9 + "F" * 9 + "D" * 9 + "L" * 9 + "B" * 9,
+        confidence=0.838,
+        reason="Recognized a unique legal white-up cube state.",
+        candidates=30_784,
+        recognition_signals=signals,
+    )
+
+    category = _recognition_category_payload(result)
+
+    assert category["category"] == "success_clean"
+    assert category["reason"] == "direct_unique_legal_high_confidence"
+
+
+def test_recognition_category_demotes_when_visible_face_grid_is_weak():
+    """Counterpart to the artifact-grid test: if the WEAK grid is in a
+    visible face slot (i.e. genuinely part of the recognition), the
+    success_clean gate should still fire its weak-grid demotion."""
+    signals = {
+        "schemaVersion": 1,
+        "repairPathUsed": False,
+        "repairCandidateCount": 0,
+        "selectedGridQuality": {
+            "imageA": {
+                "U": {"gridId": 1, "centerFace": "U", "matchedCount": 9, "fitError": 0.5,
+                      "quality": 150.0, "gridSamples": 9, "badSamples": 0, "suspectSamples": 0.0},
+                "R": {"gridId": 2, "centerFace": "R", "matchedCount": 9, "fitError": 0.5,
+                      "quality": 150.0, "gridSamples": 9, "badSamples": 0, "suspectSamples": 0.0},
+                # Weak grid IS in a visible slot — should count.
+                "F": {"gridId": 3, "centerFace": "F", "matchedCount": 9, "fitError": 13.5,
+                      "quality": 80.0, "gridSamples": 9, "badSamples": 0, "suspectSamples": 0.0},
+            },
+            "imageB": {
+                "D": {"gridId": 5, "centerFace": "D", "matchedCount": 9, "fitError": 0.5,
+                      "quality": 150.0, "gridSamples": 9, "badSamples": 0, "suspectSamples": 0.0},
+                "L": {"gridId": 6, "centerFace": "L", "matchedCount": 9, "fitError": 0.5,
+                      "quality": 150.0, "gridSamples": 9, "badSamples": 0, "suspectSamples": 0.0},
+                "B": {"gridId": 7, "centerFace": "B", "matchedCount": 9, "fitError": 0.5,
+                      "quality": 150.0, "gridSamples": 9, "badSamples": 0, "suspectSamples": 0.0},
+            },
+        },
+    }
+    result = RecognitionResult(
+        status="success",
+        state="U" * 9 + "R" * 9 + "F" * 9 + "D" * 9 + "L" * 9 + "B" * 9,
+        confidence=0.838,
+        reason="Recognized a unique legal white-up cube state.",
+        candidates=30_784,
+        recognition_signals=signals,
+    )
+
+    category = _recognition_category_payload(result)
+
+    assert category["category"] == "needs_manual_review"
+    assert category["reason"] == "direct_legal_but_low_margin_or_grid_quality"
 
 
 def test_repair_ranking_penalty_prefers_cleaner_pre_repair_pieces():

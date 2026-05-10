@@ -69,26 +69,75 @@ def file_size(path: str) -> int:
     return os.path.getsize(path)
 
 
-def parse_ground_truth(path: str) -> Tuple[str, str]:
-    """Return (sha256, expected_state). Accepts the cube-snap Fixer's
-    save-record JSON shape: a top-level array of objects, each with a
-    ``corrected`` string. We use the first record's corrected state."""
+def parse_ground_truth(path: str) -> Tuple[str, str, str, bool]:
+    """Return (sha256, raw_corrected_state, canonical_expected_state,
+    canonicalization_applied).
+
+    The Fixer's save-record JSON shape is a top-level array of objects
+    each with a ``corrected`` string. The raw chunk-by-chunk URFDLB
+    string in that field may not match canonical URFDLB ordering — the
+    Fixer exports faces in whatever rotation the user labelled them in.
+    The recognizer's ``rubik_recognizer.dataset.parse_ground_truth``
+    helper canonicalises by detecting non-canonical chunk rotations and
+    rotating each face until the resulting state validates as a legal
+    cube. The recognizer's API and bench harness score against this
+    canonical form, so the audit MUST as well — otherwise the audit
+    will report bogus low scores for any pair whose corrected state
+    happened to be saved in a non-canonical rotation.
+
+    We return both forms (raw + canonical) plus a flag indicating
+    whether canonicalisation actually changed anything, so the report
+    makes the transform explicit."""
     sha = file_sha256(path)
     with open(path, "rb") as f:
-        raw = f.read()
-    parsed = json.loads(raw.decode("utf-8"))
+        raw_bytes = f.read()
+
+    # Pull the literal `corrected` string for visibility — we want this
+    # in the report regardless of whether canonicalisation moves it.
+    parsed = json.loads(raw_bytes.decode("utf-8"))
     if isinstance(parsed, list) and parsed and isinstance(parsed[0], dict):
-        state = parsed[0].get("corrected")
+        raw_state = parsed[0].get("corrected")
     elif isinstance(parsed, dict):
-        state = parsed.get("corrected") or parsed.get("expectedState")
+        raw_state = parsed.get("corrected") or parsed.get("expectedState")
     else:
-        state = None
-    if not isinstance(state, str) or len(state) != 54:
+        raw_state = None
+    if not isinstance(raw_state, str) or len(raw_state) != 54:
         raise ValueError(
             f"Could not extract a 54-char corrected state from {path}; "
-            f"got {type(state).__name__}={state!r}"
+            f"got {type(raw_state).__name__}={raw_state!r}"
         )
-    return sha, state
+    raw_state = raw_state.strip().upper()
+
+    # Canonicalise via the recognizer's own helper so the audit scores
+    # against exactly the same expected-state string the recognizer's
+    # dataset/bench code uses.
+    here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if here not in sys.path:
+        sys.path.insert(0, here)
+    from rubik_recognizer.dataset import parse_ground_truth as _ds_parse  # type: ignore
+
+    truth_map = _ds_parse(raw_bytes, os.path.basename(path))
+    if not truth_map:
+        raise ValueError(
+            f"rubik_recognizer.dataset.parse_ground_truth returned an "
+            f"empty map for {path}; cannot resolve canonical state."
+        )
+    if len(truth_map) == 1:
+        canonical_state = next(iter(truth_map.values()))
+    else:
+        # Multi-record JSON: pick the one whose raw matches our chosen
+        # raw_state, falling back to first-by-key.
+        canonical_state = None
+        for value in truth_map.values():
+            if value == raw_state:
+                canonical_state = value
+                break
+        if canonical_state is None:
+            canonical_state = next(iter(truth_map.values()))
+
+    canonical_state = canonical_state.strip().upper()
+    canonicalization_applied = canonical_state != raw_state
+    return sha, raw_state, canonical_state, canonicalization_applied
 
 
 def hamming(a: str, b: str) -> int:
@@ -233,15 +282,22 @@ def emit_report(
     image_b_path: str,
     ground_truth_path: str,
     payload: Dict[str, Any],
-    expected_state: str,
+    raw_state: str,
+    canonical_state: str,
+    canonicalization_applied: bool,
     ground_truth_sha: str,
     env: Dict[str, Any],
 ) -> None:
     """Print the audit report to stdout. One field per line; field
-    order is stable so two reports diff cleanly."""
+    order is stable so two reports diff cleanly. The audit scores the
+    recognizer's output against the CANONICAL expected state — i.e.
+    the string the recognizer's own dataset helper would emit for
+    this JSON file — not the raw `corrected` string. Both forms are
+    printed so a reader can see the canonicalisation transform."""
     recognized = payload.get("state") or ""
-    score = score_match(recognized, expected_state)
-    ham = hamming(recognized, expected_state)
+    score = score_match(recognized, canonical_state)
+    ham = hamming(recognized, canonical_state)
+    score_vs_raw = score_match(recognized, raw_state)
 
     # Prefer the runtime block recorded inside the response payload (when
     # it exists — i.e. mode=api), since it captures the SERVER's env, not
@@ -290,11 +346,14 @@ def emit_report(
         ("", ""),
         ("groundTruth_path", ground_truth_path),
         ("groundTruth_sha256", ground_truth_sha),
-        ("parsed_expected_state", expected_state),
+        ("raw_corrected_state", raw_state),
+        ("canonical_expected_state", canonical_state),
+        ("canonicalization_applied", canonicalization_applied),
         ("", ""),
         ("recognized_state", recognized),
         ("hamming", ham),
         ("score", f"{score}/54"),
+        ("score_vs_raw", f"{score_vs_raw}/54"),
         ("status", payload.get("status")),
         ("confidence", payload.get("confidence")),
         ("reason", payload.get("reason")),
@@ -350,7 +409,9 @@ def main() -> int:
         print(f"ERROR: ground-truth not found: {args.ground_truth}", file=sys.stderr)
         return 2
 
-    ground_truth_sha, expected_state = parse_ground_truth(args.ground_truth)
+    ground_truth_sha, raw_state, canonical_state, canon_applied = parse_ground_truth(
+        args.ground_truth
+    )
 
     if args.mode == "direct":
         invocation_path = args.mode_label or "direct-python"
@@ -366,7 +427,9 @@ def main() -> int:
         image_b_path=args.image_b,
         ground_truth_path=args.ground_truth,
         payload=payload,
-        expected_state=expected_state,
+        raw_state=raw_state,
+        canonical_state=canonical_state,
+        canonicalization_applied=canon_applied,
         ground_truth_sha=ground_truth_sha,
         env=runtime_environment(),
     )

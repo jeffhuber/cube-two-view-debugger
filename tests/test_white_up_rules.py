@@ -5,6 +5,7 @@ from rubik_recognizer.recognizer import (
     PIECE_CONFLICT_KEYS,
     RecognitionResult,
     _prefer_calibrated_result,
+    _recognition_category_payload,
     _repair_ranking_penalty,
     _white_up_checks,
 )
@@ -114,6 +115,7 @@ def test_recognition_result_exposes_additive_signals():
 
     assert payload["recognitionSignals"]["repairPathUsed"] is True
     assert payload["recognitionSignals"]["topRepairCandidates"][0]["repairCost"] == 1.25
+    assert payload["recognitionCategory"] == "needs_manual_review"
 
 
 def test_recognition_signals_support_versioned_repair_candidate_conflicts():
@@ -150,6 +152,9 @@ def test_recognition_signal_sample_fixtures_have_stable_shape():
     direct_signals = direct["recognitionSignals"]
     repair_signals = repair["recognitionSignals"]
 
+    assert direct["recognitionCategory"] == "success_clean"
+    assert repair["recognitionCategory"] == "success_repaired_high_confidence"
+
     assert direct_signals["schemaVersion"] == 1
     assert direct_signals["repairPathUsed"] is False
     assert "topRepairCandidates" not in direct_signals
@@ -166,6 +171,71 @@ def test_recognition_signal_sample_fixtures_have_stable_shape():
 
     assert repair_signals["topRepairCandidates"][0]["baseConfidence"] > repair_signals["topRepairCandidates"][0]["confidence"]
     assert repair_signals["topRepairCandidates"][0]["repairRankingPenalty"] > 0
+
+
+def test_recognition_category_marks_rejected_as_retake():
+    result = RecognitionResult(status="rejected", reason="No legal cube state matched the detected stickers.")
+
+    category = _recognition_category_payload(result)
+
+    assert category["category"] == "reject_retake"
+    assert category["reason"] == "recognizer_rejected"
+
+
+def test_recognition_category_marks_direct_unique_as_clean():
+    fixture_dir = Path(__file__).parent / "fixtures"
+    payload = json.loads((fixture_dir / "recognition_signals_direct.json").read_text())
+    result = RecognitionResult(
+        status=payload["status"],
+        state=payload["state"],
+        confidence=payload["confidence"],
+        reason=payload["reason"],
+        recognition_signals=payload["recognitionSignals"],
+    )
+
+    category = _recognition_category_payload(result)
+
+    assert category["category"] == "success_clean"
+
+
+def test_recognition_category_marks_low_conflict_repair_as_high_confidence():
+    fixture_dir = Path(__file__).parent / "fixtures"
+    payload = json.loads((fixture_dir / "recognition_signals_repair.json").read_text())
+    result = RecognitionResult(
+        status=payload["status"],
+        state=payload["state"],
+        confidence=payload["confidence"],
+        reason=payload["reason"],
+        recognition_signals=payload["recognitionSignals"],
+    )
+
+    category = _recognition_category_payload(result)
+
+    assert category["category"] == "success_repaired_high_confidence"
+
+
+def test_recognition_category_downgrades_high_conflict_repair_to_manual_review():
+    fixture_dir = Path(__file__).parent / "fixtures"
+    payload = json.loads((fixture_dir / "recognition_signals_repair.json").read_text())
+    signals = json.loads(json.dumps(payload["recognitionSignals"]))
+    selected = signals["selectedRepairCandidate"]
+    selected["repairRankingPenalty"] = 0.18
+    selected["repairChanges"] = 12
+    selected["preRepairConflicts"]["invalidCorners"] = 3
+    selected["preRepairConflicts"]["totalConflicts"] = 12
+    signals["topRepairCandidates"][0] = selected
+    result = RecognitionResult(
+        status=payload["status"],
+        state=payload["state"],
+        confidence=0.55,
+        reason=payload["reason"],
+        recognition_signals=signals,
+    )
+
+    category = _recognition_category_payload(result)
+
+    assert category["category"] == "needs_manual_review"
+    assert category["reason"] == "repair_path_low_confidence_or_high_conflict"
 
 
 def test_repair_ranking_penalty_prefers_cleaner_pre_repair_pieces():

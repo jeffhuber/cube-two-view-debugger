@@ -269,8 +269,20 @@ Every recognition run writes an artifact directory under `runs/pairs/<runId>/`:
 - `imageA_overlay.png` and `imageB_overlay.png`: ROI, sticker components, candidate grid cells,
   and labels overlaid on the input images.
 
-API responses and `result.json` include `recognitionSignals.schemaVersion: 1`, a small diagnostics
-block that is also retained by `?slim=1`. Direct legal runs include selected grid quality and
+API responses and `result.json` include a top-level `recognitionCategory` and
+`recognitionCategoryReason` in addition to the historical `status`. `status` remains the hard
+machine result (`success` or `rejected`); `recognitionCategory` is an advisory confidence bucket for
+UIs and benchmarks:
+
+- `success_clean`: direct, unique legal state with high confidence and no weak selected grids.
+- `success_repaired_high_confidence`: repair-path state with high confidence, low repair penalty,
+  low pre-repair cubie conflicts, and a clear enough margin over the next repair candidate.
+- `needs_manual_review`: a state was returned, but the path was ambiguous, lower confidence, or
+  relied on heavier repair.
+- `reject_retake`: no state was returned; the user should retake or relabel the pair.
+
+API responses and `result.json` also include `recognitionSignals.schemaVersion: 1`, a small diagnostics
+block that is retained by `?slim=1`. Direct legal runs include selected grid quality and
 `repairPathUsed: false`; repair-path-only fields such as `topRepairCandidates`,
 `selectedRepairCandidate`, `repairCost`, `repairChanges`, `baseConfidence`,
 `repairRankingPenalty`, and `preRepairConflicts` are optional.

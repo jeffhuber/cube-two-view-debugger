@@ -3,6 +3,8 @@
   "state": "LLBRUFUFLULDDRUDFLRDFRFBRLRBDFFDRRUUFDFRLUBUDLBDBBBBLU",
   "confidence": 0.8124,
   "reason": "Recognized a unique legal white-up cube state. Adaptive pair color calibration was used.",
+  "recognitionCategory": "success_clean",
+  "recognitionCategoryReason": "direct_unique_legal_high_confidence",
   "failedChecks": [],
   "candidates": 186348,
   "recognitionSignals": {

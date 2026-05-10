@@ -76,6 +76,12 @@ MAX_TRIPLE_COMPONENT_OVERLAP = 3
 # down-rank conflicted repair winners, but capped so repair candidates remain
 # comparable instead of being rejected by one binary threshold.
 MAX_REPAIR_RANKING_PENALTY = 0.18
+DIRECT_CLEAN_CONFIDENCE_THRESHOLD = 0.78
+REPAIRED_HIGH_CONFIDENCE_THRESHOLD = 0.70
+REPAIRED_HIGH_MAX_RANKING_PENALTY = 0.12
+REPAIRED_HIGH_MAX_REPAIR_CHANGES = 5
+REPAIRED_HIGH_MAX_TOTAL_CONFLICTS = 5
+REPAIRED_HIGH_MIN_MARGIN = 0.015
 REPAIR_ADJACENT_COLOR_PAIRS = {frozenset(("red", "orange")), frozenset(("green", "blue"))}
 VALID_EDGE_COLOR_SETS = {frozenset(colors) for colors in EDGE_COLORS}
 VALID_CORNER_COLOR_SETS = {frozenset(colors) for colors in CORNER_COLORS}
@@ -119,11 +125,14 @@ class RecognitionResult:
     recognition_signals: Optional[Dict[str, Any]] = None
 
     def to_api_dict(self, include_overlays: bool = True) -> Dict:
+        category = _recognition_category_payload(self)
         payload = {
             "status": self.status,
             "state": self.state,
             "confidence": round(self.confidence, 4),
             "reason": self.reason,
+            "recognitionCategory": category["category"],
+            "recognitionCategoryReason": category["reason"],
             "failedChecks": self.failed_checks or [],
             "candidates": self.candidates,
         }
@@ -364,6 +373,100 @@ def _recognition_reliability_tier(result: RecognitionResult) -> int:
     if "highest-scoring legal" in result.reason:
         return 2
     return 3
+
+
+def _recognition_category_payload(result: RecognitionResult) -> Dict[str, str]:
+    signals = result.recognition_signals or {}
+    if result.status != "success" or not result.state:
+        return {
+            "category": "reject_retake",
+            "reason": "recognizer_rejected",
+        }
+
+    repair_used = bool(signals.get("repairPathUsed")) or "color repair" in result.reason
+    if not repair_used:
+        if (
+            "unique legal" in result.reason
+            and result.confidence >= DIRECT_CLEAN_CONFIDENCE_THRESHOLD
+            and _weak_selected_grid_count(signals) == 0
+        ):
+            return {
+                "category": "success_clean",
+                "reason": "direct_unique_legal_high_confidence",
+            }
+        return {
+            "category": "needs_manual_review",
+            "reason": "direct_legal_but_low_margin_or_grid_quality",
+        }
+
+    selected = signals.get("selectedRepairCandidate") or {}
+    conflicts = selected.get("preRepairConflicts") or {}
+    margin = _repair_candidate_confidence_margin(signals)
+    penalty = _float_signal(selected.get("repairRankingPenalty"))
+    changes = _int_signal(selected.get("repairChanges"))
+    total_conflicts = _int_signal(conflicts.get("totalConflicts"))
+    invalid_corners = _int_signal(conflicts.get("invalidCorners"))
+    invalid_edges = _int_signal(conflicts.get("invalidEdges"))
+    if (
+        result.confidence >= REPAIRED_HIGH_CONFIDENCE_THRESHOLD
+        and penalty <= REPAIRED_HIGH_MAX_RANKING_PENALTY
+        and changes <= REPAIRED_HIGH_MAX_REPAIR_CHANGES
+        and total_conflicts <= REPAIRED_HIGH_MAX_TOTAL_CONFLICTS
+        and invalid_corners == 0
+        and invalid_edges <= 1
+        and _weak_selected_grid_count(signals) <= 1
+        and (margin is None or margin >= REPAIRED_HIGH_MIN_MARGIN)
+    ):
+        return {
+            "category": "success_repaired_high_confidence",
+            "reason": "repair_path_high_confidence_low_conflict",
+        }
+    return {
+        "category": "needs_manual_review",
+        "reason": "repair_path_low_confidence_or_high_conflict",
+    }
+
+
+def _weak_selected_grid_count(signals: Dict[str, Any]) -> int:
+    count = 0
+    quality_by_image = signals.get("selectedGridQuality") or {}
+    for image_quality in quality_by_image.values():
+        if not isinstance(image_quality, dict):
+            continue
+        for grid in image_quality.values():
+            if not isinstance(grid, dict):
+                continue
+            matched_count = _int_signal(grid.get("matchedCount"))
+            fit_error = _float_signal(grid.get("fitError"))
+            quality = _float_signal(grid.get("quality"), default=100.0)
+            bad_samples = _int_signal(grid.get("badSamples"))
+            suspect_samples = _float_signal(grid.get("suspectSamples"))
+            if matched_count < 5 or fit_error > 12.0 or quality < 75.0 or bad_samples > 3 or suspect_samples > 4.0:
+                count += 1
+    return count
+
+
+def _repair_candidate_confidence_margin(signals: Dict[str, Any]) -> Optional[float]:
+    candidates = signals.get("topRepairCandidates") or []
+    if not isinstance(candidates, list) or len(candidates) < 2:
+        return None
+    top = _float_signal((candidates[0] or {}).get("confidence"))
+    second = _float_signal((candidates[1] or {}).get("confidence"))
+    return top - second
+
+
+def _float_signal(value: Any, default: float = 0.0) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _int_signal(value: Any, default: int = 0) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
 
 
 def recognition_diagnostics(analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> Dict[str, Any]:

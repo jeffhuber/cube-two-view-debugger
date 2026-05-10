@@ -174,6 +174,22 @@ If launched with bare `python3 tests/run_tests.py`, the test runner will try to 
 `CUBE_PYTHON`, `.venv/bin/python`, or the bundled Codex runtime before failing with setup
 instructions. Do not install these dependencies into macOS system Python just for this project.
 
+Run cross-runner audits with the project runtime as well:
+
+```sh
+.venv/bin/python tools/audit_recognition_pair.py \
+  --set-id 29 \
+  --image-a "/Users/jhuber/Downloads/Set 29 - A - white up IMG_6779.JPG" \
+  --image-b "/Users/jhuber/Downloads/Set 29 - B - white up IMG_6780.JPG" \
+  --ground-truth "/Users/jhuber/Downloads/Set 29 cube-ground-truth-1778048563219.json" \
+  --mode direct
+```
+
+If launched as executable `tools/audit_recognition_pair.py`, the audit tool re-execs through
+`CUBE_PYTHON`, `.venv/bin/python`, or the bundled Codex runtime before importing NumPy/Pillow.
+That makes accidental system-Python runs fail loudly or self-correct instead of silently producing
+different CV behavior.
+
 ## How Recognition Works
 
 The recognizer is a CV-first pipeline with cube-constraint validation at the end. It intentionally

@@ -53,8 +53,67 @@ import json
 import os
 import subprocess
 import sys
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
+
+MIN_PYTHON = (3, 11)
+CODEX_PYTHON = Path("/Users/jhuber/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3")
+
+
+def _dependencies_available() -> bool:
+    if sys.version_info < MIN_PYTHON:
+        return False
+    try:
+        import numpy  # noqa: F401
+        import PIL  # noqa: F401
+    except ModuleNotFoundError:
+        return False
+    return True
+
+
+def _candidate_runtimes(root: Path) -> List[Path]:
+    candidates: List[Path] = []
+    env_python = os.environ.get("CUBE_PYTHON")
+    if env_python:
+        candidates.append(Path(env_python))
+    candidates.append(root / ".venv" / "bin" / "python")
+    candidates.append(CODEX_PYTHON)
+    return candidates
+
+
+def _rerun_with_dependency_runtime() -> None:
+    if _dependencies_available():
+        return
+
+    root = Path(__file__).resolve().parents[1]
+    current = Path(sys.executable).resolve()
+    for candidate in _candidate_runtimes(root):
+        if not candidate.exists():
+            continue
+        try:
+            if candidate.resolve() == current:
+                continue
+        except OSError:
+            continue
+        os.execv(str(candidate), [str(candidate), str(Path(__file__).resolve()), *sys.argv[1:]])
+
+    print(
+        "Missing audit runtime: Python >= 3.11 with NumPy and Pillow is required.\n"
+        "Create the project environment with:\n"
+        "  python3 -m venv .venv\n"
+        "  .venv/bin/python -m pip install -r requirements.txt\n"
+        "Then run either:\n"
+        "  .venv/bin/python tools/audit_recognition_pair.py ...\n"
+        "or:\n"
+        "  tools/audit_recognition_pair.py ...\n"
+        "The executable script will prefer CUBE_PYTHON, .venv/bin/python, then the Codex bundled runtime.",
+        file=sys.stderr,
+    )
+    raise SystemExit(2)
+
+
+_rerun_with_dependency_runtime()
 
 
 def file_sha256(path: str) -> str:

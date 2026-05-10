@@ -235,6 +235,31 @@ def test_recognition_category_marks_moderate_repair_as_high_confidence():
     assert category["category"] == "success_repaired_high_confidence"
 
 
+def test_recognition_category_uses_evaluated_candidate_count_for_repair_retake_gate():
+    fixture_dir = Path(__file__).parent / "fixtures"
+    payload = json.loads((fixture_dir / "recognition_signals_repair.json").read_text())
+    signals = json.loads(json.dumps(payload["recognitionSignals"]))
+    selected = signals["selectedRepairCandidate"]
+    selected["confidence"] = 0.655
+    selected["repairRankingPenalty"] = 0.131
+    # recognitionSignals.repairCandidateCount is the capped public repair
+    # details list, not the full evaluated candidate population.
+    signals["repairCandidateCount"] = 8
+    signals["topRepairCandidates"][0] = selected
+    result = RecognitionResult(
+        status=payload["status"],
+        state=payload["state"],
+        confidence=0.655,
+        reason=payload["reason"],
+        candidates=134_208,
+        recognition_signals=signals,
+    )
+
+    category = _recognition_category_payload(result)
+
+    assert category["category"] == "success_repaired_high_confidence"
+
+
 def test_recognition_category_downgrades_high_penalty_repair_to_manual_review():
     fixture_dir = Path(__file__).parent / "fixtures"
     payload = json.loads((fixture_dir / "recognition_signals_repair.json").read_text())

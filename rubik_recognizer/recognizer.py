@@ -400,7 +400,10 @@ def _recognition_category_payload(result: RecognitionResult) -> Dict[str, str]:
 
     selected = signals.get("selectedRepairCandidate") or {}
     penalty = _float_signal(selected.get("repairRankingPenalty"))
-    repair_candidate_count = _int_signal(signals.get("repairCandidateCount"))
+    repair_candidate_count = max(
+        _int_signal(signals.get("repairCandidateCount")),
+        _int_signal(result.candidates),
+    )
     if result.confidence <= REPAIR_RETAKE_CONFIDENCE_THRESHOLD or repair_candidate_count < REPAIR_RETAKE_MIN_CANDIDATES:
         return {
             "category": "reject_retake",

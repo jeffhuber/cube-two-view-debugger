@@ -115,7 +115,7 @@ def test_recognition_result_exposes_additive_signals():
 
     assert payload["recognitionSignals"]["repairPathUsed"] is True
     assert payload["recognitionSignals"]["topRepairCandidates"][0]["repairCost"] == 1.25
-    assert payload["recognitionCategory"] == "needs_manual_review"
+    assert payload["recognitionCategory"] == "reject_retake"
 
 
 def test_recognition_signals_support_versioned_repair_candidate_conflicts():
@@ -198,7 +198,7 @@ def test_recognition_category_marks_direct_unique_as_clean():
     assert category["category"] == "success_clean"
 
 
-def test_recognition_category_marks_low_conflict_repair_as_high_confidence():
+def test_recognition_category_marks_low_penalty_repair_as_high_confidence():
     fixture_dir = Path(__file__).parent / "fixtures"
     payload = json.loads((fixture_dir / "recognition_signals_repair.json").read_text())
     result = RecognitionResult(
@@ -214,20 +214,39 @@ def test_recognition_category_marks_low_conflict_repair_as_high_confidence():
     assert category["category"] == "success_repaired_high_confidence"
 
 
-def test_recognition_category_downgrades_high_conflict_repair_to_manual_review():
+def test_recognition_category_marks_moderate_repair_as_high_confidence():
+    fixture_dir = Path(__file__).parent / "fixtures"
+    payload = json.loads((fixture_dir / "recognition_signals_repair.json").read_text())
+    signals = json.loads(json.dumps(payload["recognitionSignals"]))
+    selected = signals["selectedRepairCandidate"]
+    selected["confidence"] = 0.655
+    selected["repairRankingPenalty"] = 0.131
+    signals["topRepairCandidates"][0] = selected
+    result = RecognitionResult(
+        status=payload["status"],
+        state=payload["state"],
+        confidence=0.655,
+        reason=payload["reason"],
+        recognition_signals=signals,
+    )
+
+    category = _recognition_category_payload(result)
+
+    assert category["category"] == "success_repaired_high_confidence"
+
+
+def test_recognition_category_downgrades_high_penalty_repair_to_manual_review():
     fixture_dir = Path(__file__).parent / "fixtures"
     payload = json.loads((fixture_dir / "recognition_signals_repair.json").read_text())
     signals = json.loads(json.dumps(payload["recognitionSignals"]))
     selected = signals["selectedRepairCandidate"]
     selected["repairRankingPenalty"] = 0.18
-    selected["repairChanges"] = 12
-    selected["preRepairConflicts"]["invalidCorners"] = 3
-    selected["preRepairConflicts"]["totalConflicts"] = 12
+    signals["repairCandidateCount"] = 100_000
     signals["topRepairCandidates"][0] = selected
     result = RecognitionResult(
         status=payload["status"],
         state=payload["state"],
-        confidence=0.55,
+        confidence=0.61,
         reason=payload["reason"],
         recognition_signals=signals,
     )
@@ -236,6 +255,25 @@ def test_recognition_category_downgrades_high_conflict_repair_to_manual_review()
 
     assert category["category"] == "needs_manual_review"
     assert category["reason"] == "repair_path_low_confidence_or_high_conflict"
+
+
+def test_recognition_category_marks_floor_confidence_repair_as_retake():
+    fixture_dir = Path(__file__).parent / "fixtures"
+    payload = json.loads((fixture_dir / "recognition_signals_repair.json").read_text())
+    signals = json.loads(json.dumps(payload["recognitionSignals"]))
+    signals["repairCandidateCount"] = 12_101
+    result = RecognitionResult(
+        status=payload["status"],
+        state=payload["state"],
+        confidence=0.50,
+        reason=payload["reason"],
+        recognition_signals=signals,
+    )
+
+    category = _recognition_category_payload(result)
+
+    assert category["category"] == "reject_retake"
+    assert category["reason"] == "repair_path_floor_confidence_or_too_few_candidates"
 
 
 def test_repair_ranking_penalty_prefers_cleaner_pre_repair_pieces():

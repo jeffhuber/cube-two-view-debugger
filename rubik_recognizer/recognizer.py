@@ -77,11 +77,10 @@ MAX_TRIPLE_COMPONENT_OVERLAP = 3
 # comparable instead of being rejected by one binary threshold.
 MAX_REPAIR_RANKING_PENALTY = 0.18
 DIRECT_CLEAN_CONFIDENCE_THRESHOLD = 0.78
-REPAIRED_HIGH_CONFIDENCE_THRESHOLD = 0.70
-REPAIRED_HIGH_MAX_RANKING_PENALTY = 0.12
-REPAIRED_HIGH_MAX_REPAIR_CHANGES = 5
-REPAIRED_HIGH_MAX_TOTAL_CONFLICTS = 5
-REPAIRED_HIGH_MIN_MARGIN = 0.015
+REPAIRED_HIGH_CONFIDENCE_THRESHOLD = 0.60
+REPAIRED_HIGH_MAX_RANKING_PENALTY = 0.16
+REPAIR_RETAKE_CONFIDENCE_THRESHOLD = 0.50
+REPAIR_RETAKE_MIN_CANDIDATES = 50_000
 REPAIR_ADJACENT_COLOR_PAIRS = {frozenset(("red", "orange")), frozenset(("green", "blue"))}
 VALID_EDGE_COLOR_SETS = {frozenset(colors) for colors in EDGE_COLORS}
 VALID_CORNER_COLOR_SETS = {frozenset(colors) for colors in CORNER_COLORS}
@@ -400,26 +399,20 @@ def _recognition_category_payload(result: RecognitionResult) -> Dict[str, str]:
         }
 
     selected = signals.get("selectedRepairCandidate") or {}
-    conflicts = selected.get("preRepairConflicts") or {}
-    margin = _repair_candidate_confidence_margin(signals)
     penalty = _float_signal(selected.get("repairRankingPenalty"))
-    changes = _int_signal(selected.get("repairChanges"))
-    total_conflicts = _int_signal(conflicts.get("totalConflicts"))
-    invalid_corners = _int_signal(conflicts.get("invalidCorners"))
-    invalid_edges = _int_signal(conflicts.get("invalidEdges"))
+    repair_candidate_count = _int_signal(signals.get("repairCandidateCount"))
+    if result.confidence <= REPAIR_RETAKE_CONFIDENCE_THRESHOLD or repair_candidate_count < REPAIR_RETAKE_MIN_CANDIDATES:
+        return {
+            "category": "reject_retake",
+            "reason": "repair_path_floor_confidence_or_too_few_candidates",
+        }
     if (
         result.confidence >= REPAIRED_HIGH_CONFIDENCE_THRESHOLD
-        and penalty <= REPAIRED_HIGH_MAX_RANKING_PENALTY
-        and changes <= REPAIRED_HIGH_MAX_REPAIR_CHANGES
-        and total_conflicts <= REPAIRED_HIGH_MAX_TOTAL_CONFLICTS
-        and invalid_corners == 0
-        and invalid_edges <= 1
-        and _weak_selected_grid_count(signals) <= 1
-        and (margin is None or margin >= REPAIRED_HIGH_MIN_MARGIN)
+        and penalty < REPAIRED_HIGH_MAX_RANKING_PENALTY
     ):
         return {
             "category": "success_repaired_high_confidence",
-            "reason": "repair_path_high_confidence_low_conflict",
+            "reason": "repair_path_high_confidence_low_penalty",
         }
     return {
         "category": "needs_manual_review",
@@ -444,15 +437,6 @@ def _weak_selected_grid_count(signals: Dict[str, Any]) -> int:
             if matched_count < 5 or fit_error > 12.0 or quality < 75.0 or bad_samples > 3 or suspect_samples > 4.0:
                 count += 1
     return count
-
-
-def _repair_candidate_confidence_margin(signals: Dict[str, Any]) -> Optional[float]:
-    candidates = signals.get("topRepairCandidates") or []
-    if not isinstance(candidates, list) or len(candidates) < 2:
-        return None
-    top = _float_signal((candidates[0] or {}).get("confidence"))
-    second = _float_signal((candidates[1] or {}).get("confidence"))
-    return top - second
 
 
 def _float_signal(value: Any, default: float = 0.0) -> float:

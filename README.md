@@ -276,10 +276,11 @@ UIs and benchmarks:
 
 - `success_clean`: direct, unique legal state with high confidence and no weak selected grids.
 - `success_repaired_high_confidence`: repair-path state with high confidence, low repair penalty,
-  low pre-repair cubie conflicts, and a clear enough margin over the next repair candidate.
+  and enough legal repair candidates to avoid the floor-confidence retake bucket.
 - `needs_manual_review`: a state was returned, but the path was ambiguous, lower confidence, or
   relied on heavier repair.
-- `reject_retake`: no state was returned; the user should retake or relabel the pair.
+- `reject_retake`: no state was returned, or the repair path hit the confidence floor / produced
+  too few legal repair candidates; the user should retake or relabel the pair.
 
 API responses and `result.json` also include `recognitionSignals.schemaVersion: 1`, a small diagnostics
 block that is retained by `?slim=1`. Direct legal runs include selected grid quality and

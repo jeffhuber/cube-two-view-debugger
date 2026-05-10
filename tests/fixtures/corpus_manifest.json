@@ -63,10 +63,10 @@
       "imageA_sha256_expected": "82eb8701d4f7a547066883c01aca6c79a9b6e5eb2d8a995a35f27155e26cd36e",
       "imageB_sha256_expected": "936dbff88bf91bf3d0578857aaab305c17db16a2dc1bfa716277309eac0315f7",
       "groundTruth_sha256_expected": "a313adbda896dae2e0b6129ddeb4adc9ef92d21d7ec8004891dc23086a4e1ef2",
-      "expectedCategory": "needs_manual_review",
+      "expectedCategory": "success_clean",
       "expectedScoreFloor": 54,
       "currentScoreObserved": 54,
-      "notes": "Exact direct result with conservative manual-review category because selected-grid quality is borderline."
+      "notes": "Exact direct result; dynamic selected-face filtering ignores weak artifact grids."
     },
     {
       "setId": "27",
@@ -128,10 +128,10 @@
       "imageA_sha256_expected": "547072797d7f78b51c7357a8437fe257c41fa6b4057014c42534b07888ee4976",
       "imageB_sha256_expected": "921843425755168856f270815ff9a2359f1cf71be486dc6d567363faea6ae7a7",
       "groundTruth_sha256_expected": "15c54a7f22c187b7cdbd82a46d4e3a3415bdf312cd6863841158a9c732d66ebe",
-      "expectedCategory": "needs_manual_review",
+      "expectedCategory": "success_clean",
       "expectedScoreFloor": 54,
       "currentScoreObserved": 54,
-      "notes": "Canonicalized ground truth; exact direct result with conservative manual-review category because selected-grid quality is borderline."
+      "notes": "Canonicalized ground truth; exact direct result after artifact-grid filtering."
     }
   ]
 }

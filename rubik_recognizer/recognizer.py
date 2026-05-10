@@ -205,16 +205,19 @@ class WhiteUpRecognizer:
         candidates = self._state_candidates(analysis_a, analysis_b)
         legal = []
         invalid_reasons: List[str] = []
-        for state, confidence in candidates:
+        for state, confidence, details in candidates:
             validation = validate_state(state)
             if validation.valid:
-                legal.append((state, confidence))
+                legal.append((state, confidence, details))
             else:
                 invalid_reasons.extend(validation.errors)
 
         unique = {}
-        for state, confidence in legal:
-            unique[state] = max(confidence, unique.get(state, 0.0))
+        unique_details = {}
+        for state, confidence, details in legal:
+            if confidence > unique.get(state, 0.0):
+                unique[state] = confidence
+                unique_details[state] = details
 
         if len(unique) == 1:
             state, confidence = next(iter(unique.items()))
@@ -226,7 +229,7 @@ class WhiteUpRecognizer:
                     confidence=confidence,
                     reason="Recognized a unique legal white-up cube state.",
                     candidates=len(candidates),
-                    recognition_signals=recognition_signals,
+                    recognition_signals={**recognition_signals, **_selected_faces_signal(unique_details.get(state))},
                 )
             return RecognitionResult(
                 status="rejected",
@@ -245,7 +248,7 @@ class WhiteUpRecognizer:
                     confidence=ranked_unique[0][1],
                     reason="Recognized the highest-scoring legal white-up cube state.",
                     candidates=len(candidates),
-                    recognition_signals=recognition_signals,
+                    recognition_signals={**recognition_signals, **_selected_faces_signal(unique_details.get(ranked_unique[0][0]))},
                 )
             return RecognitionResult(
                 status="rejected",
@@ -296,14 +299,15 @@ class WhiteUpRecognizer:
             recognition_signals=recognition_signals,
         )
 
-    def _state_candidates(self, analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> List[Tuple[str, float]]:
+    def _state_candidates(self, analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> List[Tuple[str, float, Dict[str, Any]]]:
         options_a = _oriented_face_options(analysis_a, "U")
         options_b = _oriented_face_options(analysis_b, "D")
-        candidates: List[Tuple[str, float]] = []
+        candidates: List[Tuple[str, float, Dict[str, Any]]] = []
         for _, merged in _merged_face_candidates(options_a, options_b):
+            details = _candidate_selection_detail(merged)
             for partial in _state_variants_from_faces(merged):
                 confidence = _state_confidence(merged)
-                candidates.append((partial, confidence))
+                candidates.append((partial, confidence, details))
         return candidates
 
     def _legal_repair_candidates(self, analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> List[Tuple[str, float]]:
@@ -426,10 +430,19 @@ def _recognition_category_payload(result: RecognitionResult) -> Dict[str, str]:
 def _weak_selected_grid_count(signals: Dict[str, Any]) -> int:
     count = 0
     quality_by_image = signals.get("selectedGridQuality") or {}
-    for image_quality in quality_by_image.values():
+    selected_faces_by_image = signals.get("selectedFacesByImage") or {}
+    for image_key, image_quality in quality_by_image.items():
         if not isinstance(image_quality, dict):
             continue
-        for grid in image_quality.values():
+        selected_faces = selected_faces_by_image.get(image_key) if isinstance(selected_faces_by_image, dict) else None
+        visible_faces = set(selected_faces or ())
+        for face_key, grid in image_quality.items():
+            # When the winning visible-face triple is known, ignore diagnostic
+            # artifact grids that were not used by the recognition. If older or
+            # rejected responses omit the signal, keep the original conservative
+            # behavior and count every grid quality entry.
+            if visible_faces and face_key not in visible_faces:
+                continue
             if not isinstance(grid, dict):
                 continue
             matched_count = _int_signal(grid.get("matchedCount"))
@@ -517,7 +530,50 @@ def _repair_signal_summary(repair_details: Sequence[Dict[str, Any]], selected_st
     }
     if selected is not None:
         summary["selectedRepairCandidate"] = _public_repair_detail(selected)
+        summary.update(_selected_faces_signal(selected))
     return summary
+
+
+def _candidate_selection_detail(merged: Dict[str, List[List[Any]]]) -> Dict[str, Any]:
+    return {
+        "sidePairA": _side_pair_key(merged.get("_side_pair_a")),
+        "sidePairB": _side_pair_key(merged.get("_side_pair_b")),
+    }
+
+
+def _selected_faces_signal(selection: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    if not selection:
+        return {}
+    faces = _selected_faces_by_image(selection.get("sidePairA"), selection.get("sidePairB"))
+    return {"selectedFacesByImage": faces} if faces else {}
+
+
+def _selected_faces_by_image(side_pair_a: Any, side_pair_b: Any) -> Dict[str, List[str]]:
+    faces_a = _selected_anchor_faces("U", side_pair_a)
+    faces_b = _selected_anchor_faces("D", side_pair_b)
+    if not faces_a or not faces_b:
+        return {}
+    return {
+        "imageA": faces_a,
+        "imageB": faces_b,
+    }
+
+
+def _selected_anchor_faces(anchor: str, side_pair: Any) -> List[str]:
+    sides = _side_pair_faces(side_pair)
+    if len(sides) != 2:
+        return []
+    return sorted({anchor, *sides})
+
+
+def _side_pair_faces(side_pair: Any) -> List[str]:
+    key = _side_pair_key(side_pair)
+    if not key:
+        return []
+    parts = key.split("/")
+    if len(parts) != 2 or any(face not in SIDE_NEIGHBORS for face in parts):
+        return []
+    return parts if len(set(parts)) == len(parts) else []
 
 
 def _public_repair_detail(item: Dict[str, Any]) -> Dict[str, Any]:

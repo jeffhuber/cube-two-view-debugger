@@ -7,6 +7,7 @@ from rubik_recognizer.recognizer import (
     _prefer_calibrated_result,
     _recognition_category_payload,
     _repair_ranking_penalty,
+    _selected_faces_by_image,
     _white_up_checks,
 )
 
@@ -144,6 +145,15 @@ def test_recognition_signals_support_versioned_repair_candidate_conflicts():
     assert signals["topRepairCandidates"][0]["preRepairConflicts"]["invalidEdges"] == 1
 
 
+def test_selected_faces_by_image_uses_winning_side_pairs():
+    faces = _selected_faces_by_image("B/L", "F/R")
+
+    assert faces == {
+        "imageA": ["B", "L", "U"],
+        "imageB": ["D", "F", "R"],
+    }
+
+
 def test_recognition_signal_sample_fixtures_have_stable_shape():
     fixture_dir = Path(__file__).parent / "fixtures"
     direct = json.loads((fixture_dir / "recognition_signals_direct.json").read_text())
@@ -196,6 +206,127 @@ def test_recognition_category_marks_direct_unique_as_clean():
     category = _recognition_category_payload(result)
 
     assert category["category"] == "success_clean"
+
+
+def test_recognition_category_filters_artifact_grids_by_selected_faces():
+    signals = {
+        "repairPathUsed": False,
+        "selectedFacesByImage": {
+            "imageA": ["F", "R", "U"],
+            "imageB": ["B", "D", "L"],
+        },
+        "selectedGridQuality": {
+            "imageA": {
+                "U": {"matchedCount": 9, "fitError": 0.5, "quality": 100, "badSamples": 0, "suspectSamples": 0},
+                "F": {"matchedCount": 8, "fitError": 2.0, "quality": 96, "badSamples": 0, "suspectSamples": 0},
+                "R": {"matchedCount": 8, "fitError": 2.0, "quality": 96, "badSamples": 0, "suspectSamples": 0},
+                "L": {"matchedCount": 8, "fitError": 16.4, "quality": 72, "badSamples": 0, "suspectSamples": 0},
+            },
+            "imageB": {
+                "D": {"matchedCount": 9, "fitError": 0.5, "quality": 100, "badSamples": 0, "suspectSamples": 0},
+                "B": {"matchedCount": 8, "fitError": 2.0, "quality": 96, "badSamples": 0, "suspectSamples": 0},
+                "L": {"matchedCount": 8, "fitError": 2.0, "quality": 96, "badSamples": 0, "suspectSamples": 0},
+                "R": {"matchedCount": 8, "fitError": 16.4, "quality": 72, "badSamples": 0, "suspectSamples": 0},
+            },
+        },
+    }
+    result = RecognitionResult(
+        status="success",
+        state="U" * 54,
+        confidence=0.838,
+        reason="Recognized a unique legal white-up cube state.",
+        recognition_signals=signals,
+    )
+
+    category = _recognition_category_payload(result)
+
+    assert category["category"] == "success_clean"
+
+
+def test_recognition_category_demotes_weak_selected_visible_grid():
+    signals = {
+        "repairPathUsed": False,
+        "selectedFacesByImage": {"imageA": ["F", "R", "U"], "imageB": ["B", "D", "L"]},
+        "selectedGridQuality": {
+            "imageA": {
+                "U": {"matchedCount": 9, "fitError": 0.5, "quality": 100, "badSamples": 0, "suspectSamples": 0},
+                "F": {"matchedCount": 8, "fitError": 16.4, "quality": 72, "badSamples": 0, "suspectSamples": 0},
+                "R": {"matchedCount": 8, "fitError": 2.0, "quality": 96, "badSamples": 0, "suspectSamples": 0},
+            },
+            "imageB": {
+                "D": {"matchedCount": 9, "fitError": 0.5, "quality": 100, "badSamples": 0, "suspectSamples": 0},
+                "B": {"matchedCount": 8, "fitError": 2.0, "quality": 96, "badSamples": 0, "suspectSamples": 0},
+                "L": {"matchedCount": 8, "fitError": 2.0, "quality": 96, "badSamples": 0, "suspectSamples": 0},
+            },
+        },
+    }
+    result = RecognitionResult(
+        status="success",
+        state="U" * 54,
+        confidence=0.838,
+        reason="Recognized a unique legal white-up cube state.",
+        recognition_signals=signals,
+    )
+
+    category = _recognition_category_payload(result)
+
+    assert category["category"] == "needs_manual_review"
+
+
+def test_recognition_category_filters_by_dynamic_yaw():
+    signals = {
+        "repairPathUsed": False,
+        "selectedFacesByImage": {"imageA": ["B", "L", "U"], "imageB": ["D", "F", "R"]},
+        "selectedGridQuality": {
+            "imageA": {
+                "U": {"matchedCount": 9, "fitError": 0.5, "quality": 100, "badSamples": 0, "suspectSamples": 0},
+                "L": {"matchedCount": 8, "fitError": 2.0, "quality": 96, "badSamples": 0, "suspectSamples": 0},
+                "B": {"matchedCount": 8, "fitError": 2.0, "quality": 96, "badSamples": 0, "suspectSamples": 0},
+                "R": {"matchedCount": 8, "fitError": 16.4, "quality": 72, "badSamples": 0, "suspectSamples": 0},
+            },
+            "imageB": {
+                "D": {"matchedCount": 9, "fitError": 0.5, "quality": 100, "badSamples": 0, "suspectSamples": 0},
+                "F": {"matchedCount": 8, "fitError": 2.0, "quality": 96, "badSamples": 0, "suspectSamples": 0},
+                "R": {"matchedCount": 8, "fitError": 2.0, "quality": 96, "badSamples": 0, "suspectSamples": 0},
+                "B": {"matchedCount": 8, "fitError": 16.4, "quality": 72, "badSamples": 0, "suspectSamples": 0},
+            },
+        },
+    }
+    result = RecognitionResult(
+        status="success",
+        state="U" * 54,
+        confidence=0.838,
+        reason="Recognized a unique legal white-up cube state.",
+        recognition_signals=signals,
+    )
+
+    category = _recognition_category_payload(result)
+
+    assert category["category"] == "success_clean"
+
+
+def test_recognition_category_counts_all_grids_when_selected_faces_missing():
+    signals = {
+        "repairPathUsed": False,
+        "selectedGridQuality": {
+            "imageA": {
+                "U": {"matchedCount": 9, "fitError": 0.5, "quality": 100, "badSamples": 0, "suspectSamples": 0},
+                "F": {"matchedCount": 8, "fitError": 2.0, "quality": 96, "badSamples": 0, "suspectSamples": 0},
+                "L": {"matchedCount": 8, "fitError": 16.4, "quality": 72, "badSamples": 0, "suspectSamples": 0},
+            }
+        },
+    }
+    result = RecognitionResult(
+        status="success",
+        state="U" * 54,
+        confidence=0.838,
+        reason="Recognized a unique legal white-up cube state.",
+        recognition_signals=signals,
+    )
+
+    category = _recognition_category_payload(result)
+
+    assert category["category"] == "needs_manual_review"
 
 
 def test_recognition_category_marks_low_penalty_repair_as_high_confidence():

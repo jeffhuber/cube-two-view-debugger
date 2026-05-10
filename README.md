@@ -360,7 +360,10 @@ UIs and benchmarks:
 
 API responses and `result.json` also include `recognitionSignals.schemaVersion: 1`, a small diagnostics
 block that is retained by `?slim=1`. Direct legal runs include selected grid quality and
-`repairPathUsed: false`; repair-path-only fields such as `topRepairCandidates`,
+`repairPathUsed: false`; successful runs may include `selectedFacesByImage`, the dynamically
+selected visible faces for image A and image B. Category gating uses that signal to ignore
+diagnostic artifact grids that were not part of the recognized face triple, without assuming a
+fixed side-face yaw such as `imageA={U,R,F}`. Repair-path-only fields such as `topRepairCandidates`,
 `selectedRepairCandidate`, `repairCost`, `repairChanges`, `baseConfidence`,
 `repairRankingPenalty`, and `preRepairConflicts` are optional.
 Each repair candidate uses the same conflict shape so downstream tools can compare alternates

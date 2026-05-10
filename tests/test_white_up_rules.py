@@ -7,6 +7,7 @@ from rubik_recognizer.recognizer import (
     _prefer_calibrated_result,
     _recognition_category_payload,
     _repair_ranking_penalty,
+    _weak_selected_grid_count,
     _white_up_checks,
 )
 
@@ -206,6 +207,7 @@ def test_recognition_category_marks_low_penalty_repair_as_high_confidence():
         state=payload["state"],
         confidence=payload["confidence"],
         reason=payload["reason"],
+        candidates=payload["candidates"],
         recognition_signals=payload["recognitionSignals"],
     )
 
@@ -227,6 +229,7 @@ def test_recognition_category_marks_moderate_repair_as_high_confidence():
         state=payload["state"],
         confidence=0.655,
         reason=payload["reason"],
+        candidates=payload["candidates"],
         recognition_signals=signals,
     )
 
@@ -266,13 +269,13 @@ def test_recognition_category_downgrades_high_penalty_repair_to_manual_review():
     signals = json.loads(json.dumps(payload["recognitionSignals"]))
     selected = signals["selectedRepairCandidate"]
     selected["repairRankingPenalty"] = 0.18
-    signals["repairCandidateCount"] = 100_000
     signals["topRepairCandidates"][0] = selected
     result = RecognitionResult(
         status=payload["status"],
         state=payload["state"],
         confidence=0.61,
         reason=payload["reason"],
+        candidates=100_000,
         recognition_signals=signals,
     )
 
@@ -286,12 +289,12 @@ def test_recognition_category_marks_floor_confidence_repair_as_retake():
     fixture_dir = Path(__file__).parent / "fixtures"
     payload = json.loads((fixture_dir / "recognition_signals_repair.json").read_text())
     signals = json.loads(json.dumps(payload["recognitionSignals"]))
-    signals["repairCandidateCount"] = 12_101
     result = RecognitionResult(
         status=payload["status"],
         state=payload["state"],
         confidence=0.50,
         reason=payload["reason"],
+        candidates=12_101,
         recognition_signals=signals,
     )
 
@@ -325,6 +328,69 @@ def test_repair_ranking_penalty_prefers_cleaner_pre_repair_pieces():
         repair_cost=10.0,
         repair_changes=2,
     )
+
+
+def _clean_grid(face: str) -> dict:
+    return {
+        "gridId": 0,
+        "centerFace": face,
+        "matchedCount": 9,
+        "fitError": 0.5,
+        "quality": 100.0,
+        "gridSamples": 9,
+        "badSamples": 0,
+        "suspectSamples": 0.0,
+    }
+
+
+def test_weak_selected_grid_count_ignores_artifact_face_slots():
+    # Fingerprint of corpus Set 32 image A: U/R/F clean, but a back-face B and
+    # an artifact L grid show up — L has fitError 16.4 (would trip), B is fine.
+    # Image B: D/L clean visible, plus artifact F/R grids that should be
+    # ignored. Visible-only filtering should report zero weak grids here.
+    signals = {
+        "selectedGridQuality": {
+            "imageA": {
+                "U": _clean_grid("U"),
+                "R": _clean_grid("R"),
+                "F": _clean_grid("F"),
+                "B": {**_clean_grid("B"), "matchedCount": 6, "fitError": 0.7, "quality": 97.7},
+                "L": {**_clean_grid("L"), "fitError": 16.4, "quality": 96.5},
+            },
+            "imageB": {
+                "D": _clean_grid("D"),
+                "L": _clean_grid("L"),
+                "B": _clean_grid("B"),
+                "F": {**_clean_grid("F"), "fitError": 7.6, "quality": 148.1},
+                "R": {**_clean_grid("R"), "matchedCount": 6, "quality": 97.1},
+            },
+        }
+    }
+
+    assert _weak_selected_grid_count(signals) == 0
+
+
+def test_weak_selected_grid_count_still_counts_visible_face_weakness():
+    # Fingerprint of corpus Set 32 image B with the visible B face genuinely
+    # weak (quality 72.4 < 75 threshold). Even with the visible-only filter
+    # this should still surface as a weak grid — that's the signal we want.
+    signals = {
+        "selectedGridQuality": {
+            "imageA": {
+                "U": _clean_grid("U"),
+                "R": _clean_grid("R"),
+                "F": _clean_grid("F"),
+                "L": {**_clean_grid("L"), "fitError": 16.4, "quality": 96.5},
+            },
+            "imageB": {
+                "D": _clean_grid("D"),
+                "L": _clean_grid("L"),
+                "B": {**_clean_grid("B"), "matchedCount": 7, "fitError": 6.7, "quality": 72.4},
+            },
+        }
+    }
+
+    assert _weak_selected_grid_count(signals) == 1
 
 
 def test_repair_ranking_penalty_is_continuous_not_a_hard_reject():

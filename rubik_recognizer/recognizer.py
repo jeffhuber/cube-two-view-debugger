@@ -81,6 +81,15 @@ REPAIRED_HIGH_CONFIDENCE_THRESHOLD = 0.60
 REPAIRED_HIGH_MAX_RANKING_PENALTY = 0.16
 REPAIR_RETAKE_CONFIDENCE_THRESHOLD = 0.50
 REPAIR_RETAKE_MIN_CANDIDATES = 50_000
+# selectedGridQuality reports grids the recognizer assigned to face slots in
+# each image. Only the three slots actually exposed by the URF/DLB framing
+# matter for clean-quality gating; other slots are artifact grids picked up
+# from back-faces, glints, or partial silhouettes and routinely look weak
+# without indicating the recognized state is wrong.
+VISIBLE_FACES_BY_IMAGE = {
+    "imageA": frozenset(("U", "R", "F")),
+    "imageB": frozenset(("D", "L", "B")),
+}
 REPAIR_ADJACENT_COLOR_PAIRS = {frozenset(("red", "orange")), frozenset(("green", "blue"))}
 VALID_EDGE_COLOR_SETS = {frozenset(colors) for colors in EDGE_COLORS}
 VALID_CORNER_COLOR_SETS = {frozenset(colors) for colors in CORNER_COLORS}
@@ -400,11 +409,12 @@ def _recognition_category_payload(result: RecognitionResult) -> Dict[str, str]:
 
     selected = signals.get("selectedRepairCandidate") or {}
     penalty = _float_signal(selected.get("repairRankingPenalty"))
-    repair_candidate_count = max(
-        _int_signal(signals.get("repairCandidateCount")),
-        _int_signal(result.candidates),
-    )
-    if result.confidence <= REPAIR_RETAKE_CONFIDENCE_THRESHOLD or repair_candidate_count < REPAIR_RETAKE_MIN_CANDIDATES:
+    # signals.repairCandidateCount is the capped public list of repair-tier
+    # survivors (single digits in practice) and is the wrong magnitude for the
+    # "heavily-pruned candidate pool" floor. Use the top-level evaluated
+    # candidate count instead.
+    total_candidate_count = _int_signal(result.candidates)
+    if result.confidence <= REPAIR_RETAKE_CONFIDENCE_THRESHOLD or total_candidate_count < REPAIR_RETAKE_MIN_CANDIDATES:
         return {
             "category": "reject_retake",
             "reason": "repair_path_floor_confidence_or_too_few_candidates",
@@ -426,10 +436,13 @@ def _recognition_category_payload(result: RecognitionResult) -> Dict[str, str]:
 def _weak_selected_grid_count(signals: Dict[str, Any]) -> int:
     count = 0
     quality_by_image = signals.get("selectedGridQuality") or {}
-    for image_quality in quality_by_image.values():
+    for image_key, image_quality in quality_by_image.items():
         if not isinstance(image_quality, dict):
             continue
-        for grid in image_quality.values():
+        visible = VISIBLE_FACES_BY_IMAGE.get(image_key, frozenset())
+        for face_key, grid in image_quality.items():
+            if face_key not in visible:
+                continue
             if not isinstance(grid, dict):
                 continue
             matched_count = _int_signal(grid.get("matchedCount"))

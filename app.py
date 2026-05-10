@@ -511,9 +511,10 @@ def _strip_heavy_fields(payload: Dict) -> None:
       - imageA/imageB summaries — kept lightweight by upstream code
                       already (just sticker/grid counts) so retained.
 
-    Leaves status / state / confidence / reason / failedChecks /
-    candidates / runId / runUrl / artifacts / evaluation intact —
-    everything callers actually need to drive a UI flow.
+    Leaves status / state / confidence / reason / recognitionCategory /
+    recognitionCategoryReason / failedChecks / candidates / runId / runUrl /
+    artifacts / evaluation intact — everything callers actually need to
+    drive a UI flow.
     """
     for key in ("overlays", "diagnostics"):
         payload.pop(key, None)
@@ -575,6 +576,8 @@ def save_run(pair: ImagePair, payload: Dict, result, expected_state: Optional[st
         "status": payload.get("status"),
         "state": payload.get("state"),
         "confidence": payload.get("confidence"),
+        "recognitionCategory": payload.get("recognitionCategory"),
+        "recognitionCategoryReason": payload.get("recognitionCategoryReason"),
         "reason": payload.get("reason"),
         "failedChecks": payload.get("failedChecks", []),
         "evaluation": payload.get("evaluation"),
@@ -741,6 +744,7 @@ def _batch_html(summary: Dict) -> str:
             "<tr>"
             f"<td>{html.escape(item['setId'])}</td>"
             f"<td>{html.escape(item['status'])}</td>"
+            f"<td>{html.escape(item.get('recognitionCategory') or '')}</td>"
             f"<td>{html.escape(str(item.get('confidence') or ''))}</td>"
             f"<td>{html.escape(exact)}</td>"
             f"<td><code>{html.escape(item.get('state') or '')}</code></td>"
@@ -754,7 +758,7 @@ def _batch_html(summary: Dict) -> str:
         "td,th{border:1px solid #ccd5dc;padding:6px;vertical-align:top}code{overflow-wrap:anywhere}</style>"
         f"<h1>{html.escape(summary['batchId'])}</h1>"
         f"<p>{summary['successes']} success, {summary['rejections']} rejected, {summary['exactMatches']} exact matches.</p>"
-        "<table><thead><tr><th>Set</th><th>Status</th><th>Confidence</th><th>Exact</th><th>State</th><th>Reason</th><th>Run</th></tr></thead>"
+        "<table><thead><tr><th>Set</th><th>Status</th><th>Category</th><th>Confidence</th><th>Exact</th><th>State</th><th>Reason</th><th>Run</th></tr></thead>"
         f"<tbody>{''.join(rows)}</tbody></table>"
     )
 

@@ -3,12 +3,14 @@
   "state": "LLBRUFUFLULDDRUDFLRDFRFBRLRBDFFDRRUUFDFRLUBUDLBDBBBBLU",
   "confidence": 0.7301,
   "reason": "Recognized the highest-scoring legal cube state after cubie-level color repair. Adaptive pair color calibration was used.",
+  "recognitionCategory": "success_repaired_high_confidence",
+  "recognitionCategoryReason": "repair_path_high_confidence_low_penalty",
   "failedChecks": [],
   "candidates": 387208,
   "recognitionSignals": {
     "schemaVersion": 1,
     "repairPathUsed": true,
-    "repairCandidateCount": 8,
+    "repairCandidateCount": 134208,
     "selectedGridQuality": {
       "imageA": {
         "U": {

@@ -190,6 +190,66 @@ If launched as executable `tools/audit_recognition_pair.py`, the audit tool re-e
 That makes accidental system-Python runs fail loudly or self-correct instead of silently producing
 different CV behavior.
 
+### Corpus probe harness
+
+Use `tools/probe_corpus.py` when you want a reproducible labelled-corpus sweep before changing
+orientation scoring, grid ranking, color classification, or repair ranking:
+
+```sh
+.venv/bin/python tools/probe_corpus.py \
+  --manifest tests/fixtures/corpus_manifest.json \
+  --json-output /tmp/cube-corpus-probe.json \
+  --fail-on-contract
+```
+
+The default manifest is `tests/fixtures/corpus_manifest.json`, so this shorter form is equivalent:
+
+```sh
+.venv/bin/python tools/probe_corpus.py
+```
+
+The manifest currently references local `~/Downloads` images instead of committing the JPEGs.
+Each row records expected SHA256 hashes for image A, image B, and the ground-truth JSON. If a
+runner has different image bytes, the probe marks the row as `image_input_drift` before treating
+the recognizer output as meaningful. Missing local files are skipped clearly.
+
+Each corpus row records both:
+
+- `expectedScoreFloor`: the non-regression floor enforced by the probe.
+- `currentScoreObserved`: the observed labelled-corpus baseline when the row was added.
+
+That lets a later PR ratchet the floor upward intentionally when a recognizer change improves a
+pair, while still preserving the previous observed baseline for audit history.
+
+The probe emits:
+
+- canonical score and score-vs-raw ground truth
+- recognition category, confidence, repair-path status, repair penalty, evaluated candidate count
+- image and ground-truth SHA checks
+- per-image orientation-option diagnostics
+- a coarse failure-mode label
+- the smallest generated-correct orientation score gaps
+
+The orientation diagnostics are intentionally scoped to the per-image list returned by
+`_oriented_face_options`, sorted by each option's `_score`. Fields such as
+`orientationOptionRank`, `selectedOptionRank`, and `selectedVsCorrectScoreGap` do **not** refer to
+`topRepairCandidates`; that post-merge repair list is a later ranking stage with a separate cap.
+
+Failure modes are diagnostic only:
+
+- `image_input_drift`: one or more manifest SHA checks failed.
+- `retake_or_low_confidence`: the recognizer did not return `status: success`.
+- `orientation_rank_failure`: the exact ground-truth face matrix was generated, but the selected
+  matrix was different.
+- `color_or_merge_failure`: the correct color multiset appeared, but the exact matrix did not.
+- `candidate_generation_failure`: neither the exact matrix nor the correct color multiset appeared.
+- `clean`: selected matrix matched ground truth for the generated visible face.
+
+This probe is deliberately behavior-preserving. It does not tune `ORIENTATION_SCORE_WEIGHT`, alter
+candidate selection, change color classification, or modify API result semantics. Once the probe
+shows stable Mode 1 cases (correct orientation generated but ranked below the selected option), a
+separate tuning PR can adjust orientation ranking with a clear before/after corpus report.
+
 ## How Recognition Works
 
 The recognizer is a CV-first pipeline with cube-constraint validation at the end. It intentionally

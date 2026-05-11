@@ -87,6 +87,7 @@ from rubik_recognizer.recognizer import (  # noqa: E402
     FACE_ORDER,
     WhiteUpRecognizer,
     _oriented_face_options,
+    recognition_diagnostics,
 )
 
 
@@ -228,6 +229,155 @@ def summarize_failure_modes(faces: Iterable[Dict[str, Any]], input_drift: bool, 
     return "clean"
 
 
+def grid_weak_reasons(grid: Dict[str, Any]) -> List[str]:
+    reasons = []
+    matched = grid.get("matchedCount")
+    fit_error = grid.get("fitError")
+    quality = grid.get("quality")
+    grid_samples = grid.get("gridSamples")
+    bad_samples = grid.get("badSamples")
+    suspect_samples = grid.get("suspectSamples")
+    if isinstance(matched, (int, float)) and matched < 6:
+        reasons.append("matchedCount_below_6")
+    if isinstance(fit_error, (int, float)) and fit_error > 12.0:
+        reasons.append("fitError_above_12")
+    if isinstance(quality, (int, float)) and quality < 80.0:
+        reasons.append("quality_below_80")
+    if isinstance(grid_samples, (int, float)) and grid_samples >= 3:
+        reasons.append("grid_sample_heavy")
+    if isinstance(bad_samples, (int, float)) and bad_samples > 0:
+        reasons.append("bad_samples_present")
+    if isinstance(suspect_samples, (int, float)) and suspect_samples > 2.5:
+        reasons.append("suspect_samples_present")
+    return reasons
+
+
+def selected_grid_health(signals: Dict[str, Any]) -> Dict[str, Any]:
+    rows = []
+    weak = []
+    for image_key, grids in (signals.get("selectedGridQuality") or {}).items():
+        if not isinstance(grids, dict):
+            continue
+        for face, grid in grids.items():
+            if not isinstance(grid, dict):
+                continue
+            reasons = grid_weak_reasons(grid)
+            row = {
+                "image": image_key,
+                "face": face,
+                "gridId": grid.get("gridId"),
+                "matchedCount": grid.get("matchedCount"),
+                "fitError": grid.get("fitError"),
+                "quality": grid.get("quality"),
+                "gridSamples": grid.get("gridSamples"),
+                "badSamples": grid.get("badSamples"),
+                "suspectSamples": grid.get("suspectSamples"),
+                "weakReasons": reasons,
+            }
+            rows.append(row)
+            if reasons:
+                weak.append(row)
+    return {
+        "selectedGrids": rows,
+        "weakSelectedGrids": weak,
+        "weakSelectedGridCount": len(weak),
+    }
+
+
+def grid_group_breakdown(diagnostics: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    if not isinstance(diagnostics, dict):
+        return {}
+    by_image = {}
+    for image_key in ("imageA", "imageB"):
+        image_diag = diagnostics.get(image_key)
+        if not isinstance(image_diag, dict):
+            continue
+        groups = image_diag.get("gridGroups") or {}
+        by_image[image_key] = {
+            face: {
+                "count": len(grids) if isinstance(grids, list) else 0,
+                "matchedCounts": [grid.get("matchedCount") for grid in grids[:8] if isinstance(grid, dict)],
+                "fitErrors": [grid.get("fitError") for grid in grids[:8] if isinstance(grid, dict)],
+                "qualities": [grid.get("quality") for grid in grids[:8] if isinstance(grid, dict)],
+            }
+            for face, grids in groups.items()
+            if isinstance(grids, list)
+        }
+    return by_image
+
+
+def count_deviation_summary(count_rows: Sequence[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    if not count_rows:
+        return None
+    first = count_rows[0]
+    counts = first.get("counts") or {}
+    if not isinstance(counts, dict):
+        return None
+    deviations = {
+        face: int(counts.get(face, 0)) - 9
+        for face in FACE_ORDER
+        if int(counts.get(face, 0)) != 9
+    }
+    return {
+        "mostCommonCounts": counts,
+        "mostCommonCountFrequency": first.get("n"),
+        "deviationsFromNine": deviations,
+    }
+
+
+def localization_hypotheses(
+    *,
+    payload: Dict[str, Any],
+    health: Dict[str, Any],
+    diagnostics: Optional[Dict[str, Any]],
+) -> List[str]:
+    hypotheses = []
+    failed = set(payload.get("failedChecks") or [])
+    weak = health.get("weakSelectedGrids") or []
+    if any(item.get("image") == "imageB" and item.get("face") == "D" for item in weak):
+        hypotheses.append("weak_imageB_down_anchor")
+    if any(str(check).endswith("_count_not_9") for check in failed):
+        hypotheses.append("pre_repair_face_count_imbalance")
+    groups = grid_group_breakdown(diagnostics)
+    for image_key, image_groups in groups.items():
+        if not isinstance(image_groups, dict):
+            continue
+        for face in FACE_ORDER:
+            face_count = (image_groups.get(face) or {}).get("count", 0)
+            if face_count >= 6:
+                hypotheses.append(f"{image_key}_{face}_grid_overgeneration")
+    merged = (diagnostics or {}).get("mergedCandidates") if isinstance(diagnostics, dict) else None
+    if isinstance(merged, dict) and not merged.get("legalInSample"):
+        hypotheses.append("no_legal_state_in_sampled_merged_candidates")
+    return hypotheses
+
+
+def rejection_localization_probe(result: Any, payload: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    if payload.get("status") == "success":
+        return None
+    signals = payload.get("recognitionSignals") or {}
+    health = selected_grid_health(signals)
+    diagnostics = None
+    if result.image_a is not None and result.image_b is not None:
+        diagnostics = recognition_diagnostics(result.image_a, result.image_b)
+    merged = (diagnostics or {}).get("mergedCandidates") if isinstance(diagnostics, dict) else {}
+    return {
+        "selectedGridHealth": health,
+        "gridGroupBreakdown": grid_group_breakdown(diagnostics),
+        "mergedCandidateSummary": {
+            "optionsA": merged.get("optionsA") if isinstance(merged, dict) else None,
+            "optionsB": merged.get("optionsB") if isinstance(merged, dict) else None,
+            "merged": merged.get("merged") if isinstance(merged, dict) else None,
+            "sampled": merged.get("sampled") if isinstance(merged, dict) else None,
+            "legalInSample": merged.get("legalInSample") if isinstance(merged, dict) else None,
+            "validationErrors": (merged.get("validationErrors") or [])[:8] if isinstance(merged, dict) else [],
+            "faceCountDeviation": count_deviation_summary(merged.get("faceCounts") or []) if isinstance(merged, dict) else None,
+            "examples": (merged.get("examples") or [])[:3] if isinstance(merged, dict) else [],
+        },
+        "hypotheses": localization_hypotheses(payload=payload, health=health, diagnostics=diagnostics),
+    }
+
+
 def orientation_probe_for_image(
     *,
     image_label: str,
@@ -364,6 +514,7 @@ def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
         for face in image_probe.get("faces", [])
     ]
     primary_failure_mode = summarize_failure_modes(face_summaries, input_drift, payload.get("status"))
+    rejection_probe = rejection_localization_probe(result, payload)
 
     expected_category = row.get("expectedCategory")
     expected_score_floor = row.get("expectedScoreFloor")
@@ -411,6 +562,7 @@ def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
         "primaryFailureMode": primary_failure_mode,
         "failureModes": dict(Counter(face.get("failureMode", "unknown") for face in face_summaries)),
         "orientationDiagnostics": orientation,
+        "rejectionLocalization": rejection_probe,
         "notes": row.get("notes"),
     }
 

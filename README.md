@@ -227,6 +227,9 @@ The probe emits:
 - recognition category, confidence, repair-path status, repair penalty, evaluated candidate count
 - image and ground-truth SHA checks
 - per-image orientation-option diagnostics
+- rejection-localization diagnostics for rejected pairs, including selected-grid health, grid-group
+  overgeneration, merged-candidate face-count deviations, validation-error samples, and coarse
+  hypotheses such as `weak_imageB_down_anchor` or `pre_repair_face_count_imbalance`
 - a coarse failure-mode label
 - the smallest generated-correct orientation score gaps
 
@@ -249,6 +252,12 @@ This probe is deliberately behavior-preserving. It does not tune `ORIENTATION_SC
 candidate selection, change color classification, or modify API result semantics. Once the probe
 shows stable Mode 1 cases (correct orientation generated but ranked below the selected option), a
 separate tuning PR can adjust orientation ranking with a clear before/after corpus report.
+
+Set 44 is intentionally included as a rejected fixture. It currently exercises the upstream
+color/grid-evidence collapse path: image B's `D/yellow` anchor is selected from a weak 5/9 grid,
+and the best merged candidates have invalid face-count distributions before repair can produce a
+legal state. Use `tools/probe_corpus.py --set-id 44 --json-output ...` to inspect the
+`rejectionLocalization` block for that failure.
 
 ## How Recognition Works
 

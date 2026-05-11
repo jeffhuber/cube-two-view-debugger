@@ -433,6 +433,58 @@ def orientation_probe_for_image(
     }
 
 
+def _check_expected_yaw(
+    expected: Optional[Dict[str, Any]],
+    signals: Dict[str, Any],
+) -> Tuple[bool, Optional[Dict[str, Any]]]:
+    """Validate the recognizer's `recognitionSignals.captureYaw` against
+    the manifest's `expectedYaw` block.
+
+    Returns (passed, diagnostic). `passed` is True when:
+      - the manifest row has no `expectedYaw` (legacy entries: pass-through), OR
+      - every specified key in `expectedYaw` matches the corresponding
+        field of `recognitionSignals.captureYaw`. Keys checked:
+          status, quarterTurns, normalizationApplied
+
+    `diagnostic` describes the comparison when `expectedYaw` is present,
+    so the probe table / JSON output can surface "expected status=
+    nonstandard, got standard" without the reader chasing the raw
+    signals block. Returns None when there's no expectation to check.
+
+    Three reasonable use cases for `expectedYaw`:
+      - Pin "Set 12 must remain a nonstandard/3 yaw" so a future
+        recognizer regression that silently re-canonicalizes the cube
+        (yaw -> 0) gets caught by the probe harness.
+      - Pin "Set 15 must remain standard/0" so an `_oriented_face_options`
+        change that picks a different visible-face triple producing a
+        non-zero yaw inference is also caught.
+      - Document the expected yaw in the manifest so a reviewer can see
+        at a glance whether each corpus pair exercises canonical-yaw or
+        non-canonical-yaw code paths.
+    """
+    if not isinstance(expected, dict):
+        return True, None
+    capture_yaw = signals.get("captureYaw") if isinstance(signals, dict) else None
+    if not isinstance(capture_yaw, dict):
+        capture_yaw = {}
+    actual = {
+        "status": capture_yaw.get("status"),
+        "quarterTurns": capture_yaw.get("quarterTurns"),
+        "normalizationApplied": capture_yaw.get("normalizationApplied"),
+    }
+    mismatches: List[str] = []
+    for key in ("status", "quarterTurns", "normalizationApplied"):
+        if key not in expected:
+            continue
+        if actual.get(key) != expected[key]:
+            mismatches.append(key)
+    return (not mismatches), {
+        "expected": {key: expected[key] for key in ("status", "quarterTurns", "normalizationApplied") if key in expected},
+        "actual": actual,
+        "mismatchedKeys": mismatches,
+    }
+
+
 def verify_hash(path: Path, expected: Optional[str]) -> Dict[str, Any]:
     actual = file_sha256(str(path))
     return {
@@ -518,9 +570,11 @@ def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
 
     expected_category = row.get("expectedCategory")
     expected_score_floor = row.get("expectedScoreFloor")
+    expected_yaw = row.get("expectedYaw")
     category_ok = expected_category in (None, "", category)
     score_ok = expected_score_floor is None or score >= int(expected_score_floor)
-    contract_passed = (not input_drift) and category_ok and score_ok
+    yaw_ok, yaw_diagnostic = _check_expected_yaw(expected_yaw, signals)
+    contract_passed = (not input_drift) and category_ok and score_ok and yaw_ok
 
     return {
         "setId": set_id,
@@ -548,6 +602,8 @@ def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
         "inputDrift": input_drift,
         "expectedCategory": expected_category,
         "expectedScoreFloor": expected_score_floor,
+        "expectedYaw": expected_yaw,
+        "yawDiagnostic": yaw_diagnostic,
         "currentScoreObserved": row.get("currentScoreObserved"),
         "contractPassed": contract_passed,
         "contractFailures": [
@@ -556,6 +612,7 @@ def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
                 ("image_input_drift", input_drift),
                 ("category_mismatch", not category_ok),
                 ("score_below_floor", not score_ok),
+                ("yaw_mismatch", not yaw_ok),
             )
             if failed
         ],

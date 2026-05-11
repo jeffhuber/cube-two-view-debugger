@@ -31,6 +31,19 @@ SIDE_NEIGHBORS = {
     "L": {"left": "B", "right": "F"},
 }
 ADJACENT_SIDE_PAIRS = (("F", "R"), ("R", "B"), ("B", "L"), ("L", "F"))
+YAW_SIDE_ORDER = ("F", "R", "B", "L")
+IMAGE_A_YAW_BY_ORDERED_SIDE_PAIR = {
+    ("F", "R"): 0,
+    ("R", "B"): 1,
+    ("B", "L"): 2,
+    ("L", "F"): 3,
+}
+IMAGE_B_YAW_BY_ORDERED_SIDE_PAIR = {
+    ("L", "B"): 0,
+    ("F", "L"): 1,
+    ("R", "F"): 2,
+    ("B", "R"): 3,
+}
 MAX_ORIENTED_OPTIONS_PER_IMAGE = 220
 MAX_ORIENTED_OPTIONS_PER_SIDE_PAIR = 128
 MAX_VISIBLE_FACE_TRIPLES = 42
@@ -229,7 +242,7 @@ class WhiteUpRecognizer:
                     confidence=confidence,
                     reason="Recognized a unique legal white-up cube state.",
                     candidates=len(candidates),
-                    recognition_signals={**recognition_signals, **_selected_faces_signal(unique_details.get(state))},
+                    recognition_signals={**recognition_signals, **_selected_faces_signal(unique_details.get(state), state=state)},
                 )
             return RecognitionResult(
                 status="rejected",
@@ -248,7 +261,10 @@ class WhiteUpRecognizer:
                     confidence=ranked_unique[0][1],
                     reason="Recognized the highest-scoring legal white-up cube state.",
                     candidates=len(candidates),
-                    recognition_signals={**recognition_signals, **_selected_faces_signal(unique_details.get(ranked_unique[0][0]))},
+                    recognition_signals={
+                        **recognition_signals,
+                        **_selected_faces_signal(unique_details.get(ranked_unique[0][0]), state=ranked_unique[0][0]),
+                    },
                 )
             return RecognitionResult(
                 status="rejected",
@@ -389,6 +405,18 @@ def _recognition_category_payload(result: RecognitionResult) -> Dict[str, str]:
         }
 
     repair_used = bool(signals.get("repairPathUsed")) or "color repair" in result.reason
+    capture_yaw = signals.get("captureYaw") if isinstance(signals.get("captureYaw"), dict) else {}
+    if capture_yaw.get("status") == "conflict":
+        return {
+            "category": "needs_manual_review",
+            "reason": "conflicting_capture_yaw",
+        }
+    if capture_yaw.get("status") == "nonstandard" and not capture_yaw.get("normalizationApplied"):
+        return {
+            "category": "needs_manual_review",
+            "reason": "nonstandard_capture_yaw_without_normalization",
+        }
+
     if not repair_used:
         if (
             "unique legal" in result.reason
@@ -532,7 +560,7 @@ def _repair_signal_summary(repair_details: Sequence[Dict[str, Any]], selected_st
     }
     if selected is not None:
         summary["selectedRepairCandidate"] = _public_repair_detail(selected)
-        summary.update(_selected_faces_signal(selected))
+        summary.update(_selected_faces_signal(selected, state=selected_state))
     return summary
 
 
@@ -545,7 +573,7 @@ def _candidate_selection_detail(merged: Dict[str, List[List[Any]]]) -> Dict[str,
     }
 
 
-def _selected_faces_signal(selection: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+def _selected_faces_signal(selection: Optional[Dict[str, Any]], state: Optional[str] = None) -> Dict[str, Any]:
     if not selection:
         return {}
     faces = _selected_faces_by_image(selection.get("sidePairA"), selection.get("sidePairB"))
@@ -555,6 +583,7 @@ def _selected_faces_signal(selection: Optional[Dict[str, Any]]) -> Dict[str, Any
         signal["selectedFacesByImage"] = faces
     if sides:
         signal["selectedSidesByImage"] = sides
+        signal["captureYaw"] = _capture_yaw_signal(sides, state=state)
     return signal
 
 
@@ -585,6 +614,121 @@ def _selected_side_positions(ordered_side_pair: Any) -> Dict[str, str]:
     if len(faces) != 2:
         return {}
     return {"left": faces[0], "right": faces[1]}
+
+
+def _capture_yaw_signal(selected_sides: Dict[str, Dict[str, str]], state: Optional[str] = None) -> Dict[str, Any]:
+    observations = []
+    yaw_values: List[int] = []
+    for image_key, lookup in (
+        ("imageA", IMAGE_A_YAW_BY_ORDERED_SIDE_PAIR),
+        ("imageB", IMAGE_B_YAW_BY_ORDERED_SIDE_PAIR),
+    ):
+        sides = selected_sides.get(image_key) if isinstance(selected_sides, dict) else None
+        if not isinstance(sides, dict):
+            continue
+        pair = (sides.get("left"), sides.get("right"))
+        yaw = lookup.get(pair)
+        observation = {
+            "image": image_key,
+            "orderedSidePair": "/".join(face for face in pair if face),
+        }
+        if yaw is not None:
+            observation["yawQuarterTurns"] = yaw
+            yaw_values.append(yaw)
+        else:
+            observation["yawQuarterTurns"] = None
+        observations.append(observation)
+
+    if not yaw_values:
+        return {
+            "status": "unknown",
+            "quarterTurns": None,
+            "degrees": None,
+            "observations": observations,
+        }
+    if len(set(yaw_values)) > 1:
+        return {
+            "status": "conflict",
+            "quarterTurns": None,
+            "degrees": None,
+            "observations": observations,
+        }
+    yaw = yaw_values[0]
+    return {
+        "status": "standard" if yaw == 0 else "nonstandard",
+        "quarterTurns": yaw,
+        "degrees": yaw * 90,
+        "requiresNormalization": yaw != 0,
+        "normalizationApplied": bool(state) and yaw != 0,
+        "stateFrame": "wca",
+        **({"captureFrameState": _state_to_capture_yaw(state, yaw)} if state else {}),
+        "observations": observations,
+    }
+
+
+def _state_to_capture_yaw(state: str, yaw: int) -> str:
+    """Return the photo/Fixer-frame state for a canonical WCA state.
+
+    The recognizer's public ``state`` stays solver-ready URFDLB with WCA centers.
+    For a white-up capture yawed around the U/D axis, the photo frame shifts the
+    side face chunks while the U and D stickers rotate in opposite directions.
+    """
+    if len(state) != 54:
+        return state
+    yaw %= 4
+    chunks = _state_chunks(state)
+    capture_to_wca = _capture_to_wca_yaw_map(yaw)
+    capture_chunks: Dict[str, str] = {}
+    for face in FACE_ORDER:
+        source_face = capture_to_wca[face]
+        chunk = chunks[source_face]
+        if face == "U":
+            chunk = _rotate_face_clockwise_n(chunk, yaw)
+        elif face == "D":
+            chunk = _rotate_face_clockwise_n(chunk, -yaw)
+        capture_chunks[face] = chunk
+    return "".join(capture_chunks[face] for face in FACE_ORDER)
+
+
+def _capture_yaw_state_to_wca(state: str, yaw: int) -> str:
+    if len(state) != 54:
+        return state
+    yaw %= 4
+    capture_chunks = _state_chunks(state)
+    capture_to_wca = _capture_to_wca_yaw_map(yaw)
+    wca_chunks: Dict[str, str] = {}
+    for capture_face, wca_face in capture_to_wca.items():
+        chunk = capture_chunks[capture_face]
+        if capture_face == "U":
+            chunk = _rotate_face_clockwise_n(chunk, -yaw)
+        elif capture_face == "D":
+            chunk = _rotate_face_clockwise_n(chunk, yaw)
+        wca_chunks[wca_face] = chunk
+    return "".join(wca_chunks[face] for face in FACE_ORDER)
+
+
+def _capture_to_wca_yaw_map(yaw: int) -> Dict[str, str]:
+    yaw %= 4
+    mapping = {"U": "U", "D": "D"}
+    for index, capture_face in enumerate(YAW_SIDE_ORDER):
+        mapping[capture_face] = YAW_SIDE_ORDER[(index + yaw) % len(YAW_SIDE_ORDER)]
+    return mapping
+
+
+def _state_chunks(state: str) -> Dict[str, str]:
+    return {face: state[index * 9 : (index + 1) * 9] for index, face in enumerate(FACE_ORDER)}
+
+
+def _rotate_face_clockwise_n(face: str, turns: int) -> str:
+    turns %= 4
+    rotated = face
+    for _ in range(turns):
+        rotated = _rotate_face_clockwise(rotated)
+    return rotated
+
+
+def _rotate_face_clockwise(face: str) -> str:
+    return "".join(face[index] for index in (6, 3, 0, 7, 4, 1, 8, 5, 2))
 
 
 def _selected_anchor_faces(anchor: str, side_pair: Any) -> List[str]:

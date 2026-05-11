@@ -7,14 +7,19 @@
       "setId": "12",
       "imageAPath": "/Users/jhuber/Downloads/Set 12 - A - white up IMG_6701.JPG",
       "imageBPath": "/Users/jhuber/Downloads/Set 12 - B - white up IMG_6702.JPG",
-      "groundTruthPath": "/Users/jhuber/Downloads/Set 12- cube-ground-truth-1778111767853.json",
+      "groundTruthPath": "/Users/jhuber/Downloads/Set 12 - cube-ground-truth-1778518865142.json",
       "imageA_sha256_expected": "b69d96521eb6a0761506a2e2d24a11dd7c92fce72370c0087dc8ff36e85ab6f6",
       "imageB_sha256_expected": "8bd40ce743689721e5b2bca38528e1bf83d2a74c9fe7b47c81df7647213c74d9",
-      "groundTruth_sha256_expected": "89b3780f1eaaead249ee1a449c2fa811f2fe8752f55e10d982d658769c0eb24f",
+      "groundTruth_sha256_expected": "0db7baf12cf443e0ff9daf45f59299f885c0a2eda4bfa8d4fec89d30319f78af",
       "expectedCategory": "success_repaired_high_confidence",
       "expectedScoreFloor": 52,
       "currentScoreObserved": 52,
-      "notes": "Canonicalized ground truth; repaired high-confidence success on the local hashed images."
+      "expectedYaw": {
+        "status": "nonstandard",
+        "quarterTurns": 3,
+        "normalizationApplied": true
+      },
+      "notes": "Canonical-WCA ground truth captured post-PR-#95. Capture-frame state is preserved in recognitionSignals.captureFrameState; yaw=3."
     },
     {
       "setId": "14",
@@ -124,14 +129,19 @@
       "setId": "32",
       "imageAPath": "/Users/jhuber/Downloads/Set 32 - A - white up IMG_7143.JPG",
       "imageBPath": "/Users/jhuber/Downloads/Set 32 - B - white up IMG_7144.JPG",
-      "groundTruthPath": "/Users/jhuber/Downloads/Set 32 v1 - cube-ground-truth-1778357778312.json",
+      "groundTruthPath": "/Users/jhuber/Downloads/Set 32 - cube-ground-truth-1778518837663.json",
       "imageA_sha256_expected": "547072797d7f78b51c7357a8437fe257c41fa6b4057014c42534b07888ee4976",
       "imageB_sha256_expected": "921843425755168856f270815ff9a2359f1cf71be486dc6d567363faea6ae7a7",
-      "groundTruth_sha256_expected": "15c54a7f22c187b7cdbd82a46d4e3a3415bdf312cd6863841158a9c732d66ebe",
+      "groundTruth_sha256_expected": "96376cf499abbc266eb2cc7a6f33147e306bd6728076310e9c1f28d79713e452",
       "expectedCategory": "success_clean",
       "expectedScoreFloor": 54,
       "currentScoreObserved": 54,
-      "notes": "Canonicalized ground truth; exact direct result after artifact-grid filtering."
+      "expectedYaw": {
+        "status": "nonstandard",
+        "quarterTurns": 1,
+        "normalizationApplied": true
+      },
+      "notes": "Canonical-WCA ground truth captured post-PR-#95. Exact direct result; yaw=1."
     },
     {
       "setId": "42",
@@ -144,6 +154,11 @@
       "expectedCategory": "success_clean",
       "expectedScoreFloor": 54,
       "currentScoreObserved": 54,
+      "expectedYaw": {
+        "status": "nonstandard",
+        "quarterTurns": 1,
+        "normalizationApplied": true
+      },
       "notes": "Clean nonstandard-yaw regression case; yaw=1, normalizationApplied=true, no ground-truth canonicalization needed."
     },
     {

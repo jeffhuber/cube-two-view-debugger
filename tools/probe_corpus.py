@@ -447,6 +447,32 @@ def missing_paths(paths: Sequence[Path]) -> List[str]:
     return [str(path) for path in paths if not path.exists()]
 
 
+def yaw_contract_failures(expected_yaw: Any, signals: Dict[str, Any]) -> List[str]:
+    if expected_yaw in (None, ""):
+        return []
+    if not isinstance(expected_yaw, dict):
+        return [f"yaw contract is not an object: {expected_yaw!r}"]
+
+    actual_yaw = signals.get("captureYaw") or {}
+    if not isinstance(actual_yaw, dict):
+        actual_yaw = {}
+
+    comparisons = (
+        ("status", expected_yaw.get("status"), actual_yaw.get("status")),
+        ("quarterTurns", expected_yaw.get("quarterTurns"), actual_yaw.get("quarterTurns")),
+        (
+            "normalizationApplied",
+            expected_yaw.get("normalizationApplied"),
+            actual_yaw.get("normalizationApplied"),
+        ),
+    )
+    failures = []
+    for key, expected, actual in comparisons:
+        if expected is not None and actual != expected:
+            failures.append(f"yaw_{key}_mismatch(expected={expected!r}, actual={actual!r})")
+    return failures
+
+
 def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
     set_id = str(row.get("setId") or row.get("id") or "")
     image_a = normalize_path(str(row["imageAPath"]), manifest_path)
@@ -520,7 +546,9 @@ def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
     expected_score_floor = row.get("expectedScoreFloor")
     category_ok = expected_category in (None, "", category)
     score_ok = expected_score_floor is None or score >= int(expected_score_floor)
-    contract_passed = (not input_drift) and category_ok and score_ok
+    yaw_failures = yaw_contract_failures(row.get("expectedYaw"), signals)
+    yaw_ok = not yaw_failures
+    contract_passed = (not input_drift) and category_ok and score_ok and yaw_ok
 
     return {
         "setId": set_id,
@@ -549,15 +577,20 @@ def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
         "expectedCategory": expected_category,
         "expectedScoreFloor": expected_score_floor,
         "currentScoreObserved": row.get("currentScoreObserved"),
+        "expectedYaw": row.get("expectedYaw"),
+        "captureYaw": signals.get("captureYaw"),
         "contractPassed": contract_passed,
         "contractFailures": [
-            name
-            for name, failed in (
-                ("image_input_drift", input_drift),
-                ("category_mismatch", not category_ok),
-                ("score_below_floor", not score_ok),
-            )
-            if failed
+            *[
+                name
+                for name, failed in (
+                    ("image_input_drift", input_drift),
+                    ("category_mismatch", not category_ok),
+                    ("score_below_floor", not score_ok),
+                )
+                if failed
+            ],
+            *yaw_failures,
         ],
         "primaryFailureMode": primary_failure_mode,
         "failureModes": dict(Counter(face.get("failureMode", "unknown") for face in face_summaries)),

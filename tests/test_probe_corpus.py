@@ -6,6 +6,7 @@ from tools.probe_corpus import (
     grid_weak_reasons,
     load_manifest,
     smallest_rank_gaps,
+    yaw_contract_failures,
 )
 
 
@@ -72,13 +73,44 @@ def test_probe_failure_classifier_distinguishes_candidate_generation():
 def test_probe_manifest_records_hashes_observed_baselines_and_contracts():
     manifest = load_manifest(Path(__file__).parent / "fixtures" / "corpus_manifest.json")
 
-    assert {row["setId"] for row in manifest} >= {"12", "14", "15", "24", "27", "29", "31", "32", "44"}
+    assert {row["setId"] for row in manifest} >= {"12", "14", "15", "24", "27", "29", "31", "32", "42", "44"}
     for row in manifest:
         assert row["imageA_sha256_expected"]
         assert row["imageB_sha256_expected"]
         assert row["groundTruth_sha256_expected"]
         assert "expectedCategory" in row
         assert "currentScoreObserved" in row
+
+
+def test_probe_manifest_records_expected_yaw_for_nonstandard_cleanups():
+    manifest = load_manifest(Path(__file__).parent / "fixtures" / "corpus_manifest.json")
+    expected = {row["setId"]: row.get("expectedYaw") for row in manifest}
+
+    assert expected["12"] == {"status": "nonstandard", "quarterTurns": 3, "normalizationApplied": True}
+    assert expected["32"] == {"status": "nonstandard", "quarterTurns": 1, "normalizationApplied": True}
+    assert expected["42"] == {"status": "nonstandard", "quarterTurns": 1, "normalizationApplied": True}
+
+
+def test_probe_yaw_contract_accepts_matching_optional_manifest():
+    failures = yaw_contract_failures(
+        {"status": "nonstandard", "quarterTurns": 3, "normalizationApplied": True},
+        {"captureYaw": {"status": "nonstandard", "quarterTurns": 3, "normalizationApplied": True}},
+    )
+
+    assert failures == []
+
+
+def test_probe_yaw_contract_reports_mismatched_capture_yaw():
+    failures = yaw_contract_failures(
+        {"status": "nonstandard", "quarterTurns": 3, "normalizationApplied": True},
+        {"captureYaw": {"status": "standard", "quarterTurns": 0, "normalizationApplied": False}},
+    )
+
+    assert failures == [
+        "yaw_status_mismatch(expected='nonstandard', actual='standard')",
+        "yaw_quarterTurns_mismatch(expected=3, actual=0)",
+        "yaw_normalizationApplied_mismatch(expected=True, actual=False)",
+    ]
 
 
 def test_probe_smallest_rank_gaps_ignores_clean_and_missing_correct():

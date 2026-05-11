@@ -194,6 +194,11 @@ def _normalize_state_candidate(value: Any) -> Optional[str]:
         return None
     if any(face not in FACE_ORDER for face in state):
         return None
+    if validate_state(state).valid:
+        return state
+    # Legacy Fixer exports could store the capture-frame state instead of the
+    # canonical WCA URFDLB state. Keep the rotation search as a compatibility
+    # fallback, but let post-yaw-fix canonical ground truth pass through.
     return _canonical_ground_truth_state(state)
 
 

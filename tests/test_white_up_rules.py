@@ -4,11 +4,13 @@ from pathlib import Path
 from rubik_recognizer.recognizer import (
     PIECE_CONFLICT_KEYS,
     RecognitionResult,
+    _capture_yaw_state_to_wca,
     _prefer_calibrated_result,
     _recognition_category_payload,
     _repair_ranking_penalty,
     _selected_faces_by_image,
     _selected_sides_by_image,
+    _state_to_capture_yaw,
     _white_up_checks,
 )
 
@@ -177,15 +179,18 @@ def test_selected_faces_signal_reports_standard_capture_yaw():
 def test_selected_faces_signal_reports_nonstandard_capture_yaw():
     from rubik_recognizer.recognizer import _selected_faces_signal
 
-    signal = _selected_faces_signal({"orderedSidePairA": "R/B", "orderedSidePairB": "F/L"})
+    state = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
+    signal = _selected_faces_signal({"orderedSidePairA": "R/B", "orderedSidePairB": "F/L"}, state=state)
 
     assert signal["captureYaw"]["status"] == "nonstandard"
     assert signal["captureYaw"]["quarterTurns"] == 1
     assert signal["captureYaw"]["requiresNormalization"] is True
-    assert signal["captureYaw"]["normalizationApplied"] is False
+    assert signal["captureYaw"]["normalizationApplied"] is True
+    assert signal["captureYaw"]["stateFrame"] == "wca"
+    assert signal["captureYaw"]["captureFrameState"] == _state_to_capture_yaw(state, 1)
 
 
-def test_recognition_category_demotes_nonstandard_capture_yaw():
+def test_recognition_category_accepts_normalized_nonstandard_capture_yaw():
     signals = {
         "repairPathUsed": False,
         "captureYaw": {
@@ -193,7 +198,7 @@ def test_recognition_category_demotes_nonstandard_capture_yaw():
             "quarterTurns": 1,
             "degrees": 90,
             "requiresNormalization": True,
-            "normalizationApplied": False,
+            "normalizationApplied": True,
         },
         "selectedGridQuality": {
             "imageA": {
@@ -218,8 +223,44 @@ def test_recognition_category_demotes_nonstandard_capture_yaw():
 
     category = _recognition_category_payload(result)
 
+    assert category["category"] == "success_clean"
+
+
+def test_recognition_category_demotes_unnormalized_nonstandard_capture_yaw():
+    signals = {
+        "repairPathUsed": False,
+        "captureYaw": {
+            "status": "nonstandard",
+            "quarterTurns": 1,
+            "degrees": 90,
+            "requiresNormalization": True,
+            "normalizationApplied": False,
+        },
+    }
+    result = RecognitionResult(
+        status="success",
+        state="U" * 54,
+        confidence=0.847,
+        reason="Recognized a unique legal white-up cube state.",
+        recognition_signals=signals,
+    )
+
+    category = _recognition_category_payload(result)
+
     assert category["category"] == "needs_manual_review"
-    assert category["reason"] == "nonstandard_capture_yaw_requires_normalization"
+    assert category["reason"] == "nonstandard_capture_yaw_without_normalization"
+
+
+def test_capture_yaw_state_transform_matches_saved_capture_frame_examples():
+    set_32_raw = "DBDRUFUFLULBBBDBLURDFDRULFLFRURDUDFRBDFLFBRUDRRLLLBBUF"
+    set_32_wca = "DFLBUFDRURDFDRULFLBDFLFBRUDDRFFDRRUURRLLLBBUFULBBBDBLU"
+    set_12_raw = "LBFRUDRUDFBRUFLBRRBLRULRLLLDBULDBFRBFDDDBFUFBUUDDRFUFL"
+    set_12_wca = "RRLUUBDDFUUDDRFUFLFBRUFLBRRUBBBDRDLFBLRULRLLLFDDDBFUFB"
+
+    assert _state_to_capture_yaw(set_32_wca, 1) == set_32_raw
+    assert _capture_yaw_state_to_wca(set_32_raw, 1) == set_32_wca
+    assert _state_to_capture_yaw(set_12_wca, 3) == set_12_raw
+    assert _capture_yaw_state_to_wca(set_12_raw, 3) == set_12_wca
 
 
 def test_recognition_signal_sample_fixtures_have_stable_shape():

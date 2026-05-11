@@ -375,7 +375,12 @@ diagnostic artifact grids that were not part of the recognized face triple, with
 fixed side-face yaw such as `imageA={U,R,F}`. Successful runs may also include
 `selectedSidesByImage`, which preserves the photo-order side faces for UI comparison layouts, for
 example `{"imageA":{"left":"L","right":"B"},"imageB":{"left":"F","right":"R"}}`; this is additive
-because `selectedFacesByImage` remains alphabetically sorted. Repair-path-only fields such as `topRepairCandidates`,
+because `selectedFacesByImage` remains alphabetically sorted. Successful runs may also include
+`captureYaw`, which reports the detected white-up yaw as `quarterTurns` / `degrees`, whether the
+capture is standard WCA yaw or nonstandard, and whether normalization was applied. The top-level
+`state` remains canonical solver-ready WCA `URFDLB`; when a state is available, `captureYaw.captureFrameState`
+contains the same cube re-expressed in the photo/Fixer frame so UIs can render or compare diamonds
+without relabeling a valid yawed capture as WCA-0 degrees. Repair-path-only fields such as `topRepairCandidates`,
 `selectedRepairCandidate`, `repairCost`, `repairChanges`, `baseConfidence`,
 `repairRankingPenalty`, and `preRepairConflicts` are optional.
 Each repair candidate uses the same conflict shape so downstream tools can compare alternates

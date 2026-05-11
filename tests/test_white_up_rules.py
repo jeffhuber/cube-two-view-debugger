@@ -8,6 +8,7 @@ from rubik_recognizer.recognizer import (
     _recognition_category_payload,
     _repair_ranking_penalty,
     _selected_faces_by_image,
+    _selected_sides_by_image,
     _white_up_checks,
 )
 
@@ -151,6 +152,15 @@ def test_selected_faces_by_image_uses_winning_side_pairs():
     assert faces == {
         "imageA": ["B", "L", "U"],
         "imageB": ["D", "F", "R"],
+    }
+
+
+def test_selected_sides_by_image_preserves_photo_order():
+    sides = _selected_sides_by_image("L/B", "F/R")
+
+    assert sides == {
+        "imageA": {"left": "L", "right": "B"},
+        "imageB": {"left": "F", "right": "R"},
     }
 
 

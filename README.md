@@ -363,7 +363,10 @@ block that is retained by `?slim=1`. Direct legal runs include selected grid qua
 `repairPathUsed: false`; successful runs may include `selectedFacesByImage`, the dynamically
 selected visible faces for image A and image B. Category gating uses that signal to ignore
 diagnostic artifact grids that were not part of the recognized face triple, without assuming a
-fixed side-face yaw such as `imageA={U,R,F}`. Repair-path-only fields such as `topRepairCandidates`,
+fixed side-face yaw such as `imageA={U,R,F}`. Successful runs may also include
+`selectedSidesByImage`, which preserves the photo-order side faces for UI comparison layouts, for
+example `{"imageA":{"left":"L","right":"B"},"imageB":{"left":"F","right":"R"}}`; this is additive
+because `selectedFacesByImage` remains alphabetically sorted. Repair-path-only fields such as `topRepairCandidates`,
 `selectedRepairCandidate`, `repairCost`, `repairChanges`, `baseConfidence`,
 `repairRankingPenalty`, and `preRepairConflicts` are optional.
 Each repair candidate uses the same conflict shape so downstream tools can compare alternates

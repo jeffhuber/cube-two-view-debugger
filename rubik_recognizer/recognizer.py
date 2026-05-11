@@ -341,6 +341,8 @@ class WhiteUpRecognizer:
                 "repairChanges": changes,
                 "sidePairA": _side_pair_key(merged.get("_side_pair_a")),
                 "sidePairB": _side_pair_key(merged.get("_side_pair_b")),
+                "orderedSidePairA": _ordered_side_pair_key(merged.get("_ordered_side_pair_a")),
+                "orderedSidePairB": _ordered_side_pair_key(merged.get("_ordered_side_pair_b")),
                 "scoreA": merged.get("_score_a"),
                 "scoreB": merged.get("_score_b"),
                 "orientationScoreA": merged.get("_orientation_score_a"),
@@ -538,6 +540,8 @@ def _candidate_selection_detail(merged: Dict[str, List[List[Any]]]) -> Dict[str,
     return {
         "sidePairA": _side_pair_key(merged.get("_side_pair_a")),
         "sidePairB": _side_pair_key(merged.get("_side_pair_b")),
+        "orderedSidePairA": _ordered_side_pair_key(merged.get("_ordered_side_pair_a")),
+        "orderedSidePairB": _ordered_side_pair_key(merged.get("_ordered_side_pair_b")),
     }
 
 
@@ -545,7 +549,13 @@ def _selected_faces_signal(selection: Optional[Dict[str, Any]]) -> Dict[str, Any
     if not selection:
         return {}
     faces = _selected_faces_by_image(selection.get("sidePairA"), selection.get("sidePairB"))
-    return {"selectedFacesByImage": faces} if faces else {}
+    sides = _selected_sides_by_image(selection.get("orderedSidePairA"), selection.get("orderedSidePairB"))
+    signal: Dict[str, Any] = {}
+    if faces:
+        signal["selectedFacesByImage"] = faces
+    if sides:
+        signal["selectedSidesByImage"] = sides
+    return signal
 
 
 def _selected_faces_by_image(side_pair_a: Any, side_pair_b: Any) -> Dict[str, List[str]]:
@@ -559,6 +569,24 @@ def _selected_faces_by_image(side_pair_a: Any, side_pair_b: Any) -> Dict[str, Li
     }
 
 
+def _selected_sides_by_image(ordered_side_pair_a: Any, ordered_side_pair_b: Any) -> Dict[str, Dict[str, str]]:
+    sides_a = _selected_side_positions(ordered_side_pair_a)
+    sides_b = _selected_side_positions(ordered_side_pair_b)
+    if not sides_a or not sides_b:
+        return {}
+    return {
+        "imageA": sides_a,
+        "imageB": sides_b,
+    }
+
+
+def _selected_side_positions(ordered_side_pair: Any) -> Dict[str, str]:
+    faces = _ordered_side_pair_faces(ordered_side_pair)
+    if len(faces) != 2:
+        return {}
+    return {"left": faces[0], "right": faces[1]}
+
+
 def _selected_anchor_faces(anchor: str, side_pair: Any) -> List[str]:
     sides = _side_pair_faces(side_pair)
     if len(sides) != 2:
@@ -568,6 +596,24 @@ def _selected_anchor_faces(anchor: str, side_pair: Any) -> List[str]:
 
 def _side_pair_faces(side_pair: Any) -> List[str]:
     key = _side_pair_key(side_pair)
+    if not key:
+        return []
+    parts = key.split("/")
+    if len(parts) != 2 or any(face not in SIDE_NEIGHBORS for face in parts):
+        return []
+    return parts if len(set(parts)) == len(parts) else []
+
+
+def _ordered_side_pair_key(value: Any) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value
+    return "/".join(str(part) for part in value)
+
+
+def _ordered_side_pair_faces(side_pair: Any) -> List[str]:
+    key = _ordered_side_pair_key(side_pair)
     if not key:
         return []
     parts = key.split("/")
@@ -856,25 +902,26 @@ def _oriented_face_options(analysis: ImageAnalysis, anchor: str) -> List[Dict[st
     if len(side_faces) < 2:
         return []
 
-    ranked_results: List[Tuple[float, Tuple[str, ...], float, int, Dict[str, List[List[Any]]]]] = []
+    ranked_results: List[Tuple[float, Tuple[str, ...], Tuple[str, ...], float, int, Dict[str, List[List[Any]]]]] = []
     for triple_score, subset in _ranked_visible_face_triples(grids_by_face, anchor):
         side_pair = tuple(sorted(face for face in subset if face in SIDE_NEIGHBORS))
+        ordered_side_pair = _photo_ordered_side_pair(subset)
         for rank, (orientation_score, option) in enumerate(
             _oriented_options_for_grid_map(subset, anchor)[:MAX_ORIENTATION_VARIANTS_PER_TRIPLE]
         ):
             selection_score = triple_score - rank * 0.02
-            ranked_results.append((selection_score, side_pair, orientation_score, rank, option))
+            ranked_results.append((selection_score, side_pair, ordered_side_pair, orientation_score, rank, option))
     ranked_results.sort(key=lambda item: item[0], reverse=True)
 
     scored_options = []
     seen = set()
     side_pair_counts: Counter[Tuple[str, ...]] = Counter()
-    side_pair_kinds = {side_pair for _, side_pair, _, _, _ in ranked_results}
+    side_pair_kinds = {side_pair for _, side_pair, _, _, _, _ in ranked_results}
     per_side_pair_limit = min(
         MAX_ORIENTED_OPTIONS_PER_SIDE_PAIR,
         max(24, math.ceil(MAX_ORIENTED_OPTIONS_PER_IMAGE / max(1, len(side_pair_kinds)))),
     )
-    for selection_score, side_pair, orientation_score, orientation_rank, option in ranked_results:
+    for selection_score, side_pair, ordered_side_pair, orientation_score, orientation_rank, option in ranked_results:
         signature = (side_pair, _face_signature(option))
         if signature in seen:
             continue
@@ -888,6 +935,7 @@ def _oriented_face_options(analysis: ImageAnalysis, anchor: str) -> List[Dict[st
         scored["_orientation_score"] = orientation_score
         scored["_orientation_rank"] = orientation_rank
         scored["_side_pair"] = side_pair
+        scored["_ordered_side_pair"] = ordered_side_pair
         scored_options.append(scored)
         if len(scored_options) >= MAX_ORIENTED_OPTIONS_PER_IMAGE:
             break
@@ -914,6 +962,25 @@ def _ranked_visible_face_triples(grids_by_face: Dict[str, List[FaceGrid]], ancho
             triples.append((_face_plane_score(anchor_grid, first_grid, second_grid), subset))
     triples.sort(key=lambda item: item[0], reverse=True)
     return triples[:MAX_VISIBLE_FACE_TRIPLES]
+
+
+def _photo_ordered_side_pair(grid_by_face: Dict[str, FaceGrid]) -> Tuple[str, ...]:
+    side_items = [(face, _grid_center_x(grid)) for face, grid in grid_by_face.items() if face in SIDE_NEIGHBORS]
+    if len(side_items) != 2:
+        return tuple(face for face, _ in side_items)
+    return tuple(face for face, _ in sorted(side_items, key=lambda item: (item[1], item[0])))
+
+
+def _grid_center_x(grid: FaceGrid) -> float:
+    points = getattr(grid, "points", None)
+    if points:
+        xs = [point[0] for row in points for point in row]
+        if xs:
+            return sum(xs) / len(xs)
+    center = getattr(getattr(grid, "center_sticker", None), "center", None)
+    if center:
+        return float(center[0])
+    return 0.0
 
 
 def _triple_filter_diagnostics(grids_by_face: Dict[str, List[FaceGrid]], anchor: str) -> Dict[str, int]:
@@ -1535,6 +1602,8 @@ def _merge_faces(a: Dict[str, List[List[Any]]], b: Dict[str, List[List[Any]]]) -
     merged["_orientation_rank_b"] = b.get("_orientation_rank")
     merged["_side_pair_a"] = a.get("_side_pair")
     merged["_side_pair_b"] = b.get("_side_pair")
+    merged["_ordered_side_pair_a"] = a.get("_ordered_side_pair")
+    merged["_ordered_side_pair_b"] = b.get("_ordered_side_pair")
     for face, matrix in a.items():
         if face not in FACE_ORDER:
             continue

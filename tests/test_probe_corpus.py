@@ -1,6 +1,12 @@
 from pathlib import Path
 
-from tools.probe_corpus import classify_face_failure, load_manifest, smallest_rank_gaps
+from tools.probe_corpus import (
+    classify_face_failure,
+    count_deviation_summary,
+    grid_weak_reasons,
+    load_manifest,
+    smallest_rank_gaps,
+)
 
 
 def test_probe_failure_classifier_marks_input_drift_first():
@@ -66,7 +72,7 @@ def test_probe_failure_classifier_distinguishes_candidate_generation():
 def test_probe_manifest_records_hashes_observed_baselines_and_contracts():
     manifest = load_manifest(Path(__file__).parent / "fixtures" / "corpus_manifest.json")
 
-    assert {row["setId"] for row in manifest} >= {"12", "14", "15", "24", "27", "29", "31", "32"}
+    assert {row["setId"] for row in manifest} >= {"12", "14", "15", "24", "27", "29", "31", "32", "44"}
     for row in manifest:
         assert row["imageA_sha256_expected"]
         assert row["imageB_sha256_expected"]
@@ -112,3 +118,35 @@ def test_probe_smallest_rank_gaps_ignores_clean_and_missing_correct():
     gaps = smallest_rank_gaps(results)
 
     assert gaps == [{"setId": "x", "image": "imageA", "face": "R", "gap": 8.0, "mode": "orientation_rank_failure"}]
+
+
+def test_probe_grid_weak_reasons_marks_set_44_style_down_anchor():
+    reasons = grid_weak_reasons(
+        {
+            "matchedCount": 5,
+            "fitError": 0.442,
+            "quality": 76.089,
+            "gridSamples": 4,
+            "badSamples": 0,
+            "suspectSamples": 0.0,
+        }
+    )
+
+    assert reasons == ["matchedCount_below_6", "quality_below_80", "grid_sample_heavy"]
+
+
+def test_probe_count_deviation_summary_reports_face_count_imbalance():
+    summary = count_deviation_summary(
+        [
+            {
+                "counts": {"U": 19, "R": 9, "F": 8, "D": 6, "L": 7, "B": 5},
+                "n": 12,
+            }
+        ]
+    )
+
+    assert summary == {
+        "mostCommonCounts": {"U": 19, "R": 9, "F": 8, "D": 6, "L": 7, "B": 5},
+        "mostCommonCountFrequency": 12,
+        "deviationsFromNine": {"U": 10, "F": -1, "D": -3, "L": -2, "B": -4},
+    }

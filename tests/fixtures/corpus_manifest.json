@@ -132,6 +132,19 @@
       "expectedScoreFloor": 54,
       "currentScoreObserved": 54,
       "notes": "Canonicalized ground truth; exact direct result after artifact-grid filtering."
+    },
+    {
+      "setId": "44",
+      "imageAPath": "/Users/jhuber/Downloads/Set 44 - A - white up IMG_7167.JPG",
+      "imageBPath": "/Users/jhuber/Downloads/Set 44 - B - white up IMG_7168.JPG",
+      "groundTruthPath": "/Users/jhuber/Downloads/Set 44 v1 - cube-ground-truth-1778461001488.json",
+      "imageA_sha256_expected": "ceaecaefb0e14cf9b20b6d00dff0d362a08b643c1380e955c7edecbdc29275a0",
+      "imageB_sha256_expected": "6a8ead89f81007b01e8f27ec80de5015ab1298b261669fea635c17885fe0bb6d",
+      "groundTruth_sha256_expected": "330ef3b8e36881103e6ea84775772502f3bac5b297e8078d896f166bf5b67826",
+      "expectedCategory": "reject_retake",
+      "expectedScoreFloor": null,
+      "currentScoreObserved": 0,
+      "notes": "Known rejected color/grid evidence collapse; image B D/yellow anchor is weak and merged candidates have invalid face counts."
     }
   ]
 }

@@ -134,6 +134,19 @@
       "notes": "Canonicalized ground truth; exact direct result after artifact-grid filtering."
     },
     {
+      "setId": "42",
+      "imageAPath": "/Users/jhuber/Downloads/Set 42 - A - white up IMG_7163.JPG",
+      "imageBPath": "/Users/jhuber/Downloads/Set 42 - B - white up IMG_7164.JPG",
+      "groundTruthPath": "/Users/jhuber/Downloads/Set 42 v1 - cube-ground-truth-1778518211191.json",
+      "imageA_sha256_expected": "cc768cc72e490101048677ae5d5c7a95d8d28fe9d8682981e6d10d1e316d0df5",
+      "imageB_sha256_expected": "f69444a6f3e7e05430383c0be2e8990aadf50d497bdf9b24013c1e26a38b9831",
+      "groundTruth_sha256_expected": "d89588e526d9df91cd9cf99a5681abd713410bc37b7416b0689d7b212c7f3179",
+      "expectedCategory": "success_clean",
+      "expectedScoreFloor": 54,
+      "currentScoreObserved": 54,
+      "notes": "Clean nonstandard-yaw regression case; yaw=1, normalizationApplied=true, no ground-truth canonicalization needed."
+    },
+    {
       "setId": "44",
       "imageAPath": "/Users/jhuber/Downloads/Set 44 - A - white up IMG_7167.JPG",
       "imageBPath": "/Users/jhuber/Downloads/Set 44 - B - white up IMG_7168.JPG",

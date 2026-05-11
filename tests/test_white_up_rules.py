@@ -164,6 +164,64 @@ def test_selected_sides_by_image_preserves_photo_order():
     }
 
 
+def test_selected_faces_signal_reports_standard_capture_yaw():
+    from rubik_recognizer.recognizer import _selected_faces_signal
+
+    signal = _selected_faces_signal({"orderedSidePairA": "F/R", "orderedSidePairB": "L/B"})
+
+    assert signal["captureYaw"]["status"] == "standard"
+    assert signal["captureYaw"]["quarterTurns"] == 0
+    assert signal["captureYaw"]["degrees"] == 0
+
+
+def test_selected_faces_signal_reports_nonstandard_capture_yaw():
+    from rubik_recognizer.recognizer import _selected_faces_signal
+
+    signal = _selected_faces_signal({"orderedSidePairA": "R/B", "orderedSidePairB": "F/L"})
+
+    assert signal["captureYaw"]["status"] == "nonstandard"
+    assert signal["captureYaw"]["quarterTurns"] == 1
+    assert signal["captureYaw"]["requiresNormalization"] is True
+    assert signal["captureYaw"]["normalizationApplied"] is False
+
+
+def test_recognition_category_demotes_nonstandard_capture_yaw():
+    signals = {
+        "repairPathUsed": False,
+        "captureYaw": {
+            "status": "nonstandard",
+            "quarterTurns": 1,
+            "degrees": 90,
+            "requiresNormalization": True,
+            "normalizationApplied": False,
+        },
+        "selectedGridQuality": {
+            "imageA": {
+                "U": {"matchedCount": 9, "fitError": 0.5, "quality": 100, "badSamples": 0, "suspectSamples": 0},
+                "R": {"matchedCount": 8, "fitError": 2.0, "quality": 96, "badSamples": 0, "suspectSamples": 0},
+                "B": {"matchedCount": 8, "fitError": 2.0, "quality": 96, "badSamples": 0, "suspectSamples": 0},
+            },
+            "imageB": {
+                "D": {"matchedCount": 9, "fitError": 0.5, "quality": 100, "badSamples": 0, "suspectSamples": 0},
+                "F": {"matchedCount": 8, "fitError": 2.0, "quality": 96, "badSamples": 0, "suspectSamples": 0},
+                "L": {"matchedCount": 8, "fitError": 2.0, "quality": 96, "badSamples": 0, "suspectSamples": 0},
+            },
+        },
+    }
+    result = RecognitionResult(
+        status="success",
+        state="U" * 54,
+        confidence=0.847,
+        reason="Recognized a unique legal white-up cube state.",
+        recognition_signals=signals,
+    )
+
+    category = _recognition_category_payload(result)
+
+    assert category["category"] == "needs_manual_review"
+    assert category["reason"] == "nonstandard_capture_yaw_requires_normalization"
+
+
 def test_recognition_signal_sample_fixtures_have_stable_shape():
     fixture_dir = Path(__file__).parent / "fixtures"
     direct = json.loads((fixture_dir / "recognition_signals_direct.json").read_text())

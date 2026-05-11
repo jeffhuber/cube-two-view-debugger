@@ -31,6 +31,18 @@ SIDE_NEIGHBORS = {
     "L": {"left": "B", "right": "F"},
 }
 ADJACENT_SIDE_PAIRS = (("F", "R"), ("R", "B"), ("B", "L"), ("L", "F"))
+IMAGE_A_YAW_BY_ORDERED_SIDE_PAIR = {
+    ("F", "R"): 0,
+    ("R", "B"): 1,
+    ("B", "L"): 2,
+    ("L", "F"): 3,
+}
+IMAGE_B_YAW_BY_ORDERED_SIDE_PAIR = {
+    ("L", "B"): 0,
+    ("F", "L"): 1,
+    ("R", "F"): 2,
+    ("B", "R"): 3,
+}
 MAX_ORIENTED_OPTIONS_PER_IMAGE = 220
 MAX_ORIENTED_OPTIONS_PER_SIDE_PAIR = 128
 MAX_VISIBLE_FACE_TRIPLES = 42
@@ -389,6 +401,13 @@ def _recognition_category_payload(result: RecognitionResult) -> Dict[str, str]:
         }
 
     repair_used = bool(signals.get("repairPathUsed")) or "color repair" in result.reason
+    capture_yaw = signals.get("captureYaw") if isinstance(signals.get("captureYaw"), dict) else {}
+    if capture_yaw.get("status") in {"nonstandard", "conflict"}:
+        return {
+            "category": "needs_manual_review",
+            "reason": "nonstandard_capture_yaw_requires_normalization",
+        }
+
     if not repair_used:
         if (
             "unique legal" in result.reason
@@ -555,6 +574,7 @@ def _selected_faces_signal(selection: Optional[Dict[str, Any]]) -> Dict[str, Any
         signal["selectedFacesByImage"] = faces
     if sides:
         signal["selectedSidesByImage"] = sides
+        signal["captureYaw"] = _capture_yaw_signal(sides)
     return signal
 
 
@@ -585,6 +605,54 @@ def _selected_side_positions(ordered_side_pair: Any) -> Dict[str, str]:
     if len(faces) != 2:
         return {}
     return {"left": faces[0], "right": faces[1]}
+
+
+def _capture_yaw_signal(selected_sides: Dict[str, Dict[str, str]]) -> Dict[str, Any]:
+    observations = []
+    yaw_values: List[int] = []
+    for image_key, lookup in (
+        ("imageA", IMAGE_A_YAW_BY_ORDERED_SIDE_PAIR),
+        ("imageB", IMAGE_B_YAW_BY_ORDERED_SIDE_PAIR),
+    ):
+        sides = selected_sides.get(image_key) if isinstance(selected_sides, dict) else None
+        if not isinstance(sides, dict):
+            continue
+        pair = (sides.get("left"), sides.get("right"))
+        yaw = lookup.get(pair)
+        observation = {
+            "image": image_key,
+            "orderedSidePair": "/".join(face for face in pair if face),
+        }
+        if yaw is not None:
+            observation["yawQuarterTurns"] = yaw
+            yaw_values.append(yaw)
+        else:
+            observation["yawQuarterTurns"] = None
+        observations.append(observation)
+
+    if not yaw_values:
+        return {
+            "status": "unknown",
+            "quarterTurns": None,
+            "degrees": None,
+            "observations": observations,
+        }
+    if len(set(yaw_values)) > 1:
+        return {
+            "status": "conflict",
+            "quarterTurns": None,
+            "degrees": None,
+            "observations": observations,
+        }
+    yaw = yaw_values[0]
+    return {
+        "status": "standard" if yaw == 0 else "nonstandard",
+        "quarterTurns": yaw,
+        "degrees": yaw * 90,
+        "requiresNormalization": yaw != 0,
+        "normalizationApplied": False,
+        "observations": observations,
+    }
 
 
 def _selected_anchor_faces(anchor: str, side_pair: Any) -> List[str]:

@@ -198,6 +198,38 @@ def _normalize_state_candidate(value: Any) -> Optional[str]:
 
 
 def _canonical_ground_truth_state(state: str) -> str:
+    """Return a canonical WCA URFDLB state for the given (possibly
+    capture-frame) state.
+
+    Two paths:
+
+    1. **Fast-path / canonical input (preferred)**. If `state` already
+       validates as a legal WCA URFDLB cube, return it unchanged. This
+       is the expected case for ground truth captured against post-
+       cube-two-view-debugger-PR-#20 cv-local + post-cube-snap-PR-#95
+       Fixer: the saved `corrected` field is already canonical solver-
+       ready URFDLB, with `recognitionSignals.captureFrameState`
+       preserved separately for the photo-frame projection. New corpus
+       entries (Set 42, the refreshed Set 12/Set 32 files) take this
+       path.
+
+    2. **Legacy / capture-frame input (fallback, deprecated)**. If the
+       state isn't a valid WCA cube but its 6 centers are the 6 face
+       letters, try all 4096 per-face rotation combinations to find a
+       single legal URFDLB. This is the only path that used to handle
+       Set 12 and Set 32's old saved ground truths (which were
+       inadvertently saved in capture frame because the pre-PR-#95
+       Fixer rendered diamonds in canonical frame regardless of yaw,
+       so a "no edits needed" save inherited the canonical state but
+       was interpreted by the user as photo-frame). When more than one
+       legal candidate exists, the input is returned unchanged (ambiguous
+       capture frames shouldn't be silently canonicalized).
+
+    Deprecation intent: once the corpus manifest no longer references
+    legacy capture-frame ground-truth files (tracked in issue #21), the
+    legacy path can be removed and this function becomes the trivial
+    `validate_state(state).valid` check inlined at the call site.
+    """
     if validate_state(state).valid:
         return state
 

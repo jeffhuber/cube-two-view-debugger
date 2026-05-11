@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from tools.probe_corpus import (
+    _check_expected_yaw,
     classify_face_failure,
     count_deviation_summary,
     grid_weak_reasons,
@@ -150,3 +151,100 @@ def test_probe_count_deviation_summary_reports_face_count_imbalance():
         "mostCommonCountFrequency": 12,
         "deviationsFromNine": {"U": 10, "F": -1, "D": -3, "L": -2, "B": -4},
     }
+
+
+def test_check_expected_yaw_passes_when_manifest_omits_expectation():
+    """Legacy manifest rows without an `expectedYaw` block must
+    pass through — no false-negative contract failures while the
+    corpus is being migrated."""
+    ok, diagnostic = _check_expected_yaw(None, {"captureYaw": {"status": "standard"}})
+
+    assert ok is True
+    assert diagnostic is None
+
+
+def test_check_expected_yaw_passes_when_signals_match_expectation():
+    """The Set 42 / Set 32 fingerprint: nonstandard yaw=1 with
+    normalization applied. Manifest pins this, probe confirms it."""
+    expected = {"status": "nonstandard", "quarterTurns": 1, "normalizationApplied": True}
+    signals = {
+        "captureYaw": {
+            "status": "nonstandard",
+            "quarterTurns": 1,
+            "degrees": 90,
+            "normalizationApplied": True,
+        }
+    }
+    ok, diagnostic = _check_expected_yaw(expected, signals)
+
+    assert ok is True
+    assert diagnostic == {
+        "expected": expected,
+        "actual": {"status": "nonstandard", "quarterTurns": 1, "normalizationApplied": True},
+        "mismatchedKeys": [],
+    }
+
+
+def test_check_expected_yaw_fails_on_status_mismatch():
+    """Future regression: a recognizer change accidentally produces
+    yaw=standard for a known nonstandard pair. The probe harness
+    must surface this rather than silently passing."""
+    expected = {"status": "nonstandard", "quarterTurns": 1, "normalizationApplied": True}
+    signals = {
+        "captureYaw": {
+            "status": "standard",
+            "quarterTurns": 0,
+            "normalizationApplied": False,
+        }
+    }
+    ok, diagnostic = _check_expected_yaw(expected, signals)
+
+    assert ok is False
+    assert "status" in diagnostic["mismatchedKeys"]
+    assert "quarterTurns" in diagnostic["mismatchedKeys"]
+
+
+def test_check_expected_yaw_fails_on_quarter_turns_drift():
+    """Catches the case where a future yaw-detection change picks a
+    different side-pair lookup and produces e.g. quarterTurns=2 for
+    Set 12 (which should remain quarterTurns=3)."""
+    expected = {"status": "nonstandard", "quarterTurns": 3}
+    signals = {
+        "captureYaw": {
+            "status": "nonstandard",
+            "quarterTurns": 2,
+            "normalizationApplied": True,
+        }
+    }
+    ok, diagnostic = _check_expected_yaw(expected, signals)
+
+    assert ok is False
+    assert diagnostic["mismatchedKeys"] == ["quarterTurns"]
+
+
+def test_check_expected_yaw_fails_when_signals_missing_captureyaw():
+    """Pre-PR-#20 server / non-cv-local provider; pins a stronger
+    signal that the yaw block didn't make it back at all."""
+    expected = {"status": "nonstandard", "quarterTurns": 1}
+
+    ok, diagnostic = _check_expected_yaw(expected, {})
+
+    assert ok is False
+    assert diagnostic["actual"] == {
+        "status": None,
+        "quarterTurns": None,
+        "normalizationApplied": None,
+    }
+
+
+def test_probe_manifest_records_expected_yaw_for_post_pr20_pairs():
+    """Sets 12, 32, and 42 are the post-PR-#20 / post-PR-#95 corpus
+    entries — they must all carry an `expectedYaw` block pinning the
+    detected yaw so the probe harness can catch future regressions."""
+    manifest = load_manifest(Path(__file__).parent / "fixtures" / "corpus_manifest.json")
+    rows = {row["setId"]: row for row in manifest}
+
+    for set_id in ("12", "32", "42"):
+        assert "expectedYaw" in rows[set_id], f"Set {set_id} missing expectedYaw"
+        assert rows[set_id]["expectedYaw"]["status"] == "nonstandard"
+        assert rows[set_id]["expectedYaw"]["normalizationApplied"] is True

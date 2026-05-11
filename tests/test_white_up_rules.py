@@ -190,6 +190,34 @@ def test_selected_faces_signal_reports_nonstandard_capture_yaw():
     assert signal["captureYaw"]["captureFrameState"] == _state_to_capture_yaw(state, 1)
 
 
+def test_capture_yaw_signal_supports_all_white_up_yaws():
+    from rubik_recognizer.recognizer import _selected_faces_signal
+
+    state = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
+    cases = [
+        (0, "F/R", "L/B", "standard"),
+        (1, "R/B", "F/L", "nonstandard"),
+        (2, "B/L", "R/F", "nonstandard"),
+        (3, "L/F", "B/R", "nonstandard"),
+    ]
+
+    for yaw, side_pair_a, side_pair_b, status in cases:
+        signal = _selected_faces_signal(
+            {"orderedSidePairA": side_pair_a, "orderedSidePairB": side_pair_b},
+            state=state,
+        )
+        capture_yaw = signal["captureYaw"]
+
+        assert capture_yaw["status"] == status
+        assert capture_yaw["quarterTurns"] == yaw
+        assert capture_yaw["degrees"] == yaw * 90
+        assert capture_yaw["requiresNormalization"] is (yaw != 0)
+        assert capture_yaw["normalizationApplied"] is (yaw != 0)
+        assert capture_yaw["stateFrame"] == "wca"
+        assert capture_yaw["captureFrameState"] == _state_to_capture_yaw(state, yaw)
+        assert _capture_yaw_state_to_wca(capture_yaw["captureFrameState"], yaw) == state
+
+
 def test_recognition_category_accepts_normalized_nonstandard_capture_yaw():
     signals = {
         "repairPathUsed": False,

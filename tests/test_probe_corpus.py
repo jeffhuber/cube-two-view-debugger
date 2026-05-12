@@ -274,6 +274,53 @@ def test_probe_timing_summary_reports_total_and_slowest_rows():
     }
 
 
+def test_probe_rows_reports_row_progress_to_stderr(monkeypatch, capsys):
+    rows = [{"setId": "12"}, {"setId": "14"}]
+
+    def fake_probe_pair(row, manifest_path):
+        return {
+            "setId": row["setId"],
+            "status": "success",
+            "score": 54,
+            "category": "success_clean",
+            "contractPassed": True,
+            "timings": {"totalSeconds": 1.3},
+        }
+
+    monkeypatch.setattr(probe_corpus, "probe_pair", fake_probe_pair)
+
+    results = probe_corpus.probe_rows(rows, Path("manifest.json"), progress=True)
+
+    captured = capsys.readouterr()
+    assert [row["setId"] for row in results] == ["12", "14"]
+    assert captured.out == ""
+    assert "[probe] 1/2 set 12 start elapsed=" in captured.err
+    assert "[probe] 1/2 set 12 done row=1.3s" in captured.err
+    assert "score=54/54 category=success_clean contract=pass" in captured.err
+    assert "[probe] 2/2 set 14 done row=1.3s" in captured.err
+    assert "eta=" in captured.err
+
+
+def test_probe_rows_can_disable_progress(monkeypatch, capsys):
+    def fake_probe_pair(row, manifest_path):
+        return {
+            "setId": row["setId"],
+            "status": "success",
+            "score": 54,
+            "category": "success_clean",
+            "contractPassed": True,
+            "timings": {"totalSeconds": 1.3},
+        }
+
+    monkeypatch.setattr(probe_corpus, "probe_pair", fake_probe_pair)
+
+    probe_corpus.probe_rows([{"setId": "12"}], Path("manifest.json"), progress=False)
+
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    assert captured.out == ""
+
+
 def test_probe_runtime_summary_includes_key_versions():
     summary = runtime_summary(
         {

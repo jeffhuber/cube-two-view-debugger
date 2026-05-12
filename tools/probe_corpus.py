@@ -931,6 +931,58 @@ def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
     }
 
 
+def _format_progress_seconds(seconds: float) -> str:
+    if seconds < 60.0:
+        return f"{seconds:.1f}s"
+    minutes, remainder = divmod(int(round(seconds)), 60)
+    return f"{minutes}m{remainder:02d}s"
+
+
+def _probe_progress(message: str) -> None:
+    print(f"[probe] {message}", file=sys.stderr, flush=True)
+
+
+def probe_rows(
+    rows: Sequence[Dict[str, Any]],
+    manifest_path: Path,
+    *,
+    progress: bool = False,
+) -> List[Dict[str, Any]]:
+    results = []
+    run_start = time.perf_counter()
+    total = len(rows)
+    for index, row in enumerate(rows, start=1):
+        set_id = str(row.get("setId") or row.get("id") or "")
+        if progress:
+            elapsed = time.perf_counter() - run_start
+            _probe_progress(f"{index}/{total} set {set_id} start elapsed={_format_progress_seconds(elapsed)}")
+
+        result = probe_pair(row, manifest_path)
+        results.append(result)
+
+        if progress:
+            elapsed = time.perf_counter() - run_start
+            average = elapsed / index if index else 0.0
+            eta = average * (total - index)
+            timings = result.get("timings") or {}
+            row_seconds = float(timings.get("totalSeconds") or 0.0)
+            if result.get("status") == "skipped":
+                score = "skip"
+            else:
+                score = f"{result.get('score')}/54"
+            contract = "pass" if result.get("contractPassed") else "FAIL"
+            _probe_progress(
+                f"{index}/{total} set {set_id} done "
+                f"row={_format_progress_seconds(row_seconds)} "
+                f"elapsed={_format_progress_seconds(elapsed)} "
+                f"eta={_format_progress_seconds(eta)} "
+                f"score={score} "
+                f"category={result.get('category')} "
+                f"contract={contract}"
+            )
+    return results
+
+
 def printable(value: Any, width: int) -> str:
     text = "" if value is None else str(value)
     if len(text) > width:
@@ -1070,6 +1122,7 @@ def main() -> int:
     )
     parser.add_argument("--analysis-only", action="store_true", help="Write analysis dump without running recognition.")
     parser.add_argument("--quiet", action="store_true", help="Do not print the readable table.")
+    parser.add_argument("--no-progress", action="store_true", help="Do not print row-level probe progress to stderr.")
     parser.add_argument("--fail-on-contract", action="store_true", help="Exit non-zero if any non-skipped row fails its contract.")
     args = parser.parse_args()
 
@@ -1099,7 +1152,7 @@ def main() -> int:
             print(f"Analysis dump rows={len(rows)} image={args.analysis_image}")
         return 0
 
-    results = [probe_pair(row, manifest) for row in rows]
+    results = probe_rows(rows, manifest, progress=not args.no_progress)
 
     if args.json_output:
         write_json(Path(args.json_output).expanduser(), results, manifest, fingerprint, environment_warnings)

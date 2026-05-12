@@ -944,14 +944,16 @@ def _merged_face_candidates(
     options_a: Sequence[Dict[str, List[List[Any]]]],
     options_b: Sequence[Dict[str, List[List[Any]]]],
 ) -> List[Tuple[float, Dict[str, List[List[Any]]]]]:
+    signatures_a = [_face_signature(faces) for faces in options_a]
+    signatures_b = [_face_signature(faces) for faces in options_b]
     merged_faces: List[Tuple[float, Dict[str, List[List[Any]]]]] = []
-    for faces_a in options_a:
-        for faces_b in options_b:
+    for faces_a, signature_a in zip(options_a, signatures_a):
+        for faces_b, signature_b in zip(options_b, signatures_b):
             merged = _merge_faces(faces_a, faces_b)
             if merged is None:
                 continue
-            merged["_option_signature_a"] = _face_signature(faces_a)
-            merged["_option_signature_b"] = _face_signature(faces_b)
+            merged["_option_signature_a"] = signature_a
+            merged["_option_signature_b"] = signature_b
             merged_faces.append((float(merged.get("_score", 0.0)), merged))
     merged_faces.sort(key=lambda item: item[0], reverse=True)
     return merged_faces

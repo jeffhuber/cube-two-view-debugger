@@ -2,7 +2,30 @@ import math
 
 import numpy as np
 
-from rubik_recognizer.image_pipeline import _nearest_available_point, _score_grid_centers
+from rubik_recognizer.image_pipeline import _binary_dilate_square, _nearest_available_point, _score_grid_centers
+
+
+def naive_square_dilate(mask, size):
+    radius = size // 2
+    result = np.zeros(mask.shape, dtype=bool)
+    for y in range(mask.shape[0]):
+        for x in range(mask.shape[1]):
+            y0 = max(0, y - radius)
+            y1 = min(mask.shape[0], y + radius + 1)
+            x0 = max(0, x - radius)
+            x1 = min(mask.shape[1], x + radius + 1)
+            result[y, x] = bool(mask[y0:y1, x0:x1].any())
+    return result
+
+
+def test_binary_dilate_square_matches_naive_window():
+    mask = np.zeros((7, 8), dtype=bool)
+    mask[1, 1] = True
+    mask[3, 5] = True
+    mask[6, 7] = True
+
+    np.testing.assert_array_equal(_binary_dilate_square(mask, 3), naive_square_dilate(mask, 3))
+    np.testing.assert_array_equal(_binary_dilate_square(mask, 5), naive_square_dilate(mask, 5))
 
 
 def test_nearest_available_point_uses_tolerance_boundary():

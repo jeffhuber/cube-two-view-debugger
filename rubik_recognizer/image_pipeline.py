@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
 import numpy as np
-from PIL import Image, ImageDraw, ImageFilter, ImageOps
+from PIL import Image, ImageDraw, ImageOps
 
 from .colors import ColorMatch, RGB, classify_rgb
 
@@ -131,10 +131,9 @@ def _find_cube_roi(arr: np.ndarray) -> Tuple[int, int, int, int]:
     if saturated.sum() < 200:
         return 0, 0, arr.shape[1], arr.shape[0]
 
-    mask_img = Image.fromarray((saturated * 255).astype(np.uint8), mode="L")
     join = max(21, int(max(arr.shape[:2]) * 0.055) | 1)
-    mask_img = mask_img.filter(ImageFilter.MaxFilter(join))
-    comps = _connected_components(np.asarray(mask_img) > 0, min_area=250)
+    joined = _binary_dilate_square(saturated, join)
+    comps = _connected_components(joined, min_area=250)
     if not comps:
         return 0, 0, arr.shape[1], arr.shape[0]
 
@@ -143,6 +142,20 @@ def _find_cube_roi(arr: np.ndarray) -> Tuple[int, int, int, int]:
     x0, y0, x1, y1 = best["bbox"]
     pad = int(max(x1 - x0, y1 - y0) * 0.12)
     return max(0, x0 - pad), max(0, y0 - pad), min(width, x1 + pad), min(height, y1 + pad)
+
+
+def _binary_dilate_square(mask: np.ndarray, size: int) -> np.ndarray:
+    if size <= 1:
+        return mask.astype(bool, copy=True)
+    if size % 2 == 0:
+        raise ValueError("Square dilation size must be odd.")
+
+    radius = size // 2
+    source = mask.astype(bool, copy=False)
+    padded_x = np.pad(source, ((0, 0), (radius, radius)), mode="constant", constant_values=False)
+    horizontal = np.lib.stride_tricks.sliding_window_view(padded_x, size, axis=1).any(axis=-1)
+    padded_y = np.pad(horizontal, ((radius, radius), (0, 0)), mode="constant", constant_values=False)
+    return np.lib.stride_tricks.sliding_window_view(padded_y, size, axis=0).any(axis=-1)
 
 
 def _roi_score(comp: Dict, saturated: np.ndarray, width: int, height: int) -> float:

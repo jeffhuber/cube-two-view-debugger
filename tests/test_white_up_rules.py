@@ -138,6 +138,73 @@ def test_recognize_from_analyses_reuses_workset_for_direct_and_repair(monkeypatc
     assert calls == {"workset": 1, "direct": 1, "repair": 1}
 
 
+def test_repair_details_memoizes_signature_stable_work(monkeypatch):
+    solved = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
+
+    def merged_candidate(side_pair_a):
+        merged = {
+            face: [[face for _ in range(3)] for _ in range(3)]
+            for face in recognizer.FACE_ORDER
+        }
+        merged.update(
+            {
+                "_score": 100.0,
+                "_score_a": 50.0,
+                "_score_b": 50.0,
+                "_side_pair_a": side_pair_a,
+                "_side_pair_b": ("L", "B"),
+                "_ordered_side_pair_a": side_pair_a,
+                "_ordered_side_pair_b": ("L", "B"),
+                "_orientation_rank_a": 0,
+                "_orientation_rank_b": 0,
+            }
+        )
+        return merged
+
+    first = merged_candidate(("F", "R"))
+    second = merged_candidate(("R", "B"))
+    workset = RecognitionWorkset(
+        options_a=[],
+        options_b=[],
+        merged_candidates=[(100.0, first), (99.0, second)],
+    )
+    calls = {"legal": 0, "conflicts": 0, "counts": 0, "penalty": 0}
+    conflicts = {key: 0 for key in recognizer.PIECE_CONFLICT_KEYS}
+    counts = {face: 9 for face in recognizer.FACE_ORDER}
+
+    def fake_legal_repair(faces):
+        calls["legal"] += 1
+        return solved, 10.0, 2
+
+    def fake_conflicts(faces):
+        calls["conflicts"] += 1
+        return conflicts
+
+    def fake_counts(faces):
+        calls["counts"] += 1
+        return counts
+
+    def fake_penalty(conflict_summary, faces, *, repair_cost, repair_changes, face_counts=None):
+        calls["penalty"] += 1
+        assert conflict_summary is conflicts
+        assert face_counts is counts
+        return 0.0
+
+    monkeypatch.setattr(recognizer, "_legal_repaired_state_from_faces", fake_legal_repair)
+    monkeypatch.setattr(recognizer, "_piece_conflict_summary", fake_conflicts)
+    monkeypatch.setattr(recognizer, "_primary_face_counts", fake_counts)
+    monkeypatch.setattr(recognizer, "_repair_ranking_penalty", fake_penalty)
+
+    details = WhiteUpRecognizer()._legal_repair_candidate_details_from_workset(workset)
+
+    assert len(details) == 1
+    assert details[0]["state"] == solved
+    assert calls == {"legal": 1, "conflicts": 1, "counts": 1, "penalty": 2}
+    assert len(workset.repaired_state_by_signature) == 1
+    assert len(workset.conflicts_by_signature) == 1
+    assert len(workset.face_counts_by_signature) == 1
+
+
 def test_recognition_result_exposes_additive_signals():
     result = RecognitionResult(
         status="success",

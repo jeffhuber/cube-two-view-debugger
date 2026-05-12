@@ -3,7 +3,7 @@ from __future__ import annotations
 import copy
 import math
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from itertools import product
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
@@ -173,11 +173,17 @@ class PieceOption:
     changes: int
 
 
+FaceSignature = Tuple[Tuple[str, str], ...]
+
+
 @dataclass
 class RecognitionWorkset:
     options_a: List[Dict[str, List[List[Any]]]]
     options_b: List[Dict[str, List[List[Any]]]]
     merged_candidates: List[Tuple[float, Dict[str, List[List[Any]]]]]
+    repaired_state_by_signature: Dict[FaceSignature, Optional[Tuple[str, float, int]]] = field(default_factory=dict)
+    conflicts_by_signature: Dict[FaceSignature, Dict[str, int]] = field(default_factory=dict)
+    face_counts_by_signature: Dict[FaceSignature, Dict[str, int]] = field(default_factory=dict)
 
 
 class WhiteUpRecognizer:
@@ -356,16 +362,25 @@ class WhiteUpRecognizer:
 
         candidates: Dict[str, Dict[str, Any]] = {}
         for raw_score, merged in repair_merges:
-            state, repair_cost, changes = _legal_repaired_state_from_faces(merged) or (None, 0.0, 0)
+            signature = _cached_face_signature(merged)
+            if signature not in workset.repaired_state_by_signature:
+                workset.repaired_state_by_signature[signature] = _legal_repaired_state_from_faces(merged)
+            state, repair_cost, changes = workset.repaired_state_by_signature[signature] or (None, 0.0, 0)
             if state is None:
                 continue
-            conflicts = _piece_conflict_summary(merged)
+            if signature not in workset.conflicts_by_signature:
+                workset.conflicts_by_signature[signature] = _piece_conflict_summary(merged)
+            if signature not in workset.face_counts_by_signature:
+                workset.face_counts_by_signature[signature] = _primary_face_counts(merged)
+            conflicts = workset.conflicts_by_signature[signature]
+            face_counts = workset.face_counts_by_signature[signature]
             base_confidence = _state_confidence(merged) - repair_cost / 650.0 - changes * 0.006
             penalty = _repair_ranking_penalty(
                 conflicts,
                 merged,
                 repair_cost=repair_cost,
                 repair_changes=changes,
+                face_counts=face_counts,
             )
             confidence = base_confidence - penalty
             confidence = max(0.5, confidence)
@@ -390,7 +405,7 @@ class WhiteUpRecognizer:
                 "orientationRankA": merged.get("_orientation_rank_a"),
                 "orientationRankB": merged.get("_orientation_rank_b"),
                 "preRepairConflicts": conflicts,
-                "preRepairFaceCounts": _primary_face_counts(merged),
+                "preRepairFaceCounts": face_counts,
             }
             current = candidates.get(state)
             if current is None or confidence > current["confidence"]:
@@ -946,7 +961,7 @@ def _repair_merged_face_candidates(
         key = (
             merged.get("_side_pair_a"),
             merged.get("_side_pair_b"),
-            _face_signature(merged),
+            _cached_face_signature(merged),
         )
         if key in seen:
             continue
@@ -1572,6 +1587,7 @@ def _repair_ranking_penalty(
     *,
     repair_cost: float,
     repair_changes: int,
+    face_counts: Optional[Dict[str, int]] = None,
 ) -> float:
     conflict_penalty = sum(conflicts.get(key, 0) * weight for key, weight in REPAIR_CONFLICT_PENALTY_WEIGHTS.items())
     orientation_penalty = min(
@@ -1582,7 +1598,8 @@ def _repair_ranking_penalty(
             + _nonnegative_int(faces.get("_orientation_rank_b"))
         ),
     )
-    face_count_penalty = 0.003 * _face_count_deviation(_primary_face_counts(faces))
+    resolved_face_counts = face_counts if face_counts is not None else _primary_face_counts(faces)
+    face_count_penalty = 0.003 * _face_count_deviation(resolved_face_counts)
     heavy_repair_penalty = max(0, repair_changes - 4) * 0.004 + max(0.0, repair_cost - 35.0) / 900.0
     return min(
         MAX_REPAIR_RANKING_PENALTY,
@@ -1807,6 +1824,15 @@ def _face_signature(faces: Dict[str, List[List[Any]]]) -> Tuple[Tuple[str, str],
                 values.append(facelet if isinstance(facelet, str) else getattr(facelet, "id", id(facelet)))
         signature.append((face, ",".join(str(value) for value in values)))
     return tuple(signature)
+
+
+def _cached_face_signature(faces: Dict[str, List[List[Any]]]) -> FaceSignature:
+    cached = faces.get("_face_signature")
+    if isinstance(cached, tuple):
+        return cached
+    signature = _face_signature(faces)
+    faces["_face_signature"] = signature  # type: ignore[assignment]
+    return signature
 
 
 def _state_variants_from_faces(faces: Dict[str, List[List[Any]]]) -> List[str]:

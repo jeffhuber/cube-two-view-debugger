@@ -87,11 +87,115 @@ label {
   border-radius: 8px;
   padding: 14px;
   background: #fbfcfc;
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+.dropZone:hover {
+  border-color: var(--accent);
 }
 
 .dropZone.is-dragging {
   border-color: var(--accent);
   background: #eef8f4;
+}
+
+.dropZoneTitle {
+  font-weight: 760;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.dropZoneHint {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.dropZoneFiles {
+  display: grid;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  text-align: left;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.dropZoneFiles:empty {
+  display: none;
+}
+
+.manualOverride {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px 10px;
+  background: #fbfcfc;
+}
+
+.manualOverride[open] {
+  padding-bottom: 10px;
+}
+
+.manualOverride > summary {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--muted);
+  padding: 4px 0;
+  list-style: none;
+}
+
+.manualOverride > summary::marker,
+.manualOverride > summary::-webkit-details-marker {
+  display: none;
+}
+
+.manualOverride > summary::before {
+  content: "▸ ";
+  display: inline-block;
+  transition: transform 0.12s ease;
+}
+
+.manualOverride[open] > summary::before {
+  content: "▾ ";
+}
+
+.manualOverride label {
+  margin-top: 8px;
+}
+
+.recentRuns {
+  margin-top: 18px;
+}
+
+.recentRunsHint {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.recentRunsRow {
+  cursor: pointer;
+}
+
+.recentRunsRow:hover td {
+  background: #eef8f4;
+}
+
+.recentRunsRow:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.recentRuns .resultHeader button {
+  min-height: 28px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 650;
 }
 
 input[type="file"] {

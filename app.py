@@ -92,6 +92,13 @@ class RubikHandler(BaseHTTPRequestHandler):
         if path == "/api/runs":
             self._send_json({"runs": list_saved_runs()})
             return
+        if path == "/api/routes":
+            # Self-describing route list so any agent (Claude / Codex /
+            # human picking the project up cold) can discover the API
+            # surface without grep-ing app.py. Kept short and accurate;
+            # add new routes here whenever you add to dispatch.
+            self._send_json({"routes": _api_routes()})
+            return
         if path == "/api/diag":
             # Reports the runtime stack the recognizer is actually running
             # under: Python version, key library versions, git SHA, working
@@ -359,6 +366,27 @@ def _runtime_diag() -> Dict[str, Any]:
             "cwd": str(ROOT),
         },
     }
+
+
+def _api_routes() -> List[Dict[str, str]]:
+    """Static list of public HTTP routes the server exposes. Update
+    when adding/removing routes in do_GET/do_POST dispatch above.
+
+    Intended for cold-start discovery by anyone (human or agent)
+    picking the project up without prior context. The brief column
+    explains the route's purpose, not its full schema — for that read
+    the corresponding handler.
+    """
+    return [
+        {"method": "GET",  "path": "/",                    "brief": "Static UI (index.html)."},
+        {"method": "GET",  "path": "/static/*",            "brief": "Static assets (CSS, JS)."},
+        {"method": "GET",  "path": "/api/routes",          "brief": "This route list."},
+        {"method": "GET",  "path": "/api/diag",            "brief": "Runtime environment fingerprint (Python/NumPy/Pillow versions, git SHA)."},
+        {"method": "GET",  "path": "/api/runs",            "brief": "List of recent saved recognition runs (per-pair summaries)."},
+        {"method": "GET",  "path": "/runs/pairs/<id>/...", "brief": "Static access to a saved run's files (result.json, debug.json, overlays, samples.csv, original photos)."},
+        {"method": "POST", "path": "/api/recognize",       "brief": "Recognize one pair. Multipart fields: imageA, imageB; optional setId, expectedState. Query: ?slim=1 to omit overlays/diagnostics. Persists a run under /runs/pairs/<id>/."},
+        {"method": "POST", "path": "/api/recognize-batch", "brief": "Recognize multiple pairs in one call. Multipart field: images (multi-file); optional groundTruth (.csv/.tsv/.json). Pairs files by filename A/B markers or by drop order. Persists a batch under /runs/batches/<id>/."},
+    ]
 
 
 def _image_fingerprint(image_bytes: bytes) -> Dict[str, Any]:

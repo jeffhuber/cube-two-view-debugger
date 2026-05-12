@@ -344,6 +344,27 @@ def _git_sha() -> Optional[str]:
     return None
 
 
+def _git_branch() -> Optional[str]:
+    """Current branch name, or None for detached HEAD or any git failure.
+    Surfaced in /api/diag and the startup banner so operators can tell
+    at a glance whether the running server is on main, on a WIP branch,
+    or detached. See the 'Cv-local server identity' section in CLAUDE.md.
+    """
+    try:
+        result = subprocess.run(
+            ["git", "branch", "--show-current"],
+            cwd=str(ROOT),
+            capture_output=True,
+            text=True,
+            timeout=2,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if result.returncode != 0:
+        return None
+    return result.stdout.strip() or None
+
+
 def _runtime_diag() -> Dict[str, Any]:
     """Stable JSON-serialisable description of the recognizer's runtime."""
     return {
@@ -363,6 +384,7 @@ def _runtime_diag() -> Dict[str, Any]:
         },
         "git": {
             "sha": _git_sha(),
+            "branch": _git_branch(),
             "cwd": str(ROOT),
         },
     }
@@ -489,13 +511,26 @@ def main() -> None:
 
     server = ThreadingHTTPServer((args.host, args.port), RubikHandler)
     diag = _runtime_diag()
+    # Identity banner. Surfaces which repo/branch/SHA is serving so a
+    # grep on the server log answers "which code is running?" without
+    # hitting /api/diag. Critical when multiple repo clones on the
+    # same host compete for port 8080 — see CLAUDE.md "Cv-local server
+    # identity" for the full convention.
+    #
+    # Emit to stderr (not stdout) for two reasons: (1) diagnostic
+    # output convention matches the WARNING lines above; (2) stderr
+    # is unbuffered, so the banner appears in nohup-redirected logs
+    # immediately rather than after the stdout buffer fills.
+    sha = diag["git"]["sha"] or "unknown"
+    branch = diag["git"]["branch"] or "detached"
+    print(f"[rubik-app] Serving http://{args.host}:{args.port}/", file=sys.stderr)
+    print(f"[rubik-app]   identity: {diag['git']['cwd']} @ {sha} ({branch})", file=sys.stderr)
     print(
-        f"Serving white-up Rubik recognizer at http://{args.host}:{args.port}/  "
-        f"[python {diag['python']['version']}, "
+        f"[rubik-app]   env:      "
+        f"python {diag['python']['version']}, "
         f"pillow {diag['libraries']['pillow']}, "
-        f"numpy {diag['libraries']['numpy']}"
-        + (f", git {diag['git']['sha']}" if diag['git']['sha'] else "")
-        + "]"
+        f"numpy {diag['libraries']['numpy']}",
+        file=sys.stderr,
     )
     server.serve_forever()
 

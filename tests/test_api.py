@@ -108,6 +108,41 @@ def test_api_diag_smoke(server):
     assert "pillow" in payload["libraries"]
 
 
+def test_api_diag_exposes_git_identity(server):
+    """The git identity block must include sha + branch + cwd so
+    operators can answer "which code is :8080 serving?" without
+    grep-ing the server log. See the 'Cv-local server identity'
+    section in CLAUDE.md for the convention."""
+    status, payload = _get_json(server, "/api/diag")
+    assert status == HTTPStatus.OK
+    git = payload.get("git") or {}
+    assert "sha" in git, f"expected git.sha in /api/diag, got keys: {sorted(git.keys())}"
+    assert "branch" in git, f"expected git.branch in /api/diag, got keys: {sorted(git.keys())}"
+    assert "cwd" in git, f"expected git.cwd in /api/diag, got keys: {sorted(git.keys())}"
+    # cwd should be the repo root (where app.py lives).
+    assert git["cwd"] == str(ROOT), f"git.cwd should equal ROOT ({ROOT}), got {git['cwd']!r}"
+    # branch may be None for detached HEAD; otherwise it's a non-empty string.
+    if git["branch"] is not None:
+        assert isinstance(git["branch"], str) and git["branch"], "branch should be non-empty when present"
+
+
+def test_runtime_diag_includes_branch_field():
+    """Direct unit test for _runtime_diag's branch field — covers the
+    case where the test process happens to be on a detached HEAD or
+    fresh clone with no checked-out branch. branch == None is allowed;
+    branch == '' is NOT (would be a regression of _git_branch's
+    empty-string-to-None conversion)."""
+    from app import _runtime_diag
+
+    diag = _runtime_diag()
+    assert "git" in diag
+    assert "branch" in diag["git"], "branch field must be present even when None"
+    branch = diag["git"]["branch"]
+    assert branch is None or (isinstance(branch, str) and branch), (
+        f"branch must be None or non-empty str, got {branch!r}"
+    )
+
+
 def _multipart_body(fields, boundary="testboundary123"):
     """Build a minimal multipart/form-data body. `fields` is a list of
     (name, filename_or_None, value_bytes) tuples. Returns (content_type, body)."""

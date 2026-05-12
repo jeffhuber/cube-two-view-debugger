@@ -83,6 +83,69 @@ the silhouette.
   of this; the recovery pattern is in
   `tools/view_photo.py`'s neighbor files in commit history.
 
+## Cv-local server identity (which code is :8080 serving?)
+
+Only one cv-local server can bind port 8080 at a time. When more
+than one agent (Claude / Codex / the human) has a checkout of this
+repo on the same host, whichever instance restarted most recently
+wins port 8080 — silently. The user-facing UI looks identical
+between checkouts, but the running recognizer code can be on
+different commits, branches, or even different repo paths.
+
+A real instance of this confusion happened on 2026-05-12: Codex's
+WIP branch (`codex/speed-pr11-...`) had taken over port 8080 from
+my `/Users/jhuber/cube-two-view-debugger/main` server, and the only
+visible clue was a SHA mismatch in `/api/diag`.
+
+### Convention — check identity before trusting recognition output
+
+Both `/api/diag` and the startup banner now expose three identity
+fields that together answer "which code is :8080 serving?":
+
+- `git.cwd` — the repo path the server was started from
+- `git.sha` — the HEAD at request time
+- `git.branch` — current branch (or `null` for detached HEAD)
+
+Before relying on the server'\''s output during a debug session, hit:
+
+```bash
+curl -s http://localhost:8080/api/diag | python3 -c "import json,sys; \
+    d=json.load(sys.stdin); print(d.get('\''git'\''))"
+```
+
+If `git.cwd` or `git.sha` doesn'\''t match what you expect, restart
+from your own repo.
+
+### Canonical paths per agent
+
+| Agent | Canonical repo path |
+|---|---|
+| Claude | `/Users/jhuber/cube-two-view-debugger` |
+| Codex  | `/Users/jhuber/Documents/Codex/.../i-want-to-create-a-rubik` |
+
+If you'\''re Claude or Codex and your work needs to be the active
+server, restart from your own canonical path:
+
+```bash
+cd <your_canonical_path>
+nohup .venv/bin/python app.py > /tmp/cv-local-server.log 2>&1 &
+```
+
+The startup banner emits an `[rubik-app] identity:` line you can
+grep from the log to confirm:
+
+```bash
+grep "identity:" /tmp/cv-local-server.log
+# [rubik-app]   identity: /Users/jhuber/cube-two-view-debugger @ d594e4a (main)
+```
+
+### When you should NOT restart someone else'\''s server
+
+If `git.cwd` points at another agent'\''s repo path AND the branch
+isn'\''t main, that agent is likely actively iterating. Don'\''t kill
+their session unless you'\''ve confirmed they'\''re not around.
+Easiest signal: ask the user.
+
 ## Repository
 
 https://github.com/jeffhuber/cube-two-view-debugger

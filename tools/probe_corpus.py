@@ -10,9 +10,15 @@ modes before any orientation-weight tuning.
 from __future__ import annotations
 
 import argparse
+import contextlib
+import hashlib
+import io
 import json
 import os
+import platform
+import subprocess
 import sys
+import time
 from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
@@ -101,6 +107,91 @@ FAILURE_MODES = (
     "candidate_generation_failure",
     "unknown",
 )
+
+
+def _capture_stdout(callback: Any) -> str:
+    buffer = io.StringIO()
+    try:
+        with contextlib.redirect_stdout(buffer), contextlib.redirect_stderr(buffer):
+            callback()
+    except Exception as exc:  # pragma: no cover - defensive runtime fingerprinting
+        return f"{type(exc).__name__}: {exc}"
+    return buffer.getvalue()
+
+
+def _git_sha(cwd: Path) -> Optional[str]:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=str(cwd),
+            capture_output=True,
+            text=True,
+            timeout=2,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if result.returncode != 0:
+        return None
+    return result.stdout.strip() or None
+
+
+def runtime_fingerprint() -> Dict[str, Any]:
+    import numpy  # type: ignore
+    import PIL  # type: ignore
+    from PIL import features  # type: ignore
+
+    return {
+        "python": {
+            "version": sys.version,
+            "versionInfo": list(sys.version_info[:5]),
+            "executable": sys.executable,
+            "implementation": platform.python_implementation(),
+            "compiler": platform.python_compiler(),
+            "build": list(platform.python_build()),
+        },
+        "platform": {
+            "platform": platform.platform(),
+            "system": platform.system(),
+            "release": platform.release(),
+            "machine": platform.machine(),
+            "processor": platform.processor(),
+        },
+        "packages": {
+            "numpy": {
+                "version": numpy.__version__,
+                "showConfig": _capture_stdout(numpy.show_config),
+            },
+            "pillow": {
+                "version": PIL.__version__,
+                "pilInfo": _capture_stdout(features.pilinfo),
+            },
+        },
+        "git": {
+            "sha": _git_sha(ROOT),
+            "cwd": str(ROOT),
+        },
+    }
+
+
+def runtime_summary(fingerprint: Dict[str, Any]) -> str:
+    python_info = fingerprint.get("python") or {}
+    platform_info = fingerprint.get("platform") or {}
+    packages = fingerprint.get("packages") or {}
+    numpy_info = packages.get("numpy") or {}
+    pillow_info = packages.get("pillow") or {}
+    version_info = python_info.get("versionInfo") or []
+    python_version = ".".join(str(part) for part in version_info[:3]) or "unknown"
+    return (
+        f"Python {python_version} ({python_info.get('executable', 'unknown')}); "
+        f"Pillow {pillow_info.get('version', 'unknown')}; "
+        f"NumPy {numpy_info.get('version', 'unknown')}; "
+        f"{platform_info.get('platform', 'unknown')}; "
+        f"git {(fingerprint.get('git') or {}).get('sha', 'unknown')}"
+    )
+
+
+def _elapsed(start: float) -> float:
+    return round(time.perf_counter() - start, 4)
 
 
 def normalize_path(value: str, manifest_path: Path) -> Path:
@@ -485,14 +576,35 @@ def _check_expected_yaw(
     }
 
 
-def verify_hash(path: Path, expected: Optional[str]) -> Dict[str, Any]:
+def decoded_image_fingerprint(path: Path) -> Dict[str, Any]:
+    from PIL import Image, ImageOps  # type: ignore
+
+    try:
+        with Image.open(path) as image:
+            decoded = ImageOps.exif_transpose(image).convert("RGB")
+            return {
+                "format": image.format,
+                "width": decoded.width,
+                "height": decoded.height,
+                "mode": decoded.mode,
+                "rgbSha256": hashlib.sha256(decoded.tobytes()).hexdigest(),
+            }
+    except Exception as exc:  # pragma: no cover - diagnostics must not fail probes
+        return {"error": f"{type(exc).__name__}: {exc}"}
+
+
+def verify_hash(path: Path, expected: Optional[str], *, decode_image: bool = False) -> Dict[str, Any]:
     actual = file_sha256(str(path))
-    return {
+    result = {
         "path": str(path),
+        "bytes": path.stat().st_size,
         "actual": actual,
         "expected": expected,
         "matches": expected in (None, "", actual),
     }
+    if decode_image:
+        result["decodedImage"] = decoded_image_fingerprint(path)
+    return result
 
 
 def missing_paths(paths: Sequence[Path]) -> List[str]:
@@ -500,6 +612,7 @@ def missing_paths(paths: Sequence[Path]) -> List[str]:
 
 
 def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
+    total_start = time.perf_counter()
     set_id = str(row.get("setId") or row.get("id") or "")
     image_a = normalize_path(str(row["imageAPath"]), manifest_path)
     image_b = normalize_path(str(row["imageBPath"]), manifest_path)
@@ -513,18 +626,28 @@ def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
             "reason": "One or more manifest paths were not found.",
             "missingFiles": missing,
             "contractPassed": False,
+            "timings": {"totalSeconds": _elapsed(total_start)},
         }
 
+    hash_start = time.perf_counter()
     image_hashes = {
-        "imageA": verify_hash(image_a, row.get("imageA_sha256_expected")),
-        "imageB": verify_hash(image_b, row.get("imageB_sha256_expected")),
+        "imageA": verify_hash(image_a, row.get("imageA_sha256_expected"), decode_image=True),
+        "imageB": verify_hash(image_b, row.get("imageB_sha256_expected"), decode_image=True),
         "groundTruth": verify_hash(truth_path, row.get("groundTruth_sha256_expected")),
     }
+    hash_seconds = _elapsed(hash_start)
     input_drift = not all(item["matches"] for item in image_hashes.values())
-    ground_truth_sha, raw_state, canonical_state, canonicalized = parse_ground_truth(str(truth_path))
 
+    ground_truth_start = time.perf_counter()
+    ground_truth_sha, raw_state, canonical_state, canonicalized = parse_ground_truth(str(truth_path))
+    ground_truth_seconds = _elapsed(ground_truth_start)
+
+    recognition_start = time.perf_counter()
     recognizer = WhiteUpRecognizer()
     result = recognizer.recognize(image_a.read_bytes(), image_b.read_bytes())
+    recognition_seconds = _elapsed(recognition_start)
+
+    diagnostics_start = time.perf_counter()
     payload = result.to_api_dict(include_overlays=False)
     recognized_state = payload.get("state") or ""
     score = score_match(recognized_state, canonical_state)
@@ -567,6 +690,7 @@ def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
     ]
     primary_failure_mode = summarize_failure_modes(face_summaries, input_drift, payload.get("status"))
     rejection_probe = rejection_localization_probe(result, payload)
+    diagnostics_seconds = _elapsed(diagnostics_start)
 
     expected_category = row.get("expectedCategory")
     expected_score_floor = row.get("expectedScoreFloor")
@@ -620,6 +744,13 @@ def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
         "failureModes": dict(Counter(face.get("failureMode", "unknown") for face in face_summaries)),
         "orientationDiagnostics": orientation,
         "rejectionLocalization": rejection_probe,
+        "timings": {
+            "hashSeconds": hash_seconds,
+            "groundTruthSeconds": ground_truth_seconds,
+            "recognizeSeconds": recognition_seconds,
+            "diagnosticsSeconds": diagnostics_seconds,
+            "totalSeconds": _elapsed(total_start),
+        },
         "notes": row.get("notes"),
     }
 
@@ -657,6 +788,7 @@ def print_table(results: Sequence[Dict[str, Any]]) -> None:
     headers = (
         ("Set", 5),
         ("Score", 8),
+        ("Sec", 10),
         ("Category", 33),
         ("Path", 7),
         ("Conf", 6),
@@ -677,6 +809,7 @@ def print_table(results: Sequence[Dict[str, Any]]) -> None:
         values = (
             result.get("setId"),
             score,
+            result.get("timings", {}).get("totalSeconds"),
             result.get("category"),
             path,
             result.get("confidence"),
@@ -697,10 +830,41 @@ def print_table(results: Sequence[Dict[str, Any]]) -> None:
             )
 
 
-def write_json(path: Path, results: Sequence[Dict[str, Any]], manifest: Path) -> None:
+def timing_summary(results: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+    row_times = [
+        float((result.get("timings") or {}).get("totalSeconds", 0.0))
+        for result in results
+        if result.get("status") != "skipped"
+    ]
+    return {
+        "totalSeconds": round(sum(row_times), 4),
+        "rowCount": len(row_times),
+        "slowestRows": [
+            {
+                "setId": result.get("setId"),
+                "totalSeconds": (result.get("timings") or {}).get("totalSeconds"),
+                "recognizeSeconds": (result.get("timings") or {}).get("recognizeSeconds"),
+            }
+            for result in sorted(
+                (item for item in results if item.get("status") != "skipped"),
+                key=lambda item: float((item.get("timings") or {}).get("totalSeconds", 0.0)),
+                reverse=True,
+            )[:5]
+        ],
+    }
+
+
+def write_json(
+    path: Path,
+    results: Sequence[Dict[str, Any]],
+    manifest: Path,
+    fingerprint: Dict[str, Any],
+) -> None:
     payload = {
         "schemaVersion": 1,
         "manifest": str(manifest),
+        "runtimeFingerprint": fingerprint,
+        "timingSummary": timing_summary(results),
         "results": list(results),
     }
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -732,13 +896,18 @@ def main() -> int:
         for row in load_manifest(manifest)
         if not selected or str(row.get("setId") or row.get("id")) in selected
     ]
+    fingerprint = runtime_fingerprint()
     results = [probe_pair(row, manifest) for row in rows]
 
     if args.json_output:
-        write_json(Path(args.json_output).expanduser(), results, manifest)
+        write_json(Path(args.json_output).expanduser(), results, manifest, fingerprint)
     if args.jsonl_output:
         write_jsonl(Path(args.jsonl_output).expanduser(), results)
     if not args.quiet:
+        print(f"Runtime: {runtime_summary(fingerprint)}")
+        summary = timing_summary(results)
+        print(f"Timing: total={summary['totalSeconds']}s rows={summary['rowCount']}")
+        print()
         print_table(results)
 
     if args.fail_on_contract and any(not result.get("contractPassed") and result.get("status") != "skipped" for result in results):

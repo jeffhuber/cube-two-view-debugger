@@ -6,7 +6,9 @@ from tools.probe_corpus import (
     count_deviation_summary,
     grid_weak_reasons,
     load_manifest,
+    runtime_summary,
     smallest_rank_gaps,
+    timing_summary,
 )
 
 
@@ -151,6 +153,40 @@ def test_probe_count_deviation_summary_reports_face_count_imbalance():
         "mostCommonCountFrequency": 12,
         "deviationsFromNine": {"U": 10, "F": -1, "D": -3, "L": -2, "B": -4},
     }
+
+
+def test_probe_timing_summary_reports_total_and_slowest_rows():
+    summary = timing_summary(
+        [
+            {"setId": "12", "status": "success", "timings": {"totalSeconds": 2.5, "recognizeSeconds": 2.1}},
+            {"setId": "14", "status": "success", "timings": {"totalSeconds": 4.0, "recognizeSeconds": 3.8}},
+            {"setId": "missing", "status": "skipped", "timings": {"totalSeconds": 0.1}},
+        ]
+    )
+
+    assert summary == {
+        "totalSeconds": 6.5,
+        "rowCount": 2,
+        "slowestRows": [
+            {"setId": "14", "totalSeconds": 4.0, "recognizeSeconds": 3.8},
+            {"setId": "12", "totalSeconds": 2.5, "recognizeSeconds": 2.1},
+        ],
+    }
+
+
+def test_probe_runtime_summary_includes_key_versions():
+    summary = runtime_summary(
+        {
+            "python": {"versionInfo": [3, 12, 13], "executable": "/tmp/python"},
+            "platform": {"platform": "TestOS-arm64"},
+            "packages": {"numpy": {"version": "2.3.5"}, "pillow": {"version": "12.2.0"}},
+        }
+    )
+
+    assert "Python 3.12.13" in summary
+    assert "Pillow 12.2.0" in summary
+    assert "NumPy 2.3.5" in summary
+    assert "TestOS-arm64" in summary
 
 
 def test_check_expected_yaw_passes_when_manifest_omits_expectation():

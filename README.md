@@ -223,6 +223,10 @@ pair, while still preserving the previous observed baseline for audit history.
 
 The probe emits:
 
+- runtime fingerprinting for cross-runner comparisons: Python executable/version, platform/CPU
+  details, NumPy version/config, and Pillow version/imaging-library info
+- per-row timing breakdowns for hash checks, ground-truth parsing, recognizer execution,
+  diagnostics, and total row time, plus a JSON `timingSummary` of the slowest rows
 - canonical score and score-vs-raw ground truth
 - recognition category, confidence, repair-path status, repair penalty, evaluated candidate count
 - image and ground-truth SHA checks

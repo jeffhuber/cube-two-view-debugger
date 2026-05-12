@@ -1447,13 +1447,11 @@ def _oriented_options_for_grid_map(grid_by_face: Dict[str, FaceGrid], anchor: st
 
     faces = list(transform_options)
     grid_context_flex = {face: _grid_context_repair_score(grid_by_face[face]) for face in faces}
-    low_flex_transformed_matrices: Dict[str, Dict[str, List[List[Any]]]] = {}
+    transformed_matrices: Dict[str, Dict[str, List[List[Any]]]] = {}
     for face in faces:
-        if grid_context_flex[face] >= GRID_CONTEXT_REPAIR_THRESHOLD:
-            continue
         matrix = _grid_matrix_for_orientation(grid_by_face[face], flex=grid_context_flex[face])
         matrix[1][1] = face
-        low_flex_transformed_matrices[face] = {
+        transformed_matrices[face] = {
             transform.name: transform.apply(matrix) for transform in transform_options[face]
         }
     ranked: List[Tuple[float, float, Dict[str, List[List[Any]]]]] = []
@@ -1465,12 +1463,7 @@ def _oriented_options_for_grid_map(grid_by_face: Dict[str, FaceGrid], anchor: st
             transform_score = _transform_weighted_match_score(transform, requirements[face], requirement_weights[face])
             sort_score += transform_score
             score += transform_score
-            if face in low_flex_transformed_matrices:
-                oriented[face] = low_flex_transformed_matrices[face][transform.name]
-            else:
-                matrix = _grid_matrix_for_orientation(grid_by_face[face], flex=grid_context_flex[face])
-                matrix[1][1] = face
-                oriented[face] = transform.apply(matrix)  # type: ignore[assignment]
+            oriented[face] = transformed_matrices[face][transform.name]
         plausibility = _visible_piece_plausibility_score(oriented)
         sort_score += plausibility
         score += plausibility

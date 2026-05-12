@@ -89,9 +89,11 @@ if str(ROOT) not in sys.path:
 
 from tools.audit_recognition_pair import file_sha256, parse_ground_truth, score_match  # noqa: E402
 from rubik_recognizer.colors import COLOR_TO_FACE  # noqa: E402
+from rubik_recognizer.image_pipeline import analyze_image  # noqa: E402
 from rubik_recognizer.recognizer import (  # noqa: E402
     FACE_ORDER,
     WhiteUpRecognizer,
+    _grid_quality_score,
     _oriented_face_options,
     recognition_diagnostics,
 )
@@ -593,6 +595,111 @@ def decoded_image_fingerprint(path: Path) -> Dict[str, Any]:
         return {"error": f"{type(exc).__name__}: {exc}"}
 
 
+def _round_float(value: Any, digits: int = 4) -> Any:
+    try:
+        return round(float(value), digits)
+    except (TypeError, ValueError):
+        return value
+
+
+def _round_point(point: Sequence[Any]) -> List[Any]:
+    return [_round_float(value) for value in point]
+
+
+def _sticker_dump(sticker: Any) -> Dict[str, Any]:
+    match = getattr(sticker, "match", None)
+    return {
+        "id": getattr(sticker, "id", None),
+        "source": getattr(sticker, "source", None),
+        "center": _round_point(getattr(sticker, "center", ()) or ()),
+        "bbox": [_round_float(value) for value in (getattr(sticker, "bbox", ()) or ())],
+        "rgb": list(getattr(sticker, "rgb", ()) or ()),
+        "face": getattr(match, "face", None),
+        "color": getattr(match, "color", None),
+        "distance": _round_float(getattr(match, "distance", None)),
+        "confidence": _round_float(getattr(match, "confidence", None)),
+        "alternatives": [
+            {"color": color, "distance": _round_float(distance)}
+            for color, distance in (getattr(match, "alternatives", []) or [])[:6]
+        ],
+        "area": getattr(sticker, "area", None),
+        "shapeAngle": _round_float(getattr(sticker, "shape_angle", None)),
+    }
+
+
+def _grid_dump(grid: Any) -> Dict[str, Any]:
+    return {
+        "id": getattr(grid, "id", None),
+        "centerFace": getattr(grid, "center_face", None),
+        "centerColor": getattr(getattr(grid, "center_sticker", None), "match", None).color
+        if getattr(getattr(grid, "center_sticker", None), "match", None)
+        else None,
+        "centerRgb": list(getattr(getattr(grid, "center_sticker", None), "rgb", ()) or ()),
+        "matchedCount": getattr(grid, "matched_count", None),
+        "fitError": _round_float(getattr(grid, "fit_error", None)),
+        "quality": _round_float(_grid_quality_score(grid)),
+        "points": [[_round_point(point) for point in row] for row in getattr(grid, "points", [])],
+        "stickers": [[_sticker_dump(sticker) for sticker in row] for row in getattr(grid, "stickers", [])],
+    }
+
+
+def analysis_dump_for_image(path: Path, label: str) -> Dict[str, Any]:
+    start = time.perf_counter()
+    image_bytes = path.read_bytes()
+    analysis = analyze_image(image_bytes)
+    return {
+        "label": label,
+        "path": str(path),
+        "byteSha256": hashlib.sha256(image_bytes).hexdigest(),
+        "decodedImage": decoded_image_fingerprint(path),
+        "timings": {"analyzeSeconds": _elapsed(start)},
+        "analysis": {
+            "width": analysis.width,
+            "height": analysis.height,
+            "roi": list(analysis.roi),
+            "warnings": list(analysis.warnings),
+            "stickerCount": len(analysis.stickers),
+            "stickers": [_sticker_dump(sticker) for sticker in analysis.stickers],
+            "gridCount": len(analysis.grids),
+            "grids": [_grid_dump(grid) for grid in analysis.grids],
+        },
+    }
+
+
+def analysis_dump_for_rows(
+    rows: Sequence[Dict[str, Any]],
+    manifest_path: Path,
+    *,
+    image_selection: str,
+    fingerprint: Dict[str, Any],
+) -> Dict[str, Any]:
+    images = []
+    for row in rows:
+        set_id = str(row.get("setId") or row.get("id") or "")
+        selected_images = ("imageA", "imageB") if image_selection == "both" else (image_selection,)
+        for image_key in selected_images:
+            path_key = f"{image_key}Path"
+            if path_key not in row:
+                continue
+            image_path = normalize_path(str(row[path_key]), manifest_path)
+            images.append(
+                {
+                    "setId": set_id,
+                    **analysis_dump_for_image(image_path, image_key),
+                }
+            )
+    return {
+        "schemaVersion": 1,
+        "manifest": str(manifest_path),
+        "runtimeFingerprint": fingerprint,
+        "images": images,
+    }
+
+
+def write_analysis_json(path: Path, payload: Dict[str, Any]) -> None:
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
 def verify_hash(path: Path, expected: Optional[str], *, decode_image: bool = False) -> Dict[str, Any]:
     actual = file_sha256(str(path))
     result = {
@@ -883,6 +990,14 @@ def main() -> int:
     parser.add_argument("--set-id", action="append", help="Only run one or more set ids from the manifest.")
     parser.add_argument("--json-output", help="Optional path for full JSON output.")
     parser.add_argument("--jsonl-output", help="Optional path for JSONL output.")
+    parser.add_argument("--analysis-output", help="Optional path for analysis-grid dump JSON.")
+    parser.add_argument(
+        "--analysis-image",
+        choices=("imageA", "imageB", "both"),
+        default="both",
+        help="Which manifest image(s) to include in --analysis-output.",
+    )
+    parser.add_argument("--analysis-only", action="store_true", help="Write analysis dump without running recognition.")
     parser.add_argument("--quiet", action="store_true", help="Do not print the readable table.")
     parser.add_argument("--fail-on-contract", action="store_true", help="Exit non-zero if any non-skipped row fails its contract.")
     args = parser.parse_args()
@@ -897,6 +1012,17 @@ def main() -> int:
         if not selected or str(row.get("setId") or row.get("id")) in selected
     ]
     fingerprint = runtime_fingerprint()
+    if args.analysis_output:
+        write_analysis_json(
+            Path(args.analysis_output).expanduser(),
+            analysis_dump_for_rows(rows, manifest, image_selection=args.analysis_image, fingerprint=fingerprint),
+        )
+    if args.analysis_only:
+        if not args.quiet:
+            print(f"Runtime: {runtime_summary(fingerprint)}")
+            print(f"Analysis dump rows={len(rows)} image={args.analysis_image}")
+        return 0
+
     results = [probe_pair(row, manifest) for row in rows]
 
     if args.json_output:

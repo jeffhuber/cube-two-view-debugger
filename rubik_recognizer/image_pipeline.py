@@ -563,17 +563,13 @@ def _score_grid(points: np.ndarray, indices: List[int], origin: np.ndarray, u: n
         match_row: List[Optional[int]] = []
         for c in range(3):
             predicted = origin + r * u + c * v
-            row.append((float(predicted[0]), float(predicted[1])))
-            best_idx = None
-            best_dist = tolerance
-            for idx in available:
-                dist = float(np.linalg.norm(points[idx] - predicted))
-                if dist < best_dist:
-                    best_idx = idx
-                    best_dist = dist
+            px = float(predicted[0])
+            py = float(predicted[1])
+            row.append((px, py))
+            best_idx, best_dist = _nearest_available_point(points, available, px, py, tolerance)
             if best_idx is not None:
                 matched.append(best_idx)
-                errors.append(best_dist)
+                errors.append(float(best_dist))
                 available.remove(best_idx)
             match_row.append(best_idx)
         centers.append(row)
@@ -627,17 +623,10 @@ def _score_grid_centers(points: np.ndarray, indices: List[int], centers: List[Li
     for row in centers:
         match_row: List[Optional[int]] = []
         for center in row:
-            predicted = np.array(center, dtype=float)
-            best_idx = None
-            best_dist = tolerance
-            for idx in available:
-                dist = float(np.linalg.norm(points[idx] - predicted))
-                if dist < best_dist:
-                    best_idx = idx
-                    best_dist = dist
+            best_idx, best_dist = _nearest_available_point(points, available, float(center[0]), float(center[1]), tolerance)
             if best_idx is not None:
                 matched.append(best_idx)
-                errors.append(best_dist)
+                errors.append(float(best_dist))
                 available.remove(best_idx)
             match_row.append(best_idx)
         cell_matches.append(match_row)
@@ -648,6 +637,28 @@ def _score_grid_centers(points: np.ndarray, indices: List[int], centers: List[Li
         "matched_count": len(matched),
         "error": float(np.mean(errors) if errors else 9999.0),
     }
+
+
+def _nearest_available_point(
+    points: np.ndarray,
+    available: Iterable[int],
+    px: float,
+    py: float,
+    tolerance: float,
+) -> Tuple[Optional[int], Optional[float]]:
+    best_idx = None
+    best_dist_sq = tolerance * tolerance
+    for idx in available:
+        point = points[idx]
+        dx = float(point[0]) - px
+        dy = float(point[1]) - py
+        dist_sq = dx * dx + dy * dy
+        if dist_sq < best_dist_sq:
+            best_idx = idx
+            best_dist_sq = dist_sq
+    if best_idx is None:
+        return None, None
+    return best_idx, math.sqrt(best_dist_sq)
 
 
 def _fit_homography(src: np.ndarray, dst: np.ndarray) -> Optional[np.ndarray]:

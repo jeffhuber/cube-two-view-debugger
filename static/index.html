@@ -16,13 +16,26 @@
 
         <form id="recognizeForm" class="panel">
           <h2>Single Pair</h2>
-          <label>
-            <span>Image A</span>
-            <input id="imageA" type="file" name="imageA" accept="image/*" required />
+          <label class="dropZone" id="singleDropZone">
+            <span class="dropZoneTitle">Drop or click to add 2 photos</span>
+            <span class="dropZoneHint">Filenames with "A" / "B" markers auto-pair; otherwise the order you drop them in.</span>
+            <span class="dropZoneFiles" id="singleDropZoneFiles"></span>
+            <input id="singleImages" type="file" name="images" accept="image/*" multiple />
           </label>
+          <details class="manualOverride">
+            <summary>Manual A/B override</summary>
+            <label>
+              <span>Image A</span>
+              <input id="imageA" type="file" name="imageA" accept="image/*" />
+            </label>
+            <label>
+              <span>Image B</span>
+              <input id="imageB" type="file" name="imageB" accept="image/*" />
+            </label>
+          </details>
           <label>
-            <span>Image B</span>
-            <input id="imageB" type="file" name="imageB" accept="image/*" required />
+            <span>Set name (optional)</span>
+            <input id="singleSetId" type="text" name="setId" placeholder="e.g. Set 21" autocomplete="off" />
           </label>
           <button type="submit">Recognize</button>
         </form>
@@ -30,7 +43,8 @@
         <form id="batchForm" class="panel">
           <h2>Batch</h2>
           <label class="dropZone" id="dropZone">
-            <span>Drop Images</span>
+            <span class="dropZoneTitle">Drop Images</span>
+            <span class="dropZoneHint">Multiple pairs at once — files paired by A/B markers in filename, or by drop order.</span>
             <input id="batchImages" type="file" name="images" accept="image/*" multiple />
           </label>
           <label>
@@ -71,6 +85,27 @@
       </section>
 
       <section id="overlays" class="overlays" aria-label="Recognition overlays"></section>
+
+      <section class="recentRuns panel" aria-labelledby="recentRunsHeading">
+        <div class="resultHeader">
+          <h2 id="recentRunsHeading">Recent Runs</h2>
+          <button id="recentRunsRefresh" type="button">Refresh</button>
+        </div>
+        <p class="recentRunsHint">Click any row to reload its saved result (no re-running). Hit Refresh after a new recognition to see it appear at the top.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Set</th>
+              <th>Status</th>
+              <th>Category</th>
+              <th>Score</th>
+              <th>Saved</th>
+              <th>Run</th>
+            </tr>
+          </thead>
+          <tbody id="recentRunsRows"></tbody>
+        </table>
+      </section>
     </main>
 
     <script src="/static/app.js"></script>

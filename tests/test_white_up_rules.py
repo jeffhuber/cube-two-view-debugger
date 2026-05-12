@@ -203,6 +203,31 @@ def test_state_candidates_reuse_facelet_options_cache(monkeypatch):
     assert len(workset.facelet_options_by_key) == 1
 
 
+def test_candidate_face_count_diagnostics_reuses_facelet_options_cache(monkeypatch):
+    facelet = object()
+    merged = {
+        face: [[facelet for _ in range(3)] for _ in range(3)]
+        for face in recognizer.FACE_ORDER
+    }
+    cache = {}
+    calls = {"options": 0}
+
+    def fake_facelet_options(value):
+        calls["options"] += 1
+        assert value is facelet
+        return [("U", 0.0)]
+
+    monkeypatch.setattr(recognizer, "_facelet_options", fake_facelet_options)
+
+    recognizer._candidate_face_count_diagnostics(
+        [(100.0, merged), (99.0, merged)],
+        facelet_options_cache=cache,
+    )
+
+    assert calls == {"options": 1}
+    assert len(cache) == 1
+
+
 def test_merged_face_candidates_precomputes_option_signatures(monkeypatch):
     options_a = [
         {

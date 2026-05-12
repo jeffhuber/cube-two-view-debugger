@@ -123,6 +123,14 @@ PIECE_CONFLICT_KEYS = (
     "validEdges",
     "totalConflicts",
 )
+EDGE_FACELET_COORDS = tuple(
+    tuple((FACE_ORDER[index // 9], (index % 9) // 3, (index % 9) % 3) for index in indices)
+    for indices in EDGE_FACELETS
+)
+CORNER_FACELET_COORDS = tuple(
+    tuple((FACE_ORDER[index // 9], (index % 9) // 3, (index % 9) % 3) for index in indices)
+    for indices in CORNER_FACELETS
+)
 
 
 @dataclass
@@ -553,7 +561,10 @@ def _int_signal(value: Any, default: int = 0) -> int:
 
 def recognition_diagnostics(analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> Dict[str, Any]:
     workset = _recognition_workset(analysis_a, analysis_b)
-    candidate_counts = _candidate_face_count_diagnostics(workset.merged_candidates)
+    candidate_counts = _candidate_face_count_diagnostics(
+        workset.merged_candidates,
+        facelet_options_cache=workset.facelet_options_by_key,
+    )
     return {
         "imageA": _orientation_diagnostics(analysis_a, "U", workset.options_a),
         "imageB": _orientation_diagnostics(analysis_b, "D", workset.options_b),
@@ -876,7 +887,11 @@ def _orientation_diagnostics(analysis: ImageAnalysis, anchor: str, options: Sequ
     }
 
 
-def _candidate_face_count_diagnostics(merged: Sequence[Tuple[float, Dict[str, List[List[Any]]]]]) -> Dict[str, Any]:
+def _candidate_face_count_diagnostics(
+    merged: Sequence[Tuple[float, Dict[str, List[List[Any]]]]],
+    *,
+    facelet_options_cache: Optional[Dict[FaceletOptionsKey, List[Tuple[str, float]]]] = None,
+) -> Dict[str, Any]:
     face_counts: Counter[Tuple[Tuple[str, int], ...]] = Counter()
     validation_errors: Counter[str] = Counter()
     examples = []
@@ -884,7 +899,7 @@ def _candidate_face_count_diagnostics(merged: Sequence[Tuple[float, Dict[str, Li
     sampled = 0
 
     for score, faces in merged[:MAX_DIAGNOSTIC_MERGES]:
-        for state in _state_variants_from_faces(faces):
+        for state in _state_variants_from_faces(faces, facelet_options_cache=facelet_options_cache):
             sampled += 1
             counts = tuple((face, state.count(face)) for face in FACE_ORDER)
             face_counts[counts] += 1
@@ -1524,8 +1539,8 @@ def _grid_context_repair_score(grid: FaceGrid) -> float:
 
 def _visible_piece_plausibility_score(faces: Dict[str, List[List[Any]]]) -> float:
     score = 0.0
-    for indices in EDGE_FACELETS:
-        colors = _visible_piece_colors(faces, indices)
+    for coords in EDGE_FACELET_COORDS:
+        colors = _visible_piece_colors_for_coords(faces, coords)
         if colors is None:
             continue
         if len(set(colors)) != len(colors):
@@ -1535,8 +1550,8 @@ def _visible_piece_plausibility_score(faces: Dict[str, List[List[Any]]]) -> floa
         else:
             score -= 14.0
 
-    for indices in CORNER_FACELETS:
-        colors = _visible_piece_colors(faces, indices)
+    for coords in CORNER_FACELET_COORDS:
+        colors = _visible_piece_colors_for_coords(faces, coords)
         if colors is None:
             continue
         if len(set(colors)) != len(colors):
@@ -1549,14 +1564,19 @@ def _visible_piece_plausibility_score(faces: Dict[str, List[List[Any]]]) -> floa
 
 
 def _visible_piece_colors(faces: Dict[str, List[List[Any]]], indices: Sequence[int]) -> Optional[Tuple[str, ...]]:
+    coords = tuple((FACE_ORDER[index // 9], (index % 9) // 3, (index % 9) % 3) for index in indices)
+    return _visible_piece_colors_for_coords(faces, coords)
+
+
+def _visible_piece_colors_for_coords(
+    faces: Dict[str, List[List[Any]]],
+    coords: Sequence[Tuple[str, int, int]],
+) -> Optional[Tuple[str, ...]]:
     colors = []
-    for index in indices:
-        face_index, offset = divmod(index, 9)
-        face = FACE_ORDER[face_index]
+    for face, row, col in coords:
         matrix = faces.get(face)
         if matrix is None:
             return None
-        row, col = divmod(offset, 3)
         color = _primary_facelet_color(matrix[row][col])
         if color not in FACE_ORDER:
             return None
@@ -1569,8 +1589,8 @@ def _piece_conflict_summary(faces: Dict[str, List[List[Any]]]) -> Dict[str, int]
     corner_sets: Counter[frozenset[str]] = Counter()
     edge_sets: Counter[frozenset[str]] = Counter()
 
-    for indices in CORNER_FACELETS:
-        colors = _visible_piece_colors(faces, indices)
+    for coords in CORNER_FACELET_COORDS:
+        colors = _visible_piece_colors_for_coords(faces, coords)
         if colors is None:
             summary["missingCorners"] += 1
             continue
@@ -1584,8 +1604,8 @@ def _piece_conflict_summary(faces: Dict[str, List[List[Any]]]) -> Dict[str, int]
         else:
             summary["invalidCorners"] += 1
 
-    for indices in EDGE_FACELETS:
-        colors = _visible_piece_colors(faces, indices)
+    for coords in EDGE_FACELET_COORDS:
+        colors = _visible_piece_colors_for_coords(faces, coords)
         if colors is None:
             summary["missingEdges"] += 1
             continue

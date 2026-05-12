@@ -9,6 +9,7 @@ from rubik_recognizer.recognizer import (
     WhiteUpRecognizer,
     _capture_yaw_state_to_wca,
     _grid_matrix_for_orientation,
+    _merged_face_candidates,
     _oriented_options_for_grid_map,
     _prefer_calibrated_result,
     _recognition_category_payload,
@@ -200,6 +201,58 @@ def test_state_candidates_reuse_facelet_options_cache(monkeypatch):
     assert len(candidates) == 2
     assert calls == {"options": 1}
     assert len(workset.facelet_options_by_key) == 1
+
+
+def test_merged_face_candidates_precomputes_option_signatures(monkeypatch):
+    options_a = [
+        {
+            "U": [["U"] * 3 for _ in range(3)],
+            "R": [["R"] * 3 for _ in range(3)],
+            "F": [["F"] * 3 for _ in range(3)],
+            "_score": 10.0,
+        },
+        {
+            "U": [["U"] * 3 for _ in range(3)],
+            "R": [["R"] * 3 for _ in range(3)],
+            "F": [["B"] * 3 for _ in range(3)],
+            "_score": 9.0,
+        },
+    ]
+    options_b = [
+        {
+            "D": [["D"] * 3 for _ in range(3)],
+            "L": [["L"] * 3 for _ in range(3)],
+            "B": [["B"] * 3 for _ in range(3)],
+            "_score": 8.0,
+        },
+        {
+            "D": [["D"] * 3 for _ in range(3)],
+            "L": [["F"] * 3 for _ in range(3)],
+            "B": [["B"] * 3 for _ in range(3)],
+            "_score": 7.0,
+        },
+        {
+            "D": [["U"] * 3 for _ in range(3)],
+            "L": [["L"] * 3 for _ in range(3)],
+            "B": [["B"] * 3 for _ in range(3)],
+            "_score": 6.0,
+        },
+    ]
+    calls = {"signatures": 0}
+    original_face_signature = recognizer._face_signature
+
+    def counting_face_signature(faces):
+        calls["signatures"] += 1
+        return original_face_signature(faces)
+
+    monkeypatch.setattr(recognizer, "_face_signature", counting_face_signature)
+
+    merged = _merged_face_candidates(options_a, options_b)
+
+    assert len(merged) == len(options_a) * len(options_b)
+    assert calls == {"signatures": len(options_a) + len(options_b)}
+    assert all("_option_signature_a" in faces for _, faces in merged)
+    assert all("_option_signature_b" in faces for _, faces in merged)
 
 
 def test_grid_matrix_for_orientation_uses_provided_context_flex(monkeypatch):

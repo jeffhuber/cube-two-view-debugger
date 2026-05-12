@@ -1,9 +1,12 @@
 import json
 from pathlib import Path
 
+import rubik_recognizer.recognizer as recognizer
 from rubik_recognizer.recognizer import (
     PIECE_CONFLICT_KEYS,
     RecognitionResult,
+    RecognitionWorkset,
+    WhiteUpRecognizer,
     _capture_yaw_state_to_wca,
     _prefer_calibrated_result,
     _recognition_category_payload,
@@ -102,6 +105,37 @@ def test_same_tier_calibrated_result_needs_clear_margin():
     calibrated = RecognitionResult(status="success", confidence=0.82, reason="Recognized a legal white-up cube state after cubie-level color repair.")
 
     assert not _prefer_calibrated_result(calibrated, raw)
+
+
+def test_recognize_from_analyses_reuses_workset_for_direct_and_repair(monkeypatch):
+    workset = RecognitionWorkset(options_a=[], options_b=[], merged_candidates=[])
+    calls = {"workset": 0, "direct": 0, "repair": 0}
+
+    def fake_workset(analysis_a, analysis_b):
+        calls["workset"] += 1
+        return workset
+
+    def fake_state_candidates(self, candidate_workset):
+        calls["direct"] += 1
+        assert candidate_workset is workset
+        return []
+
+    def fake_repair_details(self, candidate_workset, *, release_merged_candidates=False):
+        calls["repair"] += 1
+        assert candidate_workset is workset
+        assert release_merged_candidates is True
+        return []
+
+    monkeypatch.setattr(recognizer, "_base_recognition_signals", lambda analysis_a, analysis_b: {})
+    monkeypatch.setattr(recognizer, "_white_up_checks", lambda analysis_a, analysis_b: [])
+    monkeypatch.setattr(recognizer, "_recognition_workset", fake_workset)
+    monkeypatch.setattr(WhiteUpRecognizer, "_state_candidates_from_workset", fake_state_candidates)
+    monkeypatch.setattr(WhiteUpRecognizer, "_legal_repair_candidate_details_from_workset", fake_repair_details)
+
+    result = WhiteUpRecognizer()._recognize_from_analyses(object(), object())
+
+    assert result.status == "rejected"
+    assert calls == {"workset": 1, "direct": 1, "repair": 1}
 
 
 def test_recognition_result_exposes_additive_signals():

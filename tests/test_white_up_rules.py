@@ -8,6 +8,8 @@ from rubik_recognizer.recognizer import (
     RecognitionWorkset,
     WhiteUpRecognizer,
     _capture_yaw_state_to_wca,
+    _grid_matrix_for_orientation,
+    _oriented_options_for_grid_map,
     _prefer_calibrated_result,
     _recognition_category_payload,
     _repair_ranking_penalty,
@@ -198,6 +200,57 @@ def test_state_candidates_reuse_facelet_options_cache(monkeypatch):
     assert len(candidates) == 2
     assert calls == {"options": 1}
     assert len(workset.facelet_options_by_key) == 1
+
+
+def test_grid_matrix_for_orientation_uses_provided_context_flex(monkeypatch):
+    sticker = type("Sticker", (), {"source": "component"})()
+    grid = type(
+        "Grid",
+        (),
+        {
+            "stickers": [[sticker for _ in range(3)] for _ in range(3)],
+        },
+    )()
+
+    def fail_score(candidate):
+        raise AssertionError("provided flex should skip recomputing grid context score")
+
+    monkeypatch.setattr(recognizer, "_grid_context_repair_score", fail_score)
+
+    matrix = _grid_matrix_for_orientation(grid, flex=0.0)
+
+    assert matrix == grid.stickers
+
+
+def test_oriented_options_cache_grid_context_flex_per_grid(monkeypatch):
+    def grid(grid_id, x_offset):
+        sticker = type("Sticker", (), {"source": "component"})()
+        points = [[(x_offset + c * 10, r * 10) for c in range(3)] for r in range(3)]
+        return type(
+            "Grid",
+            (),
+            {
+                "id": grid_id,
+                "points": points,
+                "stickers": [[sticker for _ in range(3)] for _ in range(3)],
+            },
+        )()
+
+    grids = {"U": grid(1, 0), "F": grid(2, 40), "R": grid(3, 80)}
+    calls = {"context": 0}
+
+    def fake_context_score(candidate):
+        calls["context"] += 1
+        return 0.0
+
+    monkeypatch.setattr(recognizer, "_grid_context_repair_score", fake_context_score)
+    monkeypatch.setattr(recognizer, "_ranked_transforms", lambda requirements, weights: recognizer.TRANSFORMS[:2])
+    monkeypatch.setattr(recognizer, "_visible_piece_plausibility_score", lambda oriented: 0.0)
+
+    options = _oriented_options_for_grid_map(grids, "U")
+
+    assert options
+    assert calls == {"context": 3}
 
 
 def test_repair_details_memoizes_signature_stable_work(monkeypatch):

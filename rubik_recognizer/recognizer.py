@@ -175,6 +175,7 @@ class PieceOption:
 
 
 FaceSignature = Tuple[Tuple[str, str], ...]
+FaceletOptionsKey = Tuple[str, object]
 
 
 @dataclass
@@ -182,6 +183,7 @@ class RecognitionWorkset:
     options_a: List[Dict[str, List[List[Any]]]]
     options_b: List[Dict[str, List[List[Any]]]]
     merged_candidates: List[Tuple[float, Dict[str, List[List[Any]]]]]
+    facelet_options_by_key: Dict[FaceletOptionsKey, List[Tuple[str, float]]] = field(default_factory=dict)
     repaired_state_by_signature: Dict[FaceSignature, Optional[Tuple[str, float, int]]] = field(default_factory=dict)
     conflicts_by_signature: Dict[FaceSignature, Dict[str, int]] = field(default_factory=dict)
     face_counts_by_signature: Dict[FaceSignature, Dict[str, int]] = field(default_factory=dict)
@@ -349,7 +351,7 @@ class WhiteUpRecognizer:
         candidates: List[Tuple[str, float, Dict[str, Any]]] = []
         for _, merged in workset.merged_candidates:
             details = _candidate_selection_detail(merged)
-            for partial in _state_variants_from_faces(merged):
+            for partial in _state_variants_from_faces(merged, facelet_options_cache=workset.facelet_options_by_key):
                 confidence = _state_confidence(merged)
                 candidates.append((partial, confidence, details))
         return candidates
@@ -1848,14 +1850,18 @@ def _cached_face_signature(faces: Dict[str, List[List[Any]]]) -> FaceSignature:
     return signature
 
 
-def _state_variants_from_faces(faces: Dict[str, List[List[Any]]]) -> List[str]:
+def _state_variants_from_faces(
+    faces: Dict[str, List[List[Any]]],
+    *,
+    facelet_options_cache: Optional[Dict[FaceletOptionsKey, List[Tuple[str, float]]]] = None,
+) -> List[str]:
     facelets = []
     for face in FACE_ORDER:
         matrix = faces.get(face)
         if not matrix:
             return []
         facelets.extend(matrix[r][c] for r in range(3) for c in range(3))
-    return _balanced_state_variants(facelets)
+    return _balanced_state_variants(facelets, facelet_options_cache=facelet_options_cache)
 
 
 def _legal_repaired_state_from_faces(faces: Dict[str, List[List[Any]]]) -> Optional[Tuple[str, float, int]]:
@@ -2051,8 +2057,12 @@ def _state_from_piece_solution(corners: Sequence[PieceOption], edges: Sequence[P
     return "".join(color or "U" for color in state)
 
 
-def _balanced_state_variants(facelets: Sequence[Any]) -> List[str]:
-    options = [_facelet_options(facelet) for facelet in facelets]
+def _balanced_state_variants(
+    facelets: Sequence[Any],
+    *,
+    facelet_options_cache: Optional[Dict[FaceletOptionsKey, List[Tuple[str, float]]]] = None,
+) -> List[str]:
+    options = [_cached_facelet_options(facelet, facelet_options_cache) for facelet in facelets]
     current = [choices[0][0] for choices in options]
     counts = Counter(current)
     current_state = "".join(current)
@@ -2113,6 +2123,26 @@ def _balanced_state_variants(facelets: Sequence[Any]) -> List[str]:
             unique.append(state)
             seen.add(state)
     return unique[:MAX_COLOR_REPAIR_VARIANTS]
+
+
+def _cached_facelet_options(
+    facelet: Any,
+    cache: Optional[Dict[FaceletOptionsKey, List[Tuple[str, float]]]],
+) -> List[Tuple[str, float]]:
+    if cache is None:
+        return _facelet_options(facelet)
+    key = _facelet_options_cache_key(facelet)
+    cached = cache.get(key)
+    if cached is None:
+        cached = _facelet_options(facelet)
+        cache[key] = cached
+    return cached
+
+
+def _facelet_options_cache_key(facelet: Any) -> FaceletOptionsKey:
+    if isinstance(facelet, str):
+        return ("str", facelet)
+    return ("obj", id(facelet))
 
 
 def _facelet_options(facelet: Any) -> List[Tuple[str, float]]:

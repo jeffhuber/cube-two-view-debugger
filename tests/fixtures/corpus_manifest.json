@@ -65,6 +65,24 @@
       "notes": "Clean direct success."
     },
     {
+      "setId": "23",
+      "imageAPath": "/Users/jhuber/Downloads/Set 23 - A - white up.JPG",
+      "imageBPath": "/Users/jhuber/Downloads/Set 23 - B - white up.JPG",
+      "groundTruthPath": "/Users/jhuber/Downloads/Set 23 - cube-ground-truth-1778575244880.json",
+      "imageA_sha256_expected": "2c86a7d3009f5852f0fda737e2c96d76b2a4a1a4baf76e718a954dea0c5c77ab",
+      "imageB_sha256_expected": "4b31a8225d17537452ba215e7a88b4713189fecc852d6050a7929d3ff9fad1fc",
+      "groundTruth_sha256_expected": "6c2f52f594719c19f2d47b3c9bcba4f9b3d23c21c7d6c47341e8cdd6ef3c9b5b",
+      "expectedCategory": "success_clean",
+      "expectedScoreFloor": 54,
+      "currentScoreObserved": 54,
+      "expectedYaw": {
+        "status": "nonstandard",
+        "quarterTurns": 2,
+        "normalizationApplied": true
+      },
+      "notes": "Second yaw=2 corpus pair (180° rotation). cv-local success_clean direct, recognizer output equals ground truth byte-for-byte (diffFromCorrected=0). Captured 2026-05-12 on cube-snap PR #99 Fixer flow. Adds coverage for the 'recover-from-one-borderline-grid' path: image B's L grid (gridId=12) has quality=12.6 with badSamples=1/suspectSamples=4.6 — well below the typical ~95 quality of other selected grids in this pair, but pipeline still produces the correct state."
+    },
+    {
       "setId": "24",
       "imageAPath": "/Users/jhuber/Downloads/Set 24 - A - white up IMG_6769.JPG",
       "imageBPath": "/Users/jhuber/Downloads/Set 24 - B - white up IMG_6770.JPG",

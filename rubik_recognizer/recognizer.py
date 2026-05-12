@@ -1445,6 +1445,15 @@ def _oriented_options_for_grid_map(grid_by_face: Dict[str, FaceGrid], anchor: st
 
     faces = list(transform_options)
     grid_context_flex = {face: _grid_context_repair_score(grid_by_face[face]) for face in faces}
+    low_flex_transformed_matrices: Dict[str, Dict[str, List[List[Any]]]] = {}
+    for face in faces:
+        if grid_context_flex[face] >= GRID_CONTEXT_REPAIR_THRESHOLD:
+            continue
+        matrix = _grid_matrix_for_orientation(grid_by_face[face], flex=grid_context_flex[face])
+        matrix[1][1] = face
+        low_flex_transformed_matrices[face] = {
+            transform.name: transform.apply(matrix) for transform in transform_options[face]
+        }
     ranked: List[Tuple[float, float, Dict[str, List[List[Any]]]]] = []
     for combo in product(*(transform_options[face] for face in faces)):
         oriented: Dict[str, List[List[Any]]] = {}
@@ -1454,9 +1463,12 @@ def _oriented_options_for_grid_map(grid_by_face: Dict[str, FaceGrid], anchor: st
             transform_score = _transform_weighted_match_score(transform, requirements[face], requirement_weights[face])
             sort_score += transform_score
             score += transform_score
-            matrix = _grid_matrix_for_orientation(grid_by_face[face], flex=grid_context_flex[face])
-            matrix[1][1] = face
-            oriented[face] = transform.apply(matrix)  # type: ignore[assignment]
+            if face in low_flex_transformed_matrices:
+                oriented[face] = low_flex_transformed_matrices[face][transform.name]
+            else:
+                matrix = _grid_matrix_for_orientation(grid_by_face[face], flex=grid_context_flex[face])
+                matrix[1][1] = face
+                oriented[face] = transform.apply(matrix)  # type: ignore[assignment]
         plausibility = _visible_piece_plausibility_score(oriented)
         sort_score += plausibility
         score += plausibility
@@ -1467,6 +1479,8 @@ def _oriented_options_for_grid_map(grid_by_face: Dict[str, FaceGrid], anchor: st
 
 def _grid_matrix_for_orientation(grid: FaceGrid, *, flex: Optional[float] = None) -> List[List[Any]]:
     resolved_flex = _grid_context_repair_score(grid) if flex is None else flex
+    if resolved_flex < GRID_CONTEXT_REPAIR_THRESHOLD:
+        return [list(row) for row in grid.stickers]
     return [
         [_grid_contextual_facelet(sticker, grid, resolved_flex) for sticker in row]
         for row in grid.stickers

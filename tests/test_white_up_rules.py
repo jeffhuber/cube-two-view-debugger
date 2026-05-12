@@ -216,10 +216,18 @@ def test_grid_matrix_for_orientation_uses_provided_context_flex(monkeypatch):
         raise AssertionError("provided flex should skip recomputing grid context score")
 
     monkeypatch.setattr(recognizer, "_grid_context_repair_score", fail_score)
+    monkeypatch.setattr(
+        recognizer,
+        "_grid_contextual_facelet",
+        lambda sticker, candidate, flex: (_ for _ in ()).throw(
+            AssertionError("below-threshold flex should keep original stickers directly")
+        ),
+    )
 
     matrix = _grid_matrix_for_orientation(grid, flex=0.0)
 
     assert matrix == grid.stickers
+    assert matrix is not grid.stickers
 
 
 def test_oriented_options_cache_grid_context_flex_per_grid(monkeypatch):
@@ -251,6 +259,39 @@ def test_oriented_options_cache_grid_context_flex_per_grid(monkeypatch):
 
     assert options
     assert calls == {"context": 3}
+
+
+def test_oriented_options_reuses_low_flex_transformed_matrices(monkeypatch):
+    def grid(grid_id, x_offset):
+        sticker = type("Sticker", (), {"source": "component"})()
+        points = [[(x_offset + c * 10, r * 10) for c in range(3)] for r in range(3)]
+        return type(
+            "Grid",
+            (),
+            {
+                "id": grid_id,
+                "points": points,
+                "stickers": [[sticker for _ in range(3)] for _ in range(3)],
+            },
+        )()
+
+    grids = {"U": grid(1, 0), "F": grid(2, 40), "R": grid(3, 80)}
+    calls = {"matrix": 0}
+    original_matrix = recognizer._grid_matrix_for_orientation
+
+    def counting_matrix(candidate, *, flex=None):
+        calls["matrix"] += 1
+        return original_matrix(candidate, flex=flex)
+
+    monkeypatch.setattr(recognizer, "_grid_context_repair_score", lambda candidate: 0.0)
+    monkeypatch.setattr(recognizer, "_ranked_transforms", lambda requirements, weights: recognizer.TRANSFORMS[:2])
+    monkeypatch.setattr(recognizer, "_visible_piece_plausibility_score", lambda oriented: 0.0)
+    monkeypatch.setattr(recognizer, "_grid_matrix_for_orientation", counting_matrix)
+
+    options = _oriented_options_for_grid_map(grids, "U")
+
+    assert options
+    assert calls == {"matrix": 3}
 
 
 def test_repair_details_memoizes_signature_stable_work(monkeypatch):

@@ -172,6 +172,34 @@ def test_recognize_from_analyses_skips_repair_for_low_direct_candidate_count(mon
     assert calls == {"workset": 1, "direct": 1, "repair": 0}
 
 
+def test_state_candidates_reuse_facelet_options_cache(monkeypatch):
+    facelet = object()
+    merged = {
+        face: [[facelet for _ in range(3)] for _ in range(3)]
+        for face in recognizer.FACE_ORDER
+    }
+    merged["_score"] = 100.0
+    workset = RecognitionWorkset(
+        options_a=[],
+        options_b=[],
+        merged_candidates=[(100.0, merged), (99.0, merged)],
+    )
+    calls = {"options": 0}
+
+    def fake_facelet_options(value):
+        calls["options"] += 1
+        assert value is facelet
+        return [("U", 0.0)]
+
+    monkeypatch.setattr(recognizer, "_facelet_options", fake_facelet_options)
+
+    candidates = WhiteUpRecognizer()._state_candidates_from_workset(workset)
+
+    assert len(candidates) == 2
+    assert calls == {"options": 1}
+    assert len(workset.facelet_options_by_key) == 1
+
+
 def test_repair_details_memoizes_signature_stable_work(monkeypatch):
     solved = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
 

@@ -1,3 +1,4 @@
+import json
 import sys
 from pathlib import Path
 
@@ -6,11 +7,14 @@ from tools.probe_corpus import (
     _check_expected_yaw,
     classify_face_failure,
     count_deviation_summary,
+    environment_policy_warnings,
     grid_weak_reasons,
     load_manifest,
+    load_manifest_document,
     runtime_summary,
     smallest_rank_gaps,
     timing_summary,
+    write_json,
 )
 
 
@@ -84,6 +88,100 @@ def test_probe_manifest_records_hashes_observed_baselines_and_contracts():
         assert row["groundTruth_sha256_expected"]
         assert "expectedCategory" in row
         assert "currentScoreObserved" in row
+
+
+def test_probe_manifest_records_primary_supported_architecture():
+    document = load_manifest_document(Path(__file__).parent / "fixtures" / "corpus_manifest.json")
+    primary = document["supportedArchitectures"]["primary"]
+
+    assert primary["label"] == "native-arm64-macos-python312"
+    assert primary["platform.machine"] == "arm64"
+    assert primary["platform.system"] == "Darwin"
+    assert primary["python.versionInfo"] == [3, 12, 13, "final", 0]
+    assert primary["numpy.version"] == "2.3.5"
+    assert primary["pillow.version"] == "12.2.0"
+    assert "Issue #25" in primary["notes"]
+
+
+def test_probe_environment_policy_warnings_are_empty_for_matching_runtime():
+    manifest = {
+        "supportedArchitectures": {
+            "primary": {
+                "label": "native-arm64-macos-python312",
+                "platform.machine": "arm64",
+                "platform.system": "Darwin",
+                "python.versionInfo": [3, 12, 13, "final", 0],
+                "numpy.version": "2.3.5",
+                "pillow.version": "12.2.0",
+                "notes": "Pinned baseline.",
+            }
+        }
+    }
+    fingerprint = {
+        "platform": {"machine": "arm64", "system": "Darwin"},
+        "python": {"versionInfo": [3, 12, 13, "final", 0]},
+        "packages": {"numpy": {"version": "2.3.5"}, "pillow": {"version": "12.2.0"}},
+    }
+
+    assert environment_policy_warnings(manifest, fingerprint) == []
+
+
+def test_probe_environment_policy_warnings_report_mismatches():
+    manifest = {
+        "supportedArchitectures": {
+            "primary": {
+                "label": "native-arm64-macos-python312",
+                "platform.machine": "arm64",
+                "platform.system": "Darwin",
+                "python.versionInfo": [3, 12, 13, "final", 0],
+                "numpy.version": "2.3.5",
+                "pillow.version": "12.2.0",
+                "notes": "Pinned baseline.",
+            }
+        }
+    }
+    fingerprint = {
+        "platform": {"machine": "x86_64", "system": "Darwin"},
+        "python": {"versionInfo": [3, 12, 11, "final", 0]},
+        "packages": {"numpy": {"version": "2.3.5"}, "pillow": {"version": "12.2.0"}},
+    }
+
+    warnings = environment_policy_warnings(manifest, fingerprint)
+
+    assert warnings == [
+        {
+            "architecture": "primary",
+            "label": "native-arm64-macos-python312",
+            "message": (
+                "Corpus manifest baseline expects native-arm64-macos-python312; "
+                "current runtime differs. Scores/categories may be architecture-dependent."
+            ),
+            "mismatches": [
+                {"key": "platform.machine", "expected": "arm64", "actual": "x86_64"},
+                {
+                    "key": "python.versionInfo",
+                    "expected": [3, 12, 13, "final", 0],
+                    "actual": [3, 12, 11, "final", 0],
+                },
+            ],
+            "notes": "Pinned baseline.",
+        }
+    ]
+
+
+def test_probe_json_includes_environment_policy_warnings(tmp_path):
+    output = tmp_path / "probe.json"
+    warning = {
+        "architecture": "primary",
+        "label": "native-arm64-macos-python312",
+        "message": "runtime differs",
+        "mismatches": [],
+    }
+
+    write_json(output, [], Path("manifest.json"), {"python": {"versionInfo": [3, 12, 13]}}, [warning])
+
+    payload = json.loads(output.read_text(encoding="utf-8"))
+    assert payload["environmentPolicyWarnings"] == [warning]
 
 
 def test_probe_smallest_rank_gaps_ignores_clean_and_missing_correct():

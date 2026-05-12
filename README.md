@@ -213,6 +213,12 @@ Each row records expected SHA256 hashes for image A, image B, and the ground-tru
 runner has different image bytes, the probe marks the row as `image_input_drift` before treating
 the recognizer output as meaningful. Missing local files are skipped clearly.
 
+The manifest also declares `supportedArchitectures.primary`, currently pinned to native ARM64
+macOS with Python 3.12.13, NumPy 2.3.5, and Pillow 12.2.0. If the current runtime does not match
+that policy, the probe prints a warning and includes `environmentPolicyWarnings` in JSON output.
+The warning is not a hard failure; it is there because x86_64/Rosetta and future Linux serverless
+targets can produce architecture-dependent recognizer outcomes from the same image bytes.
+
 Each corpus row records both:
 
 - `expectedScoreFloor`: the non-regression floor enforced by the probe.

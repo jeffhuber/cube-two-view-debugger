@@ -173,6 +173,13 @@ class PieceOption:
     changes: int
 
 
+@dataclass
+class RecognitionWorkset:
+    options_a: List[Dict[str, List[List[Any]]]]
+    options_b: List[Dict[str, List[List[Any]]]]
+    merged_candidates: List[Tuple[float, Dict[str, List[List[Any]]]]]
+
+
 class WhiteUpRecognizer:
     def recognize(self, image_a: bytes, image_b: bytes) -> RecognitionResult:
         analysis_a = analyze_image(image_a)
@@ -215,7 +222,8 @@ class WhiteUpRecognizer:
                 recognition_signals=recognition_signals,
             )
 
-        candidates = self._state_candidates(analysis_a, analysis_b)
+        workset = _recognition_workset(analysis_a, analysis_b)
+        candidates = self._state_candidates_from_workset(workset)
         legal = []
         invalid_reasons: List[str] = []
         for state, confidence, details in candidates:
@@ -274,7 +282,7 @@ class WhiteUpRecognizer:
                 recognition_signals=recognition_signals,
             )
 
-        repair_details = self._legal_repair_candidate_details(analysis_a, analysis_b)
+        repair_details = self._legal_repair_candidate_details_from_workset(workset, release_merged_candidates=True)
         repair_candidates = [(item["state"], item["confidence"]) for item in repair_details]
         recognition_signals.update(_repair_signal_summary(repair_details))
         if repair_candidates:
@@ -316,10 +324,11 @@ class WhiteUpRecognizer:
         )
 
     def _state_candidates(self, analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> List[Tuple[str, float, Dict[str, Any]]]:
-        options_a = _oriented_face_options(analysis_a, "U")
-        options_b = _oriented_face_options(analysis_b, "D")
+        return self._state_candidates_from_workset(_recognition_workset(analysis_a, analysis_b))
+
+    def _state_candidates_from_workset(self, workset: RecognitionWorkset) -> List[Tuple[str, float, Dict[str, Any]]]:
         candidates: List[Tuple[str, float, Dict[str, Any]]] = []
-        for _, merged in _merged_face_candidates(options_a, options_b):
+        for _, merged in workset.merged_candidates:
             details = _candidate_selection_detail(merged)
             for partial in _state_variants_from_faces(merged):
                 confidence = _state_confidence(merged)
@@ -330,10 +339,23 @@ class WhiteUpRecognizer:
         return [(item["state"], item["confidence"]) for item in self._legal_repair_candidate_details(analysis_a, analysis_b)]
 
     def _legal_repair_candidate_details(self, analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> List[Dict[str, Any]]:
-        options_a = _oriented_face_options(analysis_a, "U")
-        options_b = _oriented_face_options(analysis_b, "D")
+        return self._legal_repair_candidate_details_from_workset(_recognition_workset(analysis_a, analysis_b))
+
+    def _legal_repair_candidate_details_from_workset(
+        self,
+        workset: RecognitionWorkset,
+        *,
+        release_merged_candidates: bool = False,
+    ) -> List[Dict[str, Any]]:
+        repair_merges = _repair_merged_face_candidates(workset.merged_candidates)[:MAX_LEGAL_REPAIR_EVALUATED_MERGES]
+        if release_merged_candidates:
+            # The repair solver only needs the capped/diverse merge list below.
+            # Drop the full Cartesian product before that expensive loop so
+            # rejected repair-heavy cases do not carry thousands of matrices.
+            workset.merged_candidates = []
+
         candidates: Dict[str, Dict[str, Any]] = {}
-        for raw_score, merged in _repair_merged_face_candidates(options_a, options_b)[:MAX_LEGAL_REPAIR_EVALUATED_MERGES]:
+        for raw_score, merged in repair_merges:
             state, repair_cost, changes = _legal_repaired_state_from_faces(merged) or (None, 0.0, 0)
             if state is None:
                 continue
@@ -500,19 +522,20 @@ def _int_signal(value: Any, default: int = 0) -> int:
 
 
 def recognition_diagnostics(analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> Dict[str, Any]:
-    options_a = _oriented_face_options(analysis_a, "U")
-    options_b = _oriented_face_options(analysis_b, "D")
-    merged = _merged_face_candidates(options_a, options_b)
-    candidate_counts = _candidate_face_count_diagnostics(merged)
+    workset = _recognition_workset(analysis_a, analysis_b)
+    candidate_counts = _candidate_face_count_diagnostics(workset.merged_candidates)
     return {
-        "imageA": _orientation_diagnostics(analysis_a, "U", options_a),
-        "imageB": _orientation_diagnostics(analysis_b, "D", options_b),
+        "imageA": _orientation_diagnostics(analysis_a, "U", workset.options_a),
+        "imageB": _orientation_diagnostics(analysis_b, "D", workset.options_b),
         "mergedCandidates": {
-            "optionsA": len(options_a),
-            "optionsB": len(options_b),
-            "merged": len(merged),
+            "optionsA": len(workset.options_a),
+            "optionsB": len(workset.options_b),
+            "merged": len(workset.merged_candidates),
             "sidePairCombos": _counter_items(
-                Counter((_side_pair_key(item[1].get("_side_pair_a")), _side_pair_key(item[1].get("_side_pair_b"))) for item in merged)
+                Counter(
+                    (_side_pair_key(item[1].get("_side_pair_a")), _side_pair_key(item[1].get("_side_pair_b")))
+                    for item in workset.merged_candidates
+                )
             ),
             **candidate_counts,
         },
@@ -877,6 +900,16 @@ def _side_pair_key(value: Any) -> str:
     return "/".join(str(part) for part in sorted(value))
 
 
+def _recognition_workset(analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> RecognitionWorkset:
+    options_a = _oriented_face_options(analysis_a, "U")
+    options_b = _oriented_face_options(analysis_b, "D")
+    return RecognitionWorkset(
+        options_a=options_a,
+        options_b=options_b,
+        merged_candidates=_merged_face_candidates(options_a, options_b),
+    )
+
+
 def _merged_face_candidates(
     options_a: Sequence[Dict[str, List[List[Any]]]],
     options_b: Sequence[Dict[str, List[List[Any]]]],
@@ -895,11 +928,9 @@ def _merged_face_candidates(
 
 
 def _repair_merged_face_candidates(
-    options_a: Sequence[Dict[str, List[List[Any]]]],
-    options_b: Sequence[Dict[str, List[List[Any]]]],
+    ranked: Sequence[Tuple[float, Dict[str, List[List[Any]]]]],
 ) -> List[Tuple[float, Dict[str, List[List[Any]]]]]:
-    ranked = _merged_face_candidates(options_a, options_b)
-    selected: List[Tuple[float, Dict[str, List[List[Any]]]]] = ranked[:MAX_LEGAL_REPAIR_MERGES]
+    selected: List[Tuple[float, Dict[str, List[List[Any]]]]] = list(ranked[:MAX_LEGAL_REPAIR_MERGES])
     by_pair: Dict[Tuple[object, object], List[Tuple[float, Dict[str, List[List[Any]]]]]] = {}
     for score, merged in ranked:
         key = (merged.get("_side_pair_a"), merged.get("_side_pair_b"))

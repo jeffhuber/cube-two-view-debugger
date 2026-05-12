@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from .colors import COLOR_TO_FACE, build_adaptive_palette, classify_rgb, rgb_to_hsv
 from .geometry import TRANSFORMS, closest_edge, possible_transforms
-from .image_pipeline import FaceGrid, ImageAnalysis, analyze_image
+from .image_pipeline import FaceGrid, ImageAnalysis, Sticker, analyze_image
 from .validation import CENTER_INDICES, CORNER_COLORS, CORNER_FACELETS, EDGE_COLORS, EDGE_FACELETS, FACE_ORDER, validate_state
 
 
@@ -1490,7 +1490,19 @@ def _grid_matrix_for_orientation(grid: FaceGrid, *, flex: Optional[float] = None
 def _grid_contextual_facelet(sticker: Any, grid: FaceGrid, flex: float) -> Any:
     if flex < GRID_CONTEXT_REPAIR_THRESHOLD or getattr(sticker, "source", "component") != "component":
         return sticker
-    contextual = copy.copy(sticker)
+    if isinstance(sticker, Sticker):
+        contextual = Sticker(
+            id=sticker.id,
+            center=sticker.center,
+            bbox=sticker.bbox,
+            rgb=sticker.rgb,
+            match=sticker.match,
+            area=sticker.area,
+            source=sticker.source,
+            shape_angle=sticker.shape_angle,
+        )
+    else:
+        contextual = copy.copy(sticker)
     setattr(contextual, "grid_repair_flex", flex)
     setattr(contextual, "grid_context_id", getattr(grid, "id", None))
     return contextual

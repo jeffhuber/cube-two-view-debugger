@@ -230,6 +230,43 @@ def test_grid_matrix_for_orientation_uses_provided_context_flex(monkeypatch):
     assert matrix is not grid.stickers
 
 
+def test_grid_contextual_facelet_copies_sticker_without_generic_copy(monkeypatch):
+    from rubik_recognizer.colors import ColorMatch
+    from rubik_recognizer.image_pipeline import Sticker
+
+    match = ColorMatch("white", "U", 0.0, 1.0, [("white", 0.0)])
+    sticker = Sticker(
+        id=7,
+        center=(1.0, 2.0),
+        bbox=(0.0, 1.0, 2.0, 3.0),
+        rgb=(230, 230, 230),
+        match=match,
+        area=42,
+        shape_angle=12.5,
+    )
+    grid = type("Grid", (), {"id": 99})()
+
+    monkeypatch.setattr(
+        recognizer.copy,
+        "copy",
+        lambda value: (_ for _ in ()).throw(AssertionError("Sticker path should not use generic copy.copy")),
+    )
+
+    contextual = recognizer._grid_contextual_facelet(sticker, grid, 1.25)
+
+    assert contextual is not sticker
+    assert contextual.id == sticker.id
+    assert contextual.center == sticker.center
+    assert contextual.bbox == sticker.bbox
+    assert contextual.rgb == sticker.rgb
+    assert contextual.match is sticker.match
+    assert contextual.area == sticker.area
+    assert contextual.source == sticker.source
+    assert contextual.shape_angle == sticker.shape_angle
+    assert contextual.grid_repair_flex == 1.25
+    assert contextual.grid_context_id == 99
+
+
 def test_oriented_options_cache_grid_context_flex_per_grid(monkeypatch):
     def grid(grid_id, x_offset):
         sticker = type("Sticker", (), {"source": "component"})()

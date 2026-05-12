@@ -33,14 +33,23 @@ const recentRunsRefresh = document.querySelector("#recentRunsRefresh");
 
 // Detect an "A" or "B" marker in a filename — same logic the Python
 // `_image_marker()` uses but kept locally so we can label the drop
-// zone before the server sees the files. Matches "A" or "B" as a
-// stand-alone token (so "ASCAR.jpg" doesn't false-positive on "A").
+// zone before the server sees the files. Keep IN SYNC with the
+// server-side patterns — if the server adds a recognition rule, add
+// it here too, or single-pair-form auto-pairing will silently swap
+// labels for filenames the server understands but the UI doesn't.
+// Parity is pinned by tests/test_dataset.py::test_image_marker_patterns_match_js_detector.
+// Server uses Path(filename).stem (drops trailing extension); we
+// strip the last dot-extension to match.
 function detectABMarker(name) {
-  const aMatch = /(^|[^A-Z0-9])A([^A-Z0-9]|$)/i.exec(name);
-  const bMatch = /(^|[^A-Z0-9])B([^A-Z0-9]|$)/i.exec(name);
-  // If exactly one of A/B matches, return it. If both/neither, no marker.
-  if (aMatch && !bMatch) return "A";
-  if (bMatch && !aMatch) return "B";
+  const stem = name.replace(/\.[^./]+$/, "");
+  // Pattern 1: standalone A/B token surrounded by \s_- (or string edges).
+  //   server: (?i)(?:^|[\s_-])([ab])(?:[\s_-]|$)
+  const m1 = /(?:^|[\s_-])([ab])(?:[\s_-]|$)/i.exec(stem);
+  if (m1) return m1[1].toUpperCase();
+  // Pattern 2: imageA / imageB / image A / image B.
+  //   server: (?i)\bimage\s*([ab])\b
+  const m2 = /\bimage\s*([ab])\b/i.exec(stem);
+  if (m2) return m2[1].toUpperCase();
   return null;
 }
 

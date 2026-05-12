@@ -161,6 +161,24 @@
       "notes": "Canonical-WCA ground truth captured post-PR-#95 (cube-snap); no _canonical_ground_truth_state rotation needed at parse time. Yaw=1, success_clean direct path. captureFrameState preserved in the saved file's recognitionSignals."
     },
     {
+      "setId": "36",
+      "imageAPath": "/Users/jhuber/Downloads/Set 36 - A - white up IMG_7151.JPG",
+      "imageBPath": "/Users/jhuber/Downloads/Set 36 - B - white up IMG_7152.JPG",
+      "groundTruthPath": "/Users/jhuber/Downloads/Set 36 - cube-ground-truth-1778566901680.json",
+      "imageA_sha256_expected": "6e225dd8f40f680cd0eff7c81ffe771429d71d6eaa62600cc1bb8b2f16f9b4e2",
+      "imageB_sha256_expected": "86a318bf6ad96399eeff33d85370a7a1daf9c02972f9c998c05be10a41e0deff",
+      "groundTruth_sha256_expected": "50f828ce72873ae8143ddd273b3d1d68d8f69bddcf16110bc6791edd5a9db4c9",
+      "expectedCategory": "success_clean",
+      "expectedScoreFloor": 54,
+      "currentScoreObserved": 54,
+      "expectedYaw": {
+        "status": "nonstandard",
+        "quarterTurns": 2,
+        "normalizationApplied": true
+      },
+      "notes": "First yaw=2 corpus pair (180° rotation). cv-local success_clean direct path, recognizer output equals ground truth byte-for-byte (diffFromCorrected=0). Captured 2026-05-12 on cube-snap PR #99 Fixer flow; LLM provider claude-sonnet failed validation on this pair (10 white stickers) which is the expected LLM failure mode on non-canonical-yaw captures."
+    },
+    {
       "setId": "42",
       "imageAPath": "/Users/jhuber/Downloads/Set 42 - A - white up IMG_7163.JPG",
       "imageBPath": "/Users/jhuber/Downloads/Set 42 - B - white up IMG_7164.JPG",

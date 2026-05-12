@@ -94,6 +94,7 @@ REPAIRED_HIGH_CONFIDENCE_THRESHOLD = 0.60
 REPAIRED_HIGH_MAX_RANKING_PENALTY = 0.16
 REPAIR_RETAKE_CONFIDENCE_THRESHOLD = 0.50
 REPAIR_RETAKE_MIN_CANDIDATES = 50_000
+REPAIR_SKIP_DIRECT_CANDIDATE_THRESHOLD = REPAIR_RETAKE_MIN_CANDIDATES
 REPAIR_ADJACENT_COLOR_PAIRS = {frozenset(("red", "orange")), frozenset(("green", "blue"))}
 VALID_EDGE_COLOR_SETS = {frozenset(colors) for colors in EDGE_COLORS}
 VALID_CORNER_COLOR_SETS = {frozenset(colors) for colors in CORNER_COLORS}
@@ -284,6 +285,18 @@ class WhiteUpRecognizer:
                 status="rejected",
                 reason="Multiple legal cube states match the visible stickers.",
                 failed_checks=["ambiguous_legal_completion"],
+                candidates=len(candidates),
+                recognition_signals=recognition_signals,
+            )
+
+        # Repair recoveries below the retake candidate-count floor are still
+        # categorized as retakes, so avoid the expensive cubie repair search.
+        if len(candidates) < REPAIR_SKIP_DIRECT_CANDIDATE_THRESHOLD:
+            recognition_signals.update(_repair_signal_summary([]))
+            return RecognitionResult(
+                status="rejected",
+                reason="No legal cube state matched the detected stickers.",
+                failed_checks=_summarize_validation_errors(invalid_reasons),
                 candidates=len(candidates),
                 recognition_signals=recognition_signals,
             )

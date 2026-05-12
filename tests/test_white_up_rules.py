@@ -131,11 +131,45 @@ def test_recognize_from_analyses_reuses_workset_for_direct_and_repair(monkeypatc
     monkeypatch.setattr(recognizer, "_recognition_workset", fake_workset)
     monkeypatch.setattr(WhiteUpRecognizer, "_state_candidates_from_workset", fake_state_candidates)
     monkeypatch.setattr(WhiteUpRecognizer, "_legal_repair_candidate_details_from_workset", fake_repair_details)
+    monkeypatch.setattr(recognizer, "REPAIR_SKIP_DIRECT_CANDIDATE_THRESHOLD", 0)
 
     result = WhiteUpRecognizer()._recognize_from_analyses(object(), object())
 
     assert result.status == "rejected"
     assert calls == {"workset": 1, "direct": 1, "repair": 1}
+
+
+def test_recognize_from_analyses_skips_repair_for_low_direct_candidate_count(monkeypatch):
+    workset = RecognitionWorkset(options_a=[], options_b=[], merged_candidates=[])
+    calls = {"workset": 0, "direct": 0, "repair": 0}
+
+    def fake_workset(analysis_a, analysis_b):
+        calls["workset"] += 1
+        return workset
+
+    def fake_state_candidates(self, candidate_workset):
+        calls["direct"] += 1
+        assert candidate_workset is workset
+        return []
+
+    def fake_repair_details(self, candidate_workset, *, release_merged_candidates=False):
+        calls["repair"] += 1
+        raise AssertionError("low-candidate direct rejects should not enter repair")
+
+    monkeypatch.setattr(recognizer, "_base_recognition_signals", lambda analysis_a, analysis_b: {})
+    monkeypatch.setattr(recognizer, "_white_up_checks", lambda analysis_a, analysis_b: [])
+    monkeypatch.setattr(recognizer, "_recognition_workset", fake_workset)
+    monkeypatch.setattr(WhiteUpRecognizer, "_state_candidates_from_workset", fake_state_candidates)
+    monkeypatch.setattr(WhiteUpRecognizer, "_legal_repair_candidate_details_from_workset", fake_repair_details)
+
+    result = WhiteUpRecognizer()._recognize_from_analyses(object(), object())
+
+    assert result.status == "rejected"
+    assert result.failed_checks == ["no_legal_state"]
+    assert result.candidates == 0
+    assert result.recognition_signals["repairCandidateCount"] == 0
+    assert result.recognition_signals["topRepairCandidates"] == []
+    assert calls == {"workset": 1, "direct": 1, "repair": 0}
 
 
 def test_repair_details_memoizes_signature_stable_work(monkeypatch):

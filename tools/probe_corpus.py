@@ -100,6 +100,11 @@ from rubik_recognizer.recognizer import (  # noqa: E402
 
 
 DEFAULT_MANIFEST = ROOT / "tests" / "fixtures" / "corpus_manifest.json"
+FINGERPRINT_PATH_ALIASES = {
+    "numpy.version": "packages.numpy.version",
+    "pillow.version": "packages.pillow.version",
+}
+ENVIRONMENT_POLICY_METADATA_KEYS = {"label", "notes"}
 FAILURE_MODES = (
     "clean",
     "image_input_drift",
@@ -203,12 +208,76 @@ def normalize_path(value: str, manifest_path: Path) -> Path:
     return path
 
 
-def load_manifest(path: Path) -> List[Dict[str, Any]]:
+def load_manifest_document(path: Path) -> Dict[str, Any]:
     data = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError(f"Manifest {path} must be a JSON object.")
     pairs = data.get("pairs")
     if not isinstance(pairs, list):
         raise ValueError(f"Manifest {path} must contain a top-level 'pairs' array.")
+    return data
+
+
+def load_manifest(path: Path) -> List[Dict[str, Any]]:
+    data = load_manifest_document(path)
+    pairs = data["pairs"]
     return [dict(item) for item in pairs]
+
+
+def _fingerprint_value(fingerprint: Dict[str, Any], dotted_key: str) -> Any:
+    path = FINGERPRINT_PATH_ALIASES.get(dotted_key, dotted_key)
+    value: Any = fingerprint
+    for part in path.split("."):
+        if not isinstance(value, dict) or part not in value:
+            return None
+        value = value[part]
+    return value
+
+
+def environment_policy_warnings(
+    manifest_document: Dict[str, Any],
+    fingerprint: Dict[str, Any],
+) -> List[Dict[str, Any]]:
+    supported = manifest_document.get("supportedArchitectures")
+    if not isinstance(supported, dict):
+        return []
+    primary = supported.get("primary")
+    if not isinstance(primary, dict):
+        return []
+
+    mismatches = []
+    for key, expected in primary.items():
+        if key in ENVIRONMENT_POLICY_METADATA_KEYS:
+            continue
+        actual = _fingerprint_value(fingerprint, key)
+        if actual != expected:
+            mismatches.append({"key": key, "expected": expected, "actual": actual})
+    if not mismatches:
+        return []
+
+    label = primary.get("label") or "primary"
+    return [
+        {
+            "architecture": "primary",
+            "label": label,
+            "message": (
+                f"Corpus manifest baseline expects {label}; current runtime differs. "
+                "Scores/categories may be architecture-dependent."
+            ),
+            "mismatches": mismatches,
+            "notes": primary.get("notes"),
+        }
+    ]
+
+
+def print_environment_warnings(warnings: Sequence[Dict[str, Any]]) -> None:
+    for warning in warnings:
+        mismatch_text = "; ".join(
+            f"{item['key']} expected {item['expected']!r} got {item['actual']!r}"
+            for item in warning.get("mismatches", [])
+        )
+        detail = f" ({mismatch_text})" if mismatch_text else ""
+        print(f"Warning: {warning.get('message')}{detail}", file=sys.stderr)
 
 
 def hamming(a: str, b: str) -> int:
@@ -966,11 +1035,13 @@ def write_json(
     results: Sequence[Dict[str, Any]],
     manifest: Path,
     fingerprint: Dict[str, Any],
+    environment_warnings: Sequence[Dict[str, Any]],
 ) -> None:
     payload = {
         "schemaVersion": 1,
         "manifest": str(manifest),
         "runtimeFingerprint": fingerprint,
+        "environmentPolicyWarnings": list(environment_warnings),
         "timingSummary": timing_summary(results),
         "results": list(results),
     }
@@ -1006,12 +1077,15 @@ def main() -> int:
     if not manifest.is_absolute():
         manifest = (Path.cwd() / manifest).resolve()
     selected = {str(item) for item in args.set_id or []}
+    manifest_document = load_manifest_document(manifest)
     rows = [
         row
-        for row in load_manifest(manifest)
+        for row in (dict(item) for item in manifest_document["pairs"])
         if not selected or str(row.get("setId") or row.get("id")) in selected
     ]
     fingerprint = runtime_fingerprint()
+    environment_warnings = environment_policy_warnings(manifest_document, fingerprint)
+    print_environment_warnings(environment_warnings)
     if args.analysis_output:
         write_analysis_json(
             Path(args.analysis_output).expanduser(),
@@ -1028,7 +1102,7 @@ def main() -> int:
     results = [probe_pair(row, manifest) for row in rows]
 
     if args.json_output:
-        write_json(Path(args.json_output).expanduser(), results, manifest, fingerprint)
+        write_json(Path(args.json_output).expanduser(), results, manifest, fingerprint, environment_warnings)
     if args.jsonl_output:
         write_jsonl(Path(args.jsonl_output).expanduser(), results)
     if not args.quiet:

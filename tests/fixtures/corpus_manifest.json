@@ -2,6 +2,23 @@
   "schemaVersion": 1,
   "name": "white-up-labelled-corpus",
   "description": "Local-path corpus manifest for reproducible recognizer probes. The JPEGs are intentionally not committed yet; expected SHA256 fields catch input drift across runners.",
+  "supportedArchitectures": {
+    "primary": {
+      "label": "native-arm64-macos-python312",
+      "platform.machine": "arm64",
+      "platform.system": "Darwin",
+      "python.versionInfo": [
+        3,
+        12,
+        13,
+        "final",
+        0
+      ],
+      "numpy.version": "2.3.5",
+      "pillow.version": "12.2.0",
+      "notes": "Expected scores/categories in this manifest are pinned to native ARM64 macOS with Python 3.12.13, NumPy 2.3.5, and Pillow 12.2.0. Other architectures, including x86_64/Rosetta and Linux serverless targets, can produce architecture-dependent recognition outcomes; see Issue #25."
+    }
+  },
   "pairs": [
     {
       "setId": "12",

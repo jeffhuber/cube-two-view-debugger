@@ -1,5 +1,7 @@
+import sys
 from pathlib import Path
 
+import tools.probe_corpus as probe_corpus
 from tools.probe_corpus import (
     _check_expected_yaw,
     classify_face_failure,
@@ -187,6 +189,68 @@ def test_probe_runtime_summary_includes_key_versions():
     assert "Pillow 12.2.0" in summary
     assert "NumPy 2.3.5" in summary
     assert "TestOS-arm64" in summary
+
+
+def test_probe_cli_analysis_only_writes_analysis_dump_without_recognition(monkeypatch, tmp_path):
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text('{"pairs": [{"setId": "x"}]}', encoding="utf-8")
+    analysis_output = tmp_path / "analysis.json"
+    json_output = tmp_path / "probe.json"
+    calls = {}
+
+    def fake_analysis_dump_for_rows(rows, manifest_path, *, image_selection, fingerprint):
+        calls["analysis"] = {
+            "rows": [row["setId"] for row in rows],
+            "manifest": manifest_path,
+            "image_selection": image_selection,
+            "fingerprint": fingerprint,
+        }
+        return {"ok": True}
+
+    def fake_write_analysis_json(path, payload):
+        calls["analysis_write"] = {"path": path, "payload": payload}
+        path.write_text("analysis", encoding="utf-8")
+
+    def fail_probe_pair(*args, **kwargs):
+        raise AssertionError("analysis-only should not run recognition")
+
+    def fail_write_json(*args, **kwargs):
+        raise AssertionError("analysis-only should not write --json-output")
+
+    fingerprint = {"python": {"versionInfo": [3, 12, 13], "executable": "/tmp/python"}}
+    monkeypatch.setattr(probe_corpus, "runtime_fingerprint", lambda: fingerprint)
+    monkeypatch.setattr(probe_corpus, "analysis_dump_for_rows", fake_analysis_dump_for_rows)
+    monkeypatch.setattr(probe_corpus, "write_analysis_json", fake_write_analysis_json)
+    monkeypatch.setattr(probe_corpus, "probe_pair", fail_probe_pair)
+    monkeypatch.setattr(probe_corpus, "write_json", fail_write_json)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "probe_corpus.py",
+            "--manifest",
+            str(manifest),
+            "--analysis-output",
+            str(analysis_output),
+            "--analysis-image",
+            "imageA",
+            "--analysis-only",
+            "--json-output",
+            str(json_output),
+            "--quiet",
+        ],
+    )
+
+    assert probe_corpus.main() == 0
+    assert analysis_output.read_text(encoding="utf-8") == "analysis"
+    assert not json_output.exists()
+    assert calls["analysis"] == {
+        "rows": ["x"],
+        "manifest": manifest,
+        "image_selection": "imageA",
+        "fingerprint": fingerprint,
+    }
+    assert calls["analysis_write"] == {"path": analysis_output, "payload": {"ok": True}}
 
 
 def test_check_expected_yaw_passes_when_manifest_omits_expectation():

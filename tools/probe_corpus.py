@@ -628,13 +628,13 @@ def _sticker_dump(sticker: Any) -> Dict[str, Any]:
 
 
 def _grid_dump(grid: Any) -> Dict[str, Any]:
+    center_sticker = getattr(grid, "center_sticker", None)
+    center_match = getattr(center_sticker, "match", None)
     return {
         "id": getattr(grid, "id", None),
         "centerFace": getattr(grid, "center_face", None),
-        "centerColor": getattr(getattr(grid, "center_sticker", None), "match", None).color
-        if getattr(getattr(grid, "center_sticker", None), "match", None)
-        else None,
-        "centerRgb": list(getattr(getattr(grid, "center_sticker", None), "rgb", ()) or ()),
+        "centerColor": getattr(center_match, "color", None),
+        "centerRgb": list(getattr(center_sticker, "rgb", ()) or ()),
         "matchedCount": getattr(grid, "matched_count", None),
         "fitError": _round_float(getattr(grid, "fit_error", None)),
         "quality": _round_float(_grid_quality_score(grid)),
@@ -1018,6 +1018,8 @@ def main() -> int:
             analysis_dump_for_rows(rows, manifest, image_selection=args.analysis_image, fingerprint=fingerprint),
         )
     if args.analysis_only:
+        # Analysis-only intentionally stops before recognition, so it also
+        # skips any requested --json-output probe result.
         if not args.quiet:
             print(f"Runtime: {runtime_summary(fingerprint)}")
             print(f"Analysis dump rows={len(rows)} image={args.analysis_image}")

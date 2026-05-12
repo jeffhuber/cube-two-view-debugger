@@ -10,9 +10,15 @@ modes before any orientation-weight tuning.
 from __future__ import annotations
 
 import argparse
+import contextlib
+import hashlib
+import io
 import json
 import os
+import platform
+import subprocess
 import sys
+import time
 from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
@@ -83,9 +89,11 @@ if str(ROOT) not in sys.path:
 
 from tools.audit_recognition_pair import file_sha256, parse_ground_truth, score_match  # noqa: E402
 from rubik_recognizer.colors import COLOR_TO_FACE  # noqa: E402
+from rubik_recognizer.image_pipeline import analyze_image  # noqa: E402
 from rubik_recognizer.recognizer import (  # noqa: E402
     FACE_ORDER,
     WhiteUpRecognizer,
+    _grid_quality_score,
     _oriented_face_options,
     recognition_diagnostics,
 )
@@ -101,6 +109,91 @@ FAILURE_MODES = (
     "candidate_generation_failure",
     "unknown",
 )
+
+
+def _capture_stdout(callback: Any) -> str:
+    buffer = io.StringIO()
+    try:
+        with contextlib.redirect_stdout(buffer), contextlib.redirect_stderr(buffer):
+            callback()
+    except Exception as exc:  # pragma: no cover - defensive runtime fingerprinting
+        return f"{type(exc).__name__}: {exc}"
+    return buffer.getvalue()
+
+
+def _git_sha(cwd: Path) -> Optional[str]:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=str(cwd),
+            capture_output=True,
+            text=True,
+            timeout=2,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if result.returncode != 0:
+        return None
+    return result.stdout.strip() or None
+
+
+def runtime_fingerprint() -> Dict[str, Any]:
+    import numpy  # type: ignore
+    import PIL  # type: ignore
+    from PIL import features  # type: ignore
+
+    return {
+        "python": {
+            "version": sys.version,
+            "versionInfo": list(sys.version_info[:5]),
+            "executable": sys.executable,
+            "implementation": platform.python_implementation(),
+            "compiler": platform.python_compiler(),
+            "build": list(platform.python_build()),
+        },
+        "platform": {
+            "platform": platform.platform(),
+            "system": platform.system(),
+            "release": platform.release(),
+            "machine": platform.machine(),
+            "processor": platform.processor(),
+        },
+        "packages": {
+            "numpy": {
+                "version": numpy.__version__,
+                "showConfig": _capture_stdout(numpy.show_config),
+            },
+            "pillow": {
+                "version": PIL.__version__,
+                "pilInfo": _capture_stdout(features.pilinfo),
+            },
+        },
+        "git": {
+            "sha": _git_sha(ROOT),
+            "cwd": str(ROOT),
+        },
+    }
+
+
+def runtime_summary(fingerprint: Dict[str, Any]) -> str:
+    python_info = fingerprint.get("python") or {}
+    platform_info = fingerprint.get("platform") or {}
+    packages = fingerprint.get("packages") or {}
+    numpy_info = packages.get("numpy") or {}
+    pillow_info = packages.get("pillow") or {}
+    version_info = python_info.get("versionInfo") or []
+    python_version = ".".join(str(part) for part in version_info[:3]) or "unknown"
+    return (
+        f"Python {python_version} ({python_info.get('executable', 'unknown')}); "
+        f"Pillow {pillow_info.get('version', 'unknown')}; "
+        f"NumPy {numpy_info.get('version', 'unknown')}; "
+        f"{platform_info.get('platform', 'unknown')}; "
+        f"git {(fingerprint.get('git') or {}).get('sha', 'unknown')}"
+    )
+
+
+def _elapsed(start: float) -> float:
+    return round(time.perf_counter() - start, 4)
 
 
 def normalize_path(value: str, manifest_path: Path) -> Path:
@@ -485,14 +578,140 @@ def _check_expected_yaw(
     }
 
 
-def verify_hash(path: Path, expected: Optional[str]) -> Dict[str, Any]:
-    actual = file_sha256(str(path))
+def decoded_image_fingerprint(path: Path) -> Dict[str, Any]:
+    from PIL import Image, ImageOps  # type: ignore
+
+    try:
+        with Image.open(path) as image:
+            decoded = ImageOps.exif_transpose(image).convert("RGB")
+            return {
+                "format": image.format,
+                "width": decoded.width,
+                "height": decoded.height,
+                "mode": decoded.mode,
+                "rgbSha256": hashlib.sha256(decoded.tobytes()).hexdigest(),
+            }
+    except Exception as exc:  # pragma: no cover - diagnostics must not fail probes
+        return {"error": f"{type(exc).__name__}: {exc}"}
+
+
+def _round_float(value: Any, digits: int = 4) -> Any:
+    try:
+        return round(float(value), digits)
+    except (TypeError, ValueError):
+        return value
+
+
+def _round_point(point: Sequence[Any]) -> List[Any]:
+    return [_round_float(value) for value in point]
+
+
+def _sticker_dump(sticker: Any) -> Dict[str, Any]:
+    match = getattr(sticker, "match", None)
     return {
+        "id": getattr(sticker, "id", None),
+        "source": getattr(sticker, "source", None),
+        "center": _round_point(getattr(sticker, "center", ()) or ()),
+        "bbox": [_round_float(value) for value in (getattr(sticker, "bbox", ()) or ())],
+        "rgb": list(getattr(sticker, "rgb", ()) or ()),
+        "face": getattr(match, "face", None),
+        "color": getattr(match, "color", None),
+        "distance": _round_float(getattr(match, "distance", None)),
+        "confidence": _round_float(getattr(match, "confidence", None)),
+        "alternatives": [
+            {"color": color, "distance": _round_float(distance)}
+            for color, distance in (getattr(match, "alternatives", []) or [])[:6]
+        ],
+        "area": getattr(sticker, "area", None),
+        "shapeAngle": _round_float(getattr(sticker, "shape_angle", None)),
+    }
+
+
+def _grid_dump(grid: Any) -> Dict[str, Any]:
+    center_sticker = getattr(grid, "center_sticker", None)
+    center_match = getattr(center_sticker, "match", None)
+    return {
+        "id": getattr(grid, "id", None),
+        "centerFace": getattr(grid, "center_face", None),
+        "centerColor": getattr(center_match, "color", None),
+        "centerRgb": list(getattr(center_sticker, "rgb", ()) or ()),
+        "matchedCount": getattr(grid, "matched_count", None),
+        "fitError": _round_float(getattr(grid, "fit_error", None)),
+        "quality": _round_float(_grid_quality_score(grid)),
+        "points": [[_round_point(point) for point in row] for row in getattr(grid, "points", [])],
+        "stickers": [[_sticker_dump(sticker) for sticker in row] for row in getattr(grid, "stickers", [])],
+    }
+
+
+def analysis_dump_for_image(path: Path, label: str) -> Dict[str, Any]:
+    start = time.perf_counter()
+    image_bytes = path.read_bytes()
+    analysis = analyze_image(image_bytes)
+    return {
+        "label": label,
         "path": str(path),
+        "byteSha256": hashlib.sha256(image_bytes).hexdigest(),
+        "decodedImage": decoded_image_fingerprint(path),
+        "timings": {"analyzeSeconds": _elapsed(start)},
+        "analysis": {
+            "width": analysis.width,
+            "height": analysis.height,
+            "roi": list(analysis.roi),
+            "warnings": list(analysis.warnings),
+            "stickerCount": len(analysis.stickers),
+            "stickers": [_sticker_dump(sticker) for sticker in analysis.stickers],
+            "gridCount": len(analysis.grids),
+            "grids": [_grid_dump(grid) for grid in analysis.grids],
+        },
+    }
+
+
+def analysis_dump_for_rows(
+    rows: Sequence[Dict[str, Any]],
+    manifest_path: Path,
+    *,
+    image_selection: str,
+    fingerprint: Dict[str, Any],
+) -> Dict[str, Any]:
+    images = []
+    for row in rows:
+        set_id = str(row.get("setId") or row.get("id") or "")
+        selected_images = ("imageA", "imageB") if image_selection == "both" else (image_selection,)
+        for image_key in selected_images:
+            path_key = f"{image_key}Path"
+            if path_key not in row:
+                continue
+            image_path = normalize_path(str(row[path_key]), manifest_path)
+            images.append(
+                {
+                    "setId": set_id,
+                    **analysis_dump_for_image(image_path, image_key),
+                }
+            )
+    return {
+        "schemaVersion": 1,
+        "manifest": str(manifest_path),
+        "runtimeFingerprint": fingerprint,
+        "images": images,
+    }
+
+
+def write_analysis_json(path: Path, payload: Dict[str, Any]) -> None:
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def verify_hash(path: Path, expected: Optional[str], *, decode_image: bool = False) -> Dict[str, Any]:
+    actual = file_sha256(str(path))
+    result = {
+        "path": str(path),
+        "bytes": path.stat().st_size,
         "actual": actual,
         "expected": expected,
         "matches": expected in (None, "", actual),
     }
+    if decode_image:
+        result["decodedImage"] = decoded_image_fingerprint(path)
+    return result
 
 
 def missing_paths(paths: Sequence[Path]) -> List[str]:
@@ -500,6 +719,7 @@ def missing_paths(paths: Sequence[Path]) -> List[str]:
 
 
 def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
+    total_start = time.perf_counter()
     set_id = str(row.get("setId") or row.get("id") or "")
     image_a = normalize_path(str(row["imageAPath"]), manifest_path)
     image_b = normalize_path(str(row["imageBPath"]), manifest_path)
@@ -513,18 +733,28 @@ def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
             "reason": "One or more manifest paths were not found.",
             "missingFiles": missing,
             "contractPassed": False,
+            "timings": {"totalSeconds": _elapsed(total_start)},
         }
 
+    hash_start = time.perf_counter()
     image_hashes = {
-        "imageA": verify_hash(image_a, row.get("imageA_sha256_expected")),
-        "imageB": verify_hash(image_b, row.get("imageB_sha256_expected")),
+        "imageA": verify_hash(image_a, row.get("imageA_sha256_expected"), decode_image=True),
+        "imageB": verify_hash(image_b, row.get("imageB_sha256_expected"), decode_image=True),
         "groundTruth": verify_hash(truth_path, row.get("groundTruth_sha256_expected")),
     }
+    hash_seconds = _elapsed(hash_start)
     input_drift = not all(item["matches"] for item in image_hashes.values())
-    ground_truth_sha, raw_state, canonical_state, canonicalized = parse_ground_truth(str(truth_path))
 
+    ground_truth_start = time.perf_counter()
+    ground_truth_sha, raw_state, canonical_state, canonicalized = parse_ground_truth(str(truth_path))
+    ground_truth_seconds = _elapsed(ground_truth_start)
+
+    recognition_start = time.perf_counter()
     recognizer = WhiteUpRecognizer()
     result = recognizer.recognize(image_a.read_bytes(), image_b.read_bytes())
+    recognition_seconds = _elapsed(recognition_start)
+
+    diagnostics_start = time.perf_counter()
     payload = result.to_api_dict(include_overlays=False)
     recognized_state = payload.get("state") or ""
     score = score_match(recognized_state, canonical_state)
@@ -567,6 +797,7 @@ def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
     ]
     primary_failure_mode = summarize_failure_modes(face_summaries, input_drift, payload.get("status"))
     rejection_probe = rejection_localization_probe(result, payload)
+    diagnostics_seconds = _elapsed(diagnostics_start)
 
     expected_category = row.get("expectedCategory")
     expected_score_floor = row.get("expectedScoreFloor")
@@ -620,6 +851,13 @@ def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
         "failureModes": dict(Counter(face.get("failureMode", "unknown") for face in face_summaries)),
         "orientationDiagnostics": orientation,
         "rejectionLocalization": rejection_probe,
+        "timings": {
+            "hashSeconds": hash_seconds,
+            "groundTruthSeconds": ground_truth_seconds,
+            "recognizeSeconds": recognition_seconds,
+            "diagnosticsSeconds": diagnostics_seconds,
+            "totalSeconds": _elapsed(total_start),
+        },
         "notes": row.get("notes"),
     }
 
@@ -657,6 +895,7 @@ def print_table(results: Sequence[Dict[str, Any]]) -> None:
     headers = (
         ("Set", 5),
         ("Score", 8),
+        ("Sec", 10),
         ("Category", 33),
         ("Path", 7),
         ("Conf", 6),
@@ -677,6 +916,7 @@ def print_table(results: Sequence[Dict[str, Any]]) -> None:
         values = (
             result.get("setId"),
             score,
+            result.get("timings", {}).get("totalSeconds"),
             result.get("category"),
             path,
             result.get("confidence"),
@@ -697,10 +937,41 @@ def print_table(results: Sequence[Dict[str, Any]]) -> None:
             )
 
 
-def write_json(path: Path, results: Sequence[Dict[str, Any]], manifest: Path) -> None:
+def timing_summary(results: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+    row_times = [
+        float((result.get("timings") or {}).get("totalSeconds", 0.0))
+        for result in results
+        if result.get("status") != "skipped"
+    ]
+    return {
+        "totalSeconds": round(sum(row_times), 4),
+        "rowCount": len(row_times),
+        "slowestRows": [
+            {
+                "setId": result.get("setId"),
+                "totalSeconds": (result.get("timings") or {}).get("totalSeconds"),
+                "recognizeSeconds": (result.get("timings") or {}).get("recognizeSeconds"),
+            }
+            for result in sorted(
+                (item for item in results if item.get("status") != "skipped"),
+                key=lambda item: float((item.get("timings") or {}).get("totalSeconds", 0.0)),
+                reverse=True,
+            )[:5]
+        ],
+    }
+
+
+def write_json(
+    path: Path,
+    results: Sequence[Dict[str, Any]],
+    manifest: Path,
+    fingerprint: Dict[str, Any],
+) -> None:
     payload = {
         "schemaVersion": 1,
         "manifest": str(manifest),
+        "runtimeFingerprint": fingerprint,
+        "timingSummary": timing_summary(results),
         "results": list(results),
     }
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -719,6 +990,14 @@ def main() -> int:
     parser.add_argument("--set-id", action="append", help="Only run one or more set ids from the manifest.")
     parser.add_argument("--json-output", help="Optional path for full JSON output.")
     parser.add_argument("--jsonl-output", help="Optional path for JSONL output.")
+    parser.add_argument("--analysis-output", help="Optional path for analysis-grid dump JSON.")
+    parser.add_argument(
+        "--analysis-image",
+        choices=("imageA", "imageB", "both"),
+        default="both",
+        help="Which manifest image(s) to include in --analysis-output.",
+    )
+    parser.add_argument("--analysis-only", action="store_true", help="Write analysis dump without running recognition.")
     parser.add_argument("--quiet", action="store_true", help="Do not print the readable table.")
     parser.add_argument("--fail-on-contract", action="store_true", help="Exit non-zero if any non-skipped row fails its contract.")
     args = parser.parse_args()
@@ -732,13 +1011,31 @@ def main() -> int:
         for row in load_manifest(manifest)
         if not selected or str(row.get("setId") or row.get("id")) in selected
     ]
+    fingerprint = runtime_fingerprint()
+    if args.analysis_output:
+        write_analysis_json(
+            Path(args.analysis_output).expanduser(),
+            analysis_dump_for_rows(rows, manifest, image_selection=args.analysis_image, fingerprint=fingerprint),
+        )
+    if args.analysis_only:
+        # Analysis-only intentionally stops before recognition, so it also
+        # skips any requested --json-output probe result.
+        if not args.quiet:
+            print(f"Runtime: {runtime_summary(fingerprint)}")
+            print(f"Analysis dump rows={len(rows)} image={args.analysis_image}")
+        return 0
+
     results = [probe_pair(row, manifest) for row in rows]
 
     if args.json_output:
-        write_json(Path(args.json_output).expanduser(), results, manifest)
+        write_json(Path(args.json_output).expanduser(), results, manifest, fingerprint)
     if args.jsonl_output:
         write_jsonl(Path(args.jsonl_output).expanduser(), results)
     if not args.quiet:
+        print(f"Runtime: {runtime_summary(fingerprint)}")
+        summary = timing_summary(results)
+        print(f"Timing: total={summary['totalSeconds']}s rows={summary['rowCount']}")
+        print()
         print_table(results)
 
     if args.fail_on_contract and any(not result.get("contractPassed") and result.get("status") != "skipped" for result in results):

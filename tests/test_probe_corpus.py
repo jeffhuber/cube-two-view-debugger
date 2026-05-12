@@ -1,12 +1,16 @@
+import sys
 from pathlib import Path
 
+import tools.probe_corpus as probe_corpus
 from tools.probe_corpus import (
     _check_expected_yaw,
     classify_face_failure,
     count_deviation_summary,
     grid_weak_reasons,
     load_manifest,
+    runtime_summary,
     smallest_rank_gaps,
+    timing_summary,
 )
 
 
@@ -151,6 +155,102 @@ def test_probe_count_deviation_summary_reports_face_count_imbalance():
         "mostCommonCountFrequency": 12,
         "deviationsFromNine": {"U": 10, "F": -1, "D": -3, "L": -2, "B": -4},
     }
+
+
+def test_probe_timing_summary_reports_total_and_slowest_rows():
+    summary = timing_summary(
+        [
+            {"setId": "12", "status": "success", "timings": {"totalSeconds": 2.5, "recognizeSeconds": 2.1}},
+            {"setId": "14", "status": "success", "timings": {"totalSeconds": 4.0, "recognizeSeconds": 3.8}},
+            {"setId": "missing", "status": "skipped", "timings": {"totalSeconds": 0.1}},
+        ]
+    )
+
+    assert summary == {
+        "totalSeconds": 6.5,
+        "rowCount": 2,
+        "slowestRows": [
+            {"setId": "14", "totalSeconds": 4.0, "recognizeSeconds": 3.8},
+            {"setId": "12", "totalSeconds": 2.5, "recognizeSeconds": 2.1},
+        ],
+    }
+
+
+def test_probe_runtime_summary_includes_key_versions():
+    summary = runtime_summary(
+        {
+            "python": {"versionInfo": [3, 12, 13], "executable": "/tmp/python"},
+            "platform": {"platform": "TestOS-arm64"},
+            "packages": {"numpy": {"version": "2.3.5"}, "pillow": {"version": "12.2.0"}},
+        }
+    )
+
+    assert "Python 3.12.13" in summary
+    assert "Pillow 12.2.0" in summary
+    assert "NumPy 2.3.5" in summary
+    assert "TestOS-arm64" in summary
+
+
+def test_probe_cli_analysis_only_writes_analysis_dump_without_recognition(monkeypatch, tmp_path):
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text('{"pairs": [{"setId": "x"}]}', encoding="utf-8")
+    analysis_output = tmp_path / "analysis.json"
+    json_output = tmp_path / "probe.json"
+    calls = {}
+
+    def fake_analysis_dump_for_rows(rows, manifest_path, *, image_selection, fingerprint):
+        calls["analysis"] = {
+            "rows": [row["setId"] for row in rows],
+            "manifest": manifest_path,
+            "image_selection": image_selection,
+            "fingerprint": fingerprint,
+        }
+        return {"ok": True}
+
+    def fake_write_analysis_json(path, payload):
+        calls["analysis_write"] = {"path": path, "payload": payload}
+        path.write_text("analysis", encoding="utf-8")
+
+    def fail_probe_pair(*args, **kwargs):
+        raise AssertionError("analysis-only should not run recognition")
+
+    def fail_write_json(*args, **kwargs):
+        raise AssertionError("analysis-only should not write --json-output")
+
+    fingerprint = {"python": {"versionInfo": [3, 12, 13], "executable": "/tmp/python"}}
+    monkeypatch.setattr(probe_corpus, "runtime_fingerprint", lambda: fingerprint)
+    monkeypatch.setattr(probe_corpus, "analysis_dump_for_rows", fake_analysis_dump_for_rows)
+    monkeypatch.setattr(probe_corpus, "write_analysis_json", fake_write_analysis_json)
+    monkeypatch.setattr(probe_corpus, "probe_pair", fail_probe_pair)
+    monkeypatch.setattr(probe_corpus, "write_json", fail_write_json)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "probe_corpus.py",
+            "--manifest",
+            str(manifest),
+            "--analysis-output",
+            str(analysis_output),
+            "--analysis-image",
+            "imageA",
+            "--analysis-only",
+            "--json-output",
+            str(json_output),
+            "--quiet",
+        ],
+    )
+
+    assert probe_corpus.main() == 0
+    assert analysis_output.read_text(encoding="utf-8") == "analysis"
+    assert not json_output.exists()
+    assert calls["analysis"] == {
+        "rows": ["x"],
+        "manifest": manifest,
+        "image_selection": "imageA",
+        "fingerprint": fingerprint,
+    }
+    assert calls["analysis_write"] == {"path": analysis_output, "payload": {"ok": True}}
 
 
 def test_check_expected_yaw_passes_when_manifest_omits_expectation():

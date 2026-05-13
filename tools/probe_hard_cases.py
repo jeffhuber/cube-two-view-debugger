@@ -9,6 +9,7 @@ whether issue-specific target checks have been cleared.
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import sys
 import time
@@ -23,7 +24,16 @@ if str(ROOT) not in sys.path:
 
 from tools.audit_recognition_pair import file_sha256, parse_ground_truth, score_match  # noqa: E402
 from rubik_recognizer.colors import rgb_to_hsv  # noqa: E402
-from rubik_recognizer.recognizer import WhiteUpRecognizer, _assigned_grid_by_face  # noqa: E402
+from rubik_recognizer.recognizer import (  # noqa: E402
+    WhiteUpRecognizer,
+    _apply_pair_color_calibration,
+    _assigned_grid_by_face,
+    _public_repair_detail,
+    _recognition_workset,
+    _validation_failed_checks,
+    _white_up_checks,
+)
+from rubik_recognizer.validation import validate_state  # noqa: E402
 
 
 DEFAULT_MANIFEST = ROOT / "tests" / "fixtures" / "hard_case_manifest.json"
@@ -135,12 +145,67 @@ def image_diagnostics(result: Any, *, include_grid_cells: bool) -> Dict[str, Any
     return diagnostics
 
 
+def repair_probe(result: Any, recognizer: WhiteUpRecognizer) -> Optional[Dict[str, Any]]:
+    if result.image_a is None or result.image_b is None:
+        return None
+    calibrated_a = copy.deepcopy(result.image_a)
+    calibrated_b = copy.deepcopy(result.image_b)
+    _apply_pair_color_calibration(calibrated_a, calibrated_b)
+    return {
+        "raw": repair_probe_for_analyses(result.image_a, result.image_b, recognizer),
+        "calibrated": repair_probe_for_analyses(calibrated_a, calibrated_b, recognizer),
+    }
+
+
+def repair_probe_for_analyses(analysis_a: Any, analysis_b: Any, recognizer: WhiteUpRecognizer) -> Dict[str, Any]:
+    start = time.perf_counter()
+    checks = _white_up_checks(analysis_a, analysis_b)
+    if checks:
+        return {
+            "status": "white_up_rejected",
+            "whiteUpChecks": checks,
+            "timings": {"totalSeconds": round(time.perf_counter() - start, 4)},
+        }
+
+    workset = _recognition_workset(analysis_a, analysis_b)
+    merged_candidate_count = len(workset.merged_candidates)
+    candidates = recognizer._state_candidates_from_workset(workset)
+    invalid_reasons: List[str] = []
+    direct_legal_count = 0
+    for state, _, _ in candidates:
+        validation = validate_state(state)
+        if validation.valid:
+            direct_legal_count += 1
+        else:
+            invalid_reasons.extend(validation.errors)
+    failed_checks = _validation_failed_checks(invalid_reasons, analysis_a, analysis_b)
+
+    repair_start = time.perf_counter()
+    repair_details = recognizer._legal_repair_candidate_details_from_workset(workset, release_merged_candidates=True)
+    return {
+        "status": "probed",
+        "optionsA": len(workset.options_a),
+        "optionsB": len(workset.options_b),
+        "mergedCandidateCount": merged_candidate_count,
+        "directCandidateCount": len(candidates),
+        "directLegalCount": direct_legal_count,
+        "directFailedChecks": failed_checks,
+        "repairCandidateCount": len(repair_details),
+        "topRepairCandidates": [_public_repair_detail(item) for item in repair_details[:3]],
+        "timings": {
+            "repairSeconds": round(time.perf_counter() - repair_start, 4),
+            "totalSeconds": round(time.perf_counter() - start, 4),
+        },
+    }
+
+
 def probe_pair(
     row: Dict[str, Any],
     manifest_path: Path,
     recognizer: WhiteUpRecognizer,
     *,
     include_grid_cells: bool = False,
+    include_repair_probe: bool = False,
 ) -> Dict[str, Any]:
     start = time.perf_counter()
     set_id = str(row.get("setId") or row.get("id") or "")
@@ -217,6 +282,8 @@ def probe_pair(
         "imageDiagnostics": image_diagnostics(result, include_grid_cells=include_grid_cells),
         "timings": {"totalSeconds": round(time.perf_counter() - start, 4)},
     }
+    if include_repair_probe:
+        result_payload["repairProbe"] = repair_probe(result, recognizer)
     return result_payload
 
 
@@ -226,6 +293,7 @@ def probe_rows(
     *,
     progress: bool = True,
     include_grid_cells: bool = False,
+    include_repair_probe: bool = False,
 ) -> List[Dict[str, Any]]:
     recognizer = WhiteUpRecognizer()
     results: List[Dict[str, Any]] = []
@@ -234,7 +302,15 @@ def probe_rows(
         if progress:
             set_id = row.get("setId") or row.get("id") or "?"
             print(f"[{index}/{total}] probing hard case set {set_id}", file=sys.stderr, flush=True)
-        results.append(probe_pair(row, manifest_path, recognizer, include_grid_cells=include_grid_cells))
+        results.append(
+            probe_pair(
+                row,
+                manifest_path,
+                recognizer,
+                include_grid_cells=include_grid_cells,
+                include_repair_probe=include_repair_probe,
+            )
+        )
     return results
 
 
@@ -276,6 +352,11 @@ def main() -> int:
     parser.add_argument("--quiet", action="store_true", help="Do not print the readable table.")
     parser.add_argument("--no-progress", action="store_true", help="Do not print row-level probe progress to stderr.")
     parser.add_argument("--include-grid-cells", action="store_true", help="Include per-cell RGB/classification diagnostics for assigned grids.")
+    parser.add_argument(
+        "--include-repair-probe",
+        action="store_true",
+        help="Run the expensive direct/repair candidate probe for raw and calibrated analyses.",
+    )
     parser.add_argument("--fail-on-target", action="store_true", help="Exit non-zero if any targeted row misses its target.")
     args = parser.parse_args()
 
@@ -290,7 +371,13 @@ def main() -> int:
         if not selected or str(item.get("setId") or item.get("id")) in selected
     ]
 
-    results = probe_rows(rows, manifest, progress=not args.no_progress, include_grid_cells=args.include_grid_cells)
+    results = probe_rows(
+        rows,
+        manifest,
+        progress=not args.no_progress,
+        include_grid_cells=args.include_grid_cells,
+        include_repair_probe=args.include_repair_probe,
+    )
     if args.json_output:
         write_json(Path(args.json_output).expanduser(), results, manifest)
     if not args.quiet:

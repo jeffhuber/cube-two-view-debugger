@@ -498,6 +498,8 @@ def localization_hypotheses(
     weak = health.get("weakSelectedGrids") or []
     if any(item.get("image") == "imageB" and item.get("face") == "D" for item in weak):
         hypotheses.append("weak_imageB_down_anchor")
+    if any(str(check).endswith("_low_quality_overlap_triples") for check in failed):
+        hypotheses.append("low_quality_overlap_triples")
     if any(str(check).endswith("_count_not_9") for check in failed):
         hypotheses.append("pre_repair_face_count_imbalance")
     groups = grid_group_breakdown(diagnostics)

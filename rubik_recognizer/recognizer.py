@@ -1040,7 +1040,7 @@ def _white_up_checks(analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> Li
         if _can_rank_grid_triples(analysis):
             groups = _candidate_grids_by_face(analysis, anchor)
             if anchor in groups and not _ranked_visible_face_triples(groups, anchor):
-                checks.append(f"{label}_no_reliable_face_triple")
+                checks.append(_face_triple_failure_check(label, groups, anchor))
     side_centers = [
         face
         for analysis, anchor in ((analysis_a, "U"), (analysis_b, "D"))
@@ -1059,6 +1059,10 @@ def _reason_for_checks(checks: Sequence[str]) -> str:
         return "Image B must contain the yellow/D center face after the flip."
     if "image_b_D_anchor_weak" in checks:
         return "Image B contains a weak yellow/D center grid; retake with a clearer yellow-up face."
+    if "image_a_low_quality_overlap_triples" in checks:
+        return "Image A contains only low-quality overlapping three-face grids; retake with more of the cube visible."
+    if "image_b_low_quality_overlap_triples" in checks:
+        return "Image B contains only low-quality overlapping three-face grids; retake with more of the cube visible after the flip."
     if "image_a_no_reliable_face_triple" in checks:
         return "Image A did not contain a reliable non-overlapping three-face grid."
     if "image_b_no_reliable_face_triple" in checks:
@@ -1070,6 +1074,18 @@ def _reason_for_checks(checks: Sequence[str]) -> str:
 
 def _down_anchor_grid_too_weak(grid: FaceGrid) -> bool:
     return grid.matched_count < MIN_IMAGE_B_D_ANCHOR_MATCHED_COUNT
+
+
+def _face_triple_failure_check(label: str, groups: Dict[str, List[FaceGrid]], anchor: str) -> str:
+    rescue_triples = _visible_face_triples(
+        groups,
+        anchor,
+        max_overlap=MAX_RESCUE_TRIPLE_COMPONENT_OVERLAP,
+        extra_overlap_penalty=24.0,
+    )
+    if rescue_triples and rescue_triples[0][0] < MIN_RESCUE_VISIBLE_FACE_TRIPLE_SCORE:
+        return f"{label}_low_quality_overlap_triples"
+    return f"{label}_no_reliable_face_triple"
 
 
 def _apply_pair_color_calibration(analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> None:

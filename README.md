@@ -344,7 +344,9 @@ bad face-plane candidates, ambiguous color samples, or insufficient coverage fro
    triples. Image A is anchored to `U`; image B is anchored to `D`. Triples are pruned when grids
    are too weak, overlap too much, or do not match plausible adjacent side-face pairs. The scoring
    favors strong center anchors, low fit error, distinct side centers, and coherent face-plane
-   geometry.
+   geometry. When only very low-scoring overlap-rescue triples exist, the recognizer keeps the safe
+   rejection path and reports a low-quality overlap-triples check instead of starting an expensive
+   repair search.
 
 8. **Orient each visible face.**
    Face grids can appear rotated or mirrored in the photo. `rubik_recognizer.geometry` enumerates

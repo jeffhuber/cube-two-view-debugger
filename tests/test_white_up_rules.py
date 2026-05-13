@@ -99,6 +99,25 @@ def test_white_up_checks_rejects_weak_image_b_down_anchor():
     assert recognizer._reason_for_checks(checks) == "Image B contains a weak yellow/D center grid; retake with a clearer yellow-up face."
 
 
+def test_face_triple_failure_check_reports_suppressed_low_quality_overlap(monkeypatch):
+    monkeypatch.setattr(recognizer, "_visible_face_triples", lambda *args, **kwargs: [(-192.0, {})])
+
+    assert (
+        recognizer._face_triple_failure_check("image_b", {"D": []}, "D")
+        == "image_b_low_quality_overlap_triples"
+    )
+    assert (
+        recognizer._reason_for_checks(["image_b_low_quality_overlap_triples"])
+        == "Image B contains only low-quality overlapping three-face grids; retake with more of the cube visible after the flip."
+    )
+
+
+def test_face_triple_failure_check_reports_no_reliable_when_no_rescue(monkeypatch):
+    monkeypatch.setattr(recognizer, "_visible_face_triples", lambda *args, **kwargs: [])
+
+    assert recognizer._face_triple_failure_check("image_b", {"D": []}, "D") == "image_b_no_reliable_face_triple"
+
+
 def test_white_up_checks_allows_whiteish_logo_sample_on_image_a_anchor():
     a = StubAnalysis(["D", "R", "F"])
     a.grids[0].center_sticker.rgb = (225, 226, 220)

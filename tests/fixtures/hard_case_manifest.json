@@ -96,9 +96,12 @@
       "currentCategory": "reject_retake",
       "currentCandidates": 0,
       "currentFailedChecks": [
+        "image_b_low_quality_overlap_triples"
+      ],
+      "targetFailedChecksAbsent": [
         "image_b_no_reliable_face_triple"
       ],
-      "notes": "Issue #51 reproduction. Recognition PR 1 leaves this unresolved because the only overlap-rescue triples are low-scoring and explode downstream repair search."
+      "notes": "Issue #51 reproduction. Recognition PR 5 labels the suppressed rescue path precisely: overlap-rescue triples exist, but their scores are far below the safe rescue floor and trigger expensive downstream repair search."
     },
     {
       "setId": "30",

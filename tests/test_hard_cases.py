@@ -12,7 +12,8 @@ def test_hard_case_manifest_records_open_issue_sets():
     assert primary["label"] == "native-arm64-macos-python312"
     assert primary["platform.machine"] == "arm64"
     assert {rows[set_id]["linkedIssue"] for set_id in ("25", "30")} == {51}
-    assert "targetFailedChecksAbsent" not in rows["25"]
+    assert rows["25"]["targetFailedChecksAbsent"] == ["image_b_no_reliable_face_triple"]
+    assert rows["25"]["currentFailedChecks"] == ["image_b_low_quality_overlap_triples"]
     assert rows["30"]["targetFailedChecksAbsent"] == ["image_a_no_reliable_face_triple"]
     assert rows["30"]["currentStatus"] == "success"
     assert rows["39"]["targetFailedChecksAbsent"] == [

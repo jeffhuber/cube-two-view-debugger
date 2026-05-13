@@ -307,9 +307,10 @@ The default manifest is `tests/fixtures/hard_case_manifest.json`. It currently t
 22, 25, 30, 39, and 44 with their issue numbers, SHA256 image hashes, current status/category,
 current failed checks, optional ground-truth paths, and any PR-specific target checks. Target checks
 can assert that a failed check is either absent or present, which lets diagnostic PRs pin better
-failure routing without claiming the image set is recognized. Rows without target checks are
-informational; they document known open bugs without making every robustness investigation solve all
-of them at once.
+failure routing without claiming the image set is recognized. When a future fix turns a rejected row
+into a recognized row, replace any diagnostic `targetFailedChecksPresent` gate with an
+`expectedScoreOnceFixed` or category/score target. Rows without target checks are informational; they
+document known open bugs without making every robustness investigation solve all of them at once.
 
 For color and grid-sampling investigations, add `--include-grid-cells` to include per-cell RGB,
 HSV, classifier confidence, and nearest color alternatives for the assigned grids:
@@ -318,6 +319,12 @@ HSV, classifier confidence, and nearest color alternatives for the assigned grid
 .venv/bin/python tools/probe_hard_cases.py --set-id 44 --include-grid-cells \
   --json-output /tmp/set44-hard-case-cells.json
 ```
+
+When the recognizer emits `red_orange_pair_calibration_suspected`, rejected API responses also
+include `recognitionSignals.pairColorCalibration`. The hard-case probe copies that block to
+`pairColorCalibration` in its JSON output so color investigations can compare raw vs calibrated
+red/orange counts, calibration anchor counts, and the red/orange adaptive palette without changing
+recognition behavior.
 
 ## How Recognition Works
 

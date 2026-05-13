@@ -8,10 +8,12 @@ from rubik_recognizer.recognizer import (
     RecognitionResult,
     RecognitionWorkset,
     WhiteUpRecognizer,
+    _attach_failed_pair_color_calibration_signal,
     _capture_yaw_state_to_wca,
     _grid_matrix_for_orientation,
     _merged_face_candidates,
     _oriented_options_for_grid_map,
+    _pair_color_calibration_signal,
     _prefer_calibrated_result,
     _recognition_category_payload,
     _repair_ranking_penalty,
@@ -204,6 +206,82 @@ def test_validation_failed_checks_ignores_one_sided_red_orange_skew():
     checks = _validation_failed_checks(["R_count_not_9"], a, b)
 
     assert checks == ["R_count_not_9"]
+
+
+def test_pair_color_calibration_signal_reports_red_orange_counts():
+    from rubik_recognizer.colors import ColorMatch
+
+    def sticker(face, rgb):
+        return type(
+            "Sticker",
+            (),
+            {
+                "id": id(rgb),
+                "center": (0, 0),
+                "rgb": rgb,
+                "match": ColorMatch(
+                    {"R": "red", "L": "orange", "U": "white"}[face],
+                    face,
+                    0.0,
+                    1.0,
+                    [({"R": "red", "L": "orange", "U": "white"}[face], 0.0)],
+                ),
+            },
+        )()
+
+    raw_a = StubAnalysis(["U", "R", "R", "R", "R", "R", "L"])
+    raw_b = StubAnalysis(["D", "L", "L", "L", "L", "L", "R"])
+    calibrated_a = StubAnalysis(["U", "R", "R", "R", "L", "L", "L"])
+    calibrated_b = StubAnalysis(["D", "L", "L", "L", "R", "R", "R"])
+    raw_a.stickers = [sticker("R", (180, 55, 45)) for _ in range(5)] + [sticker("L", (220, 115, 45))]
+    raw_b.stickers = [sticker("L", (220, 115, 45)) for _ in range(5)] + [sticker("R", (180, 55, 45))]
+    calibrated_a.stickers = [sticker("R", (180, 55, 45)) for _ in range(3)] + [sticker("L", (220, 115, 45)) for _ in range(3)]
+    calibrated_b.stickers = [sticker("L", (220, 115, 45)) for _ in range(3)] + [sticker("R", (180, 55, 45)) for _ in range(3)]
+    raw_result = RecognitionResult(
+        status="rejected",
+        failed_checks=["R_count_not_9", RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK],
+    )
+    calibrated_result = RecognitionResult(
+        status="rejected",
+        failed_checks=["piece_legality_invalid", RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK],
+    )
+
+    signal = _pair_color_calibration_signal(raw_a, raw_b, calibrated_a, calibrated_b, raw_result, calibrated_result)
+
+    assert signal["rawFailedChecks"] == ["R_count_not_9", RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK]
+    assert signal["calibratedFailedChecks"] == ["piece_legality_invalid", RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK]
+    assert signal["anchorCounts"]["red"] == 2
+    assert signal["anchorCounts"]["orange"] == 2
+    assert signal["images"]["imageA"]["rawRedOrangeSkew"] == {
+        "redCount": 5,
+        "orangeCount": 1,
+        "gap": 4,
+        "dominantFace": "R",
+    }
+    assert signal["images"]["imageB"]["rawRedOrangeSkew"]["dominantFace"] == "L"
+
+
+def test_pair_color_calibration_signal_attaches_only_to_final_red_orange_check():
+    result = RecognitionResult(
+        status="rejected",
+        failed_checks=["R_count_not_9"],
+        recognition_signals={},
+    )
+    calibrated_result = RecognitionResult(
+        status="rejected",
+        failed_checks=[RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK],
+    )
+
+    _attach_failed_pair_color_calibration_signal(
+        result,
+        calibrated_result,
+        StubAnalysis(["U", "R", "L"]),
+        StubAnalysis(["D", "R", "L"]),
+        StubAnalysis(["U", "R", "L"]),
+        StubAnalysis(["D", "R", "L"]),
+    )
+
+    assert "pairColorCalibration" not in result.recognition_signals
 
 
 def test_state_candidates_reuse_facelet_options_cache(monkeypatch):

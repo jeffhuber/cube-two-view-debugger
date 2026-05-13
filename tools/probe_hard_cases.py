@@ -171,6 +171,7 @@ def probe_pair(
 
     result = recognizer.recognize(image_a.read_bytes(), image_b.read_bytes())
     payload = result.to_api_dict(include_overlays=False)
+    signals = payload.get("recognitionSignals") or {}
     score: Optional[int] = None
     if truth_path is not None:
         _, _, canonical_state, _ = parse_ground_truth(str(truth_path))
@@ -212,6 +213,7 @@ def probe_pair(
         "expectedScoreOnceFixed": row.get("expectedScoreOnceFixed"),
         "targetPassed": (not failures) if has_target else None,
         "targetFailures": failures,
+        "pairColorCalibration": signals.get("pairColorCalibration"),
         "imageDiagnostics": image_diagnostics(result, include_grid_cells=include_grid_cells),
         "timings": {"totalSeconds": round(time.perf_counter() - start, 4)},
     }

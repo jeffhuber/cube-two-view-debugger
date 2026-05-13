@@ -106,14 +106,14 @@ fields that together answer "which code is :8080 serving?":
 - `git.sha` — the HEAD at request time
 - `git.branch` — current branch (or `null` for detached HEAD)
 
-Before relying on the server'\''s output during a debug session, hit:
+Before relying on the server's output during a debug session, hit:
 
 ```bash
 curl -s http://localhost:8080/api/diag | python3 -c "import json,sys; \
-    d=json.load(sys.stdin); print(d.get('\''git'\''))"
+    d=json.load(sys.stdin); print(d.get('git'))"
 ```
 
-If `git.cwd` or `git.sha` doesn'\''t match what you expect, restart
+If `git.cwd` or `git.sha` doesn't match what you expect, restart
 from your own repo.
 
 ### Canonical paths per agent
@@ -123,7 +123,7 @@ from your own repo.
 | Claude | `/Users/jhuber/cube-two-view-debugger` |
 | Codex  | `/Users/jhuber/Documents/Codex/.../i-want-to-create-a-rubik` |
 
-If you'\''re Claude or Codex and your work needs to be the active
+If you're Claude or Codex and your work needs to be the active
 server, restart from your own canonical path:
 
 ```bash
@@ -139,11 +139,11 @@ grep "identity:" /tmp/cv-local-server.log
 # [rubik-app]   identity: /Users/jhuber/cube-two-view-debugger @ d594e4a (main)
 ```
 
-### When you should NOT restart someone else'\''s server
+### When you should NOT restart someone else's server
 
-If `git.cwd` points at another agent'\''s repo path AND the branch
-isn'\''t main, that agent is likely actively iterating. Don'\''t kill
-their session unless you'\''ve confirmed they'\''re not around.
+If `git.cwd` points at another agent's repo path AND the branch
+isn't main, that agent is likely actively iterating. Don't kill
+their session unless you've confirmed they're not around.
 Easiest signal: ask the user.
 
 ## Repository

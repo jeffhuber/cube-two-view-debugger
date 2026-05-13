@@ -266,10 +266,10 @@ shows stable Mode 1 cases (correct orientation generated but ranked below the se
 separate tuning PR can adjust orientation ranking with a clear before/after corpus report.
 
 Set 44 is intentionally included as a rejected fixture. It currently exercises the upstream
-color/grid-evidence collapse path: image B's `D/yellow` anchor is selected from a weak 5/9 grid,
-and the best merged candidates have invalid face-count distributions before repair can produce a
-legal state. Use `tools/probe_corpus.py --set-id 44 --json-output ...` to inspect the
-`rejectionLocalization` block for that failure.
+color/grid-evidence collapse path: image B's `D/yellow` anchor is selected from a weak 5/9 grid.
+The recognizer rejects that weak down-anchor before generating merged candidates. Use
+`tools/probe_hard_cases.py --set-id 44 --include-grid-cells --json-output ...` to inspect the
+assigned-grid cell evidence for that failure.
 
 ### Hard-case probe harness
 

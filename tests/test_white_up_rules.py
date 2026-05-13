@@ -88,6 +88,17 @@ def test_white_up_checks_allows_yellowish_sample_on_image_b_anchor():
     assert _white_up_checks(a, b) == []
 
 
+def test_white_up_checks_rejects_weak_image_b_down_anchor():
+    a = StubAnalysis(["U", "R", "F"])
+    b = StubAnalysis(["D", "L", "B"])
+    b.grids[0].matched_count = recognizer.MIN_IMAGE_B_D_ANCHOR_MATCHED_COUNT - 1
+
+    checks = _white_up_checks(a, b)
+
+    assert "image_b_D_anchor_weak" in checks
+    assert recognizer._reason_for_checks(checks) == "Image B contains a weak yellow/D center grid; retake with a clearer yellow-up face."
+
+
 def test_white_up_checks_allows_whiteish_logo_sample_on_image_a_anchor():
     a = StubAnalysis(["D", "R", "F"])
     a.grids[0].center_sticker.rgb = (225, 226, 220)

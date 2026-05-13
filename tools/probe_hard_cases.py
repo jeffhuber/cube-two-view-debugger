@@ -211,6 +211,7 @@ def repair_probe_for_analyses(
         "directCandidateCount": len(candidates),
         "directLegalCount": direct_legal_count,
         "directFailedChecks": failed_checks,
+        "topDirectCandidatesByScore": direct_candidate_score_details(candidates, expected_state=expected_state),
         "repairCandidateCount": len(repair_details),
         "topRepairCandidates": repair_probe_public_details(repair_details[:3], expected_state=expected_state),
         "timings": {
@@ -218,6 +219,30 @@ def repair_probe_for_analyses(
             "totalSeconds": round(time.perf_counter() - start, 4),
         },
     }
+
+
+def direct_candidate_score_details(
+    candidates: Sequence[Tuple[str, float, Dict[str, Any]]],
+    *,
+    expected_state: Optional[str] = None,
+) -> List[Dict[str, Any]]:
+    if not expected_state:
+        return []
+    scored = []
+    for state, confidence, details in candidates:
+        scored.append(
+            {
+                "state": state,
+                "score": score_match(state, expected_state),
+                "confidence": round(float(confidence), 4),
+                "sidePairA": details.get("sidePairA"),
+                "sidePairB": details.get("sidePairB"),
+                "orderedSidePairA": details.get("orderedSidePairA"),
+                "orderedSidePairB": details.get("orderedSidePairB"),
+            }
+        )
+    scored.sort(key=lambda item: (item["score"], item["confidence"]), reverse=True)
+    return scored[:3]
 
 
 def repair_probe_public_details(

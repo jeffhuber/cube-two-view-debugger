@@ -91,6 +91,9 @@ MAX_TRIPLE_COMPONENT_OVERLAP = 3
 MAX_RESCUE_TRIPLE_COMPONENT_OVERLAP = 6
 MAX_RESCUE_VISIBLE_FACE_TRIPLES = 3
 MIN_RESCUE_VISIBLE_FACE_TRIPLE_SCORE = 80.0
+RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK = "red_orange_pair_calibration_suspected"
+RED_ORANGE_SKEW_MIN_GAP = 3
+RED_ORANGE_SKEW_MIN_DOMINANT = 4
 # Tuned on labeled sets 12/14/15/24/26/27/28/29/31: large enough to
 # down-rank conflicted repair winners, but capped so repair candidates remain
 # comparable instead of being rejected by one binary threshold.
@@ -312,7 +315,7 @@ class WhiteUpRecognizer:
             return RecognitionResult(
                 status="rejected",
                 reason="No legal cube state matched the detected stickers.",
-                failed_checks=_summarize_validation_errors(invalid_reasons),
+                failed_checks=_validation_failed_checks(invalid_reasons, analysis_a, analysis_b),
                 candidates=len(candidates),
                 recognition_signals=recognition_signals,
             )
@@ -353,7 +356,7 @@ class WhiteUpRecognizer:
         return RecognitionResult(
             status="rejected",
             reason="No legal cube state matched the detected stickers.",
-            failed_checks=_summarize_validation_errors(invalid_reasons),
+            failed_checks=_validation_failed_checks(invalid_reasons, analysis_a, analysis_b),
             candidates=len(candidates),
             recognition_signals=recognition_signals,
         )
@@ -1128,6 +1131,57 @@ def _summarize_validation_errors(errors: Sequence[str]) -> List[str]:
     if any(error.startswith("corner_") or error.startswith("edge_") for error in unique):
         summary.append("piece_legality_invalid")
     return summary or sorted(unique)
+
+
+def _validation_failed_checks(errors: Sequence[str], analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> List[str]:
+    checks = _summarize_validation_errors(errors)
+    if _red_orange_pair_calibration_suspected(checks, analysis_a, analysis_b):
+        return [*checks, RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK]
+    return checks
+
+
+def _red_orange_pair_calibration_suspected(
+    checks: Sequence[str],
+    analysis_a: ImageAnalysis,
+    analysis_b: ImageAnalysis,
+) -> bool:
+    unique = set(checks)
+    if RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK in unique:
+        return True
+    if "piece_legality_invalid" not in unique and not ({"R_count_not_9", "L_count_not_9"} & unique):
+        return False
+
+    image_a = _red_orange_skew_evidence(analysis_a)
+    image_b = _red_orange_skew_evidence(analysis_b)
+    return any(a["dominantFace"] != b["dominantFace"] for a in image_a for b in image_b)
+
+
+def _red_orange_skew_evidence(analysis: ImageAnalysis) -> List[Dict[str, Any]]:
+    sources = {
+        "stickers": Counter(
+            getattr(getattr(sticker, "match", None), "face", None)
+            for sticker in getattr(analysis, "stickers", [])
+        ),
+        "gridCenters": Counter(getattr(grid, "center_face", None) for grid in getattr(analysis, "grids", [])),
+    }
+    evidence: List[Dict[str, Any]] = []
+    for source, counts in sources.items():
+        red = int(counts.get("R", 0))
+        orange = int(counts.get("L", 0))
+        gap = abs(red - orange)
+        dominant = "R" if red > orange else "L"
+        if red == orange or gap < RED_ORANGE_SKEW_MIN_GAP or max(red, orange) < RED_ORANGE_SKEW_MIN_DOMINANT:
+            continue
+        evidence.append(
+            {
+                "source": source,
+                "dominantFace": dominant,
+                "redCount": red,
+                "orangeCount": orange,
+                "gap": gap,
+            }
+        )
+    return evidence
 
 
 def _oriented_face_options(analysis: ImageAnalysis, anchor: str) -> List[Dict[str, List[List[Any]]]]:

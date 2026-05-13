@@ -11,6 +11,9 @@ def test_hard_case_manifest_records_open_issue_sets():
     assert set(rows) == {"17", "21", "22", "25", "30", "39", "44"}
     assert primary["label"] == "native-arm64-macos-python312"
     assert primary["platform.machine"] == "arm64"
+    assert rows["17"]["targetFailedChecksPresent"] == ["red_orange_pair_calibration_suspected"]
+    assert rows["21"]["targetFailedChecksPresent"] == ["red_orange_pair_calibration_suspected"]
+    assert rows["22"]["targetFailedChecksPresent"] == ["red_orange_pair_calibration_suspected"]
     assert {rows[set_id]["linkedIssue"] for set_id in ("25", "30")} == {51}
     assert "targetFailedChecksAbsent" not in rows["25"]
     assert rows["30"]["targetFailedChecksAbsent"] == ["image_a_no_reliable_face_triple"]
@@ -39,6 +42,20 @@ def test_hard_case_target_failures_check_absent_failed_checks():
         "target_check_still_present:image_b_no_reliable_face_triple"
     ]
     assert target_failures(row, {"failedChecks": ["piece_legality_invalid"]}, input_drift=False) == []
+
+
+def test_hard_case_target_failures_check_present_failed_checks():
+    row = {"targetFailedChecksPresent": ["red_orange_pair_calibration_suspected"]}
+    payload = {"failedChecks": ["piece_legality_invalid"]}
+
+    assert target_failures(row, payload, input_drift=False) == [
+        "target_check_missing:red_orange_pair_calibration_suspected"
+    ]
+    assert target_failures(
+        row,
+        {"failedChecks": ["piece_legality_invalid", "red_orange_pair_calibration_suspected"]},
+        input_drift=False,
+    ) == []
 
 
 def test_hard_case_target_failures_check_expected_score_once_fixed():

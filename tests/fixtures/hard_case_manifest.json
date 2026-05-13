@@ -131,13 +131,16 @@
       "expectedScoreOnceFixed": null,
       "currentStatus": "rejected",
       "currentCategory": "reject_retake",
-      "currentCandidates": 0,
+      "currentCandidates": 175232,
       "currentFailedChecks": [
+        "piece_legality_invalid"
+      ],
+      "targetFailedChecksAbsent": [
         "image_a_no_reliable_face_triple",
         "image_b_D_anchor_missing",
         "missing_side_face_coverage"
       ],
-      "notes": "Unresolved anchor selection case."
+      "notes": "Recognition PR 4 target: remove tiny white marble-shadow components so the real cube cluster can form grids. Still rejects later on piece legality without labelled ground truth."
     },
     {
       "setId": "44",

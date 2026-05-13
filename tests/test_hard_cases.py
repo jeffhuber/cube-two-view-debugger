@@ -15,6 +15,12 @@ def test_hard_case_manifest_records_open_issue_sets():
     assert "targetFailedChecksAbsent" not in rows["25"]
     assert rows["30"]["targetFailedChecksAbsent"] == ["image_a_no_reliable_face_triple"]
     assert rows["30"]["currentStatus"] == "success"
+    assert rows["39"]["targetFailedChecksAbsent"] == [
+        "image_a_no_reliable_face_triple",
+        "image_b_D_anchor_missing",
+        "missing_side_face_coverage",
+    ]
+    assert rows["39"]["currentFailedChecks"] == ["piece_legality_invalid"]
     assert rows["44"]["groundTruthPath"]
     assert rows["44"]["groundTruth_sha256_expected"]
     for row in rows.values():

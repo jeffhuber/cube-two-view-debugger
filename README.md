@@ -180,8 +180,10 @@ filing or reproducing a bug report — use `tools/recognize_pair.py`:
   "/Users/jhuber/Downloads/Set 25 - B - white up IMG_6772.JPG"
 ```
 
-It prints the result JSON to stdout and writes overlays + diagnostics under
-`runs/pairs/<runId>/` exactly like the web app.
+It prints a one-line summary to stdout (set / run id / status / score /
+candidate count / run path) and writes overlays + diagnostics under
+`runs/pairs/<runId>/` exactly like the web app. Use `--json-output PATH`
+(optionally with `--quiet`) to capture the full structured response.
 
 Run tests with:
 

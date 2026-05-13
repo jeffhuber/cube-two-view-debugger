@@ -92,6 +92,8 @@ MAX_RESCUE_TRIPLE_COMPONENT_OVERLAP = 6
 MAX_RESCUE_VISIBLE_FACE_TRIPLES = 3
 MIN_RESCUE_VISIBLE_FACE_TRIPLE_SCORE = 80.0
 RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK = "red_orange_pair_calibration_suspected"
+# Tuned to tag Sets 17/21/22 without firing on unrelated hard-case or corpus
+# rejects; revisit these gates when new red/orange captures are added.
 RED_ORANGE_SKEW_MIN_GAP = 3
 RED_ORANGE_SKEW_MIN_DOMINANT = 4
 # Tuned on labeled sets 12/14/15/24/26/27/28/29/31: large enough to
@@ -233,6 +235,14 @@ class WhiteUpRecognizer:
             calibrated_result.image_b = calibrated_b
             return calibrated_result
 
+        _attach_failed_pair_color_calibration_signal(
+            result,
+            calibrated_result,
+            analysis_a,
+            analysis_b,
+            calibrated_a,
+            calibrated_b,
+        )
         result.image_a = analysis_a
         result.image_b = analysis_b
         return result
@@ -1084,6 +1094,114 @@ def _apply_pair_color_calibration(analysis_a: ImageAnalysis, analysis_b: ImageAn
             sticker.match = classify_rgb(sticker.rgb, palette)
 
 
+def _attach_failed_pair_color_calibration_signal(
+    result: RecognitionResult,
+    calibrated_result: RecognitionResult,
+    raw_a: ImageAnalysis,
+    raw_b: ImageAnalysis,
+    calibrated_a: ImageAnalysis,
+    calibrated_b: ImageAnalysis,
+) -> None:
+    if RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK not in set(result.failed_checks or ()):
+        return
+    signals = dict(result.recognition_signals or {})
+    signals["pairColorCalibration"] = _pair_color_calibration_signal(
+        raw_a,
+        raw_b,
+        calibrated_a,
+        calibrated_b,
+        result,
+        calibrated_result,
+    )
+    result.recognition_signals = signals
+
+
+def _pair_color_calibration_signal(
+    raw_a: ImageAnalysis,
+    raw_b: ImageAnalysis,
+    calibrated_a: ImageAnalysis,
+    calibrated_b: ImageAnalysis,
+    raw_result: RecognitionResult,
+    calibrated_result: RecognitionResult,
+) -> Dict[str, Any]:
+    samples = _pair_calibration_samples(raw_a, raw_b)
+    anchors = _pair_calibration_anchors(raw_a, raw_b)
+    palette = build_adaptive_palette(samples, anchors)
+    return {
+        "status": "attempted_no_legal_state",
+        "rawFailedChecks": list(raw_result.failed_checks or []),
+        "calibratedFailedChecks": list(calibrated_result.failed_checks or []),
+        "sampleCount": len(samples),
+        "anchorCounts": {
+            color: len(anchors.get(color, ()))
+            for color in FACE_TO_CENTER_COLOR.values()
+        },
+        "anchorRgb": {
+            color: [list(rgb) for rgb in anchors.get(color, ())]
+            for color in ("red", "orange")
+        },
+        "paletteRgb": {
+            color: list(palette[color])
+            for color in ("red", "orange")
+            if color in palette
+        },
+        "images": {
+            "imageA": _pair_color_calibration_image_signal(raw_a, calibrated_a),
+            "imageB": _pair_color_calibration_image_signal(raw_b, calibrated_b),
+        },
+    }
+
+
+def _pair_color_calibration_image_signal(raw: ImageAnalysis, calibrated: ImageAnalysis) -> Dict[str, Any]:
+    raw_stickers = _face_count_dict(_face_counts_from_stickers(raw))
+    calibrated_stickers = _face_count_dict(_face_counts_from_stickers(calibrated))
+    raw_grids = _face_count_dict(_face_counts_from_grid_centers(raw))
+    calibrated_grids = _face_count_dict(_face_counts_from_grid_centers(calibrated))
+    return {
+        "rawStickerFaceCounts": raw_stickers,
+        "calibratedStickerFaceCounts": calibrated_stickers,
+        "rawGridCenterFaceCounts": raw_grids,
+        "calibratedGridCenterFaceCounts": calibrated_grids,
+        "rawRedOrangeSkew": _red_orange_count_signal(raw_stickers),
+        "calibratedRedOrangeSkew": _red_orange_count_signal(calibrated_stickers),
+        "rawRedOrangeEvidence": _red_orange_skew_evidence(raw),
+        "calibratedRedOrangeEvidence": _red_orange_skew_evidence(calibrated),
+    }
+
+
+def _face_counts_from_stickers(analysis: ImageAnalysis) -> Counter[str]:
+    return Counter(
+        getattr(getattr(sticker, "match", None), "face", None)
+        for sticker in getattr(analysis, "stickers", [])
+    )
+
+
+def _face_counts_from_grid_centers(analysis: ImageAnalysis) -> Counter[str]:
+    return Counter(getattr(grid, "center_face", None) for grid in getattr(analysis, "grids", []))
+
+
+def _face_count_dict(counts: Counter[str]) -> Dict[str, int]:
+    return {
+        face: int(counts.get(face, 0))
+        for face in FACE_ORDER
+        if counts.get(face, 0)
+    }
+
+
+def _red_orange_count_signal(counts: Dict[str, int]) -> Dict[str, Any]:
+    red = int(counts.get("R", 0))
+    orange = int(counts.get("L", 0))
+    dominant = None
+    if red != orange:
+        dominant = "R" if red > orange else "L"
+    return {
+        "redCount": red,
+        "orangeCount": orange,
+        "gap": abs(red - orange),
+        "dominantFace": dominant,
+    }
+
+
 def _pair_calibration_samples(*analyses: ImageAnalysis) -> List[Tuple[int, int, int]]:
     samples: List[Tuple[int, int, int]] = []
     seen = set()
@@ -1146,8 +1264,6 @@ def _red_orange_pair_calibration_suspected(
     analysis_b: ImageAnalysis,
 ) -> bool:
     unique = set(checks)
-    if RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK in unique:
-        return True
     if "piece_legality_invalid" not in unique and not ({"R_count_not_9", "L_count_not_9"} & unique):
         return False
 

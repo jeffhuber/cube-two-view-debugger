@@ -70,10 +70,14 @@ piece constraints to choose or reject a final state.
 ## Run
 
 Use a Python ≥ 3.11 environment with the pinned versions in
-`requirements.txt`. Recommended setup with conda:
+`requirements.txt`. The corpus manifest pins ARM64 macOS + Python
+3.12.13 + NumPy 2.3.5 + Pillow 12.2.0 as the primary reproducible
+runtime (see `supportedArchitectures.primary` in
+`tests/fixtures/corpus_manifest.json`); other environments produce a
+soft warning but still run. Recommended setup with conda:
 
 ```sh
-conda create -n cube python=3.11 -y
+conda create -n cube python=3.12 -y
 conda activate cube
 pip install -r requirements.txt
 python app.py
@@ -129,10 +133,10 @@ Sample output:
 
 ```json
 {
-  "python": {"version": "3.11.13", "executable": "...", "implementation": "cpython"},
+  "python": {"version": "3.12.13", "executable": "...", "implementation": "cpython"},
   "libraries": {"numpy": "2.3.5", "pillow": "12.2.0"},
   "minimums":  {"python": "3.11", "numpy": "2.3.5", "pillow": "12.2"},
-  "git": {"sha": "6cc6f9c", "cwd": "/path/to/cube-two-view-debugger"}
+  "git": {"sha": "6cc6f9c", "branch": "main", "cwd": "/path/to/cube-two-view-debugger"}
 }
 ```
 
@@ -161,8 +165,23 @@ Batch a directory of A/B image sets:
   --ground-truth "/Users/jhuber/Downloads/ground-truth.json"
 ```
 
-The web UI also supports multi-file selection and drag/drop. Image names with `A` and `B`
-markers are paired by set name; otherwise files are paired in sorted order.
+The web UI's unified drop zone is the canonical pair-entry surface: drag any
+mix of A/B photos onto it (or click to multi-select), and the UI pairs files
+by set name when the names contain `A` and `B` markers, otherwise by sorted
+order. The drop zone is the same surface used for both single-pair and batch
+recognition.
+
+For ad-hoc single-pair recognition from the command line — useful when
+filing or reproducing a bug report — use `tools/recognize_pair.py`:
+
+```sh
+.venv/bin/python tools/recognize_pair.py \
+  "/Users/jhuber/Downloads/Set 25 - A - white up IMG_6771.JPG" \
+  "/Users/jhuber/Downloads/Set 25 - B - white up IMG_6772.JPG"
+```
+
+It prints the result JSON to stdout and writes overlays + diagnostics under
+`runs/pairs/<runId>/` exactly like the web app.
 
 Run tests with:
 

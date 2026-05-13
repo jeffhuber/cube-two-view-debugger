@@ -2,16 +2,38 @@
   "schemaVersion": 1,
   "name": "recognition-hard-cases",
   "description": "Local-path manifest for recognizer robustness bugs that are not yet part of the labelled score corpus. JPEGs are intentionally local; SHA256 fields catch input drift.",
+  "supportedArchitectures": {
+    "primary": {
+      "label": "native-arm64-macos-python312",
+      "platform.machine": "arm64",
+      "platform.system": "Darwin",
+      "python.versionInfo": [
+        3,
+        12,
+        13,
+        "final",
+        0
+      ],
+      "numpy.version": "2.3.5",
+      "pillow.version": "12.2.0",
+      "notes": "Hard-case outcomes are pinned to the same native ARM64 macOS policy as tests/fixtures/corpus_manifest.json."
+    }
+  },
   "pairs": [
     {
       "setId": "17",
-      "issue": 31,
+      "linkedIssue": 31,
       "failureClass": "red_orange_pair_calibration",
       "imageAPath": "/Users/jhuber/Downloads/Set 17 - A - white up.JPG",
       "imageBPath": "/Users/jhuber/Downloads/Set 17 - B - white up.JPG",
       "imageA_sha256_expected": "fab9622d69167e1808dcb53115bb802654f28b09b8cf399f116222dd830e12c2",
       "imageB_sha256_expected": "ec886dbdc33632585caee6c142218ae12148a9a727b5635862f6c10a153c1fed",
-      "baselineFailedChecks": [
+      "groundTruthPath": null,
+      "expectedScoreOnceFixed": null,
+      "currentStatus": "rejected",
+      "currentCategory": "reject_retake",
+      "currentCandidates": 14080,
+      "currentFailedChecks": [
         "B_count_not_9",
         "D_count_not_9",
         "F_count_not_9",
@@ -23,13 +45,18 @@
     },
     {
       "setId": "21",
-      "issue": 31,
+      "linkedIssue": 31,
       "failureClass": "red_orange_pair_calibration",
       "imageAPath": "/Users/jhuber/Downloads/Set 21 - A - white up.JPG",
       "imageBPath": "/Users/jhuber/Downloads/Set 21 - B - white up.JPG",
       "imageA_sha256_expected": "07815296421057e8cd9cb1a0a1795f5c095eeababbcffcc3aa9009593a47106b",
       "imageB_sha256_expected": "0f38063c582f6ee2bcdfcc41b385fc86a7591038a90f8fe2bab06ff5f1524a85",
-      "baselineFailedChecks": [
+      "groundTruthPath": null,
+      "expectedScoreOnceFixed": null,
+      "currentStatus": "rejected",
+      "currentCategory": "reject_retake",
+      "currentCandidates": 9472,
+      "currentFailedChecks": [
         "B_count_not_9",
         "L_count_not_9",
         "R_count_not_9",
@@ -39,41 +66,54 @@
     },
     {
       "setId": "22",
-      "issue": 31,
+      "linkedIssue": 31,
       "failureClass": "red_orange_pair_calibration",
       "imageAPath": "/Users/jhuber/Downloads/Set 22 - A - white up.JPG",
       "imageBPath": "/Users/jhuber/Downloads/Set 22 - B - white up.JPG",
       "imageA_sha256_expected": "570dc99c76889f3dc0745f983271c1433cc6e00cc7e45402aca8e14de1410851",
       "imageB_sha256_expected": "bf32a69619eb86a700e1c1020df87bb4785ef8ed4dd6839890252c86052a370a",
-      "baselineFailedChecks": [
+      "groundTruthPath": null,
+      "expectedScoreOnceFixed": null,
+      "currentStatus": "rejected",
+      "currentCategory": "reject_retake",
+      "currentCandidates": 56265,
+      "currentFailedChecks": [
         "piece_legality_invalid"
       ],
       "notes": "Unresolved balanced red/orange drift that reaches cubie legality."
     },
     {
       "setId": "25",
-      "issue": 51,
+      "linkedIssue": 51,
       "failureClass": "triple_selection_overlap",
       "imageAPath": "/Users/jhuber/Downloads/Set 25 - A - white up IMG_6771.JPG",
       "imageBPath": "/Users/jhuber/Downloads/Set 25 - B - white up IMG_6772.JPG",
       "imageA_sha256_expected": "b6add5412d2ed1bb3a86a038c5a67136e3280ac78b4e44bba4e2b016053536de",
       "imageB_sha256_expected": "b93645f19bd3d8ea889b3e5f0f410bdb4263cf0173d9128fa3ae72377a7d8774",
-      "baselineFailedChecks": [
+      "groundTruthPath": null,
+      "expectedScoreOnceFixed": null,
+      "currentStatus": "rejected",
+      "currentCategory": "reject_retake",
+      "currentCandidates": 0,
+      "currentFailedChecks": [
         "image_b_no_reliable_face_triple"
       ],
       "notes": "Issue #51 reproduction. Recognition PR 1 leaves this unresolved because the only overlap-rescue triples are low-scoring and explode downstream repair search."
     },
     {
       "setId": "30",
-      "issue": 51,
+      "linkedIssue": 51,
       "failureClass": "triple_selection_overlap",
       "imageAPath": "/Users/jhuber/Downloads/Set 30 - A - white up IMG_7100.JPG",
       "imageBPath": "/Users/jhuber/Downloads/Set 30 - B - white up IMG_7101.JPG",
       "imageA_sha256_expected": "f834711f98f11bf96383037836ec82f64b6a085d73150b6c751c6058264007e4",
       "imageB_sha256_expected": "a7a94f6c86ca7743cefd514c9b3324cebc831b3f8dbce6c5ff2498bb808cd176",
-      "baselineFailedChecks": [
-        "image_a_no_reliable_face_triple"
-      ],
+      "groundTruthPath": null,
+      "expectedScoreOnceFixed": null,
+      "currentStatus": "success",
+      "currentCategory": "needs_manual_review",
+      "currentCandidates": 90538,
+      "currentFailedChecks": [],
       "targetFailedChecksAbsent": [
         "image_a_no_reliable_face_triple"
       ],
@@ -81,13 +121,18 @@
     },
     {
       "setId": "39",
-      "issue": 30,
+      "linkedIssue": 30,
       "failureClass": "false_anchor_cluster",
       "imageAPath": "/Users/jhuber/Downloads/Set 39 - A - white up IMG_7157.JPG",
       "imageBPath": "/Users/jhuber/Downloads/Set 39 - B - white up IMG_7158.JPG",
       "imageA_sha256_expected": "d3707913abce12f205981cf51c3c584f0e89332be9a86ed52dbba9a5128a746c",
       "imageB_sha256_expected": "1ea3af41716e071daba570d17aea85343872ec1cb090e8d18aff39d63cb336ac",
-      "baselineFailedChecks": [
+      "groundTruthPath": null,
+      "expectedScoreOnceFixed": null,
+      "currentStatus": "rejected",
+      "currentCategory": "reject_retake",
+      "currentCandidates": 0,
+      "currentFailedChecks": [
         "image_a_no_reliable_face_triple",
         "image_b_D_anchor_missing",
         "missing_side_face_coverage"
@@ -96,13 +141,19 @@
     },
     {
       "setId": "44",
-      "issue": 17,
-      "failureClass": "yellow_white_color_classification",
+      "linkedIssue": 17,
+      "failureClass": "color_grid_evidence_collapse",
       "imageAPath": "/Users/jhuber/Downloads/Set 44 - A - white up IMG_7167.JPG",
       "imageBPath": "/Users/jhuber/Downloads/Set 44 - B - white up IMG_7168.JPG",
+      "groundTruthPath": "/Users/jhuber/Downloads/Set 44 v1 - cube-ground-truth-1778461001488.json",
       "imageA_sha256_expected": "ceaecaefb0e14cf9b20b6d00dff0d362a08b643c1380e955c7edecbdc29275a0",
       "imageB_sha256_expected": "6a8ead89f81007b01e8f27ec80de5015ab1298b261669fea635c17885fe0bb6d",
-      "baselineFailedChecks": [
+      "groundTruth_sha256_expected": "330ef3b8e36881103e6ea84775772502f3bac5b297e8078d896f166bf5b67826",
+      "expectedScoreOnceFixed": null,
+      "currentStatus": "rejected",
+      "currentCategory": "reject_retake",
+      "currentCandidates": 16060,
+      "currentFailedChecks": [
         "B_count_not_9",
         "D_count_not_9",
         "F_count_not_9",
@@ -110,7 +161,7 @@
         "R_count_not_9",
         "U_count_not_9"
       ],
-      "notes": "Unresolved yellow/white color classification case."
+      "notes": "Filed as a yellow/white color classification case. Recognition PR 2 diagnostics show the selected D center is strongly yellow; the current failure is a weak 5/9 D anchor plus merged-candidate face-count imbalance with high white count."
     }
   ]
 }

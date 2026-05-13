@@ -409,6 +409,42 @@ def test_oriented_options_reuses_contextual_transformed_matrices(monkeypatch):
     assert calls == {"matrix": 3}
 
 
+def test_ranked_visible_face_triples_rescues_small_overlap_when_strict_empty():
+    def grid(grid_id, component_ids, x_offset):
+        stickers = []
+        ids = list(component_ids)
+        for row in range(3):
+            sticker_row = []
+            for col in range(3):
+                component_id = ids[(row * 3 + col) % len(ids)]
+                sticker_row.append(type("Sticker", (), {"id": component_id, "source": "component", "shape_angle": None})())
+            stickers.append(sticker_row)
+        points = [[(x_offset + col * 10, row * 10) for col in range(3)] for row in range(3)]
+        return type(
+            "Grid",
+            (),
+            {
+                "id": grid_id,
+                "matched_count": len(set(component_ids)),
+                "fit_error": 0.0,
+                "points": points,
+                "stickers": stickers,
+            },
+        )()
+
+    grids_by_face = {
+        "U": [grid(1, range(9), 0)],
+        "B": [grid(2, (0, 1, 2, 20, 21, 22, 23), 10)],
+        "L": [grid(3, (3, 4, 5, 30, 31, 32, 33), 20)],
+    }
+
+    triples = recognizer._ranked_visible_face_triples(grids_by_face, "U")
+
+    assert len(triples) == 1
+    assert set(triples[0][1]) == {"U", "B", "L"}
+    assert recognizer._triple_overlap_count(triples[0][1].values()) == 6
+
+
 def test_repair_details_memoizes_signature_stable_work(monkeypatch):
     solved = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
 

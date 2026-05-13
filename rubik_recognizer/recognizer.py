@@ -85,6 +85,11 @@ MAX_DIAGNOSTIC_EXAMPLES = 8
 SUSPECT_GRID_SAMPLE_THRESHOLD = 2.5
 MAX_SUSPECT_SAMPLE_ALTERNATIVE_DELTA = 58.0
 MAX_TRIPLE_COMPONENT_OVERLAP = 3
+# Used only when strict triple selection finds no candidates. This lets
+# high-quality cluttered photos recover without making overlap the normal path.
+MAX_RESCUE_TRIPLE_COMPONENT_OVERLAP = 6
+MAX_RESCUE_VISIBLE_FACE_TRIPLES = 3
+MIN_RESCUE_VISIBLE_FACE_TRIPLE_SCORE = 80.0
 # Tuned on labeled sets 12/14/15/24/26/27/28/29/31: large enough to
 # down-rank conflicted repair winners, but capped so repair candidates remain
 # comparable instead of being rejected by one binary threshold.
@@ -1165,6 +1170,35 @@ def _oriented_face_options(analysis: ImageAnalysis, anchor: str) -> List[Dict[st
 
 
 def _ranked_visible_face_triples(grids_by_face: Dict[str, List[FaceGrid]], anchor: str) -> List[Tuple[float, Dict[str, FaceGrid]]]:
+    if anchor not in grids_by_face:
+        return []
+
+    triples = _visible_face_triples(
+        grids_by_face,
+        anchor,
+        max_overlap=MAX_TRIPLE_COMPONENT_OVERLAP,
+        extra_overlap_penalty=0.0,
+    )
+    if triples:
+        return triples[:MAX_VISIBLE_FACE_TRIPLES]
+
+    triples = _visible_face_triples(
+        grids_by_face,
+        anchor,
+        max_overlap=MAX_RESCUE_TRIPLE_COMPONENT_OVERLAP,
+        extra_overlap_penalty=24.0,
+    )
+    triples = [item for item in triples if item[0] >= MIN_RESCUE_VISIBLE_FACE_TRIPLE_SCORE]
+    return triples[:MAX_RESCUE_VISIBLE_FACE_TRIPLES]
+
+
+def _visible_face_triples(
+    grids_by_face: Dict[str, List[FaceGrid]],
+    anchor: str,
+    *,
+    max_overlap: int,
+    extra_overlap_penalty: float,
+) -> List[Tuple[float, Dict[str, FaceGrid]]]:
     triples: List[Tuple[float, Dict[str, FaceGrid]]] = []
     for side_pair in ADJACENT_SIDE_PAIRS:
         if side_pair[0] not in grids_by_face or side_pair[1] not in grids_by_face:
@@ -1178,12 +1212,14 @@ def _ranked_visible_face_triples(grids_by_face: Dict[str, List[FaceGrid]], ancho
                 continue
             if not all(_grid_usable_for_triple(grid) for grid in (anchor_grid, first_grid, second_grid)):
                 continue
-            if _triple_overlap_count((anchor_grid, first_grid, second_grid)) > MAX_TRIPLE_COMPONENT_OVERLAP:
+            overlap = _triple_overlap_count((anchor_grid, first_grid, second_grid))
+            if overlap > max_overlap:
                 continue
             subset = {anchor: anchor_grid, side_pair[0]: first_grid, side_pair[1]: second_grid}
-            triples.append((_face_plane_score(anchor_grid, first_grid, second_grid), subset))
+            rescue_penalty = max(0, overlap - MAX_TRIPLE_COMPONENT_OVERLAP) * extra_overlap_penalty
+            triples.append((_face_plane_score(anchor_grid, first_grid, second_grid) - rescue_penalty, subset))
     triples.sort(key=lambda item: item[0], reverse=True)
-    return triples[:MAX_VISIBLE_FACE_TRIPLES]
+    return triples
 
 
 def _photo_ordered_side_pair(grid_by_face: Dict[str, FaceGrid]) -> Tuple[str, ...]:
@@ -1222,11 +1258,18 @@ def _triple_filter_diagnostics(grids_by_face: Dict[str, List[FaceGrid]], anchor:
             if not all(_grid_usable_for_triple(grid) for grid in (anchor_grid, first_grid, second_grid)):
                 counts["unusableGrid"] += 1
                 continue
-            if _triple_overlap_count((anchor_grid, first_grid, second_grid)) > MAX_TRIPLE_COMPONENT_OVERLAP:
+            overlap = _triple_overlap_count((anchor_grid, first_grid, second_grid))
+            if overlap > MAX_TRIPLE_COMPONENT_OVERLAP:
                 counts["componentOverlap"] += 1
+                if overlap <= MAX_RESCUE_TRIPLE_COMPONENT_OVERLAP:
+                    counts["rescueOverlap"] += 1
                 continue
             counts["accepted"] += 1
-    return {key: counts[key] for key in ("total", "accepted", "duplicateGridId", "unusableGrid", "componentOverlap") if counts[key]}
+    return {
+        key: counts[key]
+        for key in ("total", "accepted", "duplicateGridId", "unusableGrid", "componentOverlap", "rescueOverlap")
+        if counts[key]
+    }
 
 
 def _face_plane_score(anchor_grid: FaceGrid, first_grid: FaceGrid, second_grid: FaceGrid) -> float:

@@ -271,6 +271,22 @@ and the best merged candidates have invalid face-count distributions before repa
 legal state. Use `tools/probe_corpus.py --set-id 44 --json-output ...` to inspect the
 `rejectionLocalization` block for that failure.
 
+### Hard-case probe harness
+
+Use `tools/probe_hard_cases.py` for local photo pairs that have known recognizer bugs but do not
+yet have labelled ground truth in the scored corpus:
+
+```sh
+.venv/bin/python tools/probe_hard_cases.py \
+  --json-output /tmp/cube-hard-cases.json \
+  --fail-on-target
+```
+
+The default manifest is `tests/fixtures/hard_case_manifest.json`. It currently tracks Sets 17, 21,
+22, 25, 30, 39, and 44 with their issue numbers, SHA256 image hashes, baseline failed checks, and
+any PR-specific target checks. Rows without target checks are informational; they document known
+open bugs without making every robustness investigation solve all of them at once.
+
 ## How Recognition Works
 
 The recognizer is a CV-first pipeline with cube-constraint validation at the end. It intentionally

@@ -2,7 +2,14 @@ import math
 
 import numpy as np
 
-from rubik_recognizer.image_pipeline import _binary_dilate_square, _nearest_available_point, _score_grid_centers
+from rubik_recognizer.image_pipeline import (
+    _binary_dilate_square,
+    _candidate_component_overlap,
+    _candidate_key,
+    _candidate_matched_set,
+    _nearest_available_point,
+    _score_grid_centers,
+)
 
 
 def naive_square_dilate(mask, size):
@@ -58,3 +65,17 @@ def test_score_grid_centers_matches_nearest_points_greedily():
     assert result["matched_count"] == 9
     assert result["cell_matches"] == [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
     assert math.isclose(result["error"], math.hypot(0.2, 0.1), rel_tol=1e-12)
+
+
+def test_candidate_key_and_overlap_reuse_cached_matched_collections():
+    first = {"matched": [3, 1, 2]}
+    second = {"matched": [2, 4]}
+    third = {"matched": [9]}
+
+    assert _candidate_key(first) == (1, 2, 3)
+    assert _candidate_key(first) is first["_candidate_key"]
+    assert _candidate_matched_set(first) == {1, 2, 3}
+    assert _candidate_matched_set(first) is first["_matched_set"]
+    assert _candidate_component_overlap([first, second, third]) == 1
+    assert second["_matched_set"] == {2, 4}
+    assert third["_matched_set"] == {9}

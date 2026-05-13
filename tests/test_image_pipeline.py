@@ -3,13 +3,16 @@ import math
 import numpy as np
 
 from rubik_recognizer.image_pipeline import (
+    Sticker,
     _binary_dilate_square,
     _candidate_component_overlap,
     _candidate_key,
     _candidate_matched_set,
+    _filter_tiny_white_components,
     _nearest_available_point,
     _score_grid_centers,
 )
+from rubik_recognizer.colors import ColorMatch
 
 
 def naive_square_dilate(mask, size):
@@ -79,3 +82,45 @@ def test_candidate_key_and_overlap_reuse_cached_matched_collections():
     assert _candidate_component_overlap([first, second, third]) == 1
     assert second["_matched_set"] == {2, 4}
     assert third["_matched_set"] == {9}
+
+
+def test_tiny_white_components_are_removed_when_colored_stickers_anchor_scale():
+    def sticker(index, color, area):
+        face = {"white": "U", "red": "R", "orange": "L", "yellow": "D", "green": "F", "blue": "B"}[color]
+        return Sticker(
+            id=index,
+            center=(float(index * 10), 0.0),
+            bbox=(index * 10, 0, index * 10 + 8, 8),
+            rgb=(255, 255, 255),
+            match=ColorMatch(color, face, 0.8, 0.0, [(color, 0.0)]),
+            area=area,
+        )
+
+    colored = [
+        sticker(index, color, 5000)
+        for index, color in enumerate(["red", "orange", "yellow", "green", "blue", "red", "orange", "yellow"])
+    ]
+    real_white = [sticker(100, "white", 4200)]
+    tiny_white_noise = [sticker(200 + index, "white", 80) for index in range(18)]
+
+    filtered = _filter_tiny_white_components([*colored, *real_white, *tiny_white_noise])
+
+    assert real_white[0] in filtered
+    assert not any(sticker in filtered for sticker in tiny_white_noise)
+    assert len(filtered) == len(colored) + 1
+
+
+def test_tiny_white_component_filter_requires_many_white_candidates():
+    white = [
+        Sticker(
+            id=index,
+            center=(float(index), 0.0),
+            bbox=(index, 0, index + 1, 1),
+            rgb=(255, 255, 255),
+            match=ColorMatch("white", "U", 0.8, 0.0, [("white", 0.0)]),
+            area=80,
+        )
+        for index in range(4)
+    ]
+
+    assert _filter_tiny_white_components(white) is white

@@ -20,6 +20,9 @@ FACE_GRID_SIDE_PAIRS = (("F", "R"), ("R", "B"), ("B", "L"), ("L", "F"))
 MAX_RESCUE_GRID_COMPONENT_OVERLAP = 3
 MAX_RESCUE_FACE_CANDIDATES = 48
 MAX_RESCUE_TRIPLES = 12
+MIN_COLORED_STICKERS_FOR_WHITE_NOISE_FILTER = 8
+MIN_WHITE_STICKERS_FOR_WHITE_NOISE_FILTER = 18
+TINY_WHITE_COMPONENT_AREA_FRACTION = 0.05
 
 
 @dataclass
@@ -220,6 +223,7 @@ def _find_stickers(arr: np.ndarray, roi: Tuple[int, int, int, int]) -> List[Stic
             )
         )
 
+    stickers = _filter_tiny_white_components(stickers)
     return _filter_cube_sticker_cluster(_dedupe_stickers(stickers))
 
 
@@ -234,6 +238,22 @@ def _dedupe_stickers(stickers: List[Sticker]) -> List[Sticker]:
         sticker.id = len(kept)
         kept.append(sticker)
     return sorted(kept, key=lambda s: (s.center[1], s.center[0]))
+
+
+def _filter_tiny_white_components(stickers: List[Sticker]) -> List[Sticker]:
+    white_stickers = [sticker for sticker in stickers if sticker.match.color == "white"]
+    colored_areas = [sticker.area for sticker in stickers if sticker.match.color != "white"]
+    if (
+        len(white_stickers) < MIN_WHITE_STICKERS_FOR_WHITE_NOISE_FILTER
+        or len(colored_areas) < MIN_COLORED_STICKERS_FOR_WHITE_NOISE_FILTER
+    ):
+        return stickers
+
+    area_floor = float(np.median(colored_areas)) * TINY_WHITE_COMPONENT_AREA_FRACTION
+    filtered = [sticker for sticker in stickers if sticker.match.color != "white" or sticker.area >= area_floor]
+    for index, sticker in enumerate(filtered):
+        sticker.id = index
+    return filtered
 
 
 def _filter_cube_sticker_cluster(stickers: List[Sticker]) -> List[Sticker]:

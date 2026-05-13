@@ -314,8 +314,8 @@ bad face-plane candidates, ambiguous color samples, or insufficient coverage fro
 3. **Detect sticker-like components.**
    Inside the ROI, the detector combines masks for colored stickers, dark cube plastic, and
    white-like stickers. Connected components are filtered by area, aspect ratio, fill, and
-   position. Large low-saturation table fragments are rejected so white backgrounds do not become
-   white stickers.
+   position. Large low-saturation table fragments and tiny white speckle clusters are rejected so
+   white backgrounds do not become white stickers.
 
 4. **Sample sticker colors.**
    Each accepted component gets a median RGB patch sampled near its center. Center stickers are

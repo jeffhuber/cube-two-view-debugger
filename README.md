@@ -333,6 +333,11 @@ manifest row has ground truth, it also reports the highest-scoring direct candid
 top repair candidate against the 54-sticker truth. Use this on a small `--set-id` selection rather
 than the whole hard-case manifest unless you really want to wait.
 
+For face-option coverage investigations, add `--include-option-coverage`. When the manifest row has
+ground truth, the probe scores generated oriented face matrices per image/face for both raw and
+calibrated analyses. This helps distinguish "the correct face was never generated" from "the correct
+face was generated, but only inside an incompatible or lower-ranked three-face option."
+
 ## How Recognition Works
 
 The recognizer is a CV-first pipeline with cube-constraint validation at the end. It intentionally

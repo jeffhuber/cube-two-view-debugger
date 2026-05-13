@@ -2,7 +2,13 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import tools.probe_hard_cases as probe_hard_cases
-from tools.probe_hard_cases import grid_cell_diagnostics, load_manifest_document, repair_probe_for_analyses, target_failures
+from tools.probe_hard_cases import (
+    grid_cell_diagnostics,
+    load_manifest_document,
+    option_coverage_for_analysis,
+    repair_probe_for_analyses,
+    target_failures,
+)
 
 
 def test_hard_case_manifest_records_open_issue_sets():
@@ -166,3 +172,36 @@ def test_repair_probe_short_circuits_white_up_rejections(monkeypatch):
 
     assert probe["status"] == "white_up_rejected"
     assert probe["whiteUpChecks"] == ["image_b_D_anchor_missing"]
+
+
+def test_option_coverage_scores_generated_faces_against_truth(monkeypatch):
+    options = [
+        {
+            "U": [["U", "U", "U"], ["U", "U", "U"], ["U", "U", "U"]],
+            "R": [["R", "R", "R"], ["R", "R", "R"], ["R", "R", "R"]],
+            "_score": 42.0,
+            "_selection_score": 20.0,
+            "_orientation_score": 2.75,
+            "_orientation_rank": 3,
+            "_side_pair": ("B", "R"),
+            "_ordered_side_pair": ("R", "B"),
+        },
+        {
+            "U": [["U", "R", "U"], ["U", "U", "U"], ["U", "U", "U"]],
+            "_score": 50.0,
+            "_selection_score": 30.0,
+            "_orientation_score": 1.0,
+            "_orientation_rank": 0,
+            "_side_pair": ("F", "R"),
+            "_ordered_side_pair": ("F", "R"),
+        },
+    ]
+    monkeypatch.setattr(probe_hard_cases, "_oriented_face_options", lambda analysis, anchor: options)
+
+    coverage = option_coverage_for_analysis(object(), "U", "U" * 9 + "R" * 9 + "F" * 36)
+
+    assert coverage["optionCount"] == 2
+    assert coverage["faces"]["U"][0]["score"] == 9
+    assert coverage["faces"]["U"][0]["optionRank"] == 0
+    assert coverage["faces"]["U"][0]["sidePair"] == "B/R"
+    assert coverage["faces"]["R"][0]["score"] == 9

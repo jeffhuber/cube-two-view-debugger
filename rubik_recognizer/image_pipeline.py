@@ -443,16 +443,16 @@ def _select_grid_combo(candidates: List[Dict]) -> List[Dict]:
     pool = candidates[:70]
     for i in range(len(pool)):
         a = pool[i]
-        a_set = set(a["matched"])
+        a_set = _candidate_matched_set(a)
         for j in range(i + 1, len(pool)):
             b = pool[j]
-            b_set = set(b["matched"])
+            b_set = _candidate_matched_set(b)
             ab_overlap = len(a_set & b_set)
             if ab_overlap > 5:
                 continue
             for k in range(j + 1, len(pool)):
                 c = pool[k]
-                c_set = set(c["matched"])
+                c_set = _candidate_matched_set(c)
                 overlap = ab_overlap + len(a_set & c_set) + len(b_set & c_set)
                 if overlap > 7:
                     continue
@@ -479,7 +479,8 @@ def _add_supplemental_grids(selected: List[Dict], candidates: List[Dict], max_gr
         key = _candidate_key(candidate)
         if key in selected_keys or face in selected_faces or face not in {"U", "R", "F", "D", "L", "B"}:
             continue
-        if any(len(set(candidate["matched"]) & set(existing["matched"])) > 6 for existing in enriched):
+        matched_set = _candidate_matched_set(candidate)
+        if any(len(matched_set & _candidate_matched_set(existing)) > 6 for existing in enriched):
             continue
         enriched.append(candidate)
         selected_faces.add(face)
@@ -491,7 +492,8 @@ def _add_supplemental_grids(selected: List[Dict], candidates: List[Dict], max_gr
         key = _candidate_key(candidate)
         if key in selected_keys or face not in {"U", "R", "F", "D", "L", "B"}:
             continue
-        if any(len(set(candidate["matched"]) & set(existing["matched"])) > 7 for existing in enriched):
+        matched_set = _candidate_matched_set(candidate)
+        if any(len(matched_set & _candidate_matched_set(existing)) > 7 for existing in enriched):
             continue
         enriched.append(candidate)
         selected_keys.add(key)
@@ -541,11 +543,25 @@ def _add_low_overlap_triple_grids(enriched: List[Dict], candidates: List[Dict], 
 
 
 def _candidate_key(candidate: Dict) -> Tuple[int, ...]:
-    return tuple(sorted(candidate.get("matched", [])))
+    cached = candidate.get("_candidate_key")
+    if isinstance(cached, tuple):
+        return cached
+    key = tuple(sorted(candidate.get("matched", [])))
+    candidate["_candidate_key"] = key
+    return key
+
+
+def _candidate_matched_set(candidate: Dict) -> set[int]:
+    cached = candidate.get("_matched_set")
+    if isinstance(cached, set):
+        return cached
+    matched = set(candidate.get("matched", []))
+    candidate["_matched_set"] = matched
+    return matched
 
 
 def _candidate_component_overlap(candidates: Sequence[Dict]) -> int:
-    matched_sets = [set(candidate.get("matched", [])) for candidate in candidates]
+    matched_sets = [_candidate_matched_set(candidate) for candidate in candidates]
     overlap = 0
     for i, first in enumerate(matched_sets):
         for second in matched_sets[i + 1 :]:

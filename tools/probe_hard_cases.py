@@ -25,9 +25,11 @@ if str(ROOT) not in sys.path:
 from tools.audit_recognition_pair import file_sha256, parse_ground_truth, score_match  # noqa: E402
 from rubik_recognizer.colors import rgb_to_hsv  # noqa: E402
 from rubik_recognizer.recognizer import (  # noqa: E402
+    FACE_ORDER,
     WhiteUpRecognizer,
     _apply_pair_color_calibration,
     _assigned_grid_by_face,
+    _oriented_face_options,
     _public_repair_detail,
     _recognition_workset,
     _validation_failed_checks,
@@ -172,6 +174,79 @@ def repair_probe(
     }
 
 
+def option_coverage_probe(result: Any, expected_state: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    if not expected_state or result.image_a is None or result.image_b is None:
+        return None
+    calibrated_a = copy.deepcopy(result.image_a)
+    calibrated_b = copy.deepcopy(result.image_b)
+    _apply_pair_color_calibration(calibrated_a, calibrated_b)
+    return {
+        "raw": {
+            "imageA": option_coverage_for_analysis(result.image_a, "U", expected_state),
+            "imageB": option_coverage_for_analysis(result.image_b, "D", expected_state),
+        },
+        "calibrated": {
+            "imageA": option_coverage_for_analysis(calibrated_a, "U", expected_state),
+            "imageB": option_coverage_for_analysis(calibrated_b, "D", expected_state),
+        },
+    }
+
+
+def option_coverage_for_analysis(analysis: Any, anchor: str, expected_state: str) -> Dict[str, Any]:
+    options = _oriented_face_options(analysis, anchor)
+    by_face = {}
+    for face in FACE_ORDER:
+        target = expected_state[FACE_ORDER.index(face) * 9 : (FACE_ORDER.index(face) + 1) * 9]
+        scored = []
+        for option_rank, option in enumerate(options):
+            if face not in option:
+                continue
+            state = matrix_face_state(option[face])
+            scored.append(
+                {
+                    "score": score_match(state, target),
+                    "state": state,
+                    "optionRank": option_rank,
+                    "optionScore": round(float(option.get("_score", 0.0)), 4),
+                    "selectionScore": round(float(option.get("_selection_score", 0.0)), 4),
+                    "orientationScore": round(float(option.get("_orientation_score", 0.0)), 4),
+                    "orientationRank": option.get("_orientation_rank"),
+                    "sidePair": side_pair_label(option.get("_side_pair")),
+                    "orderedSidePair": side_pair_label(option.get("_ordered_side_pair")),
+                }
+            )
+        if scored:
+            scored.sort(key=lambda item: (item["score"], -item["optionRank"], item["optionScore"]), reverse=True)
+            by_face[face] = scored[:3]
+    return {
+        "optionCount": len(options),
+        "faces": by_face,
+    }
+
+
+def matrix_face_state(matrix: Sequence[Sequence[Any]]) -> str:
+    values = []
+    for row in matrix:
+        for facelet in row:
+            if isinstance(facelet, str):
+                values.append(facelet)
+                continue
+            match = getattr(facelet, "match", None)
+            if match is not None and getattr(match, "face", None):
+                values.append(match.face)
+            else:
+                values.append(getattr(facelet, "face", "?"))
+    return "".join(values)
+
+
+def side_pair_label(value: Any) -> Optional[str]:
+    if value is None:
+        return None
+    if isinstance(value, str):
+        return value
+    return "/".join(str(part) for part in value)
+
+
 def repair_probe_for_analyses(
     analysis_a: Any,
     analysis_b: Any,
@@ -266,6 +341,7 @@ def probe_pair(
     *,
     include_grid_cells: bool = False,
     include_repair_probe: bool = False,
+    include_option_coverage: bool = False,
 ) -> Dict[str, Any]:
     start = time.perf_counter()
     set_id = str(row.get("setId") or row.get("id") or "")
@@ -345,6 +421,8 @@ def probe_pair(
     }
     if include_repair_probe:
         result_payload["repairProbe"] = repair_probe(result, recognizer, expected_state=canonical_state)
+    if include_option_coverage:
+        result_payload["optionCoverage"] = option_coverage_probe(result, expected_state=canonical_state)
     return result_payload
 
 
@@ -355,6 +433,7 @@ def probe_rows(
     progress: bool = True,
     include_grid_cells: bool = False,
     include_repair_probe: bool = False,
+    include_option_coverage: bool = False,
 ) -> List[Dict[str, Any]]:
     recognizer = WhiteUpRecognizer()
     results: List[Dict[str, Any]] = []
@@ -370,6 +449,7 @@ def probe_rows(
                 recognizer,
                 include_grid_cells=include_grid_cells,
                 include_repair_probe=include_repair_probe,
+                include_option_coverage=include_option_coverage,
             )
         )
     return results
@@ -418,6 +498,11 @@ def main() -> int:
         action="store_true",
         help="Run the expensive direct/repair candidate probe for raw and calibrated analyses.",
     )
+    parser.add_argument(
+        "--include-option-coverage",
+        action="store_true",
+        help="When ground truth is available, score generated oriented face options against it.",
+    )
     parser.add_argument("--fail-on-target", action="store_true", help="Exit non-zero if any targeted row misses its target.")
     args = parser.parse_args()
 
@@ -438,6 +523,7 @@ def main() -> int:
         progress=not args.no_progress,
         include_grid_cells=args.include_grid_cells,
         include_repair_probe=args.include_repair_probe,
+        include_option_coverage=args.include_option_coverage,
     )
     if args.json_output:
         write_json(Path(args.json_output).expanduser(), results, manifest)

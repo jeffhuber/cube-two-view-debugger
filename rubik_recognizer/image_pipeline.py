@@ -587,6 +587,8 @@ def _score_grid(points: np.ndarray, indices: List[int], origin: np.ndarray, u: n
     errors = []
     tolerance = max(12.0, spacing * 0.44)
     available = set(indices)
+    point_xs = points[:, 0]
+    point_ys = points[:, 1]
     for r in range(3):
         row = []
         match_row: List[Optional[int]] = []
@@ -595,7 +597,15 @@ def _score_grid(points: np.ndarray, indices: List[int], origin: np.ndarray, u: n
             px = float(predicted[0])
             py = float(predicted[1])
             row.append((px, py))
-            best_idx, best_dist = _nearest_available_point(points, available, px, py, tolerance)
+            best_idx, best_dist = _nearest_available_point(
+                points,
+                available,
+                px,
+                py,
+                tolerance,
+                point_xs=point_xs,
+                point_ys=point_ys,
+            )
             if best_idx is not None:
                 matched.append(best_idx)
                 errors.append(float(best_dist))
@@ -649,10 +659,20 @@ def _score_grid_centers(points: np.ndarray, indices: List[int], centers: List[Li
     matched = []
     errors = []
     cell_matches: List[List[Optional[int]]] = []
+    point_xs = points[:, 0]
+    point_ys = points[:, 1]
     for row in centers:
         match_row: List[Optional[int]] = []
         for center in row:
-            best_idx, best_dist = _nearest_available_point(points, available, float(center[0]), float(center[1]), tolerance)
+            best_idx, best_dist = _nearest_available_point(
+                points,
+                available,
+                float(center[0]),
+                float(center[1]),
+                tolerance,
+                point_xs=point_xs,
+                point_ys=point_ys,
+            )
             if best_idx is not None:
                 matched.append(best_idx)
                 errors.append(float(best_dist))
@@ -674,17 +694,28 @@ def _nearest_available_point(
     px: float,
     py: float,
     tolerance: float,
+    *,
+    point_xs: Optional[np.ndarray] = None,
+    point_ys: Optional[np.ndarray] = None,
 ) -> Tuple[Optional[int], Optional[float]]:
     best_idx = None
     best_dist_sq = tolerance * tolerance
-    for idx in available:
-        point = points[idx]
-        dx = float(point[0]) - px
-        dy = float(point[1]) - py
-        dist_sq = dx * dx + dy * dy
-        if dist_sq < best_dist_sq:
-            best_idx = idx
-            best_dist_sq = dist_sq
+    if point_xs is not None and point_ys is not None:
+        for idx in available:
+            dx = float(point_xs[idx]) - px
+            dy = float(point_ys[idx]) - py
+            dist_sq = dx * dx + dy * dy
+            if dist_sq < best_dist_sq:
+                best_idx = idx
+                best_dist_sq = dist_sq
+    else:
+        for idx in available:
+            dx = float(points[idx, 0]) - px
+            dy = float(points[idx, 1]) - py
+            dist_sq = dx * dx + dy * dy
+            if dist_sq < best_dist_sq:
+                best_idx = idx
+                best_dist_sq = dist_sq
     if best_idx is None:
         return None, None
     return best_idx, math.sqrt(best_dist_sq)

@@ -117,8 +117,8 @@ def test_repair_probe_reports_direct_and_repair_candidates(monkeypatch):
     workset = SimpleNamespace(options_a=[object()], options_b=[object(), object()], merged_candidates=[])
     recognizer = SimpleNamespace(
         _state_candidates_from_workset=lambda candidate_workset: [
-            ("bad", 0.0, {}),
-            ("good", 0.0, {}),
+            ("R" * 54, 0.6, {"sidePairA": "B/R", "sidePairB": "F/L"}),
+            ("U" * 54, 0.4, {"sidePairA": "F/R", "sidePairB": "B/L"}),
         ],
         _legal_repair_candidate_details_from_workset=lambda candidate_workset, *, release_merged_candidates: [
             {
@@ -131,7 +131,7 @@ def test_repair_probe_reports_direct_and_repair_candidates(monkeypatch):
     )
 
     def fake_validate_state(state):
-        return SimpleNamespace(valid=state == "good", errors=[] if state == "good" else ["R_count_not_9"])
+        return SimpleNamespace(valid=state == "U" * 54, errors=[] if state == "U" * 54 else ["R_count_not_9"])
 
     monkeypatch.setattr(probe_hard_cases, "_white_up_checks", lambda analysis_a, analysis_b: [])
     monkeypatch.setattr(probe_hard_cases, "_recognition_workset", lambda analysis_a, analysis_b: workset)
@@ -151,6 +151,9 @@ def test_repair_probe_reports_direct_and_repair_candidates(monkeypatch):
     assert probe["directCandidateCount"] == 2
     assert probe["directLegalCount"] == 1
     assert probe["directFailedChecks"] == ["R_count_not_9", "red_orange_pair_calibration_suspected"]
+    assert probe["topDirectCandidatesByScore"][0]["state"] == "U" * 54
+    assert probe["topDirectCandidatesByScore"][0]["score"] == 54
+    assert probe["topDirectCandidatesByScore"][0]["sidePairA"] == "F/R"
     assert probe["repairCandidateCount"] == 1
     assert probe["topRepairCandidates"][0]["repairCost"] == 12.5
     assert probe["topRepairCandidates"][0]["score"] == 54

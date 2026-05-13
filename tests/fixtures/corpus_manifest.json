@@ -225,7 +225,7 @@
       "expectedCategory": "reject_retake",
       "expectedScoreFloor": null,
       "currentScoreObserved": 0,
-      "notes": "Known rejected color/grid evidence collapse; image B D/yellow anchor is weak and merged candidates have invalid face counts."
+      "notes": "Known rejected color/grid evidence collapse; image B D/yellow anchor is weak (5/9 matched) and is rejected before merged-candidate generation."
     }
   ]
 }

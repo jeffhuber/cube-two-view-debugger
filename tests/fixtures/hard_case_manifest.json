@@ -152,8 +152,13 @@
       "expectedScoreOnceFixed": null,
       "currentStatus": "rejected",
       "currentCategory": "reject_retake",
-      "currentCandidates": 16060,
+      "currentCandidates": 0,
       "currentFailedChecks": [
+        "image_b_D_anchor_weak"
+      ],
+      "targetStatus": "rejected",
+      "targetCategory": "reject_retake",
+      "targetFailedChecksAbsent": [
         "B_count_not_9",
         "D_count_not_9",
         "F_count_not_9",
@@ -161,7 +166,7 @@
         "R_count_not_9",
         "U_count_not_9"
       ],
-      "notes": "Filed as a yellow/white color classification case. Recognition PR 2 diagnostics show the selected D center is strongly yellow; the current failure is a weak 5/9 D anchor plus merged-candidate face-count imbalance with high white count."
+      "notes": "Filed as a yellow/white color classification case. Recognition PR 2 diagnostics show the selected D center is strongly yellow. Recognition PR 3 rejects this weak 5/9 D anchor before generating invalid merged candidates."
     }
   ]
 }

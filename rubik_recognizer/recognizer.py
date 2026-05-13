@@ -50,6 +50,7 @@ MAX_VISIBLE_FACE_TRIPLES = 42
 MAX_ORIENTATION_VARIANTS_PER_TRIPLE = 96
 LOOSE_TRANSFORMS_PER_FACE = 8
 ORIENTATION_SCORE_WEIGHT = 8.0
+MIN_IMAGE_B_D_ANCHOR_MATCHED_COUNT = 6
 ANCHOR_FACE_EDGE_MATCH_WEIGHT = 2.0
 SIDE_ANCHOR_EDGE_MATCH_WEIGHT = 3.0
 SIDE_NEIGHBOR_EDGE_MATCH_WEIGHT = 1.0
@@ -1034,6 +1035,8 @@ def _white_up_checks(analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> Li
         assignments = _assigned_grid_by_face(analysis, anchor)
         if anchor not in assignments:
             checks.append(f"{label}_{anchor}_anchor_missing")
+        elif label == "image_b" and anchor == "D" and _down_anchor_grid_too_weak(assignments[anchor]):
+            checks.append("image_b_D_anchor_weak")
         if _can_rank_grid_triples(analysis):
             groups = _candidate_grids_by_face(analysis, anchor)
             if anchor in groups and not _ranked_visible_face_triples(groups, anchor):
@@ -1054,6 +1057,8 @@ def _reason_for_checks(checks: Sequence[str]) -> str:
         return "Image A must contain the white/U center face; a logo is allowed if the sampled center is still white-ish."
     if "image_b_D_anchor_missing" in checks:
         return "Image B must contain the yellow/D center face after the flip."
+    if "image_b_D_anchor_weak" in checks:
+        return "Image B contains a weak yellow/D center grid; retake with a clearer yellow-up face."
     if "image_a_no_reliable_face_triple" in checks:
         return "Image A did not contain a reliable non-overlapping three-face grid."
     if "image_b_no_reliable_face_triple" in checks:
@@ -1061,6 +1066,10 @@ def _reason_for_checks(checks: Sequence[str]) -> str:
     if "missing_side_face_coverage" in checks:
         return "The two flip photos do not expose all four side face centers."
     return "The images did not satisfy the two-view flip recognition prerequisites."
+
+
+def _down_anchor_grid_too_weak(grid: FaceGrid) -> bool:
+    return grid.matched_count < MIN_IMAGE_B_D_ANCHOR_MATCHED_COUNT
 
 
 def _apply_pair_color_calibration(analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> None:

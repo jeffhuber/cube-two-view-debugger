@@ -71,6 +71,9 @@ def target_failures(row: Dict[str, Any], payload: Dict[str, Any], *, input_drift
     for check in row.get("targetFailedChecksAbsent") or []:
         if check in failed_checks:
             failures.append(f"target_check_still_present:{check}")
+    for check in row.get("targetFailedChecksPresent") or []:
+        if check not in failed_checks:
+            failures.append(f"target_check_missing:{check}")
     expected_status = row.get("targetStatus")
     if expected_status and payload.get("status") != expected_status:
         failures.append(f"target_status_mismatch:{expected_status}")
@@ -174,7 +177,16 @@ def probe_pair(
         score = score_match(payload.get("state") or "", canonical_state)
         payload["score"] = score
     failures = target_failures(row, payload, input_drift=input_drift)
-    has_target = any(row.get(key) is not None for key in ("targetFailedChecksAbsent", "targetStatus", "targetCategory", "expectedScoreOnceFixed"))
+    has_target = any(
+        row.get(key) is not None
+        for key in (
+            "targetFailedChecksAbsent",
+            "targetFailedChecksPresent",
+            "targetStatus",
+            "targetCategory",
+            "expectedScoreOnceFixed",
+        )
+    )
 
     result_payload = {
         "setId": set_id,
@@ -196,6 +208,7 @@ def probe_pair(
         "currentFailedChecks": row.get("currentFailedChecks", row.get("baselineFailedChecks")) or [],
         "currentCandidates": row.get("currentCandidates"),
         "targetFailedChecksAbsent": row.get("targetFailedChecksAbsent") or [],
+        "targetFailedChecksPresent": row.get("targetFailedChecksPresent") or [],
         "expectedScoreOnceFixed": row.get("expectedScoreOnceFixed"),
         "targetPassed": (not failures) if has_target else None,
         "targetFailures": failures,

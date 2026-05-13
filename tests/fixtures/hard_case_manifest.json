@@ -39,9 +39,13 @@
         "F_count_not_9",
         "L_count_not_9",
         "R_count_not_9",
-        "U_count_not_9"
+        "U_count_not_9",
+        "red_orange_pair_calibration_suspected"
       ],
-      "notes": "Unresolved color classification / pair calibration case."
+      "targetFailedChecksPresent": [
+        "red_orange_pair_calibration_suspected"
+      ],
+      "notes": "Unresolved color classification / pair calibration case. Recognition PR 6 tags the opposing red/orange skew for safer app-side routing."
     },
     {
       "setId": "21",
@@ -60,9 +64,13 @@
         "B_count_not_9",
         "L_count_not_9",
         "R_count_not_9",
-        "U_count_not_9"
+        "U_count_not_9",
+        "red_orange_pair_calibration_suspected"
       ],
-      "notes": "Unresolved color classification / pair calibration case."
+      "targetFailedChecksPresent": [
+        "red_orange_pair_calibration_suspected"
+      ],
+      "notes": "Unresolved color classification / pair calibration case. Recognition PR 6 tags the opposing red/orange skew for safer app-side routing."
     },
     {
       "setId": "22",
@@ -78,9 +86,13 @@
       "currentCategory": "reject_retake",
       "currentCandidates": 56265,
       "currentFailedChecks": [
-        "piece_legality_invalid"
+        "piece_legality_invalid",
+        "red_orange_pair_calibration_suspected"
       ],
-      "notes": "Unresolved balanced red/orange drift that reaches cubie legality."
+      "targetFailedChecksPresent": [
+        "red_orange_pair_calibration_suspected"
+      ],
+      "notes": "Unresolved balanced red/orange drift that reaches cubie legality. Recognition PR 6 tags the opposing red/orange skew before any color-boundary change."
     },
     {
       "setId": "25",

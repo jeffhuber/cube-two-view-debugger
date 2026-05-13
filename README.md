@@ -305,9 +305,11 @@ yet have labelled ground truth in the scored corpus:
 
 The default manifest is `tests/fixtures/hard_case_manifest.json`. It currently tracks Sets 17, 21,
 22, 25, 30, 39, and 44 with their issue numbers, SHA256 image hashes, current status/category,
-current failed checks, optional ground-truth paths, and any PR-specific target checks. Rows without
-target checks are informational; they document known open bugs without making every robustness
-investigation solve all of them at once.
+current failed checks, optional ground-truth paths, and any PR-specific target checks. Target checks
+can assert that a failed check is either absent or present, which lets diagnostic PRs pin better
+failure routing without claiming the image set is recognized. Rows without target checks are
+informational; they document known open bugs without making every robustness investigation solve all
+of them at once.
 
 For color and grid-sampling investigations, add `--include-grid-cells` to include per-cell RGB,
 HSV, classifier confidence, and nearest color alternatives for the assigned grids:

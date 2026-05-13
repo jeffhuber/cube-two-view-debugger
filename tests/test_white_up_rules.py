@@ -4,6 +4,7 @@ from pathlib import Path
 import rubik_recognizer.recognizer as recognizer
 from rubik_recognizer.recognizer import (
     PIECE_CONFLICT_KEYS,
+    RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK,
     RecognitionResult,
     RecognitionWorkset,
     WhiteUpRecognizer,
@@ -14,6 +15,7 @@ from rubik_recognizer.recognizer import (
     _prefer_calibrated_result,
     _recognition_category_payload,
     _repair_ranking_penalty,
+    _validation_failed_checks,
     _selected_faces_by_image,
     _selected_sides_by_image,
     _state_to_capture_yaw,
@@ -184,6 +186,24 @@ def test_recognize_from_analyses_skips_repair_for_low_direct_candidate_count(mon
     assert result.recognition_signals["repairCandidateCount"] == 0
     assert result.recognition_signals["topRepairCandidates"] == []
     assert calls == {"workset": 1, "direct": 1, "repair": 0}
+
+
+def test_validation_failed_checks_tags_opposing_red_orange_skew():
+    a = StubAnalysis(["R", "R", "R", "R", "R", "L", "L"])
+    b = StubAnalysis(["L", "L", "L", "L", "L", "R", "R"])
+
+    checks = _validation_failed_checks(["R_count_not_9"], a, b)
+
+    assert checks == ["R_count_not_9", RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK]
+
+
+def test_validation_failed_checks_ignores_one_sided_red_orange_skew():
+    a = StubAnalysis(["R", "R", "R", "L", "L"])
+    b = StubAnalysis(["B", "F", "U", "D"])
+
+    checks = _validation_failed_checks(["R_count_not_9"], a, b)
+
+    assert checks == ["R_count_not_9"]
 
 
 def test_state_candidates_reuse_facelet_options_cache(monkeypatch):

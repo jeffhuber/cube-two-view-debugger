@@ -1,6 +1,8 @@
 from pathlib import Path
+from types import SimpleNamespace
 
-from tools.probe_hard_cases import grid_cell_diagnostics, load_manifest_document, target_failures
+import tools.probe_hard_cases as probe_hard_cases
+from tools.probe_hard_cases import grid_cell_diagnostics, load_manifest_document, repair_probe_for_analyses, target_failures
 
 
 def test_hard_case_manifest_records_open_issue_sets():
@@ -24,8 +26,9 @@ def test_hard_case_manifest_records_open_issue_sets():
         "missing_side_face_coverage",
     ]
     assert rows["39"]["currentFailedChecks"] == ["piece_legality_invalid"]
-    assert rows["44"]["groundTruthPath"]
-    assert rows["44"]["groundTruth_sha256_expected"]
+    for set_id in ("17", "21", "22", "44"):
+        assert rows[set_id]["groundTruthPath"]
+        assert rows[set_id]["groundTruth_sha256_expected"]
     for row in rows.values():
         assert row["imageA_sha256_expected"]
         assert row["imageB_sha256_expected"]
@@ -108,3 +111,55 @@ def test_grid_cell_diagnostics_records_rgb_and_alternatives():
     assert cell["color"] == "yellow"
     assert cell["face"] == "D"
     assert cell["alternatives"][0] == {"color": "yellow", "distance": 1.25}
+
+
+def test_repair_probe_reports_direct_and_repair_candidates(monkeypatch):
+    workset = SimpleNamespace(options_a=[object()], options_b=[object(), object()], merged_candidates=[])
+    recognizer = SimpleNamespace(
+        _state_candidates_from_workset=lambda candidate_workset: [
+            ("bad", 0.0, {}),
+            ("good", 0.0, {}),
+        ],
+        _legal_repair_candidate_details_from_workset=lambda candidate_workset, *, release_merged_candidates: [
+            {
+                "state": "U" * 54,
+                "confidence": 0.5,
+                "repairCost": 12.5,
+                "repairChanges": 4,
+            }
+        ],
+    )
+
+    def fake_validate_state(state):
+        return SimpleNamespace(valid=state == "good", errors=[] if state == "good" else ["R_count_not_9"])
+
+    monkeypatch.setattr(probe_hard_cases, "_white_up_checks", lambda analysis_a, analysis_b: [])
+    monkeypatch.setattr(probe_hard_cases, "_recognition_workset", lambda analysis_a, analysis_b: workset)
+    monkeypatch.setattr(probe_hard_cases, "validate_state", fake_validate_state)
+    monkeypatch.setattr(
+        probe_hard_cases,
+        "_validation_failed_checks",
+        lambda invalid_reasons, analysis_a, analysis_b: ["R_count_not_9", "red_orange_pair_calibration_suspected"],
+    )
+
+    probe = repair_probe_for_analyses(object(), object(), recognizer, expected_state="U" * 54)
+
+    assert probe["status"] == "probed"
+    assert probe["optionsA"] == 1
+    assert probe["optionsB"] == 2
+    assert probe["mergedCandidateCount"] == 0
+    assert probe["directCandidateCount"] == 2
+    assert probe["directLegalCount"] == 1
+    assert probe["directFailedChecks"] == ["R_count_not_9", "red_orange_pair_calibration_suspected"]
+    assert probe["repairCandidateCount"] == 1
+    assert probe["topRepairCandidates"][0]["repairCost"] == 12.5
+    assert probe["topRepairCandidates"][0]["score"] == 54
+
+
+def test_repair_probe_short_circuits_white_up_rejections(monkeypatch):
+    monkeypatch.setattr(probe_hard_cases, "_white_up_checks", lambda analysis_a, analysis_b: ["image_b_D_anchor_missing"])
+
+    probe = repair_probe_for_analyses(object(), object(), SimpleNamespace())
+
+    assert probe["status"] == "white_up_rejected"
+    assert probe["whiteUpChecks"] == ["image_b_D_anchor_missing"]

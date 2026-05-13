@@ -326,6 +326,12 @@ include `recognitionSignals.pairColorCalibration`. The hard-case probe copies th
 red/orange counts, calibration anchor counts, and the red/orange adaptive palette without changing
 recognition behavior.
 
+For deeper repair-feasibility investigations, add `--include-repair-probe`. This optional pass is
+expensive: it runs direct validation and cubie-level repair on both raw and calibrated analyses, then
+records candidate counts, failed checks, repair timings, and the top repair candidates. When the
+manifest row has ground truth, each top repair candidate also reports its 54-sticker score. Use this
+on a small `--set-id` selection rather than the whole hard-case manifest unless you really want to wait.
+
 ## How Recognition Works
 
 The recognizer is a CV-first pipeline with cube-constraint validation at the end. It intentionally

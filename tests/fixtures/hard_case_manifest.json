@@ -28,7 +28,8 @@
       "imageBPath": "/Users/jhuber/Downloads/Set 17 - B - white up.JPG",
       "imageA_sha256_expected": "fab9622d69167e1808dcb53115bb802654f28b09b8cf399f116222dd830e12c2",
       "imageB_sha256_expected": "ec886dbdc33632585caee6c142218ae12148a9a727b5635862f6c10a153c1fed",
-      "groundTruthPath": null,
+      "groundTruthPath": "/Users/jhuber/Downloads/Set 17 - cube-ground-truth-1778698523609.json",
+      "groundTruth_sha256_expected": "ae661de6918866d8e63d4945d4c7c7b24ee39f8b2b23eb09c1485a4f663a9657",
       "expectedScoreOnceFixed": null,
       "currentStatus": "rejected",
       "currentCategory": "reject_retake",
@@ -45,7 +46,7 @@
       "targetFailedChecksPresent": [
         "red_orange_pair_calibration_suspected"
       ],
-      "notes": "Unresolved color classification / pair calibration case. Recognition PR 6 tags the opposing red/orange skew for safer app-side routing."
+      "notes": "Unresolved color classification / pair calibration case. Recognition PR 6 tags the opposing red/orange skew for safer app-side routing. Ground truth is available for scoring future repair attempts."
     },
     {
       "setId": "21",
@@ -55,7 +56,8 @@
       "imageBPath": "/Users/jhuber/Downloads/Set 21 - B - white up.JPG",
       "imageA_sha256_expected": "07815296421057e8cd9cb1a0a1795f5c095eeababbcffcc3aa9009593a47106b",
       "imageB_sha256_expected": "0f38063c582f6ee2bcdfcc41b385fc86a7591038a90f8fe2bab06ff5f1524a85",
-      "groundTruthPath": null,
+      "groundTruthPath": "/Users/jhuber/Downloads/Set 21 - cube-ground-truth-1778698843952.json",
+      "groundTruth_sha256_expected": "820a624082eebd4d2e96c51ddc70e53e2d692710fecbd121f13b415b5aee0e62",
       "expectedScoreOnceFixed": null,
       "currentStatus": "rejected",
       "currentCategory": "reject_retake",
@@ -70,7 +72,7 @@
       "targetFailedChecksPresent": [
         "red_orange_pair_calibration_suspected"
       ],
-      "notes": "Unresolved color classification / pair calibration case. Recognition PR 6 tags the opposing red/orange skew for safer app-side routing."
+      "notes": "Unresolved color classification / pair calibration case. Recognition PR 6 tags the opposing red/orange skew for safer app-side routing. Ground truth is available for scoring future repair attempts."
     },
     {
       "setId": "22",
@@ -80,7 +82,8 @@
       "imageBPath": "/Users/jhuber/Downloads/Set 22 - B - white up.JPG",
       "imageA_sha256_expected": "570dc99c76889f3dc0745f983271c1433cc6e00cc7e45402aca8e14de1410851",
       "imageB_sha256_expected": "bf32a69619eb86a700e1c1020df87bb4785ef8ed4dd6839890252c86052a370a",
-      "groundTruthPath": null,
+      "groundTruthPath": "/Users/jhuber/Downloads/Set 22 - cube-ground-truth-1778699416367.json",
+      "groundTruth_sha256_expected": "64d56ccb7828102966da471c5534db8962545c04efd25f20daa7f40944262cf5",
       "expectedScoreOnceFixed": null,
       "currentStatus": "rejected",
       "currentCategory": "reject_retake",
@@ -92,7 +95,7 @@
       "targetFailedChecksPresent": [
         "red_orange_pair_calibration_suspected"
       ],
-      "notes": "Unresolved balanced red/orange drift that reaches cubie legality. Recognition PR 6 tags the opposing red/orange skew before any color-boundary change."
+      "notes": "Unresolved balanced red/orange drift that reaches cubie legality. Recognition PR 6 tags the opposing red/orange skew before any color-boundary change. Ground truth is available for scoring future repair attempts."
     },
     {
       "setId": "25",

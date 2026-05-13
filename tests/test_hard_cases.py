@@ -26,8 +26,9 @@ def test_hard_case_manifest_records_open_issue_sets():
         "missing_side_face_coverage",
     ]
     assert rows["39"]["currentFailedChecks"] == ["piece_legality_invalid"]
-    assert rows["44"]["groundTruthPath"]
-    assert rows["44"]["groundTruth_sha256_expected"]
+    for set_id in ("17", "21", "22", "44"):
+        assert rows[set_id]["groundTruthPath"]
+        assert rows[set_id]["groundTruth_sha256_expected"]
     for row in rows.values():
         assert row["imageA_sha256_expected"]
         assert row["imageB_sha256_expected"]
@@ -141,7 +142,7 @@ def test_repair_probe_reports_direct_and_repair_candidates(monkeypatch):
         lambda invalid_reasons, analysis_a, analysis_b: ["R_count_not_9", "red_orange_pair_calibration_suspected"],
     )
 
-    probe = repair_probe_for_analyses(object(), object(), recognizer)
+    probe = repair_probe_for_analyses(object(), object(), recognizer, expected_state="U" * 54)
 
     assert probe["status"] == "probed"
     assert probe["optionsA"] == 1
@@ -152,6 +153,7 @@ def test_repair_probe_reports_direct_and_repair_candidates(monkeypatch):
     assert probe["directFailedChecks"] == ["R_count_not_9", "red_orange_pair_calibration_suspected"]
     assert probe["repairCandidateCount"] == 1
     assert probe["topRepairCandidates"][0]["repairCost"] == 12.5
+    assert probe["topRepairCandidates"][0]["score"] == 54
 
 
 def test_repair_probe_short_circuits_white_up_rejections(monkeypatch):

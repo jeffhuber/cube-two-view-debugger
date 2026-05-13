@@ -145,19 +145,40 @@ def image_diagnostics(result: Any, *, include_grid_cells: bool) -> Dict[str, Any
     return diagnostics
 
 
-def repair_probe(result: Any, recognizer: WhiteUpRecognizer) -> Optional[Dict[str, Any]]:
+def repair_probe(
+    result: Any,
+    recognizer: WhiteUpRecognizer,
+    *,
+    expected_state: Optional[str] = None,
+) -> Optional[Dict[str, Any]]:
     if result.image_a is None or result.image_b is None:
         return None
     calibrated_a = copy.deepcopy(result.image_a)
     calibrated_b = copy.deepcopy(result.image_b)
     _apply_pair_color_calibration(calibrated_a, calibrated_b)
     return {
-        "raw": repair_probe_for_analyses(result.image_a, result.image_b, recognizer),
-        "calibrated": repair_probe_for_analyses(calibrated_a, calibrated_b, recognizer),
+        "raw": repair_probe_for_analyses(
+            result.image_a,
+            result.image_b,
+            recognizer,
+            expected_state=expected_state,
+        ),
+        "calibrated": repair_probe_for_analyses(
+            calibrated_a,
+            calibrated_b,
+            recognizer,
+            expected_state=expected_state,
+        ),
     }
 
 
-def repair_probe_for_analyses(analysis_a: Any, analysis_b: Any, recognizer: WhiteUpRecognizer) -> Dict[str, Any]:
+def repair_probe_for_analyses(
+    analysis_a: Any,
+    analysis_b: Any,
+    recognizer: WhiteUpRecognizer,
+    *,
+    expected_state: Optional[str] = None,
+) -> Dict[str, Any]:
     start = time.perf_counter()
     checks = _white_up_checks(analysis_a, analysis_b)
     if checks:
@@ -191,12 +212,26 @@ def repair_probe_for_analyses(analysis_a: Any, analysis_b: Any, recognizer: Whit
         "directLegalCount": direct_legal_count,
         "directFailedChecks": failed_checks,
         "repairCandidateCount": len(repair_details),
-        "topRepairCandidates": [_public_repair_detail(item) for item in repair_details[:3]],
+        "topRepairCandidates": repair_probe_public_details(repair_details[:3], expected_state=expected_state),
         "timings": {
             "repairSeconds": round(time.perf_counter() - repair_start, 4),
             "totalSeconds": round(time.perf_counter() - start, 4),
         },
     }
+
+
+def repair_probe_public_details(
+    repair_details: Sequence[Dict[str, Any]],
+    *,
+    expected_state: Optional[str] = None,
+) -> List[Dict[str, Any]]:
+    public = []
+    for item in repair_details:
+        detail = _public_repair_detail(item)
+        if expected_state:
+            detail["score"] = score_match(str(detail.get("state") or ""), expected_state)
+        public.append(detail)
+    return public
 
 
 def probe_pair(
@@ -238,6 +273,7 @@ def probe_pair(
     payload = result.to_api_dict(include_overlays=False)
     signals = payload.get("recognitionSignals") or {}
     score: Optional[int] = None
+    canonical_state: Optional[str] = None
     if truth_path is not None:
         _, _, canonical_state, _ = parse_ground_truth(str(truth_path))
         score = score_match(payload.get("state") or "", canonical_state)
@@ -283,7 +319,7 @@ def probe_pair(
         "timings": {"totalSeconds": round(time.perf_counter() - start, 4)},
     }
     if include_repair_probe:
-        result_payload["repairProbe"] = repair_probe(result, recognizer)
+        result_payload["repairProbe"] = repair_probe(result, recognizer, expected_state=canonical_state)
     return result_payload
 
 

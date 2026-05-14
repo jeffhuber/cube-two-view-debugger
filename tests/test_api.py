@@ -655,3 +655,113 @@ def test_write_boot_record_swallows_oserror(monkeypatch, capsys):
     # Stderr banner still went out.
     err = capsys.readouterr().err
     assert "[rubik-app]   identity:" in err
+
+
+def test_default_log_path_for_default_port_is_canonical():
+    """Port 8080 (the convention default) writes to the bare canonical
+    path so the documented `grep | tail -1` lookup keeps working."""
+    from app import _DEFAULT_SERVER_LOG_PATH, _default_log_path_for_port
+
+    assert _default_log_path_for_port(8080) == _DEFAULT_SERVER_LOG_PATH
+
+
+def test_default_log_path_for_alt_port_is_port_specific():
+    """Codex review on PR #75: alternate ports must NOT pollute the
+    canonical file. A server started on, say, --port 8085 from another
+    checkout would otherwise land its identity in
+    /tmp/cv-local-server.log and make `tail -1` misreport "which code
+    is :8080 serving?".
+
+    Pins the per-port path so a future refactor doesn't drift back
+    into the unsafe shared-path mode."""
+    from app import _default_log_path_for_port
+    from pathlib import Path
+
+    assert _default_log_path_for_port(8085) == Path("/tmp/cv-local-server-8085.log")
+    assert _default_log_path_for_port(9999) == Path("/tmp/cv-local-server-9999.log")
+    # And port 8080 still resolves to the canonical (sanity check the boundary).
+    assert _default_log_path_for_port(8080) == Path("/tmp/cv-local-server.log")
+
+
+def test_write_boot_record_uses_port_specific_path_for_alt_port(
+    tmp_path, monkeypatch, capsys
+):
+    """End-to-end: when no env override is set and port != 8080, the
+    boot record lands in /tmp/cv-local-server-<port>.log, NOT the
+    canonical file. Demonstrates the Codex isolation fix.
+
+    Uses tmp_path via monkeypatched module constants to avoid writing
+    under /tmp during tests."""
+    import app as app_module
+
+    # Redirect both possible default targets into tmp_path so the test
+    # doesn't depend on /tmp state.
+    canonical = tmp_path / "cv-local-server.log"
+    alt = tmp_path / "cv-local-server-8085.log"
+    monkeypatch.setattr(app_module, "_DEFAULT_SERVER_LOG_PATH", canonical)
+
+    # Patch the path resolver to write under tmp_path for the alt port.
+    original_resolver = app_module._default_log_path_for_port
+
+    def _resolver(port: int):
+        if port == 8080:
+            return canonical
+        return tmp_path / f"cv-local-server-{port}.log"
+
+    monkeypatch.setattr(app_module, "_default_log_path_for_port", _resolver)
+
+    diag = {
+        "git": {
+            "sha": "abc1234",
+            "branch": "main",
+            "cwd": "/tmp/some-checkout",
+            "commitsBehindAtStart": 0,
+        },
+        "python": {"version": "3.12.13"},
+        "libraries": {"pillow": "12.2.0", "numpy": "2.3.5"},
+    }
+
+    app_module._write_boot_record("127.0.0.1", 8085, diag)
+
+    assert alt.exists(), "alt-port boot record should land in port-specific file"
+    assert "8085" in alt.read_text()
+    assert "/tmp/some-checkout @ abc1234" in alt.read_text()
+    # Canonical file must NOT have been touched.
+    assert not canonical.exists(), (
+        "alternate-port boot must not pollute the canonical /tmp/cv-local-server.log"
+    )
+
+    # Now a port 8080 boot should land in canonical.
+    app_module._write_boot_record("127.0.0.1", 8080, diag)
+    assert canonical.exists()
+    assert "8080" in canonical.read_text()
+
+    # Restore (defensive — monkeypatch handles teardown but explicit).
+    monkeypatch.setattr(app_module, "_default_log_path_for_port", original_resolver)
+
+
+def test_write_boot_record_env_var_overrides_port_default(tmp_path, monkeypatch):
+    """CV_LOCAL_SERVER_LOG still wins over the port-based default.
+    Test harnesses depend on this — without it, the test infrastructure
+    would have to know about the port-aware path scheme."""
+    from app import _write_boot_record
+
+    override = tmp_path / "custom.log"
+    monkeypatch.setenv("CV_LOCAL_SERVER_LOG", str(override))
+
+    diag = {
+        "git": {
+            "sha": "abc1234",
+            "branch": "main",
+            "cwd": "/tmp/checkout",
+            "commitsBehindAtStart": 0,
+        },
+        "python": {"version": "3.12.13"},
+        "libraries": {"pillow": "12.2.0", "numpy": "2.3.5"},
+    }
+    # Use a non-default port to make sure the env var beats the
+    # port-specific default (not just the canonical one).
+    _write_boot_record("127.0.0.1", 8085, diag)
+
+    assert override.exists()
+    assert "abc1234" in override.read_text()

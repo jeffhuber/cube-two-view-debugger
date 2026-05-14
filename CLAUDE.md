@@ -124,29 +124,57 @@ from your own repo.
 | Codex  | `/Users/jhuber/Documents/Codex/.../i-want-to-create-a-rubik` |
 
 If you're Claude or Codex and your work needs to be the active
-server, restart from your own canonical path:
+server, restart from your own canonical path. **Redirect stderr to
+a separate file**, not the canonical log:
 
 ```bash
 cd <your_canonical_path>
-nohup .venv/bin/python app.py > /tmp/cv-local-server.log 2>&1 &
+nohup .venv/bin/python app.py > /tmp/cv-local-stderr.log 2>&1 &
 ```
 
-The startup banner is appended to `/tmp/cv-local-server.log` by
-`app.py` itself (in addition to stderr), so the grep below answers
-"which code is :8080 serving?" even when a different agent's
-restart used a different stderr redirect. Use `tail -1` to get the
-most recent boot:
+Two-file separation (Devin / Codex review on PR #75): the boot
+banner is appended to `/tmp/cv-local-server.log` by `app.py`
+itself (app-owned, append, audit trail). The shell-inherited
+stderr fd goes to `/tmp/cv-local-stderr.log` (request logs,
+tracebacks). Reasons to keep them separate:
+
+1. **Truncation surface.** Sharing the path via `>` would truncate
+   the canonical file before Python starts, defeating the
+   "accumulates an audit trail" property.
+2. **fd race.** Even with `>>`, two file descriptors point at the
+   same file — one with `O_APPEND` (the app's `open(..., 'a')`),
+   one without (the shell-inherited stderr fd from `>>`). Devin
+   reproduced concurrent writes from these two fds partially
+   overwriting the boot record. Separating the streams sidesteps
+   the race entirely.
+
+Use `tail -1` to get the most recent boot's identity:
 
 ```bash
 grep "identity:" /tmp/cv-local-server.log | tail -1
 # [rubik-app]   identity: /Users/jhuber/cube-two-view-debugger @ d594e4a (main)
 ```
 
+For request logs / tracebacks (separate concern):
+
+```bash
+tail -f /tmp/cv-local-stderr.log
+```
+
 Override the canonical log path with the `CV_LOCAL_SERVER_LOG`
 environment variable if you need to (test harnesses do this).
-Append mode means the file accumulates an audit trail of boots
-rather than overwriting; if you want a fresh log, truncate it
-yourself before restarting.
+Append mode means the canonical file accumulates an audit trail
+of boots rather than overwriting; if you want a fresh log,
+truncate it yourself (`: > /tmp/cv-local-server.log`) before
+restarting.
+
+**Non-default ports.** Servers started on alternate ports
+(`app.py --port 8085`) write their boot record to
+`/tmp/cv-local-server-<port>.log` instead, so they cannot
+pollute the canonical file's `tail -1` identity for :8080.
+The grep convention above is :8080-specific by design — that's
+the agent contention point. For other ports, query that port's
+file directly.
 
 ### When you should NOT restart someone else's server
 

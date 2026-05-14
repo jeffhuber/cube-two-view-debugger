@@ -401,13 +401,35 @@ _GIT_FRESHNESS_CACHE: Optional[Dict[str, Any]] = None
 _GIT_FRESHNESS_CACHE_LOCK = threading.Lock()
 _GIT_FRESHNESS_REFRESH_TTL_SECONDS = 600  # 10 min; balances "fresh enough for staleness audit" vs network cost
 
-# Canonical server log path. The boot banner is appended here (in addition to
-# stderr) so `grep '[rubik-app].*identity:' /tmp/cv-local-server.log | tail -1`
-# answers "which code is currently running?" regardless of how the server was
-# started — including stderr redirects that vary across agents/checkouts (the
-# original cause of the May 14 stale-log incident). Override with the
-# CV_LOCAL_SERVER_LOG env var.
+# Canonical server log path (default port). The boot banner is appended here
+# (in addition to stderr) so `grep '[rubik-app].*identity:'
+# /tmp/cv-local-server.log | tail -1` answers "which code is currently
+# running?" regardless of how the server was started — including stderr
+# redirects that vary across agents/checkouts (the original cause of the
+# May 14 stale-log incident). Override with the CV_LOCAL_SERVER_LOG env var.
+#
+# The convention assumes one server per host on port 8080 (see CLAUDE.md
+# "Cv-local server identity"). Servers started on alternate ports get a
+# port-suffixed path via `_default_log_path_for_port()` so they don't
+# pollute the canonical file — flagged by Codex on PR #75 review:
+# without per-port isolation, an `app.py --port 8085` boot would land
+# in /tmp/cv-local-server.log and make `tail -1` misreport "which code
+# is :8080 serving?".
 _DEFAULT_SERVER_LOG_PATH = Path("/tmp/cv-local-server.log")
+_DEFAULT_SERVER_PORT = 8080
+
+
+def _default_log_path_for_port(port: int) -> Path:
+    """Canonical log path for a given port.
+
+    Port 8080 (the convention default) uses the bare canonical path so
+    the documented `grep | tail -1` lookup keeps working. Any other port
+    gets `/tmp/cv-local-server-<port>.log` so alternate-port servers
+    cannot pollute the canonical file with their identity.
+    """
+    if port == _DEFAULT_SERVER_PORT:
+        return _DEFAULT_SERVER_LOG_PATH
+    return Path(f"/tmp/cv-local-server-{port}.log")
 
 
 def _git_freshness(*, fetch: bool = False) -> Dict[str, Any]:
@@ -688,9 +710,27 @@ def _write_boot_record(host: str, port: int, diag: Dict[str, Any]) -> None:
     redirects. Append mode (not truncate) preserves any stderr-redirected
     content that may already be in the file.
 
+    Path resolution:
+      1. `CV_LOCAL_SERVER_LOG` env var (test harnesses, custom setups)
+      2. `/tmp/cv-local-server.log` when port == 8080 (canonical)
+      3. `/tmp/cv-local-server-<port>.log` for any other port (per-port
+         isolation so an `app.py --port 8085` boot can't pollute the
+         canonical file's `tail -1` identity)
+
     Configurable via CV_LOCAL_SERVER_LOG; failures to write the file are
     swallowed so a read-only /tmp or missing parent dir can't crash the
     server.
+
+    Note on stream collision: if the operator redirects stderr to the
+    same path that this function writes (e.g.
+    `python app.py > /tmp/cv-local-server.log 2>&1` with the canonical
+    path), two file descriptors point at the same file — one with
+    `O_APPEND` (this function's `open(...,'a')`), one without (the
+    shell-inherited stderr fd, opened by `>`). Concurrent writes can
+    overlap and partially overwrite the boot record. The CLAUDE.md
+    convention separates stderr from the canonical log to avoid this;
+    if you must share the path, use `>>` so the shell-inherited fd
+    also has `O_APPEND`. See Devin's review on PR #75.
     """
     sha = diag["git"]["sha"] or "unknown"
     branch = diag["git"]["branch"] or "detached"
@@ -721,7 +761,7 @@ def _write_boot_record(host: str, port: int, diag: Dict[str, Any]) -> None:
         print(line, file=sys.stderr)
 
     log_path_str = os.environ.get(
-        "CV_LOCAL_SERVER_LOG", str(_DEFAULT_SERVER_LOG_PATH)
+        "CV_LOCAL_SERVER_LOG", str(_default_log_path_for_port(port))
     )
     try:
         with open(log_path_str, "a") as f:

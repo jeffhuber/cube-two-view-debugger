@@ -9,10 +9,12 @@ import html
 import io
 import json
 import mimetypes
+import os
 import re
 import subprocess
 import sys
 import threading
+import time
 import traceback
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -399,6 +401,36 @@ _GIT_FRESHNESS_CACHE: Optional[Dict[str, Any]] = None
 _GIT_FRESHNESS_CACHE_LOCK = threading.Lock()
 _GIT_FRESHNESS_REFRESH_TTL_SECONDS = 600  # 10 min; balances "fresh enough for staleness audit" vs network cost
 
+# Canonical server log path (default port). The boot banner is appended here
+# (in addition to stderr) so `grep '[rubik-app].*identity:'
+# /tmp/cv-local-server.log | tail -1` answers "which code is currently
+# running?" regardless of how the server was started — including stderr
+# redirects that vary across agents/checkouts (the original cause of the
+# May 14 stale-log incident). Override with the CV_LOCAL_SERVER_LOG env var.
+#
+# The convention assumes one server per host on port 8080 (see CLAUDE.md
+# "Cv-local server identity"). Servers started on alternate ports get a
+# port-suffixed path via `_default_log_path_for_port()` so they don't
+# pollute the canonical file — flagged by Codex on PR #75 review:
+# without per-port isolation, an `app.py --port 8085` boot would land
+# in /tmp/cv-local-server.log and make `tail -1` misreport "which code
+# is :8080 serving?".
+_DEFAULT_SERVER_LOG_PATH = Path("/tmp/cv-local-server.log")
+_DEFAULT_SERVER_PORT = 8080
+
+
+def _default_log_path_for_port(port: int) -> Path:
+    """Canonical log path for a given port.
+
+    Port 8080 (the convention default) uses the bare canonical path so
+    the documented `grep | tail -1` lookup keeps working. Any other port
+    gets `/tmp/cv-local-server-<port>.log` so alternate-port servers
+    cannot pollute the canonical file with their identity.
+    """
+    if port == _DEFAULT_SERVER_PORT:
+        return _DEFAULT_SERVER_LOG_PATH
+    return Path(f"/tmp/cv-local-server-{port}.log")
+
 
 def _git_freshness(*, fetch: bool = False) -> Dict[str, Any]:
     """Check whether the working tree is behind its upstream branch.
@@ -667,6 +699,86 @@ def _check_runtime_versions() -> List[str]:
     return warnings
 
 
+def _write_boot_record(host: str, port: int, diag: Dict[str, Any]) -> None:
+    """Emit the startup identity banner to stderr AND a canonical log file.
+
+    The stderr path matches historical behavior (nohup-redirected logs get
+    the banner immediately because stderr is unbuffered). The file path is
+    new: writing to a fixed location means `grep '[rubik-app].*identity:'
+    /tmp/cv-local-server.log | tail -1` reliably reports the running
+    server's identity even when different invocations use different stderr
+    redirects. Append mode (not truncate) preserves any stderr-redirected
+    content that may already be in the file.
+
+    Path resolution:
+      1. `CV_LOCAL_SERVER_LOG` env var (test harnesses, custom setups)
+      2. `/tmp/cv-local-server.log` when port == 8080 (canonical)
+      3. `/tmp/cv-local-server-<port>.log` for any other port (per-port
+         isolation so an `app.py --port 8085` boot can't pollute the
+         canonical file's `tail -1` identity)
+
+    Configurable via CV_LOCAL_SERVER_LOG; failures to write the file are
+    swallowed so a read-only /tmp or missing parent dir can't crash the
+    server.
+
+    Note on stream collision: if the operator redirects stderr to the
+    same path that this function writes (e.g.
+    `python app.py > /tmp/cv-local-server.log 2>&1` with the canonical
+    path), two file descriptors point at the same file — one with
+    `O_APPEND` (this function's `open(...,'a')`), one without (the
+    shell-inherited stderr fd, opened by `>`). Concurrent writes can
+    overlap and partially overwrite the boot record. The CLAUDE.md
+    convention separates stderr from the canonical log to avoid this;
+    if you must share the path, use `>>` so the shell-inherited fd
+    also has `O_APPEND`. See Devin's review on PR #75.
+    """
+    sha = diag["git"]["sha"] or "unknown"
+    branch = diag["git"]["branch"] or "detached"
+    lines = [
+        f"[rubik-app] Serving http://{host}:{port}/",
+        f"[rubik-app]   identity: {diag['git']['cwd']} @ {sha} ({branch})",
+        (
+            f"[rubik-app]   env:      "
+            f"python {diag['python']['version']}, "
+            f"pillow {diag['libraries']['pillow']}, "
+            f"numpy {diag['libraries']['numpy']}"
+        ),
+    ]
+    # Staleness warning: if the working tree was behind its upstream
+    # branch at startup, surface a loud line in the banner. Caught the
+    # 32-hour-stale May 12 server postmortem; the goal is "anyone
+    # reading the server log notices immediately instead of finding
+    # out via a misclassified recognition hours later."
+    behind = diag["git"].get("commitsBehindAtStart")
+    if isinstance(behind, int) and behind > 0:
+        upstream = branch if branch != "detached" else "upstream"
+        lines.append(
+            f"[rubik-app]   WARNING:  {behind} commit(s) behind origin/{upstream}. "
+            f"Pull + restart to refresh."
+        )
+
+    for line in lines:
+        print(line, file=sys.stderr)
+
+    log_path_str = os.environ.get(
+        "CV_LOCAL_SERVER_LOG", str(_default_log_path_for_port(port))
+    )
+    try:
+        with open(log_path_str, "a") as f:
+            # Separator + timestamp delimit each boot record so callers
+            # can `tail -1` reliably even if the file accumulates many
+            # boots, and so unrelated stderr-redirected content stays
+            # visually separated.
+            f.write("\n" + "=" * 40 + "\n")
+            f.write(f"[rubik-app]   booted:   {time.strftime('%Y-%m-%d %H:%M:%S %Z')}\n")
+            for line in lines:
+                f.write(line + "\n")
+    except OSError:
+        # Don't crash the server because we couldn't write the audit
+        # file. The stderr banner still went out.
+        pass
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--host", default="127.0.0.1")
@@ -738,36 +850,10 @@ def main() -> None:
     # grep on the server log answers "which code is running?" without
     # hitting /api/diag. Critical when multiple repo clones on the
     # same host compete for port 8080 — see CLAUDE.md "Cv-local server
-    # identity" for the full convention.
-    #
-    # Emit to stderr (not stdout) for two reasons: (1) diagnostic
-    # output convention matches the WARNING lines above; (2) stderr
-    # is unbuffered, so the banner appears in nohup-redirected logs
-    # immediately rather than after the stdout buffer fills.
-    sha = diag["git"]["sha"] or "unknown"
-    branch = diag["git"]["branch"] or "detached"
-    print(f"[rubik-app] Serving http://{args.host}:{args.port}/", file=sys.stderr)
-    print(f"[rubik-app]   identity: {diag['git']['cwd']} @ {sha} ({branch})", file=sys.stderr)
-    print(
-        f"[rubik-app]   env:      "
-        f"python {diag['python']['version']}, "
-        f"pillow {diag['libraries']['pillow']}, "
-        f"numpy {diag['libraries']['numpy']}",
-        file=sys.stderr,
-    )
-    # Staleness warning: if the working tree was behind its upstream
-    # branch at startup, surface a loud line in the banner. Caught the
-    # 32-hour-stale May 12 server postmortem; the goal is "anyone
-    # reading the server log notices immediately instead of finding
-    # out via a misclassified recognition hours later."
-    behind = diag["git"].get("commitsBehindAtStart")
-    if isinstance(behind, int) and behind > 0:
-        upstream = branch if branch != "detached" else "upstream"
-        print(
-            f"[rubik-app]   WARNING:  {behind} commit(s) behind origin/{upstream}. "
-            f"Pull + restart to refresh.",
-            file=sys.stderr,
-        )
+    # identity" for the full convention. Writes to stderr AND a
+    # canonical log file so the grep works regardless of how each
+    # agent/checkout redirects stderr.
+    _write_boot_record(args.host, args.port, diag)
     server.serve_forever()
 
 

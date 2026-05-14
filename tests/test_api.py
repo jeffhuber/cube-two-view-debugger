@@ -559,3 +559,99 @@ def test_recognize_persists_user_supplied_set_id(server, tmp_path):
     # The on-disk run dir should exist.
     run_dir = ROOT / "runs" / "pairs" / run_id
     assert run_dir.exists(), f"saved run dir missing: {run_dir}"
+
+
+def test_write_boot_record_appends_identity_to_canonical_log(tmp_path, monkeypatch, capsys):
+    """`_write_boot_record` writes the identity banner to the canonical
+    log path AND stderr. Pins the May 14 staleness fix: without this,
+    a `grep '[rubik-app].*identity:' /tmp/cv-local-server.log | tail -1`
+    against the canonical log could report a stale identity if the most
+    recent restart redirected stderr elsewhere.
+
+    Append mode (not truncate) is part of the contract: re-running the
+    server should leave prior boot records in place so the file
+    accumulates an audit trail; callers `tail -1` to get the latest."""
+    from app import _write_boot_record
+
+    log_path = tmp_path / "cv-local-server.log"
+    log_path.write_text("PREVIOUS BOOT CONTENT\n")  # simulate pre-existing content
+    monkeypatch.setenv("CV_LOCAL_SERVER_LOG", str(log_path))
+
+    diag = {
+        "git": {
+            "sha": "abc1234",
+            "branch": "main",
+            "cwd": "/tmp/some-checkout",
+            "commitsBehindAtStart": 0,
+        },
+        "python": {"version": "3.12.13"},
+        "libraries": {"pillow": "12.2.0", "numpy": "2.3.5"},
+    }
+    _write_boot_record("127.0.0.1", 8080, diag)
+
+    # File contents: prior content preserved, banner appended.
+    contents = log_path.read_text()
+    assert "PREVIOUS BOOT CONTENT" in contents, "prior content must be preserved (append, not truncate)"
+    assert "[rubik-app] Serving http://127.0.0.1:8080/" in contents
+    assert "[rubik-app]   identity: /tmp/some-checkout @ abc1234 (main)" in contents
+    assert "pillow 12.2.0" in contents
+    assert "numpy 2.3.5" in contents
+
+    # Stderr also received the banner (existing operator behavior).
+    err = capsys.readouterr().err
+    assert "[rubik-app]   identity: /tmp/some-checkout @ abc1234 (main)" in err
+
+
+def test_write_boot_record_emits_staleness_warning_when_behind(tmp_path, monkeypatch):
+    """When `commitsBehindAtStart > 0`, the WARNING line is part of the
+    banner — same content as before the refactor, just routed through
+    the helper now."""
+    from app import _write_boot_record
+
+    log_path = tmp_path / "cv-local-server.log"
+    monkeypatch.setenv("CV_LOCAL_SERVER_LOG", str(log_path))
+
+    diag = {
+        "git": {
+            "sha": "abc1234",
+            "branch": "main",
+            "cwd": "/tmp/checkout",
+            "commitsBehindAtStart": 5,
+        },
+        "python": {"version": "3.12.13"},
+        "libraries": {"pillow": "12.2.0", "numpy": "2.3.5"},
+    }
+    _write_boot_record("127.0.0.1", 8080, diag)
+
+    contents = log_path.read_text()
+    assert "WARNING" in contents
+    assert "5 commit(s) behind origin/main" in contents
+
+
+def test_write_boot_record_swallows_oserror(monkeypatch, capsys):
+    """A read-only or missing-parent-dir log path must NOT crash the
+    server. Stderr banner is still emitted; the file write is best-effort.
+
+    Without this guard, an operator running with a misconfigured
+    CV_LOCAL_SERVER_LOG could lose the server entirely at boot."""
+    from app import _write_boot_record
+
+    # Point at a path under a non-existent dir to force OSError on open().
+    monkeypatch.setenv("CV_LOCAL_SERVER_LOG", "/nonexistent-dir-xyzzy/server.log")
+
+    diag = {
+        "git": {
+            "sha": "abc1234",
+            "branch": "main",
+            "cwd": "/tmp/checkout",
+            "commitsBehindAtStart": 0,
+        },
+        "python": {"version": "3.12.13"},
+        "libraries": {"pillow": "12.2.0", "numpy": "2.3.5"},
+    }
+    # Must not raise.
+    _write_boot_record("127.0.0.1", 8080, diag)
+
+    # Stderr banner still went out.
+    err = capsys.readouterr().err
+    assert "[rubik-app]   identity:" in err

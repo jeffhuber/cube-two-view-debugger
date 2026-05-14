@@ -131,13 +131,22 @@ cd <your_canonical_path>
 nohup .venv/bin/python app.py > /tmp/cv-local-server.log 2>&1 &
 ```
 
-The startup banner emits an `[rubik-app] identity:` line you can
-grep from the log to confirm:
+The startup banner is appended to `/tmp/cv-local-server.log` by
+`app.py` itself (in addition to stderr), so the grep below answers
+"which code is :8080 serving?" even when a different agent's
+restart used a different stderr redirect. Use `tail -1` to get the
+most recent boot:
 
 ```bash
-grep "identity:" /tmp/cv-local-server.log
+grep "identity:" /tmp/cv-local-server.log | tail -1
 # [rubik-app]   identity: /Users/jhuber/cube-two-view-debugger @ d594e4a (main)
 ```
+
+Override the canonical log path with the `CV_LOCAL_SERVER_LOG`
+environment variable if you need to (test harnesses do this).
+Append mode means the file accumulates an audit trail of boots
+rather than overwriting; if you want a fresh log, truncate it
+yourself before restarting.
 
 ### When you should NOT restart someone else's server
 

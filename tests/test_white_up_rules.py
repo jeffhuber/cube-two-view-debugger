@@ -8,12 +8,15 @@ from rubik_recognizer.recognizer import (
     RecognitionResult,
     RecognitionWorkset,
     WhiteUpRecognizer,
+    _anchor_grid_candidates,
+    _assigned_grid_by_face,
     _attach_failed_pair_color_calibration_signal,
     _capture_yaw_state_to_wca,
     _corner_assignment,
     _grid_signal_summary,
     _grid_matrix_for_orientation,
     _merged_face_candidates,
+    _pair_calibration_anchors,
     _oriented_options_for_grid_map,
     _pair_color_calibration_signal,
     _prefer_calibrated_result,
@@ -23,6 +26,7 @@ from rubik_recognizer.recognizer import (
     _repair_orientation_rerank_applies,
     _repair_ranking_penalty,
     _side_pair_complement,
+    _u_logo_anchor_grid_candidate,
     _validation_failed_checks,
     _selected_faces_by_image,
     _selected_sides_by_image,
@@ -73,6 +77,170 @@ def test_white_up_checks_reject_missing_credible_white_up_face():
     b = StubAnalysis(["D", "L", "B"])
 
     assert "image_a_U_anchor_missing" in _white_up_checks(a, b)
+
+
+def test_u_anchor_candidates_include_low_confidence_logo_center():
+    from rubik_recognizer.colors import ColorMatch
+
+    center_match = ColorMatch(
+        color="green",
+        face="F",
+        distance=36.0,
+        confidence=0.35,
+        alternatives=[("green", 36.0), ("white", 56.0), ("blue", 58.0)],
+    )
+    center = type(
+        "Sticker",
+        (),
+        {"source": "component", "rgb": (92, 98, 67), "match": center_match, "shape_angle": 0.0},
+    )()
+    grid = type(
+        "Grid",
+        (),
+        {
+            "center_face": "F",
+            "center_sticker": center,
+            "matched_count": 8,
+            "fit_error": 1.5,
+            "stickers": [[center for _ in range(3)] for _ in range(3)],
+        },
+    )()
+
+    assert _u_logo_anchor_grid_candidate(grid)
+    assert _anchor_grid_candidates([grid], "U") == [grid]
+
+
+def test_u_logo_anchor_candidates_reject_confident_side_center():
+    from rubik_recognizer.colors import ColorMatch
+
+    center_match = ColorMatch(
+        color="green",
+        face="F",
+        distance=20.0,
+        confidence=0.78,
+        alternatives=[("green", 20.0), ("white", 35.0)],
+    )
+    center = type(
+        "Sticker",
+        (),
+        {"source": "component", "rgb": (70, 145, 90), "match": center_match, "shape_angle": 0.0},
+    )()
+    grid = type(
+        "Grid",
+        (),
+        {
+            "center_face": "F",
+            "center_sticker": center,
+            "matched_count": 9,
+            "fit_error": 1.0,
+            "stickers": [[center for _ in range(3)] for _ in range(3)],
+        },
+    )()
+
+    assert not _u_logo_anchor_grid_candidate(grid)
+    assert _anchor_grid_candidates([grid], "U") == []
+
+
+def test_assigned_grid_by_face_does_not_reuse_assumed_anchor_as_side_face():
+    from rubik_recognizer.colors import ColorMatch
+
+    def grid(grid_id, face, rgb, matched_count):
+        match = ColorMatch("white" if face == "U" else "green", face, 0.0, 0.9, [("white", 0.0)])
+        center = type(
+            "Sticker",
+            (),
+            {"source": "component", "rgb": rgb, "match": match, "shape_angle": 0.0},
+        )()
+        return type(
+            "Grid",
+            (),
+            {
+                "id": grid_id,
+                "center_face": face,
+                "center_sticker": center,
+                "matched_count": matched_count,
+                "fit_error": 1.0,
+                "stickers": [[center for _ in range(3)] for _ in range(3)],
+            },
+        )()
+
+    assumed_u = grid(1, "F", (225, 225, 225), 9)
+    fallback_f = grid(2, "F", (80, 150, 90), 8)
+    analysis = type("Analysis", (), {"grids": [assumed_u, fallback_f]})()
+
+    assigned = _assigned_grid_by_face(analysis, "U")
+
+    assert assigned["U"] is assumed_u
+    assert assigned["F"] is fallback_f
+
+
+def test_pair_calibration_skips_non_white_logo_anchor_seed():
+    from rubik_recognizer.colors import ColorMatch
+
+    def grid(grid_id, face, rgb, match):
+        center = type(
+            "Sticker",
+            (),
+            {"source": "component", "rgb": rgb, "match": match, "shape_angle": 0.0},
+        )()
+        return type(
+            "Grid",
+            (),
+            {
+                "id": grid_id,
+                "center_face": face,
+                "center_sticker": center,
+                "matched_count": 8,
+                "fit_error": 1.5,
+                "stickers": [[center for _ in range(3)] for _ in range(3)],
+            },
+        )()
+
+    logo_match = ColorMatch(
+        color="green",
+        face="F",
+        distance=36.0,
+        confidence=0.35,
+        alternatives=[("green", 36.0), ("white", 56.0)],
+    )
+    yellow_match = ColorMatch("yellow", "D", 0.0, 0.9, [("yellow", 0.0)])
+    logo_u = grid(1, "F", (92, 98, 67), logo_match)
+    direct_d = grid(2, "D", (230, 220, 45), yellow_match)
+    analysis_a = type("Analysis", (), {"grids": [logo_u]})()
+    analysis_b = type("Analysis", (), {"grids": [direct_d]})()
+
+    anchors = _pair_calibration_anchors(analysis_a, analysis_b)
+
+    assert anchors["white"] == []
+    assert anchors["yellow"] == [(230, 220, 45)]
+
+
+def test_pair_calibration_keeps_whiteish_assumed_anchor_seed():
+    from rubik_recognizer.colors import ColorMatch
+
+    white_match = ColorMatch("white", "U", 0.0, 0.9, [("white", 0.0)])
+    center = type(
+        "Sticker",
+        (),
+        {"source": "component", "rgb": (225, 225, 225), "match": white_match, "shape_angle": 0.0},
+    )()
+    assumed_u = type(
+        "Grid",
+        (),
+        {
+            "id": 1,
+            "center_face": "F",
+            "center_sticker": center,
+            "matched_count": 8,
+            "fit_error": 1.5,
+            "stickers": [[center for _ in range(3)] for _ in range(3)],
+        },
+    )()
+    analysis = type("Analysis", (), {"grids": [assumed_u]})()
+
+    anchors = _pair_calibration_anchors(analysis, type("Analysis", (), {"grids": []})())
+
+    assert anchors["white"] == [(225, 225, 225)]
 
 
 def test_white_up_checks_reject_too_similar_views():

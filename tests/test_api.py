@@ -293,7 +293,13 @@ def test_runtime_diag_identity_falls_back_when_not_started_through_main():
 def test_git_freshness_returns_well_formed_shape():
     """`_git_freshness()` always returns the three documented keys.
     Without `fetch=True` this is just a `git rev-list` call against the
-    local view of origin — fast, no network."""
+    local view of origin — fast, no network.
+
+    Codex review on PR #70 v2 caught that `checkedAt: None` paired
+    with `commitsBehind: None` would break the TTL gate in
+    `_git_freshness_current()`. Now `checkedAt` is ALWAYS a string
+    (the attempt time), even when the count came back None. This
+    test enforces the new invariant."""
     from app import _git_freshness
 
     result = _git_freshness(fetch=False)
@@ -301,8 +307,11 @@ def test_git_freshness_returns_well_formed_shape():
     assert result["fetched"] is False
     behind = result["commitsBehind"]
     assert behind is None or (isinstance(behind, int) and behind >= 0)
-    checked_at = result["checkedAt"]
-    assert checked_at is None or isinstance(checked_at, str)
+    # Always a string now, even when behind is None — see docstring.
+    assert isinstance(result["checkedAt"], str) and result["checkedAt"], (
+        f"checkedAt must always be a non-empty ISO timestamp string, "
+        f"got: {result['checkedAt']!r}"
+    )
 
 
 def test_git_freshness_current_returns_cache_when_fresh(monkeypatch):
@@ -355,6 +364,43 @@ def test_git_freshness_current_refreshes_when_cache_is_stale(monkeypatch):
     result = app_module._git_freshness_current()
     assert result == fresh_value, "stale cache should be replaced by refresh result"
     assert app_module._GIT_FRESHNESS_CACHE == fresh_value
+
+
+def test_git_freshness_current_honors_ttl_even_when_count_is_none(monkeypatch):
+    """**Codex review on PR #70 v2, final finding**: a cache entry
+    representing "we checked, freshness is unknown" (commitsBehind=None
+    with a real checkedAt timestamp) MUST be treated as fresh under
+    the TTL, not retried on every request. Without this, a server on
+    a branch with no upstream / detached HEAD / git unavailable
+    would re-run `git fetch` per request — slow and wasteful.
+
+    The fix is in `_git_freshness()`: `checkedAt` is now stamped
+    unconditionally (the *attempt* time, not just the success time),
+    so the TTL gate works the same for known and unknown count states.
+    """
+    import app as app_module
+
+    # Cache: we recently tried (now), got no answer (no upstream).
+    now_iso = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
+    cache = {"commitsBehind": None, "checkedAt": now_iso, "fetched": False}
+    monkeypatch.setattr(app_module, "_GIT_FRESHNESS_CACHE", cache, raising=False)
+
+    # Spy: track whether `_git_freshness` is called for refresh.
+    called = {"count": 0}
+    def spy(*args, **kwargs):
+        called["count"] += 1
+        return {"commitsBehind": None, "checkedAt": now_iso, "fetched": False}
+    monkeypatch.setattr(app_module, "_git_freshness", spy)
+
+    # Call twice — should both return the cached value without
+    # triggering a refresh (the bug Codex reproduced with two calls).
+    r1 = app_module._git_freshness_current()
+    r2 = app_module._git_freshness_current()
+    assert r1 == cache and r2 == cache
+    assert called["count"] == 0, (
+        f"unknown-count cache must NOT trigger refresh under TTL, "
+        f"got {called['count']} refresh calls"
+    )
 
 
 def test_git_freshness_current_returns_default_when_cache_never_populated(monkeypatch):

@@ -413,8 +413,14 @@ def _git_freshness(*, fetch: bool = False) -> Dict[str, Any]:
     - `commitsBehind`: int count, or `None` when the check couldn't
       run (no git, no upstream, detached HEAD, network failure with
       no cached origin, etc.). `0` means up-to-date.
-    - `checkedAt`: ISO-8601 UTC timestamp of the check, or `None` when
-      `commitsBehind` is None.
+    - `checkedAt`: ISO-8601 UTC timestamp of the *attempt*. Always
+      present (string), regardless of whether the count came back
+      `None`. Codex review on PR #70 v2 caught that a `None`-count
+      cache with `checkedAt=None` would be considered "stale" by
+      `_git_freshness_current()`'s TTL gate forever, causing
+      every request to retry `git fetch`. Recording the attempt
+      timestamp here is what fixes that — the TTL works the same way
+      for known and unknown count states.
     - `fetched`: whether `git fetch` ran successfully during this
       call. Even when False, `commitsBehind` may still be useful (it
       reflects whatever the local view of origin already had).
@@ -431,7 +437,10 @@ def _git_freshness(*, fetch: bool = False) -> Dict[str, Any]:
     """
     result: Dict[str, Any] = {
         "commitsBehind": None,
-        "checkedAt": None,
+        # Stamped here, BEFORE any subprocess call, so the timestamp
+        # reflects the attempt regardless of whether git is even
+        # available. Codex PR #70 v2 review.
+        "checkedAt": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         "fetched": False,
     }
     if fetch:
@@ -456,7 +465,6 @@ def _git_freshness(*, fetch: bool = False) -> Dict[str, Any]:
         )
         if r.returncode == 0:
             result["commitsBehind"] = int(r.stdout.strip() or "0")
-            result["checkedAt"] = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
     except (OSError, subprocess.SubprocessError, ValueError):
         pass
     return result

@@ -194,17 +194,29 @@ def option_coverage_probe(result: Any, expected_state: Optional[str] = None) -> 
 
 def option_coverage_for_analysis(analysis: Any, anchor: str, expected_state: str) -> Dict[str, Any]:
     options = _oriented_face_options(analysis, anchor)
+    targets = {
+        face: expected_state[FACE_ORDER.index(face) * 9 : (FACE_ORDER.index(face) + 1) * 9]
+        for face in FACE_ORDER
+    }
     by_face = {}
-    for face in FACE_ORDER:
-        target = expected_state[FACE_ORDER.index(face) * 9 : (FACE_ORDER.index(face) + 1) * 9]
-        scored = []
-        for option_rank, option in enumerate(options):
+    top_options = []
+    per_face_scores: Dict[str, List[Dict[str, Any]]] = {face: [] for face in FACE_ORDER}
+    for option_rank, option in enumerate(options):
+        visible_faces = {}
+        visible_score = 0
+        for face, target in targets.items():
             if face not in option:
                 continue
             state = matrix_face_state(option[face])
-            scored.append(
+            face_score = score_match(state, target)
+            visible_score += face_score
+            visible_faces[face] = {
+                "score": face_score,
+                "state": state,
+            }
+            per_face_scores[face].append(
                 {
-                    "score": score_match(state, target),
+                    "score": face_score,
                     "state": state,
                     "optionRank": option_rank,
                     "optionScore": round(float(option.get("_score", 0.0)), 4),
@@ -215,12 +227,31 @@ def option_coverage_for_analysis(analysis: Any, anchor: str, expected_state: str
                     "orderedSidePair": side_pair_label(option.get("_ordered_side_pair")),
                 }
             )
+        if visible_faces:
+            top_options.append(
+                {
+                    "score": visible_score,
+                    "maxScore": len(visible_faces) * 9,
+                    "optionRank": option_rank,
+                    "optionScore": round(float(option.get("_score", 0.0)), 4),
+                    "selectionScore": round(float(option.get("_selection_score", 0.0)), 4),
+                    "orientationScore": round(float(option.get("_orientation_score", 0.0)), 4),
+                    "orientationRank": option.get("_orientation_rank"),
+                    "sidePair": side_pair_label(option.get("_side_pair")),
+                    "orderedSidePair": side_pair_label(option.get("_ordered_side_pair")),
+                    "faces": visible_faces,
+                }
+            )
+
+    for face, scored in per_face_scores.items():
         if scored:
             scored.sort(key=lambda item: (item["score"], -item["optionRank"], item["optionScore"]), reverse=True)
             by_face[face] = scored[:3]
+    top_options.sort(key=lambda item: (item["score"], item["optionScore"], -item["optionRank"]), reverse=True)
     return {
         "optionCount": len(options),
         "faces": by_face,
+        "topOptions": top_options[:5],
     }
 
 

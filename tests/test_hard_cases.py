@@ -206,3 +206,9 @@ def test_option_coverage_scores_generated_faces_against_truth(monkeypatch):
     assert coverage["faces"]["U"][0]["optionRank"] == 0
     assert coverage["faces"]["U"][0]["sidePair"] == "B/R"
     assert coverage["faces"]["R"][0]["score"] == 9
+    assert coverage["topOptions"][0]["score"] == 18
+    assert coverage["topOptions"][0]["maxScore"] == 18
+    assert coverage["topOptions"][0]["optionRank"] == 0
+    assert coverage["topOptions"][0]["faces"]["U"]["score"] == 9
+    assert coverage["topOptions"][0]["faces"]["R"]["state"] == "RRRRRRRRR"
+    assert coverage["topOptions"][1]["score"] == 8

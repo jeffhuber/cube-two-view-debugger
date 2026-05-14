@@ -12,6 +12,7 @@ import mimetypes
 import re
 import subprocess
 import sys
+import threading
 import traceback
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -160,12 +161,14 @@ class RubikHandler(BaseHTTPRequestHandler):
                 ),
                 expected_state=expected,
             )
-            # Attach a per-request runtime block (input-image SHA256 +
-            # byte size + decoded dimensions, and the same env info
-            # /api/diag returns). When a saved recognition is later
-            # questioned ("why did this score 26/54 instead of 50?"),
-            # the JSON itself answers what env produced it.
-            payload["runtime"] = _per_request_runtime(image_a[1], image_b[1])
+            # `payload["runtime"]` is now set inside `recognize_and_persist`
+            # before `save_run` writes the on-disk `result.json`, so both
+            # the HTTP response and the saved file carry the same block
+            # (input-image SHA256 + byte size + decoded dimensions, plus
+            # the env info `/api/diag` returns including freshness flags).
+            # Codex review on PR #70 caught the previous bug where this
+            # was attached post-save and the on-disk audit trail missed
+            # the runtime data entirely.
             if slim:
                 _strip_heavy_fields(payload)
             self._send_json(payload)
@@ -365,8 +368,193 @@ def _git_branch() -> Optional[str]:
     return result.stdout.strip() or None
 
 
+# --- Server-staleness machinery (Codex review on PR #70 expanded this) -----
+#
+# Three module-level caches, all populated in `main()` at server start:
+#
+# - `_IDENTITY_AT_START`: the sha + branch frozen at the moment the
+#   Python process loaded the recognizer code. This is the
+#   *authoritative* identity for "which code is running" because Python
+#   imports happen once at process boot; `git pull` afterwards updates
+#   the working tree but not the running code. `/api/diag` reports this
+#   as `git.sha` / `git.branch`.
+#
+# - `_GIT_FRESHNESS_AT_START`: the {commitsBehind, checkedAt, fetched}
+#   snapshot from server start. Frozen for the lifetime of the process.
+#   Exposed as `git.commitsBehindAtStart` for historical audit.
+#
+# - `_GIT_FRESHNESS_CACHE` (+ `_GIT_FRESHNESS_CACHE_LOCK`): a
+#   lazily-refreshed view of the same freshness data. `/api/diag` and
+#   the per-request `_per_request_runtime()` read this cache through
+#   `_git_freshness_current()`, which re-runs `git fetch` + rev-list if
+#   the cached value is older than `_GIT_FRESHNESS_REFRESH_TTL_SECONDS`.
+#   This is what catches the May-12 case: a server started fresh that
+#   accumulates staleness over hours/days while never being restarted.
+#
+# All three default to `None` for test-import scenarios (where `main()`
+# never runs). `_runtime_diag()` returns sensible defaults in that case.
+_IDENTITY_AT_START: Optional[Dict[str, Optional[str]]] = None
+_GIT_FRESHNESS_AT_START: Optional[Dict[str, Any]] = None
+_GIT_FRESHNESS_CACHE: Optional[Dict[str, Any]] = None
+_GIT_FRESHNESS_CACHE_LOCK = threading.Lock()
+_GIT_FRESHNESS_REFRESH_TTL_SECONDS = 600  # 10 min; balances "fresh enough for staleness audit" vs network cost
+
+
+def _git_freshness(*, fetch: bool = False) -> Dict[str, Any]:
+    """Check whether the working tree is behind its upstream branch.
+
+    When `fetch=True`, runs `git fetch --quiet origin` first (10s
+    timeout for the network call) to update the local view of origin.
+    Without that, the comparison is only as fresh as the user's last
+    manual fetch/pull.
+
+    Returns a dict with three keys:
+
+    - `commitsBehind`: int count, or `None` when the check couldn't
+      run (no git, no upstream, detached HEAD, network failure with
+      no cached origin, etc.). `0` means up-to-date.
+    - `checkedAt`: ISO-8601 UTC timestamp of the *attempt*. Always
+      present (string), regardless of whether the count came back
+      `None`. Codex review on PR #70 v2 caught that a `None`-count
+      cache with `checkedAt=None` would be considered "stale" by
+      `_git_freshness_current()`'s TTL gate forever, causing
+      every request to retry `git fetch`. Recording the attempt
+      timestamp here is what fixes that — the TTL works the same way
+      for known and unknown count states.
+    - `fetched`: whether `git fetch` ran successfully during this
+      call. Even when False, `commitsBehind` may still be useful (it
+      reflects whatever the local view of origin already had).
+
+    Compares against `@{upstream}` rather than hardcoded `origin/main`
+    so a server running on a feature branch reports whether *that
+    branch* has moved on origin, not the (irrelevant) distance from
+    main. Practical for staleness detection; doesn't try to tell you
+    "main has moved" on a feature-branch deployment.
+
+    Never raises — every git error degrades to `commitsBehind=None`.
+    See cube-two-view-debugger CLAUDE.md "Cv-local server identity"
+    for the convention this supports.
+    """
+    result: Dict[str, Any] = {
+        "commitsBehind": None,
+        # Stamped here, BEFORE any subprocess call, so the timestamp
+        # reflects the attempt regardless of whether git is even
+        # available. Codex PR #70 v2 review.
+        "checkedAt": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+        "fetched": False,
+    }
+    if fetch:
+        try:
+            r = subprocess.run(
+                ["git", "fetch", "--quiet", "origin"],
+                cwd=str(ROOT),
+                capture_output=True,
+                text=True,
+                timeout=10,  # network op; capped so a slow link doesn't hang server start
+            )
+            result["fetched"] = r.returncode == 0
+        except (OSError, subprocess.SubprocessError):
+            pass
+    try:
+        r = subprocess.run(
+            ["git", "rev-list", "--count", "HEAD..@{upstream}"],
+            cwd=str(ROOT),
+            capture_output=True,
+            text=True,
+            timeout=2,
+        )
+        if r.returncode == 0:
+            result["commitsBehind"] = int(r.stdout.strip() or "0")
+    except (OSError, subprocess.SubprocessError, ValueError):
+        pass
+    return result
+
+
+def _git_freshness_current() -> Dict[str, Any]:
+    """Return the lazily-refreshed freshness, refreshing on TTL miss.
+
+    Reads `_GIT_FRESHNESS_CACHE` under `_GIT_FRESHNESS_CACHE_LOCK`. If
+    the cached value is older than `_GIT_FRESHNESS_REFRESH_TTL_SECONDS`
+    (or has never been populated by `main()`), runs
+    `_git_freshness(fetch=True)` to refresh from origin.
+
+    Codex review on PR #70 flagged that startup-only freshness misses
+    the May-12 case: server starts at commit A (0 behind), main moves
+    25 commits, server keeps running with no signal. This helper is
+    what closes that gap — every `/api/diag` hit and every saved
+    `result.json` reflects the cached-at-request-time freshness, not
+    just the boot-time snapshot.
+
+    Thread-safe. Returns a default-shaped dict when the cache was
+    never populated (test-import case where `main()` didn't run).
+    """
+    global _GIT_FRESHNESS_CACHE
+    default = {"commitsBehind": None, "checkedAt": None, "fetched": False}
+    with _GIT_FRESHNESS_CACHE_LOCK:
+        cache = _GIT_FRESHNESS_CACHE
+        # Test-import path: cache never populated. Don't trigger a
+        # network call from a test that didn't ask for one.
+        if cache is None:
+            return default
+        stale = True
+        checked_at = cache.get("checkedAt")
+        if isinstance(checked_at, str):
+            try:
+                checked = dt.datetime.fromisoformat(checked_at)
+                now = dt.datetime.now(dt.timezone.utc)
+                age_seconds = (now - checked).total_seconds()
+                if age_seconds < _GIT_FRESHNESS_REFRESH_TTL_SECONDS:
+                    stale = False
+            except (ValueError, TypeError):
+                stale = True
+        if stale:
+            _GIT_FRESHNESS_CACHE = _git_freshness(fetch=True)
+        return _GIT_FRESHNESS_CACHE or default
+
+
 def _runtime_diag() -> Dict[str, Any]:
-    """Stable JSON-serialisable description of the recognizer's runtime."""
+    """Stable JSON-serialisable description of the recognizer's runtime.
+
+    Identity (`git.sha`, `git.branch`) reflects the **loaded server
+    code**, frozen at process start. Re-pulling the working tree
+    without restarting does NOT change these — the loaded code is
+    what actually serves requests. See `_IDENTITY_AT_START`.
+
+    Freshness comes in two flavours:
+      - `commitsBehindAtStart` / `commitsBehindCheckedAtStart`:
+        snapshot from server start; useful for audit ("how stale was
+        the server when this run was persisted?").
+      - `commitsBehind` / `commitsBehindCheckedAt`: lazily refreshed
+        on every diag call (TTL-gated); reflects the current view of
+        origin.
+
+    Warnings are driven by the CURRENT freshness, so a server that
+    started clean and accumulated staleness over hours/days surfaces
+    the staleness as soon as someone hits `/api/diag` or a recognition
+    runs (because both call `_per_request_runtime` which goes through
+    this function).
+    """
+    at_start = _GIT_FRESHNESS_AT_START or {
+        "commitsBehind": None,
+        "checkedAt": None,
+        "fetched": False,
+    }
+    current = _git_freshness_current()
+    identity = _IDENTITY_AT_START or {
+        # Test-import fallback: when main() never ran, fall through
+        # to current values so the field is still populated. The
+        # banner-emission path doesn't use this fallback.
+        "sha": _git_sha(),
+        "branch": _git_branch(),
+    }
+    warnings: List[str] = []
+    current_behind = current.get("commitsBehind")
+    if isinstance(current_behind, int) and current_behind > 0:
+        # No "_at_start" suffix anymore: the warning reflects current
+        # staleness, not just at-boot staleness. A server that started
+        # fresh and drifted gets this warning as soon as a request
+        # triggers `_git_freshness_current()` past the TTL.
+        warnings.append(f"server_stale_by_{current_behind}_commits")
     return {
         "python": {
             "version": ".".join(str(p) for p in sys.version_info[:3]),
@@ -383,10 +571,21 @@ def _runtime_diag() -> Dict[str, Any]:
             "pillow": ".".join(str(p) for p in _MIN_PIL),
         },
         "git": {
-            "sha": _git_sha(),
-            "branch": _git_branch(),
+            # Authoritative identity = frozen at server start. The
+            # banner uses these values too, so log-grep and /api/diag
+            # always agree.
+            "sha": identity.get("sha"),
+            "branch": identity.get("branch"),
             "cwd": str(ROOT),
+            # Lazy-refreshed: changes over the server's lifetime.
+            "commitsBehind": current.get("commitsBehind"),
+            "commitsBehindCheckedAt": current.get("checkedAt"),
+            # Frozen at start: never updates. Useful for audit when
+            # comparing a `result.json` from boot-time vs a later run.
+            "commitsBehindAtStart": at_start.get("commitsBehind"),
+            "commitsBehindCheckedAtStart": at_start.get("checkedAt"),
         },
+        "warnings": warnings,
     }
 
 
@@ -509,6 +708,30 @@ def main() -> None:
     for warning in _check_runtime_versions():
         print(f"[rubik-app] WARNING: {warning}", file=sys.stderr)
 
+    # Freeze identity (sha, branch) at server start. This is the
+    # *authoritative* "which code is running" — Python imports load
+    # the recognizer module once at process boot, so any subsequent
+    # `git pull` updates the working tree but not the loaded code.
+    # `/api/diag` reports these as `git.sha` / `git.branch`. The same
+    # values feed the startup banner so log-grep and HTTP API agree.
+    global _IDENTITY_AT_START
+    _IDENTITY_AT_START = {"sha": _git_sha(), "branch": _git_branch()}
+
+    # Populate the freshness cache before the banner so (1) the banner
+    # can surface a "behind origin" warning at startup, and (2) the
+    # lazy-refresh path has an initial cached value to age from. Runs
+    # `git fetch` once (10s cap); silent on network failure.
+    #
+    # Two separate module-level variables intentionally:
+    # - `_GIT_FRESHNESS_AT_START` is frozen for the lifetime of the
+    #   process (exposed as `git.commitsBehindAtStart` for audit).
+    # - `_GIT_FRESHNESS_CACHE` is lazily refreshed by
+    #   `_git_freshness_current()` on every diag/recognition call
+    #   when older than `_GIT_FRESHNESS_REFRESH_TTL_SECONDS`.
+    global _GIT_FRESHNESS_AT_START, _GIT_FRESHNESS_CACHE
+    _GIT_FRESHNESS_AT_START = _git_freshness(fetch=True)
+    _GIT_FRESHNESS_CACHE = dict(_GIT_FRESHNESS_AT_START)  # seed; lazily updated thereafter
+
     server = ThreadingHTTPServer((args.host, args.port), RubikHandler)
     diag = _runtime_diag()
     # Identity banner. Surfaces which repo/branch/SHA is serving so a
@@ -532,6 +755,19 @@ def main() -> None:
         f"numpy {diag['libraries']['numpy']}",
         file=sys.stderr,
     )
+    # Staleness warning: if the working tree was behind its upstream
+    # branch at startup, surface a loud line in the banner. Caught the
+    # 32-hour-stale May 12 server postmortem; the goal is "anyone
+    # reading the server log notices immediately instead of finding
+    # out via a misclassified recognition hours later."
+    behind = diag["git"].get("commitsBehindAtStart")
+    if isinstance(behind, int) and behind > 0:
+        upstream = branch if branch != "detached" else "upstream"
+        print(
+            f"[rubik-app]   WARNING:  {behind} commit(s) behind origin/{upstream}. "
+            f"Pull + restart to refresh.",
+            file=sys.stderr,
+        )
     server.serve_forever()
 
 
@@ -555,6 +791,16 @@ def recognize_and_persist(recognizer: WhiteUpRecognizer, pair: ImagePair, expect
     evaluation = evaluate_state(result.state, expected_state)
     if evaluation.get("available"):
         payload["evaluation"] = evaluation
+    # Attach the runtime block BEFORE save_run so the persisted
+    # `result.json` carries the same identity + freshness data as the
+    # HTTP response. Codex review on PR #70 caught that the previous
+    # location (after recognize_and_persist returned) wrote to disk
+    # *before* runtime was set, so the on-disk audit trail was missing
+    # the staleness signal. Per-request runtime includes input image
+    # fingerprints (SHA256, byte size, decoded dimensions), so a saved
+    # run self-documents both what input bytes produced it AND what
+    # env / freshness the server was in.
+    payload["runtime"] = _per_request_runtime(pair.image_a.data, pair.image_b.data)
     run_info = save_run(pair, payload, result, expected_state)
     payload.update(run_info)
     return payload

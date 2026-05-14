@@ -9,6 +9,7 @@ recognition cost — keep the fixtures small and synthetic.
 """
 from __future__ import annotations
 
+import datetime as dt
 import io
 import json
 import sys
@@ -141,6 +142,329 @@ def test_runtime_diag_includes_branch_field():
     assert branch is None or (isinstance(branch, str) and branch), (
         f"branch must be None or non-empty str, got {branch!r}"
     )
+
+
+def test_runtime_diag_includes_both_at_start_and_current_freshness_fields():
+    """Diag carries TWO freshness snapshots (Codex review on PR #70
+    expanded this from one): `commitsBehindAtStart` is frozen for the
+    process lifetime; `commitsBehind` is lazily refreshed on a TTL.
+    Both must be present (each may be None when not populated)."""
+    from app import _runtime_diag
+
+    diag = _runtime_diag()
+    git = diag.get("git") or {}
+    for key in (
+        "commitsBehind",
+        "commitsBehindCheckedAt",
+        "commitsBehindAtStart",
+        "commitsBehindCheckedAtStart",
+    ):
+        assert key in git, (
+            f"expected git.{key} in diag, got keys: {sorted(git.keys())}"
+        )
+    for value in (git["commitsBehind"], git["commitsBehindAtStart"]):
+        assert value is None or (isinstance(value, int) and value >= 0), (
+            f"behind count must be None or non-negative int, got {value!r}"
+        )
+
+
+def test_runtime_diag_warnings_field_present_and_empty_by_default():
+    """`warnings` is the top-level audit-trail field. Empty list means
+    'nothing flagged'; non-empty means downstream consumers should
+    surface them. Default state in unit-test imports is no cache, so
+    the list must be empty."""
+    from app import _runtime_diag
+
+    diag = _runtime_diag()
+    assert "warnings" in diag, f"expected top-level 'warnings' field, got: {sorted(diag.keys())}"
+    assert isinstance(diag["warnings"], list)
+    assert diag["warnings"] == []
+
+
+def test_runtime_diag_warnings_driven_by_current_not_at_start(monkeypatch):
+    """**Codex review on PR #70, finding #1**: warnings must reflect
+    CURRENT staleness (so a server that started fresh and accumulated
+    25 commits of staleness while running gets flagged), not the
+    frozen at-start value (which would stay 0 forever on a
+    started-fresh server).
+    """
+    import app as app_module
+
+    now_iso = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
+    # At-start: server booted fresh, 0 behind. Frozen.
+    monkeypatch.setattr(
+        app_module,
+        "_GIT_FRESHNESS_AT_START",
+        {"commitsBehind": 0, "checkedAt": now_iso, "fetched": True},
+        raising=False,
+    )
+    # Current: 25 commits accumulated since boot. The lazy-refresh
+    # cache reflects this; warnings + audit trail must follow.
+    monkeypatch.setattr(
+        app_module,
+        "_GIT_FRESHNESS_CACHE",
+        {"commitsBehind": 25, "checkedAt": now_iso, "fetched": True},
+        raising=False,
+    )
+    diag = app_module._runtime_diag()
+    assert diag["git"]["commitsBehindAtStart"] == 0
+    assert diag["git"]["commitsBehind"] == 25
+    # Warning string format changed (no "_at_start" suffix) — the
+    # warning is about *current* staleness, not just at-boot.
+    assert "server_stale_by_25_commits" in diag["warnings"], (
+        f"expected current-staleness warning, got: {diag['warnings']}"
+    )
+
+
+def test_runtime_diag_no_warning_when_current_fresh(monkeypatch):
+    """commitsBehind=0 in the current cache → no warning, regardless
+    of at-start."""
+    import app as app_module
+
+    now_iso = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
+    monkeypatch.setattr(
+        app_module,
+        "_GIT_FRESHNESS_CACHE",
+        {"commitsBehind": 0, "checkedAt": now_iso, "fetched": True},
+        raising=False,
+    )
+    diag = app_module._runtime_diag()
+    assert diag["git"]["commitsBehind"] == 0
+    assert diag["warnings"] == []
+
+
+def test_runtime_diag_no_warning_when_current_unknown(monkeypatch):
+    """commitsBehind=None means the check couldn't run (no upstream,
+    no network, git not installed). No warning — we can't tell.
+    Distinct from commitsBehind=0 (verified up-to-date).
+
+    Note: the cache must carry a fresh `checkedAt` so the TTL helper
+    returns it verbatim rather than triggering a real refresh. In
+    practice this scenario is "we tried recently, got None back."""
+    import app as app_module
+
+    now_iso = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
+    monkeypatch.setattr(
+        app_module,
+        "_GIT_FRESHNESS_CACHE",
+        {"commitsBehind": None, "checkedAt": now_iso, "fetched": False},
+        raising=False,
+    )
+    diag = app_module._runtime_diag()
+    assert diag["git"]["commitsBehind"] is None
+    assert diag["warnings"] == []
+
+
+def test_runtime_diag_identity_uses_at_start_when_populated(monkeypatch):
+    """**Codex review on PR #70, finding #3**: `git.sha` and
+    `git.branch` reflect the **loaded server code** (frozen at server
+    start), not the live working tree. Pulling the repo while the
+    process keeps running updates HEAD but NOT the loaded code; the
+    API must report the loaded code's identity.
+    """
+    import app as app_module
+
+    monkeypatch.setattr(
+        app_module,
+        "_IDENTITY_AT_START",
+        {"sha": "abc1234", "branch": "main"},
+        raising=False,
+    )
+    diag = app_module._runtime_diag()
+    assert diag["git"]["sha"] == "abc1234", (
+        f"expected loaded-code sha, got: {diag['git']['sha']}"
+    )
+    assert diag["git"]["branch"] == "main"
+
+
+def test_runtime_diag_identity_falls_back_when_not_started_through_main():
+    """When `_IDENTITY_AT_START` is None (test-import scenario), the
+    diag falls back to live `_git_sha()` / `_git_branch()`. Keeps
+    unit tests working without requiring them to populate the cache."""
+    from app import _runtime_diag
+
+    diag = _runtime_diag()
+    sha = diag["git"]["sha"]
+    assert sha is None or (isinstance(sha, str) and sha), (
+        f"sha must be None or non-empty str, got: {sha!r}"
+    )
+
+
+def test_git_freshness_returns_well_formed_shape():
+    """`_git_freshness()` always returns the three documented keys.
+    Without `fetch=True` this is just a `git rev-list` call against the
+    local view of origin — fast, no network.
+
+    Codex review on PR #70 v2 caught that `checkedAt: None` paired
+    with `commitsBehind: None` would break the TTL gate in
+    `_git_freshness_current()`. Now `checkedAt` is ALWAYS a string
+    (the attempt time), even when the count came back None. This
+    test enforces the new invariant."""
+    from app import _git_freshness
+
+    result = _git_freshness(fetch=False)
+    assert set(result.keys()) == {"commitsBehind", "checkedAt", "fetched"}
+    assert result["fetched"] is False
+    behind = result["commitsBehind"]
+    assert behind is None or (isinstance(behind, int) and behind >= 0)
+    # Always a string now, even when behind is None — see docstring.
+    assert isinstance(result["checkedAt"], str) and result["checkedAt"], (
+        f"checkedAt must always be a non-empty ISO timestamp string, "
+        f"got: {result['checkedAt']!r}"
+    )
+
+
+def test_git_freshness_current_returns_cache_when_fresh(monkeypatch):
+    """`_git_freshness_current()` returns the cached value verbatim
+    when its `checkedAt` is within the TTL — no subprocess call.
+    Validates the TTL-gate that keeps per-request latency low."""
+    import app as app_module
+
+    now_iso = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
+    cache = {"commitsBehind": 3, "checkedAt": now_iso, "fetched": True}
+    monkeypatch.setattr(app_module, "_GIT_FRESHNESS_CACHE", cache, raising=False)
+
+    # Spy: if `_git_freshness` is called the cache was deemed stale.
+    called = {"count": 0}
+    def spy(*args, **kwargs):
+        called["count"] += 1
+        return {"commitsBehind": 999, "checkedAt": now_iso, "fetched": True}
+    monkeypatch.setattr(app_module, "_git_freshness", spy)
+
+    result = app_module._git_freshness_current()
+    assert result == cache
+    assert called["count"] == 0, "should NOT refresh while cache is within TTL"
+
+
+def test_git_freshness_current_refreshes_when_cache_is_stale(monkeypatch):
+    """When `checkedAt` is older than the TTL, the helper re-runs
+    `_git_freshness(fetch=True)`. This is the mechanism that catches
+    the May-12 case: a server with a stale cache picks up freshness
+    changes on the next request."""
+    import app as app_module
+
+    old = dt.datetime.now(dt.timezone.utc) - dt.timedelta(seconds=app_module._GIT_FRESHNESS_REFRESH_TTL_SECONDS + 60)
+    monkeypatch.setattr(
+        app_module,
+        "_GIT_FRESHNESS_CACHE",
+        {"commitsBehind": 0, "checkedAt": old.isoformat(timespec="seconds"), "fetched": True},
+        raising=False,
+    )
+    fresh_value = {
+        "commitsBehind": 7,
+        "checkedAt": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+        "fetched": True,
+    }
+    monkeypatch.setattr(
+        app_module,
+        "_git_freshness",
+        lambda *, fetch=False: fresh_value,
+    )
+
+    result = app_module._git_freshness_current()
+    assert result == fresh_value, "stale cache should be replaced by refresh result"
+    assert app_module._GIT_FRESHNESS_CACHE == fresh_value
+
+
+def test_git_freshness_current_honors_ttl_even_when_count_is_none(monkeypatch):
+    """**Codex review on PR #70 v2, final finding**: a cache entry
+    representing "we checked, freshness is unknown" (commitsBehind=None
+    with a real checkedAt timestamp) MUST be treated as fresh under
+    the TTL, not retried on every request. Without this, a server on
+    a branch with no upstream / detached HEAD / git unavailable
+    would re-run `git fetch` per request — slow and wasteful.
+
+    The fix is in `_git_freshness()`: `checkedAt` is now stamped
+    unconditionally (the *attempt* time, not just the success time),
+    so the TTL gate works the same for known and unknown count states.
+    """
+    import app as app_module
+
+    # Cache: we recently tried (now), got no answer (no upstream).
+    now_iso = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
+    cache = {"commitsBehind": None, "checkedAt": now_iso, "fetched": False}
+    monkeypatch.setattr(app_module, "_GIT_FRESHNESS_CACHE", cache, raising=False)
+
+    # Spy: track whether `_git_freshness` is called for refresh.
+    called = {"count": 0}
+    def spy(*args, **kwargs):
+        called["count"] += 1
+        return {"commitsBehind": None, "checkedAt": now_iso, "fetched": False}
+    monkeypatch.setattr(app_module, "_git_freshness", spy)
+
+    # Call twice — should both return the cached value without
+    # triggering a refresh (the bug Codex reproduced with two calls).
+    r1 = app_module._git_freshness_current()
+    r2 = app_module._git_freshness_current()
+    assert r1 == cache and r2 == cache
+    assert called["count"] == 0, (
+        f"unknown-count cache must NOT trigger refresh under TTL, "
+        f"got {called['count']} refresh calls"
+    )
+
+
+def test_git_freshness_current_returns_default_when_cache_never_populated(monkeypatch):
+    """The helper must NOT trigger a real network call when the cache
+    was never populated (test-import scenario). Prevents tests from
+    hanging on `git fetch`."""
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "_GIT_FRESHNESS_CACHE", None, raising=False)
+    called = {"count": 0}
+    def fail_if_called(*args, **kwargs):
+        called["count"] += 1
+        raise AssertionError("must not call _git_freshness when cache is None")
+    monkeypatch.setattr(app_module, "_git_freshness", fail_if_called)
+
+    result = app_module._git_freshness_current()
+    assert result == {"commitsBehind": None, "checkedAt": None, "fetched": False}
+    assert called["count"] == 0
+
+
+def test_recognize_and_persist_writes_runtime_to_disk(tmp_path, monkeypatch):
+    """**Codex review on PR #70, finding #2**: `payload["runtime"]`
+    must be attached BEFORE `save_run` writes `result.json` so the
+    on-disk audit trail carries the freshness/identity block. The
+    previous PR location (after `recognize_and_persist` returned)
+    persisted result.json BEFORE runtime was set, leaving the on-disk
+    audit trail empty.
+    """
+    import app as app_module
+    from rubik_recognizer.dataset import ImagePair, ImageUpload
+    from PIL import Image
+
+    monkeypatch.setattr(app_module, "RUNS", tmp_path / "runs", raising=False)
+
+    # Tiny solid-color JPEGs. The recognizer will fast-reject (can't
+    # form a legal cube from a solid color), but that's fine —
+    # save_run still writes result.json on rejection paths.
+    def jpeg(color):
+        buf = io.BytesIO()
+        Image.new("RGB", (32, 32), color).save(buf, format="JPEG", quality=70)
+        return buf.getvalue()
+
+    pair = ImagePair(
+        set_id="set-runtime-disk-test",
+        image_a=ImageUpload("a.jpg", jpeg((255, 255, 255))),
+        image_b=ImageUpload("b.jpg", jpeg((255, 255, 0))),
+    )
+    app_module.recognize_and_persist(app_module.WhiteUpRecognizer(), pair)
+
+    saved_dirs = list((tmp_path / "runs" / "pairs").glob("*"))
+    assert saved_dirs, f"expected a saved run under {tmp_path / 'runs' / 'pairs'}"
+    saved_result = json.loads((saved_dirs[0] / "result.json").read_text())
+
+    # The fix: on-disk file carries the runtime block.
+    assert "runtime" in saved_result, (
+        "Persisted result.json must include the runtime block (Codex review "
+        "PR #70 finding #2). Got keys: " + ", ".join(sorted(saved_result.keys()))
+    )
+    rt = saved_result["runtime"]
+    assert "git" in rt
+    assert "sha" in rt["git"]
+    assert "warnings" in rt
+    # And imageA/imageB fingerprints (the original audit-trail purpose).
+    assert "imageA" in rt and "imageB" in rt
 
 
 def _multipart_body(fields, boundary="testboundary123"):

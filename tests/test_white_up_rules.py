@@ -554,6 +554,46 @@ def test_ranked_visible_face_triples_rescues_small_overlap_when_strict_empty():
     assert recognizer._triple_overlap_count(triples[0][1].values()) == 6
 
 
+def test_face_triple_failure_check_reports_low_quality_overlap_rescue():
+    def grid(grid_id, component_ids, x_offset, matched_count=6, fit_error=0.0):
+        stickers = []
+        ids = list(component_ids)
+        for row in range(3):
+            sticker_row = []
+            for col in range(3):
+                component_id = ids[(row * 3 + col) % len(ids)]
+                sticker_row.append(type("Sticker", (), {"id": component_id, "source": "component", "shape_angle": None})())
+            stickers.append(sticker_row)
+        points = [[(x_offset + col * 10, row * 10) for col in range(3)] for row in range(3)]
+        return type(
+            "Grid",
+            (),
+            {
+                "id": grid_id,
+                "matched_count": matched_count,
+                "fit_error": fit_error,
+                "points": points,
+                "stickers": stickers,
+            },
+        )()
+
+    grids_by_face = {
+        "D": [grid(1, range(9), 0, matched_count=8)],
+        "L": [grid(2, (0, 1, 2, 20, 21, 22), 10, fit_error=20.0)],
+        "F": [grid(3, (3, 4, 5, 30, 31, 32), 20, fit_error=20.0)],
+    }
+
+    assert recognizer._ranked_visible_face_triples(grids_by_face, "D") == []
+    assert (
+        recognizer._face_triple_failure_check("image_b", grids_by_face, "D")
+        == "image_b_face_triple_overlap_low_quality"
+    )
+    assert (
+        recognizer._reason_for_checks(["image_b_face_triple_overlap_low_quality"])
+        == "Image B only produced overlapping or low-quality three-face grids; retake with clearer face separation."
+    )
+
+
 def test_repair_details_memoizes_signature_stable_work(monkeypatch):
     solved = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
 

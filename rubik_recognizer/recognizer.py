@@ -92,6 +92,7 @@ MAX_RESCUE_TRIPLE_COMPONENT_OVERLAP = 6
 MAX_RESCUE_VISIBLE_FACE_TRIPLES = 3
 MIN_RESCUE_VISIBLE_FACE_TRIPLE_SCORE = 80.0
 RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK = "red_orange_pair_calibration_suspected"
+FACE_TRIPLE_OVERLAP_LOW_QUALITY_CHECK = "face_triple_overlap_low_quality"
 # Tuned to tag Sets 17/21/22 without firing on unrelated hard-case or corpus
 # rejects; revisit these gates when new red/orange captures are added.
 RED_ORANGE_SKEW_MIN_GAP = 3
@@ -1053,7 +1054,7 @@ def _white_up_checks(analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> Li
         if _can_rank_grid_triples(analysis):
             groups = _candidate_grids_by_face(analysis, anchor)
             if anchor in groups and not _ranked_visible_face_triples(groups, anchor):
-                checks.append(f"{label}_no_reliable_face_triple")
+                checks.append(_face_triple_failure_check(label, groups, anchor))
     side_centers = [
         face
         for analysis, anchor in ((analysis_a, "U"), (analysis_b, "D"))
@@ -1065,6 +1066,12 @@ def _white_up_checks(analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> Li
     return checks
 
 
+def _face_triple_failure_check(label: str, grids_by_face: Dict[str, List[FaceGrid]], anchor: str) -> str:
+    if _low_quality_overlap_face_triples_exist(grids_by_face, anchor):
+        return f"{label}_{FACE_TRIPLE_OVERLAP_LOW_QUALITY_CHECK}"
+    return f"{label}_no_reliable_face_triple"
+
+
 def _reason_for_checks(checks: Sequence[str]) -> str:
     if "image_a_U_anchor_missing" in checks:
         return "Image A must contain the white/U center face; a logo is allowed if the sampled center is still white-ish."
@@ -1072,6 +1079,10 @@ def _reason_for_checks(checks: Sequence[str]) -> str:
         return "Image B must contain the yellow/D center face after the flip."
     if "image_b_D_anchor_weak" in checks:
         return "Image B contains a weak yellow/D center grid; retake with a clearer yellow-up face."
+    if "image_a_face_triple_overlap_low_quality" in checks:
+        return "Image A only produced overlapping or low-quality three-face grids; retake with clearer face separation."
+    if "image_b_face_triple_overlap_low_quality" in checks:
+        return "Image B only produced overlapping or low-quality three-face grids; retake with clearer face separation."
     if "image_a_no_reliable_face_triple" in checks:
         return "Image A did not contain a reliable non-overlapping three-face grid."
     if "image_b_no_reliable_face_triple" in checks:
@@ -1369,6 +1380,18 @@ def _ranked_visible_face_triples(grids_by_face: Dict[str, List[FaceGrid]], ancho
     )
     triples = [item for item in triples if item[0] >= MIN_RESCUE_VISIBLE_FACE_TRIPLE_SCORE]
     return triples[:MAX_RESCUE_VISIBLE_FACE_TRIPLES]
+
+
+def _low_quality_overlap_face_triples_exist(grids_by_face: Dict[str, List[FaceGrid]], anchor: str) -> bool:
+    if anchor not in grids_by_face:
+        return False
+    triples = _visible_face_triples(
+        grids_by_face,
+        anchor,
+        max_overlap=MAX_RESCUE_TRIPLE_COMPONENT_OVERLAP,
+        extra_overlap_penalty=24.0,
+    )
+    return bool(triples)
 
 
 def _visible_face_triples(

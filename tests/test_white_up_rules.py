@@ -17,6 +17,8 @@ from rubik_recognizer.recognizer import (
     _pair_color_calibration_signal,
     _prefer_calibrated_result,
     _recognition_category_payload,
+    _repair_details_with_orientation_selection_scores,
+    _repair_orientation_rerank_applies,
     _repair_ranking_penalty,
     _validation_failed_checks,
     _selected_faces_by_image,
@@ -189,6 +191,52 @@ def test_recognize_from_analyses_skips_repair_for_low_direct_candidate_count(mon
     assert result.recognition_signals["repairCandidateCount"] == 0
     assert result.recognition_signals["topRepairCandidates"] == []
     assert calls == {"workset": 1, "direct": 1, "repair": 0}
+
+
+def test_repair_orientation_rerank_targets_low_confidence_rank_capped_repairs():
+    low_ranked = [
+        {
+            "confidence": 0.508,
+            "repairRankingPenalty": recognizer.MAX_REPAIR_RANKING_PENALTY,
+            "orientationRankA": 2,
+            "orientationRankB": 12,
+        }
+    ]
+    high_confidence = [{**low_ranked[0], "confidence": recognizer.REPAIRED_HIGH_CONFIDENCE_THRESHOLD}]
+    high_orientation = [{**low_ranked[0], "orientationRankA": 2, "orientationRankB": 3}]
+
+    assert _repair_orientation_rerank_applies(low_ranked)
+    assert not _repair_orientation_rerank_applies(high_confidence)
+    assert not _repair_orientation_rerank_applies(high_orientation)
+
+
+def test_repair_orientation_rerank_promotes_better_ranked_candidate():
+    details = [
+        {
+            "state": "old",
+            "confidence": 0.5078,
+            "repairRankingPenalty": recognizer.MAX_REPAIR_RANKING_PENALTY,
+            "orientationRankA": 2,
+            "orientationRankB": 12,
+        },
+        {
+            "state": "better",
+            "confidence": 0.5,
+            "repairRankingPenalty": recognizer.MAX_REPAIR_RANKING_PENALTY,
+            "orientationRankA": 5,
+            "orientationRankB": 1,
+        },
+    ]
+
+    annotated = _repair_details_with_orientation_selection_scores(details)
+
+    assert [item["state"] for item in annotated] == ["better", "old"]
+    assert annotated[0]["preRerankConfidence"] == 0.5
+    assert annotated[0]["repairOrientationRerankBonus"] == 0.024
+    assert annotated[0]["repairSelectionScore"] == 0.524
+    assert annotated[0]["confidence"] == 0.524
+    assert annotated[1]["repairSelectionScore"] == 0.5078
+    assert annotated[1].get("repairOrientationRerankBonus") is None
 
 
 def test_validation_failed_checks_tags_opposing_red_orange_skew():

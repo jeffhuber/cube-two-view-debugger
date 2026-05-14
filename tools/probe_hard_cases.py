@@ -448,6 +448,19 @@ def probe_pair(
         "targetFailures": failures,
         "pairColorCalibration": signals.get("pairColorCalibration"),
         "selectedGridQuality": signals.get("selectedGridQuality"),
+        # Repair audit trail. Surfaces both the standard repair path and the
+        # PR #76 conflict-backfill path so an operator scanning the hard-case
+        # JSON can tell, per set, whether repair fired, whether backfill
+        # fired, and how many alt-option merges backfill evaluated. Without
+        # this block the only way to inspect the new path is per-pair
+        # `tools/recognize_pair.py`.
+        "repair": {
+            "pathUsed": signals.get("repairPathUsed"),
+            "candidateCount": signals.get("repairCandidateCount"),
+            "backfillAttempted": bool(signals.get("repairBackfillAttempted")),
+            "backfillEvaluatedMerges": signals.get("repairBackfillEvaluatedMerges"),
+            "backfillUsed": signals.get("repairBackfillUsed"),
+        },
         "imageDiagnostics": image_diagnostics(result, include_grid_cells=include_grid_cells),
         "timings": {"totalSeconds": round(time.perf_counter() - start, 4)},
     }
@@ -496,15 +509,45 @@ def write_json(path: Path, results: Sequence[Dict[str, Any]], manifest: Path) ->
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def _format_repair_cell(repair: Optional[Dict[str, Any]]) -> str:
+    """Compact one-cell summary of the repair audit block.
+
+    Surfaces both the standard repair path and the PR #76 conflict-backfill
+    path so an operator scanning the table can see at a glance which sets
+    exercised which path. Possible values:
+
+      empty string  → repair audit absent (no recognitionSignals)
+      none          → repairPathUsed=False (no repair attempt fired)
+      std/N         → standard repair fired with N candidates
+      bf/N/used     → backfill gate fired, N merges evaluated, result used
+      bf/N/empty    → backfill gate fired, N merges evaluated, none usable
+    """
+    if not repair:
+        return ""
+    # Backfill check must come BEFORE the pathUsed gate: when the backfill
+    # gate fires and produces zero usable candidates, pathUsed is False
+    # (no repair output) but backfillAttempted is True. We want to render
+    # `bf/0/empty` for that state, not `none`.
+    if repair.get("backfillAttempted"):
+        n = repair.get("backfillEvaluatedMerges")
+        kind = "used" if repair.get("backfillUsed") else "empty"
+        return f"bf/{n if n is not None else '?'}/{kind}"
+    if not repair.get("pathUsed"):
+        return "none"
+    n = repair.get("candidateCount")
+    return f"std/{n if n is not None else '?'}"
+
+
 def print_table(results: Sequence[Dict[str, Any]]) -> None:
-    print("Set Issue Class                         Status    Category            Score  Cands   Checks")
-    print("--- ----- ----------------------------- --------- ------------------- ------ ------- ------------------------------")
+    print("Set Issue Class                         Status    Category            Score  Cands   Repair       Checks")
+    print("--- ----- ----------------------------- --------- ------------------- ------ ------- ------------ ------------------------------")
     for result in results:
         checks = ",".join(result.get("failedChecks") or [])
         target = result.get("targetPassed")
         marker = " target=pass" if target is True else " target=FAIL" if target is False else ""
         score = "" if result.get("score") is None else f"{result.get('score')}/54"
         candidate_count = "" if result.get("candidateCount") is None else str(result.get("candidateCount"))
+        repair_cell = _format_repair_cell(result.get("repair"))
         print(
             f"{result.get('setId', ''):>3} "
             f"{str(result.get('linkedIssue') or ''):>5} "
@@ -513,6 +556,7 @@ def print_table(results: Sequence[Dict[str, Any]]) -> None:
             f"{str(result.get('category') or ''):<19.19} "
             f"{score:>6} "
             f"{candidate_count:>7} "
+            f"{repair_cell:<12.12} "
             f"{checks}{marker}"
         )
 

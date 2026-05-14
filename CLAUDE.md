@@ -72,7 +72,7 @@ the silhouette.
   #25](https://github.com/jeffhuber/cube-two-view-debugger/issues/25)
   must preserve behavior byte-for-byte. The gate is
   `tools/probe_corpus.py --fail-on-contract` on the pinned ARM64
-  environment with the current 14-pair corpus. Don't merge a Speed
+  environment with the current 15-pair corpus. Don't merge a Speed
   PR if any row's score / category / path / candidate count differs
   from the baseline.
 

@@ -365,8 +365,93 @@ def _git_branch() -> Optional[str]:
     return result.stdout.strip() or None
 
 
+# Module-level cache: populated once at server start by `main()` via
+# `_git_freshness(fetch=True)`. Read by `_runtime_diag()` so every
+# `/api/diag` hit and every `result.json` carries the same value
+# without re-running `git fetch` per request. None when the server
+# wasn't entered through `main()` (e.g. test imports of `_runtime_diag`).
+_GIT_FRESHNESS_AT_START: Optional[Dict[str, Any]] = None
+
+
+def _git_freshness(*, fetch: bool = False) -> Dict[str, Any]:
+    """Check whether the working tree is behind its upstream branch.
+
+    When `fetch=True`, runs `git fetch --quiet origin` first (10s
+    timeout for the network call) to update the local view of origin.
+    Without that, the comparison is only as fresh as the user's last
+    manual fetch/pull.
+
+    Returns a dict with three keys:
+
+    - `commitsBehind`: int count, or `None` when the check couldn't
+      run (no git, no upstream, detached HEAD, network failure with
+      no cached origin, etc.). `0` means up-to-date.
+    - `checkedAt`: ISO-8601 UTC timestamp of the check, or `None` when
+      `commitsBehind` is None.
+    - `fetched`: whether `git fetch` ran successfully during this
+      call. Even when False, `commitsBehind` may still be useful (it
+      reflects whatever the local view of origin already had).
+
+    Compares against `@{upstream}` rather than hardcoded `origin/main`
+    so a server running on a feature branch reports whether *that
+    branch* has moved on origin, not the (irrelevant) distance from
+    main. Practical for staleness detection; doesn't try to tell you
+    "main has moved" on a feature-branch deployment.
+
+    Never raises — every git error degrades to `commitsBehind=None`.
+    See cube-two-view-debugger CLAUDE.md "Cv-local server identity"
+    for the convention this supports.
+    """
+    result: Dict[str, Any] = {
+        "commitsBehind": None,
+        "checkedAt": None,
+        "fetched": False,
+    }
+    if fetch:
+        try:
+            r = subprocess.run(
+                ["git", "fetch", "--quiet", "origin"],
+                cwd=str(ROOT),
+                capture_output=True,
+                text=True,
+                timeout=10,  # network op; capped so a slow link doesn't hang server start
+            )
+            result["fetched"] = r.returncode == 0
+        except (OSError, subprocess.SubprocessError):
+            pass
+    try:
+        r = subprocess.run(
+            ["git", "rev-list", "--count", "HEAD..@{upstream}"],
+            cwd=str(ROOT),
+            capture_output=True,
+            text=True,
+            timeout=2,
+        )
+        if r.returncode == 0:
+            result["commitsBehind"] = int(r.stdout.strip() or "0")
+            result["checkedAt"] = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
+    except (OSError, subprocess.SubprocessError, ValueError):
+        pass
+    return result
+
+
 def _runtime_diag() -> Dict[str, Any]:
     """Stable JSON-serialisable description of the recognizer's runtime."""
+    freshness = _GIT_FRESHNESS_AT_START or {
+        "commitsBehind": None,
+        "checkedAt": None,
+        "fetched": False,
+    }
+    warnings: List[str] = []
+    behind = freshness.get("commitsBehind")
+    if isinstance(behind, int) and behind > 0:
+        # Visible flag in every /api/diag hit and every persisted
+        # result.json. Catches the case where the server was started a
+        # while ago, main has moved since, and someone consuming an
+        # API response (or auditing a saved run) needs to know the
+        # code that produced it is no longer current. See the
+        # postmortem on the 32-hour-stale May 12 server for context.
+        warnings.append(f"server_stale_by_{behind}_commits_at_start")
     return {
         "python": {
             "version": ".".join(str(p) for p in sys.version_info[:3]),
@@ -386,7 +471,10 @@ def _runtime_diag() -> Dict[str, Any]:
             "sha": _git_sha(),
             "branch": _git_branch(),
             "cwd": str(ROOT),
+            "commitsBehindAtStart": freshness.get("commitsBehind"),
+            "commitsBehindCheckedAt": freshness.get("checkedAt"),
         },
+        "warnings": warnings,
     }
 
 
@@ -509,6 +597,13 @@ def main() -> None:
     for warning in _check_runtime_versions():
         print(f"[rubik-app] WARNING: {warning}", file=sys.stderr)
 
+    # Populate the freshness cache before the banner so the banner can
+    # surface a "behind origin" warning AND every subsequent /api/diag
+    # response carries the same value. Runs `git fetch` once (capped
+    # at 10s); silent on network failure.
+    global _GIT_FRESHNESS_AT_START
+    _GIT_FRESHNESS_AT_START = _git_freshness(fetch=True)
+
     server = ThreadingHTTPServer((args.host, args.port), RubikHandler)
     diag = _runtime_diag()
     # Identity banner. Surfaces which repo/branch/SHA is serving so a
@@ -532,6 +627,19 @@ def main() -> None:
         f"numpy {diag['libraries']['numpy']}",
         file=sys.stderr,
     )
+    # Staleness warning: if the working tree was behind its upstream
+    # branch at startup, surface a loud line in the banner. Caught the
+    # 32-hour-stale May 12 server postmortem; the goal is "anyone
+    # reading the server log notices immediately instead of finding
+    # out via a misclassified recognition hours later."
+    behind = diag["git"].get("commitsBehindAtStart")
+    if isinstance(behind, int) and behind > 0:
+        upstream = branch if branch != "detached" else "upstream"
+        print(
+            f"[rubik-app]   WARNING:  {behind} commit(s) behind origin/{upstream}. "
+            f"Pull + restart to refresh.",
+            file=sys.stderr,
+        )
     server.serve_forever()
 
 

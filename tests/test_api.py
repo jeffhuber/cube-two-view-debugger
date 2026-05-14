@@ -143,6 +143,130 @@ def test_runtime_diag_includes_branch_field():
     )
 
 
+def test_runtime_diag_includes_freshness_fields():
+    """`commitsBehindAtStart` + `commitsBehindCheckedAt` carry the
+    staleness signal that the startup banner emits to stderr, so any
+    saved result.json or /api/diag hit can prove the server's age
+    after-the-fact. Tested separately because not every call path
+    populates the freshness cache (e.g. test imports), so the fields
+    must still exist with None values then."""
+    from app import _runtime_diag
+
+    diag = _runtime_diag()
+    git = diag.get("git") or {}
+    assert "commitsBehindAtStart" in git, (
+        f"expected git.commitsBehindAtStart in diag, got: {sorted(git.keys())}"
+    )
+    assert "commitsBehindCheckedAt" in git, (
+        f"expected git.commitsBehindCheckedAt in diag, got: {sorted(git.keys())}"
+    )
+    # Values can be None (when freshness wasn't populated this run)
+    # OR (int, ISO8601-string-or-None). Tests can't assume which.
+    behind = git["commitsBehindAtStart"]
+    assert behind is None or (isinstance(behind, int) and behind >= 0), (
+        f"commitsBehindAtStart must be None or non-negative int, got {behind!r}"
+    )
+
+
+def test_runtime_diag_warnings_field_present_and_empty_by_default():
+    """`warnings` is the top-level audit-trail field. Empty list means
+    'nothing flagged at start'; non-empty means downstream consumers
+    (saved result.json, the Fixer, the bench harness) should surface
+    them. Default state in unit-test imports is no freshness cache, so
+    the list must be empty."""
+    from app import _runtime_diag
+
+    diag = _runtime_diag()
+    assert "warnings" in diag, f"expected top-level 'warnings' field, got: {sorted(diag.keys())}"
+    assert isinstance(diag["warnings"], list)
+    # No cache populated by tests → no behind-count → empty warnings.
+    assert diag["warnings"] == []
+
+
+def test_runtime_diag_warnings_populated_when_cache_says_behind(monkeypatch):
+    """When the module-level freshness cache (normally populated by
+    `main()` at server start) records a non-zero behind-count, the
+    diag adds a `server_stale_by_N_commits_at_start` warning. This is
+    the audit-trail mechanism for the postmortem case: a result.json
+    persisted by a stale server should carry the staleness flag so a
+    reviewer can detect the issue after the fact."""
+    import app as app_module
+
+    # Inject a synthetic cache. Mirrors what _git_freshness(fetch=True)
+    # would return on a 7-commits-behind working tree.
+    monkeypatch.setattr(
+        app_module,
+        "_GIT_FRESHNESS_AT_START",
+        {
+            "commitsBehind": 7,
+            "checkedAt": "2026-05-14T04:30:00+00:00",
+            "fetched": True,
+        },
+        raising=False,
+    )
+    diag = app_module._runtime_diag()
+    assert diag["git"]["commitsBehindAtStart"] == 7
+    assert diag["git"]["commitsBehindCheckedAt"] == "2026-05-14T04:30:00+00:00"
+    assert "server_stale_by_7_commits_at_start" in diag["warnings"], (
+        f"expected stale warning, got: {diag['warnings']}"
+    )
+
+
+def test_runtime_diag_no_warning_when_cache_says_fresh(monkeypatch):
+    """commitsBehind=0 is the up-to-date case — no warning emitted.
+    Distinguishes 'verified fresh' from 'couldn't verify' (None)."""
+    import app as app_module
+
+    monkeypatch.setattr(
+        app_module,
+        "_GIT_FRESHNESS_AT_START",
+        {
+            "commitsBehind": 0,
+            "checkedAt": "2026-05-14T04:30:00+00:00",
+            "fetched": True,
+        },
+        raising=False,
+    )
+    diag = app_module._runtime_diag()
+    assert diag["git"]["commitsBehindAtStart"] == 0
+    assert diag["warnings"] == []
+
+
+def test_runtime_diag_no_warning_when_cache_says_unknown(monkeypatch):
+    """commitsBehind=None means the check couldn't run — no upstream,
+    no network, git not installed, etc. Don't emit a stale warning in
+    that case (we can't tell). Distinguishing this from
+    commitsBehind=0 is what prevents false alarms on offline servers."""
+    import app as app_module
+
+    monkeypatch.setattr(
+        app_module,
+        "_GIT_FRESHNESS_AT_START",
+        {"commitsBehind": None, "checkedAt": None, "fetched": False},
+        raising=False,
+    )
+    diag = app_module._runtime_diag()
+    assert diag["git"]["commitsBehindAtStart"] is None
+    assert diag["warnings"] == []
+
+
+def test_git_freshness_returns_well_formed_shape():
+    """`_git_freshness()` always returns the three documented keys.
+    Without `fetch=True` this is just a `git rev-list` call against the
+    local view of origin — fast, no network. Values may be None on
+    detached HEAD or no-upstream branches, but the keys must exist."""
+    from app import _git_freshness
+
+    result = _git_freshness(fetch=False)
+    assert set(result.keys()) == {"commitsBehind", "checkedAt", "fetched"}
+    # fetched=False because we passed fetch=False
+    assert result["fetched"] is False
+    behind = result["commitsBehind"]
+    assert behind is None or (isinstance(behind, int) and behind >= 0)
+    checked_at = result["checkedAt"]
+    assert checked_at is None or isinstance(checked_at, str)
+
+
 def _multipart_body(fields, boundary="testboundary123"):
     """Build a minimal multipart/form-data body. `fields` is a list of
     (name, filename_or_None, value_bytes) tuples. Returns (content_type, body)."""

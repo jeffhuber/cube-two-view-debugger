@@ -58,6 +58,63 @@ locate the cube silhouette (using `analyze_image(...).roi` if you can,
 or visual inspection of the EXIF-corrected frame), then sample within
 the silhouette.
 
+## Comparative observational claims — view both sides before claiming
+
+Before stating "**X differs from Y in way Z**" — whether X/Y are
+photos, sets, JSON outputs, code paths, recognizer states, or any
+other comparable artifacts — you MUST view both X and Y in the
+medium of the claim. Memory of fixtures is unreliable. Mental
+models drift.
+
+Concretely:
+- Claim about photo content → view both EXIF-corrected photos
+- Claim about JSON output / recognizer signals → look at both JSONs
+- Claim about code differences → grep/Read both files
+- Claim about overlay quality or detection counts → view both overlays
+- Claim about API response shape → fetch both responses
+
+**This caused a real failure on Set 46 (2026-05-14):** Set 46
+recognition failed with all-six-face-count errors. Claude diagnosed
+"Set 46 uses a different cube than the corpus — Rubik's brand with
+logo center and thick black bezels distinct from the corpus cubes."
+The user pointed out this was factually wrong: it's been the same
+Rubik's brand cube with the same logo and the same bezels across
+every image set in the corpus and hard-case manifest. Claude had
+never actually looked at any corpus photo — only at JSON
+diagnostics, overlays, and scores — and pattern-matched against an
+imagined mental model of "stickerless training fixtures." The real
+cause turned out to be the wood-grain desktop background producing
+60–70% saturated pixels vs Set 15's marble café table at 13.5%,
+which broke `_find_cube_roi`. A 30-second side-by-side view of
+Set 15 and Set 46 photos would have caught the false premise
+before any diagnosis was written.
+
+Related prior incidents:
+- PR #76 review "options_b underpopulates" claim about Sets 17/21
+  (turned out to be wrong; the actual signature was face-count
+  failures earlier in the pipeline, visible in
+  `/tmp/pr76-set17.json` had Claude checked).
+- "U-anchor white reinforcement" scope draft (assumed solved cube
+  has 9 white stickers on U; Codex's empirical falsification
+  produced 0 improvement).
+
+### The trigger / mechanism
+
+When you write "*the X uses Y, not Z*" or "*X has more/fewer N
+than Y*" or "*X differs from Y because…*", ask:
+
+> Have I actually viewed both X and Y in the medium of the claim
+> recently in this session?
+
+If the answer is "no" or "I think so, from a while ago" or "I've
+seen JSON for one but not the other" — **stop and look.** The view
+is cheap; the false claim is expensive.
+
+This protocol extends the "look at the photo before claiming"
+discipline from the EXIF section above to *any* comparative claim.
+The EXIF rule is "view the photo before reading it"; this rule is
+"view both photos before comparing them."
+
 ## Other Claude/Codex working conventions
 
 - **Corpus probe runtime fingerprint**: the manifest pins the

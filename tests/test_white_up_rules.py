@@ -10,6 +10,7 @@ from rubik_recognizer.recognizer import (
     WhiteUpRecognizer,
     _attach_failed_pair_color_calibration_signal,
     _capture_yaw_state_to_wca,
+    _corner_assignment,
     _grid_signal_summary,
     _grid_matrix_for_orientation,
     _merged_face_candidates,
@@ -246,6 +247,11 @@ def test_validation_failed_checks_tags_opposing_red_orange_skew():
     checks = _validation_failed_checks(["R_count_not_9"], a, b)
 
     assert checks == ["R_count_not_9", RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK]
+
+
+def test_corner_assignment_preserves_legacy_ud_agnostic_side_order():
+    assert _corner_assignment(("D", "F", "R")) == (4, 0)
+    assert _corner_assignment(("U", "F", "R")) == (4, 0)
 
 
 def test_validation_failed_checks_ignores_one_sided_red_orange_skew():

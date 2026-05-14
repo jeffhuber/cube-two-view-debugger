@@ -14,6 +14,7 @@ import contextlib
 import hashlib
 import io
 import json
+import math
 import os
 import platform
 import subprocess
@@ -1064,9 +1065,15 @@ def timing_summary(results: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
         for result in results
         if result.get("status") != "skipped"
     ]
+    sorted_times = sorted(row_times)
+    total_seconds = round(sum(row_times), 4)
+    row_count = len(row_times)
     return {
-        "totalSeconds": round(sum(row_times), 4),
-        "rowCount": len(row_times),
+        "totalSeconds": total_seconds,
+        "rowCount": row_count,
+        "meanSeconds": round(total_seconds / row_count, 4) if row_count else 0.0,
+        "p50Seconds": _median(sorted_times),
+        "p95Seconds": _nearest_rank_percentile(sorted_times, 0.95),
         "slowestRows": [
             {
                 "setId": result.get("setId"),
@@ -1080,6 +1087,22 @@ def timing_summary(results: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
             )[:5]
         ],
     }
+
+
+def _median(sorted_values: Sequence[float]) -> float:
+    if not sorted_values:
+        return 0.0
+    midpoint = len(sorted_values) // 2
+    if len(sorted_values) % 2:
+        return round(sorted_values[midpoint], 4)
+    return round((sorted_values[midpoint - 1] + sorted_values[midpoint]) / 2.0, 4)
+
+
+def _nearest_rank_percentile(sorted_values: Sequence[float], percentile: float) -> float:
+    if not sorted_values:
+        return 0.0
+    index = max(0, min(len(sorted_values) - 1, math.ceil(percentile * len(sorted_values)) - 1))
+    return round(sorted_values[index], 4)
 
 
 def write_json(
@@ -1161,7 +1184,10 @@ def main() -> int:
     if not args.quiet:
         print(f"Runtime: {runtime_summary(fingerprint)}")
         summary = timing_summary(results)
-        print(f"Timing: total={summary['totalSeconds']}s rows={summary['rowCount']}")
+        print(
+            f"Timing: total={summary['totalSeconds']}s rows={summary['rowCount']} "
+            f"mean={summary['meanSeconds']}s p50={summary['p50Seconds']}s p95={summary['p95Seconds']}s"
+        )
         print()
         print_table(results)
 

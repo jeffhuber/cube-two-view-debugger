@@ -141,12 +141,12 @@ tracebacks). Reasons to keep them separate:
 1. **Truncation surface.** Sharing the path via `>` would truncate
    the canonical file before Python starts, defeating the
    "accumulates an audit trail" property.
-2. **fd race.** Even with `>>`, two file descriptors point at the
-   same file — one with `O_APPEND` (the app's `open(..., 'a')`),
-   one without (the shell-inherited stderr fd from `>>`). Devin
-   reproduced concurrent writes from these two fds partially
-   overwriting the boot record. Separating the streams sidesteps
-   the race entirely.
+2. **Signal separation.** Same-file redirects are brittle: `>` uses
+   a non-append shell fd and can overwrite app-appended boot records;
+   `>>` avoids that overwrite hazard because the shell fd also has
+   `O_APPEND`, but it still mixes request logs and tracebacks into
+   the app-owned boot audit file. Separating the streams keeps the
+   canonical file focused on boot identity records.
 
 Use `tail -1` to get the most recent boot's identity:
 

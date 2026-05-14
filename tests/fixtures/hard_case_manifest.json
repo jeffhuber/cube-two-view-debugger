@@ -126,7 +126,8 @@
       "imageBPath": "/Users/jhuber/Downloads/Set 30 - B - white up IMG_7101.JPG",
       "imageA_sha256_expected": "f834711f98f11bf96383037836ec82f64b6a085d73150b6c751c6058264007e4",
       "imageB_sha256_expected": "a7a94f6c86ca7743cefd514c9b3324cebc831b3f8dbce6c5ff2498bb808cd176",
-      "groundTruthPath": null,
+      "groundTruthPath": "/Users/jhuber/Downloads/Set 30 - really tricky - cube-ground-truth-1778721256490.json",
+      "groundTruth_sha256_expected": "9673a0c186c096b81a7984053cea6f72c13c552b0017434596928a1515beaf7b",
       "expectedScoreOnceFixed": null,
       "currentStatus": "success",
       "currentCategory": "needs_manual_review",
@@ -135,7 +136,7 @@
       "targetFailedChecksAbsent": [
         "image_a_no_reliable_face_triple"
       ],
-      "notes": "Recognition PR 1 target: recover from zero strict visible-face triples."
+      "notes": "Recognition PR 1 target: recover from zero strict visible-face triples. Ground truth is now available; cv-local currently scores 18/54 (needs_manual_review category) and remains the upstream investigation target."
     },
     {
       "setId": "39",
@@ -145,7 +146,8 @@
       "imageBPath": "/Users/jhuber/Downloads/Set 39 - B - white up IMG_7158.JPG",
       "imageA_sha256_expected": "d3707913abce12f205981cf51c3c584f0e89332be9a86ed52dbba9a5128a746c",
       "imageB_sha256_expected": "1ea3af41716e071daba570d17aea85343872ec1cb090e8d18aff39d63cb336ac",
-      "groundTruthPath": null,
+      "groundTruthPath": "/Users/jhuber/Downloads/Set 39 - cube-ground-truth-1778722779064.json",
+      "groundTruth_sha256_expected": "7e8fbeae2a37b22729566733f0757dc3a5e71d50024d440299ca55964ae60e48",
       "expectedScoreOnceFixed": null,
       "currentStatus": "rejected",
       "currentCategory": "reject_retake",
@@ -158,7 +160,7 @@
         "image_b_D_anchor_missing",
         "missing_side_face_coverage"
       ],
-      "notes": "Recognition PR 4 target: remove tiny white marble-shadow components so the real cube cluster can form grids. Still rejects later on piece legality without labelled ground truth."
+      "notes": "Recognition PR 4 target: remove tiny white marble-shadow components so the real cube cluster can form grids. Still rejects later on piece legality; ground truth is now available for scoring future repair / color-classification fixes."
     },
     {
       "setId": "44",

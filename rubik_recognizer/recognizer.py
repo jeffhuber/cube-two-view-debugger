@@ -107,6 +107,13 @@ REPAIRED_HIGH_MAX_RANKING_PENALTY = 0.16
 REPAIR_RETAKE_CONFIDENCE_THRESHOLD = 0.50
 REPAIR_RETAKE_MIN_CANDIDATES = 50_000
 REPAIR_SKIP_DIRECT_CANDIDATE_THRESHOLD = REPAIR_RETAKE_MIN_CANDIDATES
+# Used only when a low-confidence repair winner has already saturated the
+# conflict penalty and came from low-ranked orientations. This lets existing
+# better-ranked repair alternatives compete without expanding the repair budget.
+REPAIR_ORIENTATION_RERANK_MIN_TOP_RANK_SUM = 10
+REPAIR_ORIENTATION_RERANK_RANK_LIMIT = 14
+REPAIR_ORIENTATION_RERANK_BONUS_PER_RANK = 0.003
+REPAIR_ORIENTATION_RERANK_MAX_BONUS = 0.03
 REPAIR_ADJACENT_COLOR_PAIRS = {frozenset(("red", "orange")), frozenset(("green", "blue"))}
 VALID_EDGE_COLOR_SETS = {frozenset(colors) for colors in EDGE_COLORS}
 VALID_CORNER_COLOR_SETS = {frozenset(colors) for colors in CORNER_COLORS}
@@ -332,17 +339,27 @@ class WhiteUpRecognizer:
             )
 
         repair_details = self._legal_repair_candidate_details_from_workset(workset, release_merged_candidates=True)
-        repair_candidates = [(item["state"], item["confidence"]) for item in repair_details]
+        repair_details = _repair_details_with_orientation_selection_scores(repair_details)
+        repair_candidates = [
+            (
+                item["state"],
+                item["confidence"],
+                _float_signal(item.get("repairSelectionScore"), default=_float_signal(item.get("confidence"))),
+            )
+            for item in repair_details
+        ]
         recognition_signals.update(_repair_signal_summary(repair_details))
         if repair_candidates:
             candidates.extend(repair_candidates)
             repaired_unique = {}
-            for state, confidence in repair_candidates:
+            for state, confidence, selection_score in repair_candidates:
                 validation = validate_state(state)
                 if validation.valid:
-                    repaired_unique[state] = max(confidence, repaired_unique.get(state, 0.0))
+                    current = repaired_unique.get(state)
+                    if current is None or selection_score > current[1]:
+                        repaired_unique[state] = (confidence, selection_score)
             if len(repaired_unique) == 1:
-                state, confidence = next(iter(repaired_unique.items()))
+                state, (confidence, _) = next(iter(repaired_unique.items()))
                 return RecognitionResult(
                     status="success",
                     state=state,
@@ -352,13 +369,14 @@ class WhiteUpRecognizer:
                     recognition_signals={**recognition_signals, **_repair_signal_summary(repair_details, selected_state=state)},
                 )
             if len(repaired_unique) > 1:
-                ranked_repaired = sorted(repaired_unique.items(), key=lambda item: item[1], reverse=True)
-                if ranked_repaired[0][1] > ranked_repaired[1][1]:
+                ranked_repaired = sorted(repaired_unique.items(), key=lambda item: item[1][1], reverse=True)
+                if ranked_repaired[0][1][1] > ranked_repaired[1][1][1]:
                     state = ranked_repaired[0][0]
+                    confidence = ranked_repaired[0][1][0]
                     return RecognitionResult(
                         status="success",
                         state=state,
-                        confidence=ranked_repaired[0][1],
+                        confidence=confidence,
                         reason="Recognized the highest-scoring legal cube state after cubie-level color repair.",
                         candidates=len(candidates),
                         recognition_signals={**recognition_signals, **_repair_signal_summary(repair_details, selected_state=state)},
@@ -668,6 +686,48 @@ def _repair_signal_summary(repair_details: Sequence[Dict[str, Any]], selected_st
     return summary
 
 
+def _repair_details_with_orientation_selection_scores(
+    repair_details: Sequence[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    should_rerank = _repair_orientation_rerank_applies(repair_details)
+    annotated: List[Dict[str, Any]] = []
+    for item in repair_details:
+        detail = dict(item)
+        confidence = _float_signal(detail.get("confidence"))
+        bonus = _repair_orientation_rerank_bonus(detail) if should_rerank else 0.0
+        if bonus > 0.0:
+            detail["preRerankConfidence"] = confidence
+            detail["confidence"] = confidence + bonus
+            detail["repairOrientationRerankBonus"] = bonus
+        detail["repairSelectionScore"] = _float_signal(detail.get("confidence"))
+        annotated.append(detail)
+    if should_rerank:
+        annotated.sort(key=lambda item: _float_signal(item.get("repairSelectionScore")), reverse=True)
+    return annotated
+
+
+def _repair_orientation_rerank_applies(repair_details: Sequence[Dict[str, Any]]) -> bool:
+    if not repair_details:
+        return False
+    selected = repair_details[0]
+    if _float_signal(selected.get("confidence")) >= REPAIRED_HIGH_CONFIDENCE_THRESHOLD:
+        return False
+    if _float_signal(selected.get("repairRankingPenalty")) < MAX_REPAIR_RANKING_PENALTY:
+        return False
+    orientation_rank_sum = _repair_orientation_rank_sum(selected)
+    return orientation_rank_sum >= REPAIR_ORIENTATION_RERANK_MIN_TOP_RANK_SUM
+
+
+def _repair_orientation_rerank_bonus(detail: Dict[str, Any]) -> float:
+    rank_sum = _repair_orientation_rank_sum(detail)
+    remaining_rank_gap = max(0, REPAIR_ORIENTATION_RERANK_RANK_LIMIT - rank_sum)
+    return min(REPAIR_ORIENTATION_RERANK_MAX_BONUS, remaining_rank_gap * REPAIR_ORIENTATION_RERANK_BONUS_PER_RANK)
+
+
+def _repair_orientation_rank_sum(detail: Dict[str, Any]) -> int:
+    return _nonnegative_int(detail.get("orientationRankA")) + _nonnegative_int(detail.get("orientationRankB"))
+
+
 def _candidate_selection_detail(merged: Dict[str, List[List[Any]]]) -> Dict[str, Any]:
     return {
         "sidePairA": _side_pair_key(merged.get("_side_pair_a")),
@@ -884,6 +944,9 @@ def _public_repair_detail(item: Dict[str, Any]) -> Dict[str, Any]:
         "orientationScoreB",
         "selectionScoreA",
         "selectionScoreB",
+        "preRerankConfidence",
+        "repairSelectionScore",
+        "repairOrientationRerankBonus",
     ):
         if public.get(key) is not None:
             public[key] = round(float(public[key]), 4)

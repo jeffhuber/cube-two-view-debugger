@@ -267,6 +267,9 @@ def test_probe_timing_summary_reports_total_and_slowest_rows():
     assert summary == {
         "totalSeconds": 6.5,
         "rowCount": 2,
+        "meanSeconds": 3.25,
+        "p50Seconds": 3.25,
+        "p95Seconds": 4.0,
         "slowestRows": [
             {"setId": "14", "totalSeconds": 4.0, "recognizeSeconds": 3.8},
             {"setId": "12", "totalSeconds": 2.5, "recognizeSeconds": 2.1},

@@ -10,7 +10,16 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 from .colors import COLOR_TO_FACE, build_adaptive_palette, classify_rgb, rgb_to_hsv
 from .geometry import TRANSFORMS, closest_edge, possible_transforms
 from .image_pipeline import FaceGrid, ImageAnalysis, Sticker, analyze_image
-from .validation import CENTER_INDICES, CORNER_COLORS, CORNER_FACELETS, EDGE_COLORS, EDGE_FACELETS, FACE_ORDER, validate_state
+from .validation import (
+    CENTER_INDICES,
+    CORNER_COLORS,
+    CORNER_FACELETS,
+    EDGE_COLORS,
+    EDGE_FACELETS,
+    FACE_ORDER,
+    is_valid_state,
+    validate_state,
+)
 
 
 FACE_TO_CENTER_COLOR = {
@@ -118,6 +127,23 @@ REPAIR_ORIENTATION_RERANK_MAX_BONUS = 0.03
 REPAIR_ADJACENT_COLOR_PAIRS = {frozenset(("red", "orange")), frozenset(("green", "blue"))}
 VALID_EDGE_COLOR_SETS = {frozenset(colors) for colors in EDGE_COLORS}
 VALID_CORNER_COLOR_SETS = {frozenset(colors) for colors in CORNER_COLORS}
+# Corner cubie identity follows the legacy assignment rule: side-color order
+# selects the cubie, while either U/D in the twist slot is allowed.
+CORNER_ASSIGNMENTS = {
+    colors: (cubie, orientation)
+    for cubie, (_, first_side, second_side) in enumerate(CORNER_COLORS)
+    for ud_color in ("U", "D")
+    for colors, orientation in (
+        ((ud_color, first_side, second_side), 0),
+        ((second_side, ud_color, first_side), 1),
+        ((first_side, second_side, ud_color), 2),
+    )
+}
+EDGE_ASSIGNMENTS = {
+    colors: (cubie, orientation)
+    for cubie, (first, second) in enumerate(EDGE_COLORS)
+    for colors, orientation in (((first, second), 0), ((second, first), 1))
+}
 REPAIR_CONFLICT_PENALTY_WEIGHTS = {
     "missingCorners": 0.024,
     "duplicateColorCorners": 0.02,
@@ -271,12 +297,16 @@ class WhiteUpRecognizer:
         candidates = self._state_candidates_from_workset(workset)
         legal = []
         invalid_reasons: List[str] = []
+        collect_invalid_reasons = len(candidates) < REPAIR_SKIP_DIRECT_CANDIDATE_THRESHOLD
         for state, confidence, details in candidates:
-            validation = validate_state(state)
-            if validation.valid:
+            if collect_invalid_reasons:
+                validation = validate_state(state)
+                if validation.valid:
+                    legal.append((state, confidence, details))
+                else:
+                    invalid_reasons.extend(validation.errors)
+            elif is_valid_state(state):
                 legal.append((state, confidence, details))
-            else:
-                invalid_reasons.extend(validation.errors)
 
         unique = {}
         unique_details = {}
@@ -354,8 +384,7 @@ class WhiteUpRecognizer:
             candidates.extend(repair_candidates)
             repaired_unique = {}
             for state, confidence, selection_score in repair_candidates:
-                validation = validate_state(state)
-                if validation.valid:
+                if is_valid_state(state):
                     current = repaired_unique.get(state)
                     if current is None or selection_score > current[1]:
                         repaired_unique[state] = (confidence, selection_score)
@@ -386,7 +415,11 @@ class WhiteUpRecognizer:
         return RecognitionResult(
             status="rejected",
             reason="No legal cube state matched the detected stickers.",
-            failed_checks=_validation_failed_checks(invalid_reasons, analysis_a, analysis_b),
+            failed_checks=_validation_failed_checks(
+                invalid_reasons or _candidate_validation_errors(candidates),
+                analysis_a,
+                analysis_b,
+            ),
             candidates=len(candidates),
             recognition_signals=recognition_signals,
         )
@@ -473,6 +506,15 @@ class WhiteUpRecognizer:
             if current is None or confidence > current["confidence"]:
                 candidates[state] = detail
         return sorted(candidates.values(), key=lambda item: item["confidence"], reverse=True)[:MAX_LEGAL_REPAIR_RETURNED]
+
+
+def _candidate_validation_errors(candidates: Sequence[Tuple[str, float, Dict[str, Any]]]) -> List[str]:
+    errors: List[str] = []
+    for state, _, _ in candidates:
+        validation = validate_state(state)
+        if not validation.valid:
+            errors.extend(validation.errors)
+    return errors
 
 
 def _prefer_calibrated_result(calibrated: RecognitionResult, raw: RecognitionResult) -> bool:
@@ -2246,8 +2288,19 @@ def _legal_repaired_state_from_faces(faces: Dict[str, List[List[Any]]]) -> Optio
         return None
 
     corners = _top_piece_solutions(corner_options, piece_count=8, orientation_mod=3)
-    edges = _top_piece_solutions(edge_options, piece_count=12, orientation_mod=2)
-    if not corners or not edges:
+    if not corners:
+        return None
+
+    min_corner_changes = min(changes for _, changes, _, _ in corners)
+    min_corner_cost = min(cost for cost, _, _, _ in corners)
+    edges = _top_piece_solutions(
+        edge_options,
+        piece_count=12,
+        orientation_mod=2,
+        max_changes=MAX_LEGAL_REPAIR_CHANGES - min_corner_changes,
+        max_cost=MAX_LEGAL_REPAIR_COST - min_corner_cost,
+    )
+    if not edges:
         return None
 
     best: Optional[Tuple[str, float, int]] = None
@@ -2356,30 +2409,20 @@ def _facelet_repair_options(facelet: Any) -> List[Tuple[str, float, int]]:
 
 
 def _corner_assignment(colors: Tuple[str, ...]) -> Optional[Tuple[int, int]]:
-    if sum(1 for color in colors if color in {"U", "D"}) != 1:
-        return None
-    orientation = next(idx for idx, color in enumerate(colors) if color in {"U", "D"})
-    color1 = colors[(orientation + 1) % 3]
-    color2 = colors[(orientation + 2) % 3]
-    cubie = next((idx for idx, proto in enumerate(CORNER_COLORS) if proto[1] == color1 and proto[2] == color2), None)
-    if cubie is None:
-        return None
-    return cubie, orientation % 3
+    return CORNER_ASSIGNMENTS.get(colors)
 
 
 def _edge_assignment(colors: Tuple[str, ...]) -> Optional[Tuple[int, int]]:
-    for cubie, proto in enumerate(EDGE_COLORS):
-        if colors == proto:
-            return cubie, 0
-        if colors == (proto[1], proto[0]):
-            return cubie, 1
-    return None
+    return EDGE_ASSIGNMENTS.get(colors)
 
 
 def _top_piece_solutions(
     options_by_position: Sequence[Sequence[PieceOption]],
     piece_count: int,
     orientation_mod: int,
+    *,
+    max_changes: int = MAX_LEGAL_REPAIR_CHANGES,
+    max_cost: float = MAX_LEGAL_REPAIR_COST,
 ) -> List[Tuple[float, int, int, Tuple[PieceOption, ...]]]:
     dp: Dict[Tuple[int, int, int], List[Tuple[float, int, Tuple[PieceOption, ...]]]] = {(0, 0, 0): [(0.0, 0, tuple())]}
     for options in options_by_position:
@@ -2390,8 +2433,11 @@ def _top_piece_solutions(
                     bit = 1 << option.cubie
                     if mask & bit:
                         continue
+                    next_cost = cost + option.cost
+                    if next_cost > max_cost:
+                        continue
                     next_changes = changes + option.changes
-                    if next_changes > MAX_LEGAL_REPAIR_CHANGES:
+                    if next_changes > max_changes:
                         continue
                     previous_greater = (mask >> (option.cubie + 1)).bit_count()
                     next_key = (
@@ -2400,7 +2446,7 @@ def _top_piece_solutions(
                         parity ^ (previous_greater % 2),
                     )
                     bucket = next_dp.setdefault(next_key, [])
-                    bucket.append((cost + option.cost, next_changes, selected + (option,)))
+                    bucket.append((next_cost, next_changes, selected + (option,)))
         dp = {
             key: sorted(bucket, key=lambda item: (item[1], item[0]))[:MAX_LEGAL_REPAIR_SOLUTIONS_PER_KEY]
             for key, bucket in next_dp.items()

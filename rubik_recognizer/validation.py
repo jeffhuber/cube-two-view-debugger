@@ -58,6 +58,23 @@ EDGE_COLORS = [
     ("B", "R"),
 ]
 
+# Match the recognizer's legacy corner assignment rule: side-color order
+# selects the cubie, while either U/D in the twist slot is allowed.
+CORNER_CUBIE_LOOKUP = {
+    colors: (cubie, orientation)
+    for cubie, (_, first_side, second_side) in enumerate(CORNER_COLORS)
+    for ud_color in ("U", "D")
+    for colors, orientation in (
+        ((ud_color, first_side, second_side), 0),
+        ((second_side, ud_color, first_side), 1),
+        ((first_side, second_side, ud_color), 2),
+    )
+}
+EDGE_CUBIE_LOOKUP = {
+    colors: (cubie, orientation)
+    for cubie, (first, second) in enumerate(EDGE_COLORS)
+    for colors, orientation in (((first, second), 0), ((second, first), 1))
+}
 CENTER_INDICES = {"U": 4, "R": 13, "F": 22, "D": 31, "L": 40, "B": 49}
 
 
@@ -99,23 +116,72 @@ def validate_state(state: str) -> ValidationResult:
     return ValidationResult(not errors, errors)
 
 
+def is_valid_state(state: str) -> bool:
+    if len(state) != 54:
+        return False
+    if set(state) - set(FACE_ORDER):
+        return False
+    for face in FACE_ORDER:
+        if state.count(face) != 9:
+            return False
+    for face, idx in CENTER_INDICES.items():
+        if state[idx] != face:
+            return False
+
+    corner_permutation: List[int] = []
+    corner_orientation_sum = 0
+    used_corners = 0
+    for facelets in CORNER_FACELETS:
+        colors = (state[facelets[0]], state[facelets[1]], state[facelets[2]])
+        assignment = CORNER_CUBIE_LOOKUP.get(colors)
+        if assignment is None:
+            return False
+        cubie, orientation = assignment
+        bit = 1 << cubie
+        if used_corners & bit:
+            return False
+        used_corners |= bit
+        corner_permutation.append(cubie)
+        corner_orientation_sum += orientation
+    if used_corners != (1 << len(CORNER_COLORS)) - 1 or corner_orientation_sum % 3 != 0:
+        return False
+
+    edge_permutation: List[int] = []
+    edge_orientation_sum = 0
+    used_edges = 0
+    for facelets in EDGE_FACELETS:
+        colors = (state[facelets[0]], state[facelets[1]])
+        assignment = EDGE_CUBIE_LOOKUP.get(colors)
+        if assignment is None:
+            return False
+        cubie, orientation = assignment
+        bit = 1 << cubie
+        if used_edges & bit:
+            return False
+        used_edges |= bit
+        edge_permutation.append(cubie)
+        edge_orientation_sum += orientation
+    if used_edges != (1 << len(EDGE_COLORS)) - 1 or edge_orientation_sum % 2 != 0:
+        return False
+
+    return _parity(corner_permutation) == _parity(edge_permutation)
+
+
 def _corner_cubies(state: str):
     cp: List[Optional[int]] = [None] * 8
     co: List[int] = [0] * 8
     errors: List[str] = []
     used = set()
     for pos, facelets in enumerate(CORNER_FACELETS):
-        colors = [state[idx] for idx in facelets]
-        ori = next((idx for idx, color in enumerate(colors) if color in {"U", "D"}), None)
-        if ori is None:
-            errors.append(f"corner_{pos}_missing_ud_color")
-            continue
-        color1 = colors[(ori + 1) % 3]
-        color2 = colors[(ori + 2) % 3]
-        cubie = next((idx for idx, proto in enumerate(CORNER_COLORS) if proto[1] == color1 and proto[2] == color2), None)
-        if cubie is None:
+        colors = (state[facelets[0]], state[facelets[1]], state[facelets[2]])
+        assignment = CORNER_CUBIE_LOOKUP.get(colors)
+        if assignment is None:
+            if colors[0] not in {"U", "D"} and colors[1] not in {"U", "D"} and colors[2] not in {"U", "D"}:
+                errors.append(f"corner_{pos}_missing_ud_color")
+                continue
             errors.append(f"corner_{pos}_invalid_color_set")
             continue
+        cubie, ori = assignment
         if cubie in used:
             errors.append(f"corner_{pos}_duplicate_cubie")
             continue
@@ -134,20 +200,11 @@ def _edge_cubies(state: str):
     used = set()
     for pos, facelets in enumerate(EDGE_FACELETS):
         colors = (state[facelets[0]], state[facelets[1]])
-        cubie = None
-        orientation = 0
-        for idx, proto in enumerate(EDGE_COLORS):
-            if colors == proto:
-                cubie = idx
-                orientation = 0
-                break
-            if colors == (proto[1], proto[0]):
-                cubie = idx
-                orientation = 1
-                break
-        if cubie is None:
+        assignment = EDGE_CUBIE_LOOKUP.get(colors)
+        if assignment is None:
             errors.append(f"edge_{pos}_invalid_color_set")
             continue
+        cubie, orientation = assignment
         if cubie in used:
             errors.append(f"edge_{pos}_duplicate_cubie")
             continue

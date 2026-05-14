@@ -111,9 +111,12 @@
       "currentCategory": "reject_retake",
       "currentCandidates": 0,
       "currentFailedChecks": [
-        "image_b_no_reliable_face_triple"
+        "image_b_face_triple_overlap_low_quality"
       ],
-      "notes": "Issue #51 reproduction. Recognition PR 1 leaves this unresolved because the only overlap-rescue triples are low-scoring and explode downstream repair search."
+      "targetFailedChecksPresent": [
+        "image_b_face_triple_overlap_low_quality"
+      ],
+      "notes": "Issue #51 reproduction. Recognition PR 11 distinguishes this from missing triple generation: image B has only overlapping/low-quality rescue triples, which remain unsafe to promote into recognition candidates."
     },
     {
       "setId": "30",

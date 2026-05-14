@@ -24,6 +24,7 @@ def test_hard_case_manifest_records_open_issue_sets():
     assert rows["22"]["targetFailedChecksPresent"] == ["red_orange_pair_calibration_suspected"]
     assert {rows[set_id]["linkedIssue"] for set_id in ("25", "30")} == {51}
     assert "targetFailedChecksAbsent" not in rows["25"]
+    assert rows["25"]["targetFailedChecksPresent"] == ["image_b_face_triple_overlap_low_quality"]
     assert rows["30"]["targetFailedChecksAbsent"] == ["image_a_no_reliable_face_triple"]
     assert rows["30"]["currentStatus"] == "success"
     assert rows["39"]["targetFailedChecksAbsent"] == [

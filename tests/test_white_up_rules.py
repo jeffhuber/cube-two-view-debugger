@@ -19,8 +19,10 @@ from rubik_recognizer.recognizer import (
     _prefer_calibrated_result,
     _recognition_category_payload,
     _repair_details_with_orientation_selection_scores,
+    _repair_backfill_applies,
     _repair_orientation_rerank_applies,
     _repair_ranking_penalty,
+    _side_pair_complement,
     _validation_failed_checks,
     _selected_faces_by_image,
     _selected_sides_by_image,
@@ -194,6 +196,100 @@ def test_recognize_from_analyses_skips_repair_for_low_direct_candidate_count(mon
     assert calls == {"workset": 1, "direct": 1, "repair": 0}
 
 
+def test_recognize_from_analyses_reports_empty_backfill_attempt(monkeypatch):
+    workset = RecognitionWorkset(options_a=[], options_b=[], merged_candidates=[])
+    calls = {"standard_repair": 0, "backfill": 0, "backfill_repair": 0}
+
+    def fake_standard_repair(self, candidate_workset, *, release_merged_candidates=False):
+        calls["standard_repair"] += 1
+        assert candidate_workset is workset
+        assert release_merged_candidates is True
+        return []
+
+    def fake_backfill(analysis_a, candidate_workset):
+        calls["backfill"] += 1
+        assert candidate_workset is workset
+        return []
+
+    def fake_backfill_repair(self, candidate_workset, repair_merges, *, repair_source="standard"):
+        calls["backfill_repair"] += 1
+        assert candidate_workset is workset
+        assert repair_merges == []
+        assert repair_source == "conflict_backfill"
+        return []
+
+    monkeypatch.setattr(recognizer, "_base_recognition_signals", lambda analysis_a, analysis_b: {})
+    monkeypatch.setattr(recognizer, "_white_up_checks", lambda analysis_a, analysis_b: [])
+    monkeypatch.setattr(recognizer, "_recognition_workset", lambda analysis_a, analysis_b: workset)
+    monkeypatch.setattr(WhiteUpRecognizer, "_state_candidates_from_workset", lambda self, candidate_workset: [])
+    monkeypatch.setattr(WhiteUpRecognizer, "_legal_repair_candidate_details_from_workset", fake_standard_repair)
+    monkeypatch.setattr(WhiteUpRecognizer, "_legal_repair_candidate_details_from_merges", fake_backfill_repair)
+    monkeypatch.setattr(recognizer, "_repair_backfill_applies", lambda analysis_a, analysis_b: True)
+    monkeypatch.setattr(recognizer, "_repair_backfill_merged_face_candidates", fake_backfill)
+    monkeypatch.setattr(recognizer, "REPAIR_SKIP_DIRECT_CANDIDATE_THRESHOLD", 0)
+
+    result = WhiteUpRecognizer()._recognize_from_analyses(object(), object())
+
+    assert result.status == "rejected"
+    assert result.recognition_signals["repairBackfillAttempted"] is True
+    assert result.recognition_signals["repairBackfillEvaluatedMerges"] == 0
+    assert result.recognition_signals["repairBackfillUsed"] is False
+    assert calls == {"standard_repair": 1, "backfill": 1, "backfill_repair": 1}
+
+
+def test_recognize_from_analyses_uses_conflict_backfill_repair_source(monkeypatch):
+    solved = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
+    workset = RecognitionWorkset(options_a=[], options_b=[], merged_candidates=[])
+    backfill_merge = (123.0, {"_score": 123.0})
+    calls = {"standard_repair": 0, "backfill": 0, "backfill_repair": 0}
+
+    def fake_standard_repair(self, candidate_workset, *, release_merged_candidates=False):
+        calls["standard_repair"] += 1
+        assert candidate_workset is workset
+        assert release_merged_candidates is True
+        return []
+
+    def fake_backfill(analysis_a, candidate_workset):
+        calls["backfill"] += 1
+        assert candidate_workset is workset
+        return [backfill_merge]
+
+    def fake_backfill_repair(self, candidate_workset, repair_merges, *, repair_source="standard"):
+        calls["backfill_repair"] += 1
+        assert candidate_workset is workset
+        assert repair_merges == [backfill_merge]
+        assert repair_source == "conflict_backfill"
+        return [
+            {
+                "state": solved,
+                "confidence": recognizer.REPAIRED_HIGH_CONFIDENCE_THRESHOLD,
+                "repairRankingPenalty": 0.0,
+                "repairSource": repair_source,
+            }
+        ]
+
+    monkeypatch.setattr(recognizer, "_base_recognition_signals", lambda analysis_a, analysis_b: {})
+    monkeypatch.setattr(recognizer, "_white_up_checks", lambda analysis_a, analysis_b: [])
+    monkeypatch.setattr(recognizer, "_recognition_workset", lambda analysis_a, analysis_b: workset)
+    monkeypatch.setattr(WhiteUpRecognizer, "_state_candidates_from_workset", lambda self, candidate_workset: [])
+    monkeypatch.setattr(WhiteUpRecognizer, "_legal_repair_candidate_details_from_workset", fake_standard_repair)
+    monkeypatch.setattr(WhiteUpRecognizer, "_legal_repair_candidate_details_from_merges", fake_backfill_repair)
+    monkeypatch.setattr(recognizer, "_repair_backfill_applies", lambda analysis_a, analysis_b: True)
+    monkeypatch.setattr(recognizer, "_repair_backfill_merged_face_candidates", fake_backfill)
+    monkeypatch.setattr(recognizer, "REPAIR_SKIP_DIRECT_CANDIDATE_THRESHOLD", 0)
+
+    result = WhiteUpRecognizer()._recognize_from_analyses(object(), object())
+
+    assert result.status == "success"
+    assert result.state == solved
+    assert result.recognition_signals["repairBackfillAttempted"] is True
+    assert result.recognition_signals["repairBackfillEvaluatedMerges"] == 1
+    assert result.recognition_signals["repairBackfillUsed"] is True
+    assert result.recognition_signals["selectedRepairCandidate"]["repairSource"] == "conflict_backfill"
+    assert result.recognition_signals["topRepairCandidates"][0]["repairSource"] == "conflict_backfill"
+    assert calls == {"standard_repair": 1, "backfill": 1, "backfill_repair": 1}
+
+
 def test_repair_orientation_rerank_targets_low_confidence_rank_capped_repairs():
     low_ranked = [
         {
@@ -290,6 +386,27 @@ def test_validation_failed_checks_ignores_one_sided_red_orange_skew():
     checks = _validation_failed_checks(["R_count_not_9"], a, b)
 
     assert checks == ["R_count_not_9"]
+
+
+def test_repair_backfill_applies_to_opposing_red_orange_skew():
+    a = StubAnalysis(["R", "R", "R", "R", "R", "L", "L"])
+    b = StubAnalysis(["L", "L", "L", "L", "L", "R", "R"])
+
+    assert _repair_backfill_applies(a, b)
+
+
+def test_repair_backfill_skips_one_sided_red_orange_skew():
+    a = StubAnalysis(["R", "R", "R", "L", "L"])
+    b = StubAnalysis(["B", "F", "U", "D"])
+
+    assert not _repair_backfill_applies(a, b)
+
+
+def test_side_pair_complement_returns_opposite_visible_pair():
+    assert _side_pair_complement(("B", "L")) == "F/R"
+    assert _side_pair_complement("F/R") == "B/L"
+    assert _side_pair_complement(("F", "B")) == "L/R"
+    assert _side_pair_complement(("F",)) == ""
 
 
 def test_grid_signal_summary_reports_cell_face_and_source_counts():

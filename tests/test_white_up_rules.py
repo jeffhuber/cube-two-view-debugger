@@ -239,6 +239,35 @@ def test_repair_orientation_rerank_promotes_better_ranked_candidate():
     assert annotated[1].get("repairOrientationRerankBonus") is None
 
 
+def test_repair_orientation_rerank_preserves_order_when_gate_does_not_apply():
+    details = [
+        {
+            "state": "first",
+            "confidence": recognizer.REPAIRED_HIGH_CONFIDENCE_THRESHOLD,
+            "repairRankingPenalty": recognizer.MAX_REPAIR_RANKING_PENALTY,
+            "orientationRankA": 2,
+            "orientationRankB": 12,
+        },
+        {
+            "state": "second",
+            "confidence": 0.5,
+            "repairRankingPenalty": recognizer.MAX_REPAIR_RANKING_PENALTY,
+            "orientationRankA": 1,
+            "orientationRankB": 1,
+        },
+    ]
+
+    annotated = _repair_details_with_orientation_selection_scores(details)
+
+    assert [item["state"] for item in annotated] == ["first", "second"]
+    assert [item["repairSelectionScore"] for item in annotated] == [
+        recognizer.REPAIRED_HIGH_CONFIDENCE_THRESHOLD,
+        0.5,
+    ]
+    assert all("preRerankConfidence" not in item for item in annotated)
+    assert all("repairOrientationRerankBonus" not in item for item in annotated)
+
+
 def test_validation_failed_checks_tags_opposing_red_orange_skew():
     a = StubAnalysis(["R", "R", "R", "R", "R", "L", "L"])
     b = StubAnalysis(["L", "L", "L", "L", "L", "R", "R"])

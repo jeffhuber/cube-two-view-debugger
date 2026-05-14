@@ -130,9 +130,9 @@
       "imageB_sha256_expected": "2b49d74dd72751eb457b2d67fa34d62e2abbfe1470b73e151fe79fbe00e3b1e3",
       "groundTruth_sha256_expected": "ba5d609b13317d9b268bce32dd4462b594ce8baa83a3dd9d5146aa1d99098485",
       "expectedCategory": "needs_manual_review",
-      "expectedScoreFloor": 16,
-      "currentScoreObserved": 16,
-      "notes": "Known hard repaired/manual-review case."
+      "expectedScoreFloor": 30,
+      "currentScoreObserved": 30,
+      "notes": "Known hard repaired/manual-review case. PR #72 orientation rerank raised this from 16/54 to 30/54; remaining wrong stickers are a follow-up diagnostic queue, and the selected repair's smallest orientation-rank diagnostic may differ from the pre-rerank candidate."
     },
     {
       "setId": "29",

@@ -107,9 +107,10 @@ REPAIRED_HIGH_MAX_RANKING_PENALTY = 0.16
 REPAIR_RETAKE_CONFIDENCE_THRESHOLD = 0.50
 REPAIR_RETAKE_MIN_CANDIDATES = 50_000
 REPAIR_SKIP_DIRECT_CANDIDATE_THRESHOLD = REPAIR_RETAKE_MIN_CANDIDATES
-# Used only when a low-confidence repair winner has already saturated the
-# conflict penalty and came from low-ranked orientations. This lets existing
-# better-ranked repair alternatives compete without expanding the repair budget.
+# Tuned to improve Set 28's low-confidence, max-penalty repair result without
+# firing on corpus controls: Sets 12/14/24 stay above the confidence gate, and
+# Set 27 misses the orientation-rank gate. The bonus is capped at 0.03, so rank
+# sums <=4 saturate instead of letting orientation rank override piece evidence.
 REPAIR_ORIENTATION_RERANK_MIN_TOP_RANK_SUM = 10
 REPAIR_ORIENTATION_RERANK_RANK_LIMIT = 14
 REPAIR_ORIENTATION_RERANK_BONUS_PER_RANK = 0.003

@@ -21,7 +21,8 @@ def test_hard_case_manifest_records_open_issue_sets():
     assert primary["label"] == "native-arm64-macos-python312"
     assert primary["platform.machine"] == "arm64"
     assert rows["17"]["targetFailedChecksPresent"] == ["red_orange_pair_calibration_suspected"]
-    assert rows["21"]["targetFailedChecksPresent"] == ["red_orange_pair_calibration_suspected"]
+    assert rows["21"]["targetStatus"] == "success"
+    assert rows["21"]["expectedScoreOnceFixed"] == 54
     assert rows["22"]["targetStatus"] == "success"
     assert rows["22"]["expectedScoreOnceFixed"] == 54
     assert {rows[set_id]["linkedIssue"] for set_id in ("25", "30")} == {51}

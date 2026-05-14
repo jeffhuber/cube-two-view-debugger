@@ -58,21 +58,14 @@
       "imageB_sha256_expected": "0f38063c582f6ee2bcdfcc41b385fc86a7591038a90f8fe2bab06ff5f1524a85",
       "groundTruthPath": "/Users/jhuber/Downloads/Set 21 - cube-ground-truth-1778698843952.json",
       "groundTruth_sha256_expected": "820a624082eebd4d2e96c51ddc70e53e2d692710fecbd121f13b415b5aee0e62",
-      "expectedScoreOnceFixed": null,
-      "currentStatus": "rejected",
-      "currentCategory": "reject_retake",
-      "currentCandidates": 9472,
-      "currentFailedChecks": [
-        "B_count_not_9",
-        "L_count_not_9",
-        "R_count_not_9",
-        "U_count_not_9",
-        "red_orange_pair_calibration_suspected"
-      ],
-      "targetFailedChecksPresent": [
-        "red_orange_pair_calibration_suspected"
-      ],
-      "notes": "Unresolved color classification / pair calibration case. Recognition PR 6 tags the opposing red/orange skew for safer app-side routing. Ground truth is available for scoring future repair attempts."
+      "expectedScoreOnceFixed": 54,
+      "currentStatus": "success",
+      "currentCategory": "needs_manual_review",
+      "currentCandidates": 44992,
+      "currentFailedChecks": [],
+      "targetStatus": "success",
+      "targetCategory": "needs_manual_review",
+      "notes": "Recognition PR 16 recovers this case with a strict image-A U-logo anchor gate. The result scores 54/54 against ground truth but remains needs_manual_review because multiple direct legal states are close enough that it is not a clean unique recognition."
     },
     {
       "setId": "22",
@@ -86,12 +79,12 @@
       "groundTruth_sha256_expected": "64d56ccb7828102966da471c5534db8962545c04efd25f20daa7f40944262cf5",
       "expectedScoreOnceFixed": 54,
       "currentStatus": "success",
-      "currentCategory": "success_repaired_high_confidence",
-      "currentCandidates": 56270,
+      "currentCategory": "success_clean",
+      "currentCandidates": 7040,
       "currentFailedChecks": [],
       "targetStatus": "success",
-      "targetCategory": "success_repaired_high_confidence",
-      "notes": "Recognition PR 15 recovers this balanced red/orange drift case with a repair-only low-conflict backfill of deeper image-A options, scoring 54/54 against ground truth. Sets 17 and 21 remain unresolved Issue #31 cases."
+      "targetCategory": "success_clean",
+      "notes": "Recognition PR 15 recovered this balanced red/orange drift case with repair-only low-conflict backfill. Recognition PR 16 improves it to direct success_clean by admitting the same strict U-logo anchor pattern used for Set 21."
     },
     {
       "setId": "25",

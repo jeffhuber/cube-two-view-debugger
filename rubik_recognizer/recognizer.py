@@ -108,6 +108,14 @@ MAX_RESCUE_VISIBLE_FACE_TRIPLES = 3
 MIN_RESCUE_VISIBLE_FACE_TRIPLE_SCORE = 80.0
 RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK = "red_orange_pair_calibration_suspected"
 FACE_TRIPLE_OVERLAP_LOW_QUALITY_CHECK = "face_triple_overlap_low_quality"
+# Image A may have a non-white logo on the white center. Admit that as a U
+# anchor only when the whole grid is strong and the center's color is ambiguous.
+MIN_U_LOGO_ANCHOR_MATCHED_COUNT = 8
+MAX_U_LOGO_ANCHOR_FIT_ERROR = 3.0
+MIN_U_LOGO_ANCHOR_QUALITY = 120.0
+MAX_U_LOGO_ANCHOR_GRID_SAMPLES = 1
+MAX_U_LOGO_ANCHOR_CENTER_CONFIDENCE = 0.42
+MAX_U_LOGO_ANCHOR_WHITE_DISTANCE_DELTA = 24.0
 # Tuned to tag Sets 17/21/22 without firing on unrelated hard-case or corpus
 # rejects; revisit these gates when new red/orange captures are added.
 RED_ORANGE_SKEW_MIN_GAP = 3
@@ -1445,9 +1453,19 @@ def _pair_calibration_anchors(analysis_a: ImageAnalysis, analysis_b: ImageAnalys
     for analysis, anchor in ((analysis_a, "U"), (analysis_b, "D")):
         for face, grid in _assigned_grid_by_face(analysis, anchor).items():
             color = FACE_TO_CENTER_COLOR.get(face)
-            if color:
-                anchors[color].append(grid.center_sticker.rgb)
+            rgb = _calibration_anchor_rgb(face, anchor, grid)
+            if color and rgb is not None:
+                anchors[color].append(rgb)
     return anchors
+
+
+def _calibration_anchor_rgb(face: str, anchor: str, grid: FaceGrid) -> Optional[Tuple[int, int, int]]:
+    if face == anchor and grid.center_face != anchor:
+        if anchor == "U" and not _center_sample_is_whiteish(grid):
+            return None
+        if anchor == "D" and not _center_sample_is_yellowish(grid):
+            return None
+    return grid.center_sticker.rgb
 
 
 def _analysis_stickers_for_reclassification(analysis: ImageAnalysis) -> List[Any]:
@@ -2227,14 +2245,24 @@ def _assigned_grid_by_face(analysis: ImageAnalysis, anchor: str) -> Dict[str, Fa
         anchor_grid = _assumed_anchor_grid(analysis.grids, anchor)
         if anchor_grid is not None:
             assigned[anchor] = anchor_grid
+    assigned_grid_ids = {_grid_identity(grid) for grid in assigned.values()}
     for face, grids in groups.items():
         if face == anchor or face not in {"R", "F", "L", "B"}:
             continue
         current = assigned.get(face)
-        best = grids[0]
+        best = next((grid for grid in grids if current is grid or _grid_identity(grid) not in assigned_grid_ids), None)
+        if best is None:
+            continue
         if current is None or _grid_quality_score(best) > _grid_quality_score(current):
+            if current is not None:
+                assigned_grid_ids.discard(_grid_identity(current))
             assigned[face] = best
+            assigned_grid_ids.add(_grid_identity(best))
     return assigned
+
+
+def _grid_identity(grid: FaceGrid) -> Any:
+    return getattr(grid, "id", id(grid))
 
 
 def _candidate_grids_by_face(analysis: ImageAnalysis, anchor: str) -> Dict[str, List[FaceGrid]]:
@@ -2258,6 +2286,7 @@ def _anchor_grid_candidates(grids: Sequence[FaceGrid], anchor: str) -> List[Face
     candidates = [grid for grid in grids if grid.center_face == anchor]
     if anchor == "U":
         candidates.extend(grid for grid in grids if grid.center_face != anchor and _center_sample_is_whiteish(grid))
+        candidates.extend(grid for grid in grids if _u_logo_anchor_grid_candidate(grid))
     elif anchor == "D":
         candidates.extend(grid for grid in grids if grid.center_face != anchor and _center_sample_is_yellowish(grid))
     return _unique_ranked_grids(candidates)
@@ -2295,6 +2324,27 @@ def _center_sample_is_whiteish(grid: FaceGrid) -> bool:
 def _center_sample_is_yellowish(grid: FaceGrid) -> bool:
     hue, saturation, value = rgb_to_hsv(grid.center_sticker.rgb)
     return 0.10 <= hue <= 0.22 and saturation >= 0.22 and value >= 0.48
+
+
+def _u_logo_anchor_grid_candidate(grid: FaceGrid) -> bool:
+    if grid.center_face == "U" or _center_sample_is_whiteish(grid):
+        return False
+    if grid.matched_count < MIN_U_LOGO_ANCHOR_MATCHED_COUNT or grid.fit_error > MAX_U_LOGO_ANCHOR_FIT_ERROR:
+        return False
+    if _grid_sample_count(grid) > MAX_U_LOGO_ANCHOR_GRID_SAMPLES or _grid_bad_sample_count(grid) > 0:
+        return False
+    if _grid_quality_score(grid) < MIN_U_LOGO_ANCHOR_QUALITY:
+        return False
+
+    center = grid.center_sticker
+    match = getattr(center, "match", None) or classify_rgb(center.rgb)
+    if getattr(match, "confidence", 1.0) > MAX_U_LOGO_ANCHOR_CENTER_CONFIDENCE:
+        return False
+
+    alternatives = list(getattr(match, "alternatives", ()) or ())
+    baseline = alternatives[0][1] if alternatives else getattr(match, "distance", 0.0)
+    white_distance = next((distance for color, distance in alternatives[:4] if color == "white"), None)
+    return white_distance is not None and white_distance - baseline <= MAX_U_LOGO_ANCHOR_WHITE_DISTANCE_DELTA
 
 
 def _assignment_summary(analysis: ImageAnalysis, anchor: str) -> Dict[str, Dict[str, object]]:

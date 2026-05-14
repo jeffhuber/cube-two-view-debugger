@@ -447,6 +447,7 @@ def probe_pair(
         "targetPassed": (not failures) if has_target else None,
         "targetFailures": failures,
         "pairColorCalibration": signals.get("pairColorCalibration"),
+        "selectedGridQuality": signals.get("selectedGridQuality"),
         "imageDiagnostics": image_diagnostics(result, include_grid_cells=include_grid_cells),
         "timings": {"totalSeconds": round(time.perf_counter() - start, 4)},
     }

@@ -325,6 +325,8 @@ include `recognitionSignals.pairColorCalibration`. The hard-case probe copies th
 `pairColorCalibration` in its JSON output so color investigations can compare raw vs calibrated
 red/orange counts, calibration anchor counts, and the red/orange adaptive palette without changing
 recognition behavior.
+The probe also copies `recognitionSignals.selectedGridQuality` to top-level `selectedGridQuality`
+so selected-grid cell counts can be inspected without replaying a saved API response.
 
 For deeper repair-feasibility investigations, add `--include-repair-probe`. This optional pass is
 expensive: it runs direct validation and cubie-level repair on both raw and calibrated analyses, then
@@ -450,7 +452,9 @@ UIs and benchmarks:
 
 API responses and `result.json` also include `recognitionSignals.schemaVersion: 1`, a small diagnostics
 block that is retained by `?slim=1`. Direct legal runs include selected grid quality and
-`repairPathUsed: false`; successful runs may include `selectedFacesByImage`, the dynamically
+`repairPathUsed: false`; selected grid quality entries include fit/match metrics plus
+`cellFaceCounts` and `cellSourceCounts` so hard-case reviews can spot anchor grids dominated by one
+face color or by synthetic grid samples. Successful runs may include `selectedFacesByImage`, the dynamically
 selected visible faces for image A and image B. Category gating uses that signal to ignore
 diagnostic artifact grids that were not part of the recognized face triple, without assuming a
 fixed side-face yaw such as `imageA={U,R,F}`. Successful runs may also include

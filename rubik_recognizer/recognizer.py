@@ -632,7 +632,27 @@ def _grid_signal_summary(grid: FaceGrid) -> Dict[str, Any]:
         "gridSamples": _grid_sample_count(grid),
         "badSamples": _grid_bad_sample_count(grid),
         "suspectSamples": round(_grid_suspect_sample_score(grid), 3),
+        "cellFaceCounts": _grid_cell_face_counts(grid),
+        "cellSourceCounts": _grid_cell_source_counts(grid),
     }
+
+
+def _grid_cell_face_counts(grid: FaceGrid) -> Dict[str, int]:
+    counts = Counter()
+    for row in getattr(grid, "stickers", []):
+        for sticker in row:
+            face = _primary_facelet_color(sticker)
+            counts[face if face in FACE_ORDER else "unknown"] += 1
+    return {face: counts[face] for face in (*FACE_ORDER, "unknown") if counts[face]}
+
+
+def _grid_cell_source_counts(grid: FaceGrid) -> Dict[str, int]:
+    counts = Counter(
+        getattr(sticker, "source", "unknown") or "unknown"
+        for row in getattr(grid, "stickers", [])
+        for sticker in row
+    )
+    return {source: counts[source] for source in sorted(counts)}
 
 
 def _repair_signal_summary(repair_details: Sequence[Dict[str, Any]], selected_state: Optional[str] = None) -> Dict[str, Any]:

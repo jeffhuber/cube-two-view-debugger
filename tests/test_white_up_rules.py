@@ -10,6 +10,7 @@ from rubik_recognizer.recognizer import (
     WhiteUpRecognizer,
     _attach_failed_pair_color_calibration_signal,
     _capture_yaw_state_to_wca,
+    _grid_signal_summary,
     _grid_matrix_for_orientation,
     _merged_face_candidates,
     _oriented_options_for_grid_map,
@@ -206,6 +207,42 @@ def test_validation_failed_checks_ignores_one_sided_red_orange_skew():
     checks = _validation_failed_checks(["R_count_not_9"], a, b)
 
     assert checks == ["R_count_not_9"]
+
+
+def test_grid_signal_summary_reports_cell_face_and_source_counts():
+    def facelet(face, source="component"):
+        return type(
+            "Facelet",
+            (),
+            {
+                "source": source,
+                "rgb": (230, 230, 230),
+                "shape_angle": None,
+                "match": type("Match", (), {"face": face, "color": "white", "confidence": 0.8})(),
+            },
+        )()
+
+    grid = type(
+        "Grid",
+        (),
+        {
+            "id": 4,
+            "center_face": "U",
+            "center_sticker": facelet("U"),
+            "matched_count": 7,
+            "fit_error": 1.25,
+            "stickers": [
+                [facelet("U"), facelet("U", "grid_sample"), facelet("R")],
+                [facelet("D"), facelet("U"), facelet("B")],
+                [facelet("L", "grid_sample"), facelet("F"), facelet("U")],
+            ],
+        },
+    )()
+
+    summary = _grid_signal_summary(grid)
+
+    assert summary["cellFaceCounts"] == {"U": 4, "R": 1, "F": 1, "D": 1, "L": 1, "B": 1}
+    assert summary["cellSourceCounts"] == {"component": 7, "grid_sample": 2}
 
 
 def test_pair_color_calibration_signal_reports_red_orange_counts():

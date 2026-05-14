@@ -3,6 +3,7 @@ from types import SimpleNamespace
 
 import tools.probe_hard_cases as probe_hard_cases
 from tools.probe_hard_cases import (
+    _format_repair_cell,
     grid_cell_diagnostics,
     load_manifest_document,
     option_coverage_for_analysis,
@@ -213,3 +214,56 @@ def test_option_coverage_scores_generated_faces_against_truth(monkeypatch):
     assert coverage["topOptions"][0]["faces"]["U"]["score"] == 9
     assert coverage["topOptions"][0]["faces"]["R"]["state"] == "RRRRRRRRR"
     assert coverage["topOptions"][1]["score"] == 8
+
+
+def test_format_repair_cell_distinguishes_path_state():
+    """The probe's `Repair` column must let an operator tell apart, at a
+    glance: no repair attempted, standard repair fired, backfill fired
+    and used, backfill fired but empty. Pins each rendering — these
+    strings show up in the human-readable hard-case output and in
+    follow-up audits of the PR #76 conflict-backfill path."""
+    # No recognitionSignals at all (e.g., pre-PR-76 saved run).
+    assert _format_repair_cell(None) == ""
+    assert _format_repair_cell({}) == ""
+
+    # Repair never attempted (most rejects fall here).
+    repair_none = {
+        "pathUsed": False,
+        "candidateCount": 0,
+        "backfillAttempted": False,
+        "backfillEvaluatedMerges": None,
+        "backfillUsed": None,
+    }
+    assert _format_repair_cell(repair_none) == "none"
+
+    # Standard repair path: backfill gate did NOT fire.
+    repair_standard = {
+        "pathUsed": True,
+        "candidateCount": 8,
+        "backfillAttempted": False,
+        "backfillEvaluatedMerges": None,
+        "backfillUsed": None,
+    }
+    assert _format_repair_cell(repair_standard) == "std/8"
+
+    # Backfill fired and result used (Set 22 territory).
+    repair_backfill_used = {
+        "pathUsed": True,
+        "candidateCount": 5,
+        "backfillAttempted": True,
+        "backfillEvaluatedMerges": 40,
+        "backfillUsed": True,
+    }
+    assert _format_repair_cell(repair_backfill_used) == "bf/40/used"
+
+    # Backfill gate fired but produced zero usable candidates. This is the
+    # state PR #76 made distinguishable from "gate didn't fire" via the
+    # `repairBackfillAttempted` audit field — pin the rendering.
+    repair_backfill_empty = {
+        "pathUsed": False,
+        "candidateCount": 0,
+        "backfillAttempted": True,
+        "backfillEvaluatedMerges": 0,
+        "backfillUsed": False,
+    }
+    assert _format_repair_cell(repair_backfill_empty) == "bf/0/empty"

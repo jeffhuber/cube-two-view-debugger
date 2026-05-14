@@ -197,6 +197,24 @@
       "notes": "First yaw=2 corpus pair (180° rotation). cv-local success_clean direct path, recognizer output equals ground truth byte-for-byte (diffFromCorrected=0). Captured 2026-05-12 on cube-snap PR #99 Fixer flow; LLM provider claude-sonnet failed validation on this pair (10 white stickers) which is the expected LLM failure mode on non-canonical-yaw captures."
     },
     {
+      "setId": "37",
+      "imageAPath": "/Users/jhuber/Downloads/Set 37 - A - white up IMG_7153.JPG",
+      "imageBPath": "/Users/jhuber/Downloads/Set 37 - B - white up IMG_7154.JPG",
+      "groundTruthPath": "/Users/jhuber/Downloads/Set 37 - cube-ground-truth-1778731795341.json",
+      "imageA_sha256_expected": "5ce1da8fa95ad7c5e9b767f4c947cce30b641e009a5e90d4f1b1377b6811ba2d",
+      "imageB_sha256_expected": "7ba2fbdf0fc855ad4a5ec8cc1d8a365f2c46fea62fa811971dd363c8e9c588e7",
+      "groundTruth_sha256_expected": "514ca71e9c9670a8fb45ad833f6f4250eaf3551a11aaed9ff12d20ac7613fdc2",
+      "expectedCategory": "success_clean",
+      "expectedScoreFloor": 54,
+      "currentScoreObserved": 54,
+      "expectedYaw": {
+        "status": "nonstandard",
+        "quarterTurns": 1,
+        "normalizationApplied": true
+      },
+      "notes": "yaw=1 corpus pair. cv-local success_clean direct path, recognizer output equals ground truth byte-for-byte (diffFromCorrected=0). GT was originally saved by the Fixer in capture-frame yaw (centers UBRDFL) — yaw-normalized to canonical WCA via _capture_yaw_state_to_wca(state, 1) on 2026-05-14 before manifest wiring; cube-snap#105 prevents this case in the Fixer save path going forward. LLM provider gpt-5 failed validation on this pair (duplicated/missing centers, the expected LLM failure mode on non-canonical-yaw captures)."
+    },
+    {
       "setId": "42",
       "imageAPath": "/Users/jhuber/Downloads/Set 42 - A - white up IMG_7163.JPG",
       "imageBPath": "/Users/jhuber/Downloads/Set 42 - B - white up IMG_7164.JPG",

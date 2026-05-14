@@ -78,6 +78,12 @@ MAX_LEGAL_REPAIR_MERGES_PER_PAIR = 60
 MAX_LEGAL_REPAIR_DIVERSE_MERGES_PER_PAIR = 128
 MAX_LEGAL_REPAIR_EVALUATED_MERGES = 180
 MAX_LEGAL_REPAIR_RETURNED = 8
+# Repair-only escape hatch for Issue #31: look deeper on image A only after
+# standard repair fails and the pair shows opposing red/orange skew evidence.
+MAX_REPAIR_BACKFILL_OPTIONS_A = 2600
+MAX_REPAIR_BACKFILL_OPTIONS_B_PER_PAIR = 80
+MAX_REPAIR_BACKFILL_MERGES = 40
+MAX_REPAIR_BACKFILL_CONFLICTS = 6
 MAX_REPAIR_ALTERNATIVE_DELTA = 16.0
 MAX_LOW_CONFIDENCE_REPAIR_DELTA = 24.0
 LOW_CONFIDENCE_COMPONENT_REPAIR_THRESHOLD = 0.32
@@ -370,6 +376,17 @@ class WhiteUpRecognizer:
             )
 
         repair_details = self._legal_repair_candidate_details_from_workset(workset, release_merged_candidates=True)
+        repair_backfill_attempted = False
+        repair_backfill_evaluated = 0
+        if not repair_details and _repair_backfill_applies(analysis_a, analysis_b):
+            repair_backfill_attempted = True
+            repair_backfill_merges = _repair_backfill_merged_face_candidates(analysis_a, workset)
+            repair_backfill_evaluated = len(repair_backfill_merges)
+            repair_details = self._legal_repair_candidate_details_from_merges(
+                workset,
+                repair_backfill_merges,
+                repair_source="conflict_backfill",
+            )
         repair_details = _repair_details_with_orientation_selection_scores(repair_details)
         repair_candidates = [
             (
@@ -379,7 +396,12 @@ class WhiteUpRecognizer:
             )
             for item in repair_details
         ]
-        recognition_signals.update(_repair_signal_summary(repair_details))
+        repair_summary = _repair_signal_summary(repair_details)
+        if repair_backfill_attempted:
+            repair_summary["repairBackfillAttempted"] = True
+            repair_summary["repairBackfillEvaluatedMerges"] = repair_backfill_evaluated
+            repair_summary["repairBackfillUsed"] = bool(repair_details)
+        recognition_signals.update(repair_summary)
         if repair_candidates:
             candidates.extend(repair_candidates)
             repaired_unique = {}
@@ -455,6 +477,15 @@ class WhiteUpRecognizer:
             # rejected repair-heavy cases do not carry thousands of matrices.
             workset.merged_candidates = []
 
+        return self._legal_repair_candidate_details_from_merges(workset, repair_merges)
+
+    def _legal_repair_candidate_details_from_merges(
+        self,
+        workset: RecognitionWorkset,
+        repair_merges: Sequence[Tuple[float, Dict[str, List[List[Any]]]]],
+        *,
+        repair_source: str = "standard",
+    ) -> List[Dict[str, Any]]:
         candidates: Dict[str, Dict[str, Any]] = {}
         for raw_score, merged in repair_merges:
             signature = _cached_face_signature(merged)
@@ -501,6 +532,7 @@ class WhiteUpRecognizer:
                 "orientationRankB": merged.get("_orientation_rank_b"),
                 "preRepairConflicts": conflicts,
                 "preRepairFaceCounts": face_counts,
+                "repairSource": repair_source,
             }
             current = candidates.get(state)
             if current is None or confidence > current["confidence"]:
@@ -955,6 +987,13 @@ def _side_pair_faces(side_pair: Any) -> List[str]:
     return parts if len(set(parts)) == len(parts) else []
 
 
+def _side_pair_complement(side_pair: Any) -> str:
+    faces = set(_side_pair_faces(side_pair))
+    if len(faces) != 2:
+        return ""
+    return _side_pair_key(face for face in YAW_SIDE_ORDER if face not in faces)
+
+
 def _ordered_side_pair_key(value: Any) -> str:
     if value is None:
         return ""
@@ -1118,6 +1157,55 @@ def _merged_face_candidates(
             merged_faces.append((float(merged.get("_score", 0.0)), merged))
     merged_faces.sort(key=lambda item: item[0], reverse=True)
     return merged_faces
+
+
+def _repair_backfill_applies(analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> bool:
+    return _red_orange_pair_calibration_suspected(("piece_legality_invalid",), analysis_a, analysis_b)
+
+
+def _repair_backfill_merged_face_candidates(
+    analysis_a: ImageAnalysis,
+    workset: RecognitionWorkset,
+) -> List[Tuple[float, Dict[str, List[List[Any]]]]]:
+    existing_a_signatures = {_face_signature(option) for option in workset.options_a}
+    options_b_by_pair: Dict[str, List[Dict[str, List[List[Any]]]]] = {}
+    for option in workset.options_b:
+        pair_key = _side_pair_key(option.get("_side_pair"))
+        if not pair_key:
+            continue
+        bucket = options_b_by_pair.setdefault(pair_key, [])
+        if len(bucket) < MAX_REPAIR_BACKFILL_OPTIONS_B_PER_PAIR:
+            bucket.append(option)
+
+    selected: List[Tuple[int, int, int, float, Dict[str, List[List[Any]]]]] = []
+    seen = set()
+    for option_a in _oriented_face_option_candidates(analysis_a, "U")[:MAX_REPAIR_BACKFILL_OPTIONS_A]:
+        signature_a = _face_signature(option_a)
+        if signature_a in existing_a_signatures:
+            continue
+        complement = _side_pair_complement(option_a.get("_side_pair"))
+        if not complement:
+            continue
+        for option_b in options_b_by_pair.get(complement, ()):
+            merged = _merge_faces(option_a, option_b)
+            if merged is None:
+                continue
+            signature = _cached_face_signature(merged)
+            if signature in seen:
+                continue
+            conflicts = _piece_conflict_summary(merged)
+            total_conflicts = int(conflicts.get("totalConflicts", 0))
+            valid_corners = int(conflicts.get("validCorners", 0))
+            valid_edges = int(conflicts.get("validEdges", 0))
+            if total_conflicts > MAX_REPAIR_BACKFILL_CONFLICTS:
+                continue
+            if valid_corners < 6 or valid_edges < 10:
+                continue
+            seen.add(signature)
+            selected.append((total_conflicts, -valid_corners, -valid_edges, -float(merged.get("_score", 0.0)), merged))
+
+    selected.sort(key=lambda item: item[:4])
+    return [(-raw_score, merged) for _, _, _, raw_score, merged in selected[:MAX_REPAIR_BACKFILL_MERGES]]
 
 
 def _repair_merged_face_candidates(
@@ -1438,6 +1526,34 @@ def _red_orange_skew_evidence(analysis: ImageAnalysis) -> List[Dict[str, Any]]:
 
 
 def _oriented_face_options(analysis: ImageAnalysis, anchor: str) -> List[Dict[str, List[List[Any]]]]:
+    ranked_results = _oriented_face_option_candidates(analysis, anchor)
+    if not ranked_results:
+        return []
+
+    scored_options = []
+    seen = set()
+    side_pair_counts: Counter[Tuple[str, ...]] = Counter()
+    side_pair_kinds = {tuple(option.get("_side_pair", ())) for option in ranked_results}
+    per_side_pair_limit = min(
+        MAX_ORIENTED_OPTIONS_PER_SIDE_PAIR,
+        max(24, math.ceil(MAX_ORIENTED_OPTIONS_PER_IMAGE / max(1, len(side_pair_kinds)))),
+    )
+    for option in ranked_results:
+        side_pair = tuple(option.get("_side_pair", ()))
+        signature = (side_pair, _face_signature(option))
+        if signature in seen:
+            continue
+        if side_pair_counts[side_pair] >= per_side_pair_limit:
+            continue
+        seen.add(signature)
+        side_pair_counts[side_pair] += 1
+        scored_options.append(option)
+        if len(scored_options) >= MAX_ORIENTED_OPTIONS_PER_IMAGE:
+            break
+    return scored_options
+
+
+def _oriented_face_option_candidates(analysis: ImageAnalysis, anchor: str) -> List[Dict[str, List[List[Any]]]]:
     grids_by_face = _candidate_grids_by_face(analysis, anchor)
     if anchor not in grids_by_face:
         return []
@@ -1456,22 +1572,8 @@ def _oriented_face_options(analysis: ImageAnalysis, anchor: str) -> List[Dict[st
             ranked_results.append((selection_score, side_pair, ordered_side_pair, orientation_score, rank, option))
     ranked_results.sort(key=lambda item: item[0], reverse=True)
 
-    scored_options = []
-    seen = set()
-    side_pair_counts: Counter[Tuple[str, ...]] = Counter()
-    side_pair_kinds = {side_pair for _, side_pair, _, _, _, _ in ranked_results}
-    per_side_pair_limit = min(
-        MAX_ORIENTED_OPTIONS_PER_SIDE_PAIR,
-        max(24, math.ceil(MAX_ORIENTED_OPTIONS_PER_IMAGE / max(1, len(side_pair_kinds)))),
-    )
+    candidates = []
     for selection_score, side_pair, ordered_side_pair, orientation_score, orientation_rank, option in ranked_results:
-        signature = (side_pair, _face_signature(option))
-        if signature in seen:
-            continue
-        if side_pair_counts[side_pair] >= per_side_pair_limit:
-            continue
-        seen.add(signature)
-        side_pair_counts[side_pair] += 1
         scored = dict(option)
         scored["_score"] = selection_score + orientation_score * ORIENTATION_SCORE_WEIGHT
         scored["_selection_score"] = selection_score
@@ -1479,10 +1581,8 @@ def _oriented_face_options(analysis: ImageAnalysis, anchor: str) -> List[Dict[st
         scored["_orientation_rank"] = orientation_rank
         scored["_side_pair"] = side_pair
         scored["_ordered_side_pair"] = ordered_side_pair
-        scored_options.append(scored)
-        if len(scored_options) >= MAX_ORIENTED_OPTIONS_PER_IMAGE:
-            break
-    return scored_options
+        candidates.append(scored)
+    return candidates
 
 
 def _ranked_visible_face_triples(grids_by_face: Dict[str, List[FaceGrid]], anchor: str) -> List[Tuple[float, Dict[str, FaceGrid]]]:

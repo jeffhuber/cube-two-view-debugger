@@ -84,18 +84,14 @@
       "imageB_sha256_expected": "bf32a69619eb86a700e1c1020df87bb4785ef8ed4dd6839890252c86052a370a",
       "groundTruthPath": "/Users/jhuber/Downloads/Set 22 - cube-ground-truth-1778699416367.json",
       "groundTruth_sha256_expected": "64d56ccb7828102966da471c5534db8962545c04efd25f20daa7f40944262cf5",
-      "expectedScoreOnceFixed": null,
-      "currentStatus": "rejected",
-      "currentCategory": "reject_retake",
-      "currentCandidates": 56265,
-      "currentFailedChecks": [
-        "piece_legality_invalid",
-        "red_orange_pair_calibration_suspected"
-      ],
-      "targetFailedChecksPresent": [
-        "red_orange_pair_calibration_suspected"
-      ],
-      "notes": "Unresolved balanced red/orange drift that reaches cubie legality. Recognition PR 6 tags the opposing red/orange skew before any color-boundary change. Ground truth is available for scoring future repair attempts."
+      "expectedScoreOnceFixed": 54,
+      "currentStatus": "success",
+      "currentCategory": "success_repaired_high_confidence",
+      "currentCandidates": 56270,
+      "currentFailedChecks": [],
+      "targetStatus": "success",
+      "targetCategory": "success_repaired_high_confidence",
+      "notes": "Recognition PR 15 recovers this balanced red/orange drift case with a repair-only low-conflict backfill of deeper image-A options, scoring 54/54 against ground truth. Sets 17 and 21 remain unresolved Issue #31 cases."
     },
     {
       "setId": "25",

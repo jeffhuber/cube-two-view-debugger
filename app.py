@@ -41,6 +41,7 @@ from rubik_recognizer.recognizer import WhiteUpRecognizer, recognition_diagnosti
 ROOT = Path(__file__).resolve().parent
 STATIC = ROOT / "static"
 RUNS = ROOT / "runs"
+LABELS = RUNS / "labels"
 
 
 # Origins permitted to call the recognizer cross-origin. The frontend
@@ -95,6 +96,9 @@ class RubikHandler(BaseHTTPRequestHandler):
         if path == "/api/runs":
             self._send_json({"runs": list_saved_runs()})
             return
+        if path == "/api/labels":
+            self._send_json({"labels": list_saved_labels()})
+            return
         if path == "/api/routes":
             # Self-describing route list so any agent (Claude / Codex /
             # human picking the project up cold) can discover the API
@@ -124,6 +128,9 @@ class RubikHandler(BaseHTTPRequestHandler):
             return
         if path == "/api/recognize-batch":
             self._handle_batch()
+            return
+        if path == "/api/labels":
+            self._handle_label_save()
             return
         self.send_error(HTTPStatus.NOT_FOUND)
 
@@ -213,6 +220,32 @@ class RubikHandler(BaseHTTPRequestHandler):
                 HTTPStatus.INTERNAL_SERVER_ERROR,
             )
 
+    def _handle_label_save(self) -> None:
+        try:
+            payload = self._read_json_body(max_bytes=2_000_000)
+            saved = save_label_document(payload)
+            self._send_json(saved)
+        except ValueError as exc:
+            self._send_json(
+                {
+                    "status": "rejected",
+                    "reason": str(exc),
+                    "failedChecks": ["invalid_label_payload"],
+                },
+                HTTPStatus.BAD_REQUEST,
+            )
+        except Exception as exc:
+            traceback.print_exc(file=sys.stderr)
+            self._send_json(
+                {
+                    "status": "rejected",
+                    "reason": "Label save failed.",
+                    "failedChecks": ["internal_error"],
+                    "detail": str(exc),
+                },
+                HTTPStatus.INTERNAL_SERVER_ERROR,
+            )
+
     def _query_flag(self, name: str) -> bool:
         """Return True if `name` appears in the URL query string with a
         truthy value ("1", "true", "yes" — case-insensitive). Bare
@@ -273,6 +306,24 @@ class RubikHandler(BaseHTTPRequestHandler):
             if name:
                 fields.setdefault(name, []).append((filename, body.rstrip(b"\r\n")))
         return fields
+
+    def _read_json_body(self, *, max_bytes: int) -> Dict[str, Any]:
+        content_type = self.headers.get("Content-Type", "")
+        if "application/json" not in content_type:
+            raise ValueError("Expected application/json.")
+        length = int(self.headers.get("Content-Length", "0"))
+        if length <= 0:
+            raise ValueError("Expected a JSON request body.")
+        if length > max_bytes:
+            raise ValueError("Label payload is too large.")
+        raw = self.rfile.read(length)
+        try:
+            payload = json.loads(raw.decode("utf-8"))
+        except json.JSONDecodeError as exc:
+            raise ValueError("Could not parse label JSON.") from exc
+        if not isinstance(payload, dict):
+            raise ValueError("Label payload must be a JSON object.")
+        return payload
 
     def _send_file(self, path: Path) -> None:
         if not path.is_file():
@@ -636,9 +687,12 @@ def _api_routes() -> List[Dict[str, str]]:
         {"method": "GET",  "path": "/api/routes",          "brief": "This route list."},
         {"method": "GET",  "path": "/api/diag",            "brief": "Runtime environment fingerprint (Python/NumPy/Pillow versions, git SHA)."},
         {"method": "GET",  "path": "/api/runs",            "brief": "List of recent saved recognition runs (per-pair summaries)."},
+        {"method": "GET",  "path": "/api/labels",          "brief": "List of recently saved cube-geometry label JSON documents."},
         {"method": "GET",  "path": "/runs/pairs/<id>/...", "brief": "Static access to a saved run's files (result.json, debug.json, overlays, samples.csv, original photos)."},
+        {"method": "GET",  "path": "/runs/labels/<id>.json", "brief": "Static access to saved cube-geometry label JSON."},
         {"method": "POST", "path": "/api/recognize",       "brief": "Recognize one pair. Multipart fields: imageA, imageB; optional setId, expectedState. Query: ?slim=1 to omit overlays/diagnostics. Persists a run under /runs/pairs/<id>/."},
         {"method": "POST", "path": "/api/recognize-batch", "brief": "Recognize multiple pairs in one call. Multipart field: images (multi-file); optional groundTruth (.csv/.tsv/.json). Pairs files by filename A/B markers or by drop order. Persists a batch under /runs/batches/<id>/."},
+        {"method": "POST", "path": "/api/labels",          "brief": "Persist one cube-geometry label JSON document under /runs/labels/."},
     ]
 
 
@@ -1006,6 +1060,101 @@ def list_saved_runs(limit: int = 80) -> List[Dict]:
             continue
     summaries.sort(key=lambda item: item.get("createdAt", ""), reverse=True)
     return summaries[:limit]
+
+
+def save_label_document(payload: Dict[str, Any]) -> Dict[str, Any]:
+    _validate_label_document(payload)
+    set_id = str(payload.get("setId") or "unlabelled").strip() or "unlabelled"
+    image = payload.get("image") if isinstance(payload.get("image"), dict) else {}
+    image_side = str(payload.get("imageSide") or image.get("side") or "image").strip() or "image"
+    label_id = _run_id(f"{set_id}-{image_side}-geometry-label")
+    created_at = dt.datetime.now(dt.timezone.utc).isoformat()
+    document = json.loads(json.dumps(payload))
+    document.update(
+        {
+            "schemaVersion": int(document.get("schemaVersion") or 1),
+            "labelId": label_id,
+            "savedAt": created_at,
+            "labelUrl": f"/runs/labels/{label_id}.json",
+        }
+    )
+    LABELS.mkdir(parents=True, exist_ok=True)
+    path = LABELS / f"{label_id}.json"
+    path.write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
+    return _label_summary(document)
+
+
+def list_saved_labels(limit: int = 80) -> List[Dict[str, Any]]:
+    if not LABELS.exists():
+        return []
+    summaries: List[Dict[str, Any]] = []
+    for path in LABELS.glob("*.json"):
+        try:
+            document = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            continue
+        summaries.append(_label_summary(document))
+    summaries.sort(key=lambda item: item.get("savedAt", ""), reverse=True)
+    return summaries[:limit]
+
+
+def _validate_label_document(payload: Dict[str, Any]) -> None:
+    labels = payload.get("labels")
+    image = payload.get("image")
+    if not isinstance(image, dict):
+        raise ValueError("Label payload must include an image object.")
+    if not isinstance(labels, dict):
+        raise ValueError("Label payload must include a labels object.")
+    face_quads = labels.get("faceQuads") or {}
+    cube_hull = labels.get("cubeHull") or []
+    if not isinstance(face_quads, dict):
+        raise ValueError("labels.faceQuads must be an object.")
+    for face, points in face_quads.items():
+        if face not in {"U", "R", "F", "D", "L", "B"}:
+            raise ValueError(f"Unknown face label: {face}.")
+        if not _is_point_list(points, expected_len=4):
+            raise ValueError(f"Face {face} must contain exactly four points.")
+    if cube_hull and not _is_point_list(cube_hull, min_len=3):
+        raise ValueError("labels.cubeHull must contain at least three points.")
+    if not face_quads and not cube_hull:
+        raise ValueError("Add at least one face quad or cube hull before saving.")
+
+
+def _is_point_list(value: Any, *, expected_len: Optional[int] = None, min_len: Optional[int] = None) -> bool:
+    if not isinstance(value, list):
+        return False
+    if expected_len is not None and len(value) != expected_len:
+        return False
+    if min_len is not None and len(value) < min_len:
+        return False
+    for point in value:
+        if not isinstance(point, dict):
+            return False
+        if not isinstance(point.get("x"), (int, float)) or not isinstance(point.get("y"), (int, float)):
+            return False
+    return True
+
+
+def _label_summary(document: Dict[str, Any]) -> Dict[str, Any]:
+    image = document.get("image") if isinstance(document.get("image"), dict) else {}
+    labels = document.get("labels") if isinstance(document.get("labels"), dict) else {}
+    face_quads = labels.get("faceQuads") if isinstance(labels.get("faceQuads"), dict) else {}
+    cube_hull = labels.get("cubeHull") if isinstance(labels.get("cubeHull"), list) else []
+    label_id = document.get("labelId") or Path(str(document.get("labelUrl") or "")).stem
+    return {
+        "labelId": label_id,
+        "labelUrl": document.get("labelUrl") or (f"/runs/labels/{label_id}.json" if label_id else None),
+        "savedAt": document.get("savedAt"),
+        "setId": document.get("setId"),
+        "imageSide": document.get("imageSide") or image.get("side"),
+        "imageName": image.get("name"),
+        "imageSha256": image.get("sha256"),
+        "imageWidth": image.get("width"),
+        "imageHeight": image.get("height"),
+        "faceLabels": sorted(face_quads),
+        "faceQuadCount": len(face_quads),
+        "cubeHullPointCount": len(cube_hull),
+    }
 
 
 def _expected_for_pair(ground_truth: Dict[str, str], set_id: str) -> Optional[str]:

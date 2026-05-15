@@ -188,6 +188,30 @@ curl -s http://localhost:8080/api/diag | python3 -c "import json,sys; \
 If `git.cwd` or `git.sha` doesn't match what you expect, restart
 from your own repo.
 
+### After merging a PR that affects the running UI/API
+
+If a merged PR changes `app.py`, `static/`, server routes, API
+behavior, or anything the browser-served app depends on, make the
+running server match `origin/main` before giving the user a localhost
+link or asking them to refresh:
+
+1. Fast-forward the active server checkout:
+   ```bash
+   cd /Users/jhuber/cube-two-view-debugger
+   git fetch origin
+   git pull --ff-only
+   ```
+2. Kill the existing :8080 web UI server and restart it from that
+   checkout. The user has explicitly granted permission for this
+   routine server refresh.
+3. Verify `/api/diag` or the startup banner reports the merged SHA
+   and `main`.
+4. Only then give the user the link or ask them to refresh the page.
+
+This avoids the stale-checkout failure mode where a newly merged UI
+feature is present on GitHub but the browser still opens an older local
+server.
+
 ### Canonical paths per agent
 
 | Agent | Canonical repo path |

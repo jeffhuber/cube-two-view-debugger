@@ -304,8 +304,8 @@ yet have labelled ground truth in the scored corpus:
 ```
 
 The default manifest is `tests/fixtures/hard_case_manifest.json`. It currently tracks Sets 17, 21,
-22, 25, 30, 39, and 44 with their issue numbers, SHA256 image hashes, current status/category,
-current failed checks, optional ground-truth paths, and any PR-specific target checks. Target checks
+22, 25, 30, 39, 44, and 46-49 with their issue numbers, SHA256 image hashes,
+current status/category, current failed checks, optional ground-truth paths, and any PR-specific target checks. Target checks
 can assert that a failed check is either absent or present, which lets diagnostic PRs pin better
 failure routing without claiming the image set is recognized. When a future fix turns a rejected row
 into a recognized row, replace any diagnostic `targetFailedChecksPresent` gate with an

@@ -17,7 +17,7 @@ def test_hard_case_manifest_records_open_issue_sets():
     rows = {str(row["setId"]): row for row in document["pairs"]}
     primary = document["supportedArchitectures"]["primary"]
 
-    assert set(rows) == {"17", "21", "22", "25", "30", "39", "44"}
+    assert set(rows) == {"17", "21", "22", "25", "30", "39", "44", "46", "47", "48", "49"}
     assert primary["label"] == "native-arm64-macos-python312"
     assert primary["platform.machine"] == "arm64"
     assert rows["17"]["targetFailedChecksPresent"] == [
@@ -33,13 +33,20 @@ def test_hard_case_manifest_records_open_issue_sets():
     assert rows["25"]["targetFailedChecksPresent"] == ["image_b_face_triple_overlap_low_quality"]
     assert rows["30"]["targetFailedChecksAbsent"] == ["image_a_no_reliable_face_triple"]
     assert rows["30"]["currentStatus"] == "success"
+    assert {rows[set_id]["linkedIssue"] for set_id in ("46", "47", "48", "49")} == {85}
+    assert rows["46"]["failureClass"] == "wood_grain_background_sticker_noise"
+    assert rows["46"]["currentCandidates"] == 24200
+    assert rows["49"]["currentFailedChecks"] == ["image_a_U_anchor_missing"]
+    for set_id in ("46", "47", "48", "49"):
+        assert rows[set_id]["targetStatus"] == "rejected"
+        assert rows[set_id]["targetCategory"] == "reject_retake"
     assert rows["39"]["targetFailedChecksAbsent"] == [
         "image_a_no_reliable_face_triple",
         "image_b_D_anchor_missing",
         "missing_side_face_coverage",
     ]
     assert rows["39"]["currentFailedChecks"] == ["piece_legality_invalid"]
-    for set_id in ("17", "21", "22", "44"):
+    for set_id in ("17", "21", "22", "44", "46", "47", "48", "49"):
         assert rows[set_id]["groundTruthPath"]
         assert rows[set_id]["groundTruth_sha256_expected"]
     for row in rows.values():

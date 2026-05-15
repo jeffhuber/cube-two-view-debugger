@@ -7,12 +7,19 @@
     <link rel="stylesheet" href="/static/styles.css" />
   </head>
   <body>
-    <main class="app">
-      <section class="workbench" aria-labelledby="title">
-        <div class="heading">
+    <main class="app" data-active-view="recognizer">
+      <section class="heading" aria-labelledby="title">
+        <div>
           <h1 id="title">Rubik Two-View Recognizer</h1>
           <p>Upload image A with white up, then image B after the flip with yellow visible. The app returns a URFDLB state only when the detected cube is legal.</p>
         </div>
+        <nav class="viewTabs" aria-label="Workbench view">
+          <button id="recognizerTab" class="viewTab is-active" type="button" data-view="recognizer" aria-pressed="true">Recognizer</button>
+          <button id="labelerTab" class="viewTab" type="button" data-view="labeler" aria-pressed="false">Geometry Labeler</button>
+        </nav>
+      </section>
+
+      <section class="workbench recognizerView" aria-label="Recognizer forms">
 
         <form id="recognizeForm" class="panel">
           <h2>Single Pair</h2>
@@ -64,7 +71,7 @@
         </section>
       </section>
 
-      <section class="batchResults" aria-label="Batch results">
+      <section class="batchResults recognizerView" aria-label="Batch results">
         <div class="resultHeader">
           <h2>Batch Results</h2>
           <a id="batchReport" href="#" hidden>Report</a>
@@ -84,9 +91,9 @@
         </table>
       </section>
 
-      <section id="overlays" class="overlays" aria-label="Recognition overlays"></section>
+      <section id="overlays" class="overlays recognizerView" aria-label="Recognition overlays"></section>
 
-      <section class="recentRuns panel" aria-labelledby="recentRunsHeading">
+      <section class="recentRuns panel recognizerView" aria-labelledby="recentRunsHeading">
         <div class="resultHeader">
           <h2 id="recentRunsHeading">Recent Runs</h2>
           <button id="recentRunsRefresh" type="button">Refresh</button>
@@ -106,8 +113,92 @@
           <tbody id="recentRunsRows"></tbody>
         </table>
       </section>
+
+      <section id="labelerView" class="labelerView" aria-labelledby="labelerHeading">
+        <section class="labelerControls panel">
+          <h2 id="labelerHeading">Geometry Labeler</h2>
+          <label class="dropZone" id="labelDropZone">
+            <span class="dropZoneTitle">Drop or click to add 1 photo</span>
+            <span class="dropZoneHint">Face quads and cube hull labels save as JSON.</span>
+            <span class="dropZoneFiles" id="labelDropZoneFiles"></span>
+            <input id="labelImage" type="file" accept="image/*" />
+          </label>
+          <div class="labelerFields">
+            <label>
+              <span>Set name</span>
+              <input id="labelSetId" type="text" placeholder="e.g. Set 46" autocomplete="off" />
+            </label>
+            <label>
+              <span>Image side</span>
+              <select id="labelImageSide">
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="single">single</option>
+              </select>
+            </label>
+          </div>
+          <div class="segmentedControl" aria-label="Label mode">
+            <button class="is-active" type="button" data-label-mode="face">Face Quad</button>
+            <button type="button" data-label-mode="hull">Cube Hull</button>
+          </div>
+          <div class="faceButtons" aria-label="Active face">
+            <button class="is-active" type="button" data-face="U">U</button>
+            <button type="button" data-face="R">R</button>
+            <button type="button" data-face="F">F</button>
+            <button type="button" data-face="D">D</button>
+            <button type="button" data-face="L">L</button>
+            <button type="button" data-face="B">B</button>
+          </div>
+          <div class="labelerActions">
+            <button id="labelUndo" type="button">Undo</button>
+            <button id="labelClearActive" type="button">Clear Active</button>
+            <button id="labelClearAll" type="button">Clear All</button>
+            <button id="labelSave" type="button">Save JSON</button>
+          </div>
+          <label>
+            <span>Notes</span>
+            <textarea id="labelNotes" rows="3"></textarea>
+          </label>
+          <p id="labelStatus" class="labelStatus">Ready</p>
+        </section>
+
+        <section class="labelerCanvasPanel panel">
+          <div class="resultHeader">
+            <h2 id="labelImageTitle">Image</h2>
+            <a id="labelSavedLink" href="#" hidden>Saved JSON</a>
+          </div>
+          <div class="labelCanvasWrap">
+            <canvas id="labelCanvas"></canvas>
+          </div>
+        </section>
+
+        <section class="labelerJsonPanel panel">
+          <div class="resultHeader">
+            <h2>Current Labels</h2>
+            <button id="labelCopyJson" type="button">Copy</button>
+          </div>
+          <pre id="labelJson"></pre>
+          <div class="resultHeader labelHistoryHeader">
+            <h2>Saved Labels</h2>
+            <button id="labelRefresh" type="button">Refresh</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Set</th>
+                <th>Side</th>
+                <th>Faces</th>
+                <th>Saved</th>
+                <th>JSON</th>
+              </tr>
+            </thead>
+            <tbody id="labelRows"></tbody>
+          </table>
+        </section>
+      </section>
     </main>
 
     <script src="/static/app.js"></script>
+    <script src="/static/labeler.js"></script>
   </body>
 </html>

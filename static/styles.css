@@ -33,10 +33,6 @@ body {
   align-items: start;
 }
 
-.heading {
-  grid-column: 1 / -1;
-}
-
 h1,
 h2,
 p {
@@ -49,12 +45,51 @@ h1 {
   font-weight: 760;
 }
 
+.heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: end;
+  margin-bottom: 18px;
+}
+
 .heading p {
   max-width: 760px;
   margin-top: 8px;
   color: var(--muted);
   font-size: 15px;
   line-height: 1.45;
+}
+
+.viewTabs,
+.segmentedControl,
+.faceButtons,
+.labelerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.viewTab,
+.segmentedControl button,
+.faceButtons button,
+.labelerActions button,
+.labelerJsonPanel button {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  background: #fbfcfc;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.viewTab.is-active,
+.segmentedControl button.is-active,
+.faceButtons button.is-active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: white;
 }
 
 .panel,
@@ -207,6 +242,22 @@ input[type="file"] {
   color: var(--ink);
 }
 
+input[type="text"],
+select,
+textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px;
+  background: #fbfcfc;
+  color: var(--ink);
+  font: inherit;
+}
+
+textarea {
+  resize: vertical;
+}
+
 button {
   min-height: 40px;
   border: 0;
@@ -295,6 +346,86 @@ td code {
   margin-top: 18px;
 }
 
+.labelerView {
+  display: none;
+  grid-template-columns: minmax(240px, 320px) minmax(360px, 1fr) minmax(280px, 360px);
+  gap: 18px;
+  align-items: start;
+}
+
+.app[data-active-view="labeler"] .recognizerView {
+  display: none;
+}
+
+.app[data-active-view="labeler"] .labelerView {
+  display: grid;
+}
+
+.labelerControls {
+  display: grid;
+  gap: 14px;
+}
+
+.labelerFields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 92px;
+  gap: 10px;
+}
+
+.faceButtons button {
+  width: 40px;
+  padding: 0;
+}
+
+.labelerActions button {
+  flex: 1 1 120px;
+}
+
+.labelStatus {
+  min-height: 20px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.labelCanvasWrap {
+  position: relative;
+  min-height: 360px;
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: auto;
+  background:
+    linear-gradient(45deg, #eef3f5 25%, transparent 25%),
+    linear-gradient(-45deg, #eef3f5 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #eef3f5 75%),
+    linear-gradient(-45deg, transparent 75%, #eef3f5 75%);
+  background-color: #f8fafb;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+  background-size: 20px 20px;
+}
+
+#labelCanvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 320px;
+  cursor: crosshair;
+}
+
+#labelCanvas:empty {
+  min-height: 360px;
+}
+
+#labelJson {
+  min-height: 220px;
+  max-height: 380px;
+}
+
+.labelHistoryHeader {
+  margin-top: 14px;
+}
+
 figure {
   margin: 0;
   background: var(--panel);
@@ -319,7 +450,9 @@ img {
 
 @media (max-width: 780px) {
   .workbench,
-  .overlays {
+  .overlays,
+  .labelerView,
+  .heading {
     grid-template-columns: 1fr;
   }
 

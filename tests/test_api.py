@@ -39,9 +39,11 @@ def test_api_routes_lists_known_endpoints():
     assert "/api/routes" in paths
     assert "/api/diag" in paths
     assert "/api/runs" in paths
+    assert "/api/labels" in paths
     assert "/api/recognize" in paths
     assert "/api/recognize-batch" in paths
     assert "/runs/pairs/<id>/..." in paths
+    assert "/runs/labels/<id>.json" in paths
     assert "/" in paths
     assert "/static/*" in paths
 
@@ -80,6 +82,22 @@ def _get_json(server, path):
     return response.status, json.loads(body or b"{}")
 
 
+def _post_json(server, path, payload):
+    host, port = server
+    body = json.dumps(payload).encode("utf-8")
+    conn = HTTPConnection(host, port, timeout=5)
+    conn.request(
+        "POST",
+        path,
+        body=body,
+        headers={"Content-Type": "application/json", "Content-Length": str(len(body))},
+    )
+    response = conn.getresponse()
+    data = response.read()
+    conn.close()
+    return response.status, json.loads(data or b"{}")
+
+
 def test_api_routes_http(server):
     """The /api/routes endpoint should return the same data as the helper."""
     status, payload = _get_json(server, "/api/routes")
@@ -95,6 +113,55 @@ def test_api_runs_returns_list(server):
     assert status == HTTPStatus.OK
     assert "runs" in payload
     assert isinstance(payload["runs"], list)
+
+
+def test_api_labels_roundtrip(server, tmp_path, monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "RUNS", tmp_path / "runs", raising=False)
+    monkeypatch.setattr(app_module, "LABELS", tmp_path / "runs" / "labels", raising=False)
+
+    payload = {
+        "schemaVersion": 1,
+        "labelType": "cube_geometry",
+        "coordinateSpace": "browser_image_natural",
+        "setId": "Set 999",
+        "imageSide": "A",
+        "image": {
+            "name": "Set 999 - A.jpg",
+            "sha256": "abc123",
+            "width": 100,
+            "height": 80,
+        },
+        "labels": {
+            "faceQuads": {
+                "U": [
+                    {"x": 1, "y": 2},
+                    {"x": 30, "y": 2},
+                    {"x": 30, "y": 31},
+                    {"x": 1, "y": 31},
+                ]
+            },
+            "cubeHull": [
+                {"x": 0, "y": 0},
+                {"x": 40, "y": 0},
+                {"x": 40, "y": 40},
+            ],
+        },
+    }
+
+    status, saved = _post_json(server, "/api/labels", payload)
+
+    assert status == HTTPStatus.OK
+    assert saved["setId"] == "Set 999"
+    assert saved["imageSide"] == "A"
+    assert saved["faceLabels"] == ["U"]
+    label_path = tmp_path / "runs" / "labels" / f"{saved['labelId']}.json"
+    assert label_path.exists()
+
+    status, listed = _get_json(server, "/api/labels")
+    assert status == HTTPStatus.OK
+    assert listed["labels"][0]["labelId"] == saved["labelId"]
 
 
 def test_api_diag_smoke(server):

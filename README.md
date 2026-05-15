@@ -171,6 +171,13 @@ by set name when the names contain `A` and `B` markers, otherwise by sorted
 order. The drop zone is the same surface used for both single-pair and batch
 recognition.
 
+The web UI also has a Geometry Labeler tab for human cube/body labels. Drop one
+photo, click four corners for any visible face (`U/R/F/D/L/B`), optionally trace
+the cube hull, then save JSON. Labels are stored under `runs/labels/` and
+exposed through `GET /api/labels`; each document includes the image filename,
+browser-natural dimensions, image SHA256, face quads, cube-hull points, set id,
+side, and notes.
+
 For ad-hoc single-pair recognition from the command line — useful when
 filing or reproducing a bug report — use `tools/recognize_pair.py`:
 

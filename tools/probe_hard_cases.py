@@ -447,6 +447,7 @@ def probe_pair(
         "targetPassed": (not failures) if has_target else None,
         "targetFailures": failures,
         "pairColorCalibration": signals.get("pairColorCalibration"),
+        "backgroundStickerNoise": signals.get("backgroundStickerNoise"),
         "selectedGridQuality": signals.get("selectedGridQuality"),
         # Repair audit trail. Surfaces both the standard repair path and the
         # PR #76 conflict-backfill path so an operator scanning the hard-case

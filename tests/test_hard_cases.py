@@ -34,12 +34,16 @@ def test_hard_case_manifest_records_open_issue_sets():
     assert rows["30"]["targetFailedChecksAbsent"] == ["image_a_no_reliable_face_triple"]
     assert rows["30"]["currentStatus"] == "success"
     assert {rows[set_id]["linkedIssue"] for set_id in ("46", "47", "48", "49")} == {85}
-    assert rows["46"]["failureClass"] == "wood_grain_background_sticker_noise"
+    assert rows["46"]["failureClass"] == "background_sticker_noise"
     assert rows["46"]["currentCandidates"] == 24200
-    assert rows["49"]["currentFailedChecks"] == ["image_a_U_anchor_missing"]
+    assert rows["49"]["currentFailedChecks"] == [
+        "image_a_U_anchor_missing",
+        "background_sticker_noise_suspected",
+    ]
     for set_id in ("46", "47", "48", "49"):
         assert rows[set_id]["targetStatus"] == "rejected"
         assert rows[set_id]["targetCategory"] == "reject_retake"
+        assert rows[set_id]["targetFailedChecksPresent"] == ["background_sticker_noise_suspected"]
     assert rows["39"]["targetFailedChecksAbsent"] == [
         "image_a_no_reliable_face_triple",
         "image_b_D_anchor_missing",

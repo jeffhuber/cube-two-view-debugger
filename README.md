@@ -328,6 +328,12 @@ white/red/orange evidence without changing recognition behavior.
 If that selected-face evidence shows multiple sample-heavy, low-quality image-B side grids, the
 recognizer also emits `image_b_visible_face_evidence_weak` to classify the rejection separately
 from pure red/orange calibration failures.
+For Issue #85 background-noise rows, the recognizer emits
+`background_sticker_noise_suspected` when the selected U/D anchors collapse to one
+self-colored cell while all face counts fail, or when image A has no U anchor and blue/B grid
+centers dominate. The hard-case probe copies the supporting
+`recognitionSignals.backgroundStickerNoise` block to top-level
+`backgroundStickerNoise`.
 The probe also copies `recognitionSignals.selectedGridQuality` to top-level `selectedGridQuality`
 so selected-grid cell counts can be inspected without replaying a saved API response.
 

@@ -370,6 +370,18 @@ geometry and overlays use the same resized processing-image coordinate space as 
 Use it to evaluate cube/background isolation ideas visually before promoting any mask or hull rule
 into the recognizer.
 
+Use `tools/diagnose_background.py` when comparing the background-noise hard cases as a batch:
+
+```sh
+.venv/bin/python tools/diagnose_background.py \
+  --include-control-set 15 \
+  --json-output /tmp/background-diagnosis.json
+```
+
+The batch probe prints ROI fraction, saturated-pixel fraction, sticker/grid counts, dominant
+grid-center face, selected-anchor strength, and the same proposed keep/drop partition. It is meant
+to answer whether a proposed cube hull is viable before any recognizer behavior change.
+
 ## How Recognition Works
 
 The recognizer is a CV-first pipeline with cube-constraint validation at the end. It intentionally

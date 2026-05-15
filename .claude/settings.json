@@ -125,6 +125,20 @@
       "Bash(xargs:*)",
       "Bash(disown:*)",
 
+      "Bash(which:*)",
+      "Bash(type:*)",
+      "Bash(printenv:*)",
+      "Bash(df:*)",
+      "Bash(du:*)",
+      "Bash(whoami:*)",
+      "Bash(id:*)",
+      "Bash(hostname:*)",
+      "Bash(uptime:*)",
+      "Bash(echo:*)",
+      "Bash(true:*)",
+      "Bash(false:*)",
+      "Bash(test:*)",
+
       "Read(/Users/jhuber/cube-snap/**)",
       "Read(/Users/jhuber/cube-two-view-debugger/**)",
       "Read(/Users/jhuber/Documents/Codex/**)",
@@ -158,7 +172,6 @@
       "Bash(rm -rf:*)",
       "Bash(rm:*)",
 
-      "Bash(curl:*)",
       "Bash(wget:*)",
 
       "Bash(sudo:*)",

@@ -9,7 +9,10 @@ from rubik_recognizer.image_pipeline import (
     _candidate_key,
     _candidate_matched_set,
     _filter_tiny_white_components,
+    _find_cube_roi,
+    _find_cube_roi_at_threshold,
     _nearest_available_point,
+    _roi_covers_full_frame,
     _score_grid_centers,
 )
 from rubik_recognizer.colors import ColorMatch
@@ -124,3 +127,107 @@ def test_tiny_white_component_filter_requires_many_white_candidates():
     ]
 
     assert _filter_tiny_white_components(white) is white
+
+
+def _synthetic_image(height: int, width: int, *, background_sat: float, cube_box=None) -> np.ndarray:
+    """Build a synthetic RGB array with a controllable background
+    saturation level, optionally with a bright cube-shaped patch.
+
+    Used to test ROI detection without depending on photo fixtures.
+    Background = an HSV color with sat=background_sat, val=0.7,
+    converted to RGB. Cube patch (if given) = highly saturated
+    bright orange-ish pixels that mimic a Rubik's cube's
+    saturation footprint.
+    """
+    # Background: hue=30° (warm), val=0.7, sat=background_sat.
+    # Compute the RGB equivalent manually (HSV -> RGB for V=0.7,
+    # H=30°): the conversion gives R=V, G=V*(1-S*(1-frac)), B=V*(1-S),
+    # rounded to 8-bit. For H=30° in the [0,60) sector, frac=0.5.
+    v = 0.7
+    s = background_sat
+    bg_r = int(round(v * 255))
+    bg_g = int(round(v * (1 - s * 0.5) * 255))
+    bg_b = int(round(v * (1 - s) * 255))
+    arr = np.full((height, width, 3), [bg_r, bg_g, bg_b], dtype=np.uint8)
+    if cube_box is not None:
+        x0, y0, x1, y1 = cube_box
+        # Bright orange (sat ≈ 1.0, val ≈ 1.0): obviously cube-like.
+        arr[y0:y1, x0:x1] = [255, 128, 0]
+    return arr
+
+
+def test_find_cube_roi_low_saturation_background_isolates_cube():
+    """Baseline: when the background is barely saturated (sat≈0.05,
+    similar to Set 15's marble café table at 13.5% saturated pixels),
+    ROI detection isolates the bright cube patch cleanly with the
+    default threshold. No retry needed."""
+    arr = _synthetic_image(1000, 800, background_sat=0.05, cube_box=(200, 300, 600, 700))
+    roi = _find_cube_roi(arr)
+    x0, y0, x1, y1 = roi
+    # The ROI should contain the cube patch with some padding, NOT cover the entire frame.
+    assert x0 <= 200 and x1 >= 600, f"ROI should include cube x-range, got {roi}"
+    assert y0 <= 300 and y1 >= 700, f"ROI should include cube y-range, got {roi}"
+    assert not _roi_covers_full_frame(roi, 800, 1000), (
+        f"Low-saturation background must not trigger frame-cover retry, got {roi}"
+    )
+
+
+def test_find_cube_roi_chromatic_background_triggers_retry():
+    """Set 46 failure mode (2026-05-14): chromatic background (wood
+    grain, fabric, etc.) registers as saturated under the default
+    threshold and merges with the cube into a single frame-spanning
+    component. The retry at the stricter threshold must isolate the
+    cube. This synthetic reproduces the failure: a sat=0.30
+    background (similar to Set 46's 60-70% saturated pixels) plus
+    a bright cube patch."""
+    arr = _synthetic_image(1000, 800, background_sat=0.30, cube_box=(200, 300, 600, 700))
+    # The default threshold alone must fail (frame-spanning).
+    default_roi = _find_cube_roi_at_threshold(arr, 0.23)
+    assert _roi_covers_full_frame(default_roi, 800, 1000), (
+        f"Test premise: chromatic background should produce frame-spanning ROI at default threshold, got {default_roi}"
+    )
+    # The retry at the stricter threshold must isolate the cube.
+    final_roi = _find_cube_roi(arr)
+    assert not _roi_covers_full_frame(final_roi, 800, 1000), (
+        f"Retry should isolate cube from chromatic background, got {final_roi}"
+    )
+    x0, y0, x1, y1 = final_roi
+    # The retry result should still encompass the cube patch.
+    assert x0 <= 200 and x1 >= 600 and y0 <= 300 and y1 >= 700, (
+        f"Retry ROI should still contain the cube, got {final_roi}"
+    )
+
+
+def test_find_cube_roi_falls_back_to_full_image_when_retry_also_fails():
+    """If both thresholds produce a frame-spanning component (no
+    isolable cube), preserve the historical full-image fallback so
+    downstream stages have a chance to do something useful.
+
+    Synthetic: high-saturation noise everywhere with no bright
+    cube — even the retry won't isolate anything."""
+    arr = _synthetic_image(1000, 800, background_sat=0.60, cube_box=None)
+    final = _find_cube_roi(arr)
+    assert _roi_covers_full_frame(final, 800, 1000), (
+        f"Both-threshold failure should fall through to full frame, got {final}"
+    )
+
+
+def test_roi_covers_full_frame_requires_both_dimensions_high():
+    """A tight-framed photo (cube fills viewport width but not height,
+    e.g., a portrait-cropped close-up) can legitimately have one
+    dimension >95% without being a background-merge failure. The
+    retry must NOT fire in that case — only when BOTH dimensions
+    span ~the entire frame."""
+    width, height = 800, 1000
+
+    # Both dimensions full → frame-cover failure
+    assert _roi_covers_full_frame((0, 0, 800, 1000), width, height) is True
+
+    # Width spans frame but height is tight (legitimate landscape crop) → not failure
+    assert _roi_covers_full_frame((0, 200, 800, 600), width, height) is False
+
+    # Height spans frame but width is tight → not failure
+    assert _roi_covers_full_frame((100, 0, 500, 1000), width, height) is False
+
+    # Both dimensions well under threshold → not failure
+    assert _roi_covers_full_frame((100, 200, 500, 700), width, height) is False

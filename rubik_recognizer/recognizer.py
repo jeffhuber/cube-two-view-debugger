@@ -108,6 +108,8 @@ MAX_RESCUE_VISIBLE_FACE_TRIPLES = 3
 MIN_RESCUE_VISIBLE_FACE_TRIPLE_SCORE = 80.0
 RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK = "red_orange_pair_calibration_suspected"
 FACE_TRIPLE_OVERLAP_LOW_QUALITY_CHECK = "face_triple_overlap_low_quality"
+PAIR_COLOR_EVIDENCE_COLORS = ("white", "red", "orange")
+PAIR_COLOR_EVIDENCE_FACES = tuple(COLOR_TO_FACE[color] for color in PAIR_COLOR_EVIDENCE_COLORS)
 # Image A may have a non-white logo on the white center. Admit that as a U
 # anchor only when the whole grid is strong and the center's color is ambiguous.
 MIN_U_LOGO_ANCHOR_MATCHED_COUNT = 8
@@ -1379,13 +1381,13 @@ def _pair_color_calibration_signal(
             if color in palette
         },
         "images": {
-            "imageA": _pair_color_calibration_image_signal(raw_a, calibrated_a),
-            "imageB": _pair_color_calibration_image_signal(raw_b, calibrated_b),
+            "imageA": _pair_color_calibration_image_signal(raw_a, calibrated_a, anchor="U"),
+            "imageB": _pair_color_calibration_image_signal(raw_b, calibrated_b, anchor="D"),
         },
     }
 
 
-def _pair_color_calibration_image_signal(raw: ImageAnalysis, calibrated: ImageAnalysis) -> Dict[str, Any]:
+def _pair_color_calibration_image_signal(raw: ImageAnalysis, calibrated: ImageAnalysis, *, anchor: str) -> Dict[str, Any]:
     raw_stickers = _face_count_dict(_face_counts_from_stickers(raw))
     calibrated_stickers = _face_count_dict(_face_counts_from_stickers(calibrated))
     raw_grids = _face_count_dict(_face_counts_from_grid_centers(raw))
@@ -1399,6 +1401,54 @@ def _pair_color_calibration_image_signal(raw: ImageAnalysis, calibrated: ImageAn
         "calibratedRedOrangeSkew": _red_orange_count_signal(calibrated_stickers),
         "rawRedOrangeEvidence": _red_orange_skew_evidence(raw),
         "calibratedRedOrangeEvidence": _red_orange_skew_evidence(calibrated),
+        "selectedFaceEvidence": {
+            "raw": _selected_face_color_evidence(raw, anchor),
+            "calibrated": _selected_face_color_evidence(calibrated, anchor),
+        },
+    }
+
+
+def _selected_face_color_evidence(analysis: ImageAnalysis, anchor: str) -> Dict[str, Dict[str, Any]]:
+    return {
+        face: _face_grid_color_evidence(face, grid)
+        for face, grid in _assigned_grid_by_face(analysis, anchor).items()
+    }
+
+
+def _face_grid_color_evidence(face: str, grid: FaceGrid) -> Dict[str, Any]:
+    center = grid.center_sticker
+    match = getattr(center, "match", None) or classify_rgb(center.rgb)
+    return {
+        "gridId": getattr(grid, "id", None),
+        "expectedFace": face,
+        "expectedColor": FACE_TO_CENTER_COLOR.get(face),
+        "centerFace": getattr(match, "face", None),
+        "centerColor": getattr(match, "color", None),
+        "centerRgb": list(center.rgb),
+        "centerConfidence": round(float(getattr(match, "confidence", 0.0)), 4),
+        "centerDistances": _color_distance_signal(match, PAIR_COLOR_EVIDENCE_COLORS),
+        "matchedCount": grid.matched_count,
+        "fitError": round(grid.fit_error, 3),
+        "quality": round(_grid_quality_score(grid), 3),
+        "gridSamples": _grid_sample_count(grid),
+        "cellFaceEvidence": {
+            face: _grid_cell_face_counts(grid).get(face, 0)
+            for face in PAIR_COLOR_EVIDENCE_FACES
+        },
+        "cellSourceCounts": _grid_cell_source_counts(grid),
+    }
+
+
+def _color_distance_signal(match: Any, colors: Sequence[str]) -> Dict[str, float]:
+    distances = {
+        color: float(distance)
+        for color, distance in getattr(match, "alternatives", [])
+        if color in colors
+    }
+    return {
+        color: round(distances[color], 4)
+        for color in colors
+        if color in distances
     }
 
 

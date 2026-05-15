@@ -323,8 +323,8 @@ HSV, classifier confidence, and nearest color alternatives for the assigned grid
 When the recognizer emits `red_orange_pair_calibration_suspected`, rejected API responses also
 include `recognitionSignals.pairColorCalibration`. The hard-case probe copies that block to
 `pairColorCalibration` in its JSON output so color investigations can compare raw vs calibrated
-red/orange counts, calibration anchor counts, and the red/orange adaptive palette without changing
-recognition behavior.
+red/orange counts, calibration anchor counts, the red/orange adaptive palette, and selected-face
+white/red/orange evidence without changing recognition behavior.
 The probe also copies `recognitionSignals.selectedGridQuality` to top-level `selectedGridQuality`
 so selected-grid cell counts can be inspected without replaying a saved API response.
 

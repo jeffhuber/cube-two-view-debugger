@@ -52,14 +52,22 @@ for accidents.
 3. **Read-only gh** — `pr view/list/diff/checks/checkout`, `issue
    view/list`, `repo view`, `release view`, `workflow`, `run`, `api`.
 
-4. **gh PR/issue lifecycle (excluding merge)** — `create`,
-   `comment`, `edit`, `close`, `reopen`, `review`. Each is itself
-   a review gate — the PR/issue page is the audit surface.
+4. **gh PR/issue lifecycle (excluding merge)** — body-writing
+   commands are pre-approved only in `--body-file` form. Markdown
+   passed through inline `--body "..."` is not allowed because shell
+   backticks are command substitution. Create/comment/edit/review
+   bodies must be written to a temp file first, then submitted with
+   `gh ... --body-file /tmp/<name>.md`.
    - **`gh pr merge` is NOT pre-approved.** Every PR merge requires
      confirmation. The reason: `gh pr merge --admin` (branch-protection
      bypass) is indistinguishable from a normal merge under prefix
      matching, and bypassing branch protection should always be an
      explicit human gesture.
+   - Because permission matching is prefix-based, safe commands should
+     put `--body-file` immediately after the subcommand, for example
+     `gh pr create --body-file /tmp/pr.md --repo ...`. Reordering flags
+     can fall out of the pre-approved path and should require manual
+     confirmation rather than silently permitting an unsafe inline body.
 
 5. **Text tools & pipes** — `grep`, `ls`, `find`, `sed`, `awk`,
    `cat`, `head`, `tail`, `jq`, `diff`, etc.
@@ -112,6 +120,12 @@ backstop for accidents:
   paths; specific URLs can be whitelisted per-host in
   `settings.local.json`).
 - `sudo`.
+- Common inline GitHub body forms such as `gh pr create --body ...`
+  and `gh issue comment --body ...`. These are denied because markdown
+  backticks inside shell arguments execute as command substitutions.
+  Prefix matching cannot catch every possible flag ordering, so the
+  allow list also avoids broad `gh pr create:*` / `gh issue comment:*`
+  grants and only pre-approves `--body-file` forms.
 - `Write` / `Edit` into `~/.ssh`, `~/.aws`, `~/.config`.
 
 ## Personal overrides

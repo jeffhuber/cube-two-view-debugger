@@ -36,15 +36,15 @@ bodies, and full force-push remain gated. The deny list still catches the
 
 ## Operating envelope
 
-The committed baseline is intentionally broad enough for an agent to run a
-full PR loop without repeated human approval:
+The committed baseline is intentionally broad enough for an agent to run most
+of an implementation/review loop without repeated human approval:
 
 - edit/create repo files, Markdown docs, tests, JSON fixtures, and temp
   body files under `/tmp` or `/private/tmp`
-- create branches, stage, commit, push explicit `origin` branches, and
-  force-push with lease when rebasing a PR branch
-- create/edit/comment/review GitHub PRs and issues, using body files for
-  Markdown
+- create branches, stage, commit, and force-push with lease when rebasing a
+  PR branch
+- create/edit/comment/review GitHub PRs and issues through `--body-file`
+  forms only
 - merge PRs after the expected review loop has completed, including
   admin-merge when the repository's branch-protection model requires it
 - run repo-local pytest, probes, profiles, app smoke tests, and syntax checks
@@ -62,12 +62,15 @@ or any action outside the two active repos / Codex worktrees / temp dirs.
 2. **State-mutating git (routine PR-loop variants)** — `add`, `commit`,
    `checkout`, `switch`, `pull --ff-only`, `cherry-pick`, `stash`,
    `restore`, `merge --no-ff`, `merge --ff-only`,
-   explicit `git push -u origin ...`, explicit `git push origin ...`,
    and `push --force-with-lease`.
    - Full `git push --force` and `git push -f` are explicitly denied
      (catches the common form). When rewriting a PR branch, use
      `--force-with-lease`, which refuses if the remote has moved since
      your last fetch.
+   - Plain `git push origin ...` is not pre-approved in the shared
+     baseline because a trailing `--force` would still match the same
+     prefix. If a host wants frictionless normal pushes, add a local
+     machine-specific rule after accepting that tradeoff.
 
 3. **Read-only gh** — `pr view/list/diff/checks/checkout`, `issue
    view/list`, `repo view`, `release view`, `workflow`, `run`, `api`.
@@ -88,8 +91,9 @@ or any action outside the two active repos / Codex worktrees / temp dirs.
      `gh pr create --body-file /tmp/pr.md --repo ...`. Reordering flags
      can fall out of the pre-approved path and should require manual
      confirmation rather than silently permitting an unsafe inline body.
-     Broad lifecycle commands are also allowed for practical GitHub CLI
-     flag ordering, but agents must still use body files for Markdown.
+     Broad body-writing lifecycle commands are intentionally not allowed:
+     target-first forms like `gh pr comment 93 --body ...` can otherwise
+     bypass the inline-body tripwires.
 
 5. **Text tools & pipes** — `rg`, `grep`, `ls`, `find`, `sed`, `awk`,
    `cat`, `head`, `tail`, `jq`, `diff`, `stat`, `file`, `date`, `nl`,
@@ -134,10 +138,10 @@ past prefix matching — these aren't perfect, but they're a real
 backstop for accidents:
 
 - `git push --force`, `git push -f` (catches `git push --force ...`;
-  does NOT catch `git push ... --force`). The mitigation is that agents
-  should use explicit `git push origin ...` or `git push -u origin ...`
-  for normal pushes and `git push --force-with-lease ...` for rebased
-  PR branches; full force-push is never part of the workflow.
+  does NOT catch `git push ... --force`). The mitigation is that the
+  shared baseline does not pre-approve plain `git push origin ...`; normal
+  pushes require confirmation unless a host-local override accepts that
+  risk, and rebased PR branches should use `git push --force-with-lease`.
 - `git reset --hard`, `git clean -fd`, `git filter-branch`,
   `git update-ref -d`.
 - `rm`, `rm -rf`.

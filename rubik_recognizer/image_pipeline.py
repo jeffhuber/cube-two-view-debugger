@@ -24,6 +24,18 @@ MIN_COLORED_STICKERS_FOR_WHITE_NOISE_FILTER = 8
 MIN_WHITE_STICKERS_FOR_WHITE_NOISE_FILTER = 18
 TINY_WHITE_COMPONENT_AREA_FRACTION = 0.05
 
+# ROI detection tuning. The default saturation threshold (0.23) handles
+# most natural photo backgrounds (marble, light cloth, sky). The retry
+# threshold (0.40) drops weakly-saturated chromatic backgrounds (e.g.,
+# the wood-grain desk in Set 46, where 60-70% of pixels register as
+# saturated and merge with the cube into a single frame-spanning
+# component). The retry-trigger threshold (0.95 of both dimensions)
+# guards against false-triggering on legitimately tight-framed cubes.
+# See `_find_cube_roi` for the failure mode this addresses.
+_ROI_SATURATION_MIN_DEFAULT = 0.23
+_ROI_SATURATION_MIN_RETRY = 0.40
+_ROI_FRAME_COVERAGE_THRESHOLD = 0.95
+
 
 @dataclass
 class Sticker:
@@ -127,10 +139,44 @@ def _resize_for_processing(image: Image.Image, max_side: int) -> Tuple[Image.Ima
 
 
 def _find_cube_roi(arr: np.ndarray) -> Tuple[int, int, int, int]:
+    """Locate the cube's bounding box by color-segmentation + connected
+    components on a saturation-thresholded mask.
+
+    The default saturation threshold (0.23) handles most natural
+    backgrounds. When the resulting top component covers ≥95% of BOTH
+    image dimensions, the cube has merged with a chromatically-loud
+    background — Set 46 (2026-05-14) was photographed against a
+    wood-grain desk where 60–70% of pixels register as saturated, and
+    after dilation everything became one giant frame-spanning blob.
+
+    In that case, retry with a stricter saturation threshold (0.40) so
+    weakly-saturated backgrounds drop out while the cube's bright
+    stickers (orange/red/yellow/green/blue typically have saturation
+    well above 0.40) survive. If the retry also produces a
+    frame-spanning component, fall through to the original — preserves
+    the historical "return full image" fallback.
+
+    The "both dimensions" criterion is important: a tightly-framed
+    cube can legitimately span one dimension at >95%; only the
+    background-merge failure spans both.
+    """
+    height, width = arr.shape[:2]
+    roi = _find_cube_roi_at_threshold(arr, _ROI_SATURATION_MIN_DEFAULT)
+    if _roi_covers_full_frame(roi, width, height):
+        retry = _find_cube_roi_at_threshold(arr, _ROI_SATURATION_MIN_RETRY)
+        if not _roi_covers_full_frame(retry, width, height):
+            return retry
+    return roi
+
+
+def _find_cube_roi_at_threshold(arr: np.ndarray, sat_min: float) -> Tuple[int, int, int, int]:
+    """Single-pass ROI detection at the given saturation threshold.
+    Returns the full image as ROI when no usable signal is found
+    (matches the pre-refactor fallback)."""
     hsv = _rgb_to_hsv_arrays(arr)
     sat = hsv[:, :, 1]
     val = hsv[:, :, 2]
-    saturated = (sat > 0.23) & (val > 0.20)
+    saturated = (sat > sat_min) & (val > 0.20)
     if saturated.sum() < 200:
         return 0, 0, arr.shape[1], arr.shape[0]
 
@@ -145,6 +191,22 @@ def _find_cube_roi(arr: np.ndarray) -> Tuple[int, int, int, int]:
     x0, y0, x1, y1 = best["bbox"]
     pad = int(max(x1 - x0, y1 - y0) * 0.12)
     return max(0, x0 - pad), max(0, y0 - pad), min(width, x1 + pad), min(height, y1 + pad)
+
+
+def _roi_covers_full_frame(roi: Tuple[int, int, int, int], width: int, height: int) -> bool:
+    """True if the ROI spans ≥95% of BOTH image dimensions.
+
+    Both-dimensions logic: a legitimately tight-framed photo can span
+    one dimension at high coverage (cube fills viewport width, say),
+    but only a background-merge failure spans both. Catches the Set 46
+    wood-grain failure (100%×100%) without false-triggering on Set 15
+    (78%×61%) or any other corpus row.
+    """
+    x0, y0, x1, y1 = roi
+    return (
+        (x1 - x0) / width >= _ROI_FRAME_COVERAGE_THRESHOLD
+        and (y1 - y0) / height >= _ROI_FRAME_COVERAGE_THRESHOLD
+    )
 
 
 def _binary_dilate_square(mask: np.ndarray, size: int) -> np.ndarray:

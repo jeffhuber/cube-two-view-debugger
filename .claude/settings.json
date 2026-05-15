@@ -55,10 +55,19 @@
       "Bash(gh issue close:*)",
       "Bash(gh issue reopen:*)",
 
+      "Bash(gh pr merge:*)",
+      "Bash(gh pr merge --squash --delete-branch:*)",
+
+      "Bash(rg:*)",
       "Bash(grep:*)",
       "Bash(ls:*)",
       "Bash(find:*)",
       "Bash(shasum:*)",
+      "Bash(stat:*)",
+      "Bash(file:*)",
+      "Bash(date:*)",
+      "Bash(nl:*)",
+      "Bash(realpath:*)",
       "Bash(wc:*)",
       "Bash(cat:*)",
       "Bash(head:*)",
@@ -90,6 +99,7 @@
       "Bash(npx tsx eval/:*)",
 
       "Bash(.venv/bin/python -m pytest:*)",
+      "Bash(.venv/bin/python -m cProfile:*)",
       "Bash(.venv/bin/python -m py_compile:*)",
       "Bash(.venv/bin/python -m json.tool:*)",
       "Bash(.venv/bin/python tools/:*)",
@@ -104,6 +114,7 @@
       "Bash(python3 -m http.server:*)",
 
       "Bash(node scripts/:*)",
+      "Bash(node --check:*)",
 
       "Bash(ps aux:*)",
       "Bash(ps:*)",
@@ -116,13 +127,19 @@
 
       "Read(/Users/jhuber/cube-snap/**)",
       "Read(/Users/jhuber/cube-two-view-debugger/**)",
+      "Read(/Users/jhuber/Documents/Codex/**)",
       "Read(/Users/jhuber/Downloads/**)",
       "Read(/tmp/**)",
+      "Read(/private/tmp/**)",
       "Edit(/Users/jhuber/cube-snap/**)",
       "Edit(/Users/jhuber/cube-two-view-debugger/**)",
+      "Edit(/Users/jhuber/Documents/Codex/**)",
+      "Edit(/private/tmp/**)",
       "Write(/tmp/**)",
+      "Write(/private/tmp/**)",
       "Write(/Users/jhuber/cube-snap/**)",
       "Write(/Users/jhuber/cube-two-view-debugger/**)",
+      "Write(/Users/jhuber/Documents/Codex/**)",
 
       "TodoWrite",
       "TaskOutput",

@@ -44,14 +44,14 @@
       "Bash(gh run:*)",
       "Bash(gh api:*)",
 
-      "Bash(gh pr create:*)",
-      "Bash(gh pr comment:*)",
+      "Bash(gh pr create --body-file:*)",
+      "Bash(gh pr comment --body-file:*)",
       "Bash(gh pr ready:*)",
-      "Bash(gh pr review:*)",
-      "Bash(gh pr edit:*)",
-      "Bash(gh issue create:*)",
-      "Bash(gh issue comment:*)",
-      "Bash(gh issue edit:*)",
+      "Bash(gh pr review --body-file:*)",
+      "Bash(gh pr edit --body-file:*)",
+      "Bash(gh issue create --body-file:*)",
+      "Bash(gh issue comment --body-file:*)",
+      "Bash(gh issue edit --body-file:*)",
       "Bash(gh issue close:*)",
       "Bash(gh issue reopen:*)",
 
@@ -145,6 +145,14 @@
       "Bash(wget:*)",
 
       "Bash(sudo:*)",
+
+      "Bash(gh pr create --body:*)",
+      "Bash(gh pr comment --body:*)",
+      "Bash(gh pr review --body:*)",
+      "Bash(gh pr edit --body:*)",
+      "Bash(gh issue create --body:*)",
+      "Bash(gh issue comment --body:*)",
+      "Bash(gh issue edit --body:*)",
 
       "Write(/Users/jhuber/**/.ssh/**)",
       "Write(/Users/jhuber/**/.aws/**)",

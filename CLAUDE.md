@@ -117,6 +117,21 @@ The EXIF rule is "view the photo before reading it"; this rule is
 
 ## Other Claude/Codex working conventions
 
+- **GitHub markdown bodies: body-file only.** Never pass PR, issue,
+  review, or comment markdown through inline shell arguments such as
+  `gh pr create --body "..."` or `gh issue comment --body "..."`.
+  Shell backticks inside those strings execute as command
+  substitutions, which has caused repeated accidental probe/test runs
+  during PR creation. Write the markdown to a temp file, then call the
+  GitHub CLI with `--body-file`, placing that flag immediately after
+  the subcommand so the repo permission baseline can enforce the safe
+  path:
+
+  ```bash
+  gh pr create --body-file /tmp/pr-body.md --repo jeffhuber/cube-two-view-debugger ...
+  gh issue comment --body-file /tmp/comment.md 31 --repo jeffhuber/cube-two-view-debugger
+  ```
+
 - **Corpus probe runtime fingerprint**: the manifest pins the
   ARM64/Python 3.12.13/NumPy 2.3.5/Pillow 12.2.0 environment (see
   `supportedArchitectures.primary` in `tests/fixtures/corpus_manifest.json`).

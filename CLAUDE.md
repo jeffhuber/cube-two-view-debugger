@@ -115,6 +115,70 @@ discipline from the EXIF section above to *any* comparative claim.
 The EXIF rule is "view the photo before reading it"; this rule is
 "view both photos before comparing them."
 
+## Pre-commit verification — separate commands, explicit paths
+
+Two patterns hit me on cube-snap#114 / ctvd#94 in quick
+succession. The same shape applies in this repo.
+
+### 1. Git staging: separate commands, explicit paths
+
+**Wrong:**
+
+```bash
+git status --short && git add -A && git diff --cached --stat \
+  && git commit -F msg.txt && git push
+```
+
+`git status` and `git diff --cached --stat` are *supposed* to be
+verification gates, but chained into a single `&&` sequence they
+execute after staging is irreversible. The output renders but
+cannot fail the commit. Output as theater.
+
+**Right:**
+
+```bash
+git status                 # separate command, read the output
+git add <explicit-files>   # name what you mean, not -A / .
+git diff --cached --stat   # separate command, react if surprised
+git commit -F msg.txt
+git push
+```
+
+`git add -A` and `git add .` sweep untracked files. Caught
+cube-snap#114 with `.claude/launch.json` (per-checkout preview
+config) and `eval/tsconfig.tsbuildinfo` (TS build artifact)
+slipping in. The Bash tool description warns against `-A` / `.`
+explicitly — I ignored my own guidance.
+
+Verification needs to be a *gate*: a step where future-me gets
+to react. Chaining it into the action sequence eliminates the
+gate.
+
+### 2. Read project conventions before changing them
+
+When touching:
+
+- `.claude/settings.json` or related operating envelope rules
+- pytest configuration, `requirements.txt`, `pyproject.toml`
+- `.gitignore`, CI workflow files
+- The `tools/probe_*.py` script structure or output schemas
+- `tests/fixtures/corpus_manifest.json` and
+  `tests/fixtures/hard_case_manifest.json`
+
+Read the **existing version** AND any **sibling README** before
+adding/removing rules. The most recent miss (cube-snap#114 +
+ctvd#94): broadened `Bash(curl:*)` and `Bash(python3 -c:*)` in
+both repos' `.claude/settings.json` without reading this repo's
+`.claude/README.md`, which explicitly calls out broad
+interpreters as guardrail bypasses:
+
+> A rule `Bash(python3:*)` allows
+> `python3 -c "import os; os.system('rm -rf /')"`,
+> bypassing the `rm` and `sudo` deny rules.
+
+This is the comparative-claims "view both" rule applied to
+*configs*: read what's already here before changing it.
+
 ## Other Claude/Codex working conventions
 
 - **GitHub markdown bodies: body-file only.** Never pass PR, issue,

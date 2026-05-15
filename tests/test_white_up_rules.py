@@ -4,6 +4,7 @@ from pathlib import Path
 import rubik_recognizer.recognizer as recognizer
 from rubik_recognizer.recognizer import (
     PIECE_CONFLICT_KEYS,
+    IMAGE_B_VISIBLE_FACE_EVIDENCE_WEAK_CHECK,
     RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK,
     RecognitionResult,
     RecognitionWorkset,
@@ -14,6 +15,7 @@ from rubik_recognizer.recognizer import (
     _capture_yaw_state_to_wca,
     _corner_assignment,
     _grid_signal_summary,
+    _image_b_visible_face_evidence_weak,
     _grid_matrix_for_orientation,
     _merged_face_candidates,
     _pair_calibration_anchors,
@@ -540,6 +542,71 @@ def test_validation_failed_checks_tags_opposing_red_orange_skew():
     checks = _validation_failed_checks(["R_count_not_9"], a, b)
 
     assert checks == ["R_count_not_9", RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK]
+
+
+def test_validation_failed_checks_tags_weak_image_b_visible_face_evidence():
+    a = StubAnalysis(["R", "R", "R", "R", "R", "L", "L"])
+    b = type(
+        "Analysis",
+        (),
+        {
+            "grids": [
+                _stub_face_grid("D", matched_count=7, grid_samples=1),
+                *[_stub_face_grid("L", matched_count=5, grid_samples=4) for _ in range(5)],
+                _stub_face_grid("R", matched_count=6, grid_samples=3),
+            ],
+            "stickers": [],
+        },
+    )()
+
+    checks = _validation_failed_checks(["R_count_not_9"], a, b)
+
+    assert checks == [
+        "R_count_not_9",
+        RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK,
+        IMAGE_B_VISIBLE_FACE_EVIDENCE_WEAK_CHECK,
+    ]
+    assert _image_b_visible_face_evidence_weak(b)
+
+
+def _stub_face_grid(face, *, matched_count=9, fit_error=1.0, grid_samples=0):
+    from rubik_recognizer.colors import ColorMatch
+
+    color = recognizer.FACE_TO_CENTER_COLOR[face]
+    rgb = {
+        "U": (230, 232, 235),
+        "R": (190, 45, 35),
+        "F": (60, 145, 85),
+        "D": (230, 220, 45),
+        "L": (220, 120, 45),
+        "B": (60, 90, 170),
+    }[face]
+    match = ColorMatch(color, face, 0.0, 0.8, [(color, 0.0)])
+    stickers = []
+    for index in range(9):
+        stickers.append(
+            type(
+                "Sticker",
+                (),
+                {
+                    "source": "grid_sample" if index < grid_samples else "component",
+                    "rgb": rgb,
+                    "match": match,
+                    "shape_angle": None,
+                },
+            )()
+        )
+    return type(
+        "Grid",
+        (),
+        {
+            "center_face": face,
+            "center_sticker": stickers[4],
+            "matched_count": matched_count,
+            "fit_error": fit_error,
+            "stickers": [stickers[0:3], stickers[3:6], stickers[6:9]],
+        },
+    )()
 
 
 def test_corner_assignment_preserves_legacy_ud_agnostic_side_order():

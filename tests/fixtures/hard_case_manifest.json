@@ -23,7 +23,7 @@
     {
       "setId": "17",
       "linkedIssue": 31,
-      "failureClass": "red_orange_pair_calibration",
+      "failureClass": "image_b_visible_face_evidence_weak",
       "imageAPath": "/Users/jhuber/Downloads/Set 17 - A - white up.JPG",
       "imageBPath": "/Users/jhuber/Downloads/Set 17 - B - white up.JPG",
       "imageA_sha256_expected": "fab9622d69167e1808dcb53115bb802654f28b09b8cf399f116222dd830e12c2",
@@ -41,12 +41,14 @@
         "L_count_not_9",
         "R_count_not_9",
         "U_count_not_9",
-        "red_orange_pair_calibration_suspected"
+        "red_orange_pair_calibration_suspected",
+        "image_b_visible_face_evidence_weak"
       ],
       "targetFailedChecksPresent": [
-        "red_orange_pair_calibration_suspected"
+        "red_orange_pair_calibration_suspected",
+        "image_b_visible_face_evidence_weak"
       ],
-      "notes": "Unresolved color classification / pair calibration case. Recognition PR 6 tags the opposing red/orange skew for safer app-side routing. Ground truth is available for scoring future repair attempts."
+      "notes": "Unresolved Set 17 case after Recognition PR 16 recovered Sets 21/22. Recognition PR 18 classifies this as weak image-B visible-face evidence: the selected image-B side grids are sample-heavy and low quality, and the available repair candidates score poorly against ground truth. The red/orange tag remains for app-side fallback routing, but broad red/orange threshold tuning is not the next safe fix."
     },
     {
       "setId": "21",

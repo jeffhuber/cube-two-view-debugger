@@ -325,6 +325,9 @@ include `recognitionSignals.pairColorCalibration`. The hard-case probe copies th
 `pairColorCalibration` in its JSON output so color investigations can compare raw vs calibrated
 red/orange counts, calibration anchor counts, the red/orange adaptive palette, and selected-face
 white/red/orange evidence without changing recognition behavior.
+If that selected-face evidence shows multiple sample-heavy, low-quality image-B side grids, the
+recognizer also emits `image_b_visible_face_evidence_weak` to classify the rejection separately
+from pure red/orange calibration failures.
 The probe also copies `recognitionSignals.selectedGridQuality` to top-level `selectedGridQuality`
 so selected-grid cell counts can be inspected without replaying a saved API response.
 

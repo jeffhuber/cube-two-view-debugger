@@ -107,6 +107,7 @@ MAX_RESCUE_TRIPLE_COMPONENT_OVERLAP = 6
 MAX_RESCUE_VISIBLE_FACE_TRIPLES = 3
 MIN_RESCUE_VISIBLE_FACE_TRIPLE_SCORE = 80.0
 RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK = "red_orange_pair_calibration_suspected"
+IMAGE_B_VISIBLE_FACE_EVIDENCE_WEAK_CHECK = "image_b_visible_face_evidence_weak"
 FACE_TRIPLE_OVERLAP_LOW_QUALITY_CHECK = "face_triple_overlap_low_quality"
 PAIR_COLOR_EVIDENCE_COLORS = ("white", "red", "orange")
 PAIR_COLOR_EVIDENCE_FACES = tuple(COLOR_TO_FACE[color] for color in PAIR_COLOR_EVIDENCE_COLORS)
@@ -122,6 +123,10 @@ MAX_U_LOGO_ANCHOR_WHITE_DISTANCE_DELTA = 24.0
 # rejects; revisit these gates when new red/orange captures are added.
 RED_ORANGE_SKEW_MIN_GAP = 3
 RED_ORANGE_SKEW_MIN_DOMINANT = 4
+MIN_WEAK_IMAGE_B_SIDE_GRIDS = 2
+MIN_WEAK_IMAGE_B_SIDE_GRID_SAMPLES = 3
+MAX_WEAK_IMAGE_B_SIDE_GRID_MATCHED_COUNT = 6
+MAX_WEAK_IMAGE_B_SIDE_GRID_QUALITY = 70.0
 # Tuned on labeled sets 12/14/15/24/26/27/28/29/31: large enough to
 # down-rank conflicted repair winners, but capped so repair candidates remain
 # comparable instead of being rejected by one binary threshold.
@@ -1547,8 +1552,30 @@ def _summarize_validation_errors(errors: Sequence[str]) -> List[str]:
 def _validation_failed_checks(errors: Sequence[str], analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> List[str]:
     checks = _summarize_validation_errors(errors)
     if _red_orange_pair_calibration_suspected(checks, analysis_a, analysis_b):
-        return [*checks, RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK]
+        suspected = [*checks, RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK]
+        if _image_b_visible_face_evidence_weak(analysis_b):
+            suspected.append(IMAGE_B_VISIBLE_FACE_EVIDENCE_WEAK_CHECK)
+        return suspected
     return checks
+
+
+def _image_b_visible_face_evidence_weak(analysis_b: ImageAnalysis) -> bool:
+    assignments = _assigned_grid_by_face(analysis_b, "D")
+    weak_side_faces = [
+        face
+        for face in YAW_SIDE_ORDER
+        if face in assignments and _selected_image_b_side_grid_weak(assignments[face])
+    ]
+    return len(weak_side_faces) >= MIN_WEAK_IMAGE_B_SIDE_GRIDS
+
+
+def _selected_image_b_side_grid_weak(grid: FaceGrid) -> bool:
+    if _grid_sample_count(grid) < MIN_WEAK_IMAGE_B_SIDE_GRID_SAMPLES:
+        return False
+    return (
+        grid.matched_count <= MAX_WEAK_IMAGE_B_SIDE_GRID_MATCHED_COUNT
+        or _grid_quality_score(grid) <= MAX_WEAK_IMAGE_B_SIDE_GRID_QUALITY
+    )
 
 
 def _red_orange_pair_calibration_suspected(

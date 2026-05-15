@@ -351,6 +351,25 @@ face was generated, but only inside an incompatible or lower-ranked three-face o
 includes `topOptions`, which scores the visible faces together for each oriented option so
 investigations can tell whether individually-good faces coexist in one selectable option.
 
+### Cube-Isolation Diagnostics
+
+Use `tools/inspect_cube_isolation.py` to inspect cube/background separation for one image without
+changing recognizer behavior:
+
+```sh
+.venv/bin/python tools/inspect_cube_isolation.py \
+  "/Users/jhuber/Downloads/Set 46 - A - white up WCA IMG_7379.JPG" \
+  --anchor U \
+  --json-output /tmp/set46-a-isolation.json \
+  --overlay-output /tmp/set46-a-isolation.png
+```
+
+The tool reuses `analyze_image(...)`, builds a padded convex hull from selected-grid geometry, and
+reports which sticker candidates would be kept or dropped by that proposed cube region. Diagnostic
+geometry and overlays use the same resized processing-image coordinate space as `analyze_image(...)`.
+Use it to evaluate cube/background isolation ideas visually before promoting any mask or hull rule
+into the recognizer.
+
 ## How Recognition Works
 
 The recognizer is a CV-first pipeline with cube-constraint validation at the end. It intentionally

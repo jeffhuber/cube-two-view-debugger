@@ -124,17 +124,9 @@
       "Bash(jobs:*)",
       "Bash(xargs:*)",
       "Bash(disown:*)",
-      "Bash(nohup:*)",
-
-      "Bash(curl:*)",
-
-      "Bash(.venv/bin/python -c:*)",
-      "Bash(python3 -c:*)",
 
       "Bash(which:*)",
       "Bash(type:*)",
-      "Bash(command:*)",
-      "Bash(env:*)",
       "Bash(printenv:*)",
       "Bash(df:*)",
       "Bash(du:*)",
@@ -142,12 +134,10 @@
       "Bash(id:*)",
       "Bash(hostname:*)",
       "Bash(uptime:*)",
-      "Bash(time:*)",
       "Bash(echo:*)",
       "Bash(true:*)",
       "Bash(false:*)",
       "Bash(test:*)",
-      "Bash(open:*)",
 
       "Read(/Users/jhuber/cube-snap/**)",
       "Read(/Users/jhuber/cube-two-view-debugger/**)",
@@ -185,9 +175,6 @@
       "Bash(wget:*)",
 
       "Bash(sudo:*)",
-
-      "Bash(curl -X DELETE:*)",
-      "Bash(curl --request DELETE:*)",
 
       "Bash(gh pr create --body:*)",
       "Bash(gh pr comment --body:*)",

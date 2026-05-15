@@ -42,3 +42,20 @@ def test_github_markdown_writes_require_body_files():
         "Bash(gh issue edit --body:*)",
     }
     assert common_inline_body_denies <= deny
+
+
+def test_permission_baseline_does_not_allow_broad_command_wrappers():
+    permissions = json.loads(SETTINGS.read_text(encoding="utf-8"))["permissions"]
+    allow = set(permissions["allow"])
+
+    broad_bypass_allows = {
+        "Bash(curl:*)",
+        "Bash(nohup:*)",
+        "Bash(command:*)",
+        "Bash(env:*)",
+        "Bash(time:*)",
+        "Bash(open:*)",
+        "Bash(.venv/bin/python -c:*)",
+        "Bash(python3 -c:*)",
+    }
+    assert not (allow & broad_bypass_allows)

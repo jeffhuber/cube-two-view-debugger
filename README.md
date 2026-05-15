@@ -178,6 +178,21 @@ exposed through `GET /api/labels`; each document includes the image filename,
 browser-natural dimensions, image SHA256, face quads, cube-hull points, set id,
 side, and notes.
 
+Evaluate saved geometry labels against the current detection pipeline with:
+
+```sh
+.venv/bin/python tools/evaluate_geometry_labels.py \
+  runs/labels/<label-id>.json \
+  --json-output /tmp/geometry-label-metrics.json \
+  --overlay-dir /tmp/geometry-label-overlays
+```
+
+The evaluator resolves the source photo from the hard-case/corpus manifests or
+the labelled filename, converts browser-natural label coordinates into the
+resized processing-image coordinate space, and reports ROI containment,
+off-cube sticker candidates, per-face detected-center counts, and overlap
+between the human-labelled cube hull and the current selected-grid hull.
+
 For ad-hoc single-pair recognition from the command line — useful when
 filing or reproducing a bug report — use `tools/recognize_pair.py`:
 

@@ -664,6 +664,10 @@ def test_pair_color_calibration_signal_reports_red_orange_counts():
         "dominantFace": "R",
     }
     assert signal["images"]["imageB"]["rawRedOrangeSkew"]["dominantFace"] == "L"
+    raw_face_evidence = signal["images"]["imageA"]["selectedFaceEvidence"]["raw"]
+    assert raw_face_evidence["R"]["centerColor"] == "red"
+    assert raw_face_evidence["R"]["centerDistances"]["red"] < raw_face_evidence["R"]["centerDistances"]["orange"]
+    assert raw_face_evidence["R"]["cellFaceEvidence"] == {"U": 0, "R": 0, "L": 0}
 
 
 def test_pair_color_calibration_signal_attaches_only_to_final_red_orange_check():

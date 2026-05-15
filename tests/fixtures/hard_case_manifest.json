@@ -179,6 +179,106 @@
         "U_count_not_9"
       ],
       "notes": "Filed as a yellow/white color classification case. Recognition PR 2 diagnostics show the selected D center is strongly yellow. Recognition PR 3 rejects this weak 5/9 D anchor before generating invalid merged candidates."
+    },
+    {
+      "setId": "46",
+      "linkedIssue": 85,
+      "failureClass": "wood_grain_background_sticker_noise",
+      "imageAPath": "/Users/jhuber/Downloads/Set 46 - A - white up WCA IMG_7379.JPG",
+      "imageBPath": "/Users/jhuber/Downloads/Set 46 - B - white up WCA IMG_7380.JPG",
+      "groundTruthPath": "/Users/jhuber/Downloads/Set 46 - cube-ground-truth-1778804225179.json",
+      "imageA_sha256_expected": "7296aed43b02535a68ac477e543b64cb526d33955b09cc148de7dedf64af78f6",
+      "imageB_sha256_expected": "60e6e7eb75409642dc3b87b5530f06e93184db7b18204aacc50afc7759c09e57",
+      "groundTruth_sha256_expected": "3816e3690ab93640c42bceba38b9915c445c225d76eb0e5ed7720383b0fe311f",
+      "expectedScoreOnceFixed": null,
+      "currentStatus": "rejected",
+      "currentCategory": "reject_retake",
+      "currentCandidates": 24200,
+      "currentFailedChecks": [
+        "B_count_not_9",
+        "D_count_not_9",
+        "F_count_not_9",
+        "L_count_not_9",
+        "R_count_not_9",
+        "U_count_not_9"
+      ],
+      "targetStatus": "rejected",
+      "targetCategory": "reject_retake",
+      "notes": "Issue #85 WCA-frame wood-grain hard case. The baseline capture returned full-frame ROI for both images and rejected with all six face-count checks. PR #82 targets the ROI portion only; ground truth is pinned so future sticker/texture fixes can be scored."
+    },
+    {
+      "setId": "47",
+      "linkedIssue": 85,
+      "failureClass": "wood_grain_background_sticker_noise",
+      "imageAPath": "/Users/jhuber/Downloads/Set 47 - A - white up +90 IMG_7381.JPG",
+      "imageBPath": "/Users/jhuber/Downloads/Set 47 - B - white up +90 IMG_7382.JPG",
+      "groundTruthPath": "/Users/jhuber/Downloads/Set 47 - cube-ground-truth-1778805367889.json",
+      "imageA_sha256_expected": "9f57b4cd308f9baf13cd3d5599c7ede336e05f789e1612f3abf5212163d67a22",
+      "imageB_sha256_expected": "45a231d9723711650aaa1ce83022a53f996bfaf64476d821a1a74e6ffe5f99fb",
+      "groundTruth_sha256_expected": "4f2563b4fd60640e37acd8cfd0b77ffd7f031fdd98c7f5f8ce42717a11ef4ba8",
+      "expectedScoreOnceFixed": null,
+      "currentStatus": "rejected",
+      "currentCategory": "reject_retake",
+      "currentCandidates": 7920,
+      "currentFailedChecks": [
+        "B_count_not_9",
+        "D_count_not_9",
+        "F_count_not_9",
+        "L_count_not_9",
+        "R_count_not_9",
+        "U_count_not_9"
+      ],
+      "targetStatus": "rejected",
+      "targetCategory": "reject_retake",
+      "notes": "Issue #85 +90 capture-yaw wood-grain hard case. Shares Set 46's canonical corrected state; Fixer save includes captureYawQuarterTurns=1. The baseline capture returned full-frame ROI for both images and rejected with all six face-count checks."
+    },
+    {
+      "setId": "48",
+      "linkedIssue": 85,
+      "failureClass": "wood_grain_background_sticker_noise",
+      "imageAPath": "/Users/jhuber/Downloads/Set 48 - A - white up +180 IMG_7383.JPG",
+      "imageBPath": "/Users/jhuber/Downloads/Set 48 - B - white up +180 IMG_7384.JPG",
+      "groundTruthPath": "/Users/jhuber/Downloads/Set 48 - cube-ground-truth-1778805959015.json",
+      "imageA_sha256_expected": "653616521291be41c26651ae02a9bf799948618eef27622e03cf2acbb540d1c4",
+      "imageB_sha256_expected": "7b367838cf134db337f3f84d7268555cb94b70ba56bc9f044d18ed8b1e935e90",
+      "groundTruth_sha256_expected": "0ddffa7598ae4646dd9a2716c6fdb36ea4e11c0699e50e3355953b21fa899ab0",
+      "expectedScoreOnceFixed": null,
+      "currentStatus": "rejected",
+      "currentCategory": "reject_retake",
+      "currentCandidates": 152320,
+      "currentFailedChecks": [
+        "B_count_not_9",
+        "D_count_not_9",
+        "F_count_not_9",
+        "L_count_not_9",
+        "R_count_not_9",
+        "U_count_not_9",
+        "piece_legality_invalid"
+      ],
+      "targetStatus": "rejected",
+      "targetCategory": "reject_retake",
+      "notes": "Issue #85 +180 capture-yaw wood-grain hard case. Shares Set 46's canonical corrected state; Fixer save includes captureYawQuarterTurns=2. The baseline capture returned full-frame ROI for both images and rejected after many noisy candidates."
+    },
+    {
+      "setId": "49",
+      "linkedIssue": 85,
+      "failureClass": "wood_grain_background_sticker_noise",
+      "imageAPath": "/Users/jhuber/Downloads/Set 49 - A - white up +270 IMG_7385.JPG",
+      "imageBPath": "/Users/jhuber/Downloads/Set 49 - B - white up +270 IMG_7386.JPG",
+      "groundTruthPath": "/Users/jhuber/Downloads/Set 49 - cube-ground-truth-1778807333524.json",
+      "imageA_sha256_expected": "f736112aa9274f0fafb19e76b355911562e825fd417fe790da84fd08dc8ad52f",
+      "imageB_sha256_expected": "d8a08ac49598df6627f13a59f131b200833976f3dccfa6ac91f59af665651f09",
+      "groundTruth_sha256_expected": "75d4ea97802aa44c2979e840f64aa0cd459bf342c841612b19abc6f46674a2e4",
+      "expectedScoreOnceFixed": null,
+      "currentStatus": "rejected",
+      "currentCategory": "reject_retake",
+      "currentCandidates": 0,
+      "currentFailedChecks": [
+        "image_a_U_anchor_missing"
+      ],
+      "targetStatus": "rejected",
+      "targetCategory": "reject_retake",
+      "notes": "Issue #85 +270 capture-yaw wood-grain hard case. Shares Set 46's canonical corrected state; Fixer save includes captureYawQuarterTurns=3. The baseline capture returned full-frame ROI for both images and rejected at the image-A U-anchor prerequisite."
     }
   ]
 }

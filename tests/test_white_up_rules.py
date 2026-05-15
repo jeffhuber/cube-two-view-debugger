@@ -6,6 +6,7 @@ from rubik_recognizer.recognizer import (
     PIECE_CONFLICT_KEYS,
     IMAGE_B_VISIBLE_FACE_EVIDENCE_WEAK_CHECK,
     RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK,
+    BACKGROUND_STICKER_NOISE_CHECK,
     RecognitionResult,
     RecognitionWorkset,
     WhiteUpRecognizer,
@@ -14,6 +15,7 @@ from rubik_recognizer.recognizer import (
     _attach_failed_pair_color_calibration_signal,
     _capture_yaw_state_to_wca,
     _corner_assignment,
+    _failed_checks_with_context,
     _grid_signal_summary,
     _image_b_visible_face_evidence_weak,
     _grid_matrix_for_orientation,
@@ -23,6 +25,7 @@ from rubik_recognizer.recognizer import (
     _pair_color_calibration_signal,
     _prefer_calibrated_result,
     _recognition_category_payload,
+    _recognition_signals_with_failed_checks,
     _repair_details_with_orientation_selection_scores,
     _repair_backfill_applies,
     _repair_orientation_rerank_applies,
@@ -569,28 +572,118 @@ def test_validation_failed_checks_tags_weak_image_b_visible_face_evidence():
     assert _image_b_visible_face_evidence_weak(b)
 
 
-def _stub_face_grid(face, *, matched_count=9, fit_error=1.0, grid_samples=0):
+def test_validation_failed_checks_tags_background_anchor_evidence_collapse():
+    collapsed_u = ["B", "D", "F", "L", "U", "R", "B", "D", "F"]
+    collapsed_d = ["B", "U", "F", "L", "D", "R", "B", "U", "F"]
+    a = type(
+        "Analysis",
+        (),
+        {
+            "grids": [_stub_face_grid("U", cell_faces=collapsed_u)],
+            "stickers": [],
+            "roi": (0, 100, 800, 1100),
+        },
+    )()
+    b = type(
+        "Analysis",
+        (),
+        {
+            "grids": [_stub_face_grid("D", cell_faces=collapsed_d)],
+            "stickers": [],
+            "roi": (0, 100, 800, 1100),
+        },
+    )()
+
+    checks = _validation_failed_checks([f"{face}_count_not_9" for face in recognizer.FACE_ORDER], a, b)
+
+    assert checks[-1] == BACKGROUND_STICKER_NOISE_CHECK
+    signal = _recognition_signals_with_failed_checks({}, checks, a, b)["backgroundStickerNoise"]
+    assert signal["reason"] == "all_face_counts_failed_with_anchor_evidence_collapse"
+    assert signal["images"]["imageA"]["selectedAnchor"]["cellFaceCounts"]["U"] == 1
+    assert signal["images"]["imageB"]["selectedAnchor"]["cellFaceCounts"]["D"] == 1
+
+
+def test_validation_failed_checks_do_not_tag_set17_style_anchor_evidence():
+    a = type(
+        "Analysis",
+        (),
+        {
+            "grids": [_stub_face_grid("U", cell_faces=["U", "U", "U", "B", "D", "F", "L", "R", "B"])],
+            "stickers": [],
+            "roi": (0, 100, 800, 1100),
+        },
+    )()
+    b = type(
+        "Analysis",
+        (),
+        {
+            "grids": [_stub_face_grid("D", cell_faces=["B", "U", "F", "L", "D", "R", "B", "U", "F"])],
+            "stickers": [],
+            "roi": (0, 100, 800, 1100),
+        },
+    )()
+
+    checks = _validation_failed_checks([f"{face}_count_not_9" for face in recognizer.FACE_ORDER], a, b)
+
+    assert BACKGROUND_STICKER_NOISE_CHECK not in checks
+
+
+def test_failed_checks_tag_background_blue_dominance_when_u_anchor_missing():
+    a = type(
+        "Analysis",
+        (),
+        {
+            "grids": [
+                *[_stub_face_grid("B", grid_id=index) for index in range(14)],
+                _stub_face_grid("F", grid_id=20),
+            ],
+            "stickers": [],
+            "roi": (0, 100, 800, 1100),
+        },
+    )()
+    b = type(
+        "Analysis",
+        (),
+        {
+            "grids": [_stub_face_grid("D")],
+            "stickers": [],
+            "roi": (0, 100, 800, 1100),
+        },
+    )()
+
+    checks = _failed_checks_with_context(["image_a_U_anchor_missing"], a, b)
+
+    assert checks == ["image_a_U_anchor_missing", BACKGROUND_STICKER_NOISE_CHECK]
+    signal = _recognition_signals_with_failed_checks({}, checks, a, b)["backgroundStickerNoise"]
+    assert signal["reason"] == "image_a_u_anchor_missing_with_blue_grid_dominance"
+    assert signal["images"]["imageA"]["dominantGridCenterFace"] == "B"
+    assert signal["images"]["imageA"]["dominantGridCenterCount"] == 14
+    assert signal["images"]["imageA"]["selectedAnchor"] is None
+
+
+def _stub_face_grid(face, *, matched_count=9, fit_error=1.0, grid_samples=0, cell_faces=None, grid_id=None):
     from rubik_recognizer.colors import ColorMatch
 
-    color = recognizer.FACE_TO_CENTER_COLOR[face]
-    rgb = {
+    rgbs = {
         "U": (230, 232, 235),
         "R": (190, 45, 35),
         "F": (60, 145, 85),
         "D": (230, 220, 45),
         "L": (220, 120, 45),
         "B": (60, 90, 170),
-    }[face]
-    match = ColorMatch(color, face, 0.0, 0.8, [(color, 0.0)])
+    }
+    faces = list(cell_faces or [face] * 9)
     stickers = []
-    for index in range(9):
+    for index, sticker_face in enumerate(faces):
+        color = recognizer.FACE_TO_CENTER_COLOR[sticker_face]
+        match = ColorMatch(color, sticker_face, 0.0, 0.8, [(color, 0.0)])
         stickers.append(
             type(
                 "Sticker",
                 (),
                 {
                     "source": "grid_sample" if index < grid_samples else "component",
-                    "rgb": rgb,
+                    "rgb": rgbs[sticker_face],
                     "match": match,
                     "shape_angle": None,
                 },
@@ -600,6 +693,7 @@ def _stub_face_grid(face, *, matched_count=9, fit_error=1.0, grid_samples=0):
         "Grid",
         (),
         {
+            "id": grid_id if grid_id is not None else id(stickers[4]),
             "center_face": face,
             "center_sticker": stickers[4],
             "matched_count": matched_count,

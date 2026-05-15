@@ -26,10 +26,9 @@ TINY_WHITE_COMPONENT_AREA_FRACTION = 0.05
 
 # ROI detection tuning. The default saturation threshold (0.23) handles
 # most natural photo backgrounds (marble, light cloth, sky). The retry
-# threshold (0.40) drops weakly-saturated chromatic backgrounds (e.g.,
-# the wood-grain desk in Set 46, where 60-70% of pixels register as
-# saturated and merge with the cube into a single frame-spanning
-# component). The retry-trigger threshold (0.95 of both dimensions)
+# threshold (0.40) drops weakly-saturated chromatic/textured backgrounds
+# where large saturated regions can merge with the cube into a single
+# frame-spanning component. The retry-trigger threshold (0.95 of both dimensions)
 # guards against false-triggering on legitimately tight-framed cubes.
 # See `_find_cube_roi` for the failure mode this addresses.
 _ROI_SATURATION_MIN_DEFAULT = 0.23
@@ -144,10 +143,10 @@ def _find_cube_roi(arr: np.ndarray) -> Tuple[int, int, int, int]:
 
     The default saturation threshold (0.23) handles most natural
     backgrounds. When the resulting top component covers ≥95% of BOTH
-    image dimensions, the cube has merged with a chromatically-loud
-    background — Set 46 (2026-05-14) was photographed against a
-    wood-grain desk where 60–70% of pixels register as saturated, and
-    after dilation everything became one giant frame-spanning blob.
+    image dimensions, the cube has merged with a chromatically loud or
+    textured background — the Set 46 regression fixture had 60–70% of pixels
+    registering as saturated, and after dilation everything became one giant
+    frame-spanning blob.
 
     In that case, retry with a stricter saturation threshold (0.40) so
     weakly-saturated backgrounds drop out while the cube's bright
@@ -199,8 +198,8 @@ def _roi_covers_full_frame(roi: Tuple[int, int, int, int], width: int, height: i
     Both-dimensions logic: a legitimately tight-framed photo can span
     one dimension at high coverage (cube fills viewport width, say),
     but only a background-merge failure spans both. Catches the Set 46
-    wood-grain failure (100%×100%) without false-triggering on Set 15
-    (78%×61%) or any other corpus row.
+    textured-background failure (100%×100%) without false-triggering on
+    Set 15 (78%×61%) or any other corpus row.
     """
     x0, y0, x1, y1 = roi
     return (

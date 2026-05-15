@@ -144,8 +144,8 @@ def _rubik_hsv_hint(rgb: RGB) -> str | None:
         return "white"
 
     # In dim or weakly saturated samples the hue angle becomes noisy; this is
-    # where wooden desks, shadows, and black plastic can look orange-ish in HSV.
-    # Let Lab/adaptive palette distance win for those cases.
+    # where textured backgrounds, shadows, and black plastic can look orange-ish
+    # in HSV. Let Lab/adaptive palette distance win for those cases.
     if saturation < 0.36 or value < 0.38:
         return None
     if hue < 0.035 or hue >= 0.94:

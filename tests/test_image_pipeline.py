@@ -173,13 +173,12 @@ def test_find_cube_roi_low_saturation_background_isolates_cube():
 
 
 def test_find_cube_roi_chromatic_background_triggers_retry():
-    """Set 46 failure mode (2026-05-14): chromatic background (wood
-    grain, fabric, etc.) registers as saturated under the default
-    threshold and merges with the cube into a single frame-spanning
-    component. The retry at the stricter threshold must isolate the
-    cube. This synthetic reproduces the failure: a sat=0.30
-    background (similar to Set 46's 60-70% saturated pixels) plus
-    a bright cube patch."""
+    """Set 46 failure mode (2026-05-14): textured/chromatic backgrounds
+    can register as saturated under the default threshold and merge with
+    the cube into a single frame-spanning component. The retry at the
+    stricter threshold must isolate the cube. This synthetic reproduces
+    the failure: a sat=0.30 background (similar to Set 46's 60-70%
+    saturated pixels) plus a bright cube patch."""
     arr = _synthetic_image(1000, 800, background_sat=0.30, cube_box=(200, 300, 600, 700))
     # The default threshold alone must fail (frame-spanning).
     default_roi = _find_cube_roi_at_threshold(arr, 0.23)

@@ -108,6 +108,7 @@ MAX_RESCUE_VISIBLE_FACE_TRIPLES = 3
 MIN_RESCUE_VISIBLE_FACE_TRIPLE_SCORE = 80.0
 RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK = "red_orange_pair_calibration_suspected"
 IMAGE_B_VISIBLE_FACE_EVIDENCE_WEAK_CHECK = "image_b_visible_face_evidence_weak"
+BACKGROUND_STICKER_NOISE_CHECK = "background_sticker_noise_suspected"
 FACE_TRIPLE_OVERLAP_LOW_QUALITY_CHECK = "face_triple_overlap_low_quality"
 PAIR_COLOR_EVIDENCE_COLORS = ("white", "red", "orange")
 PAIR_COLOR_EVIDENCE_FACES = tuple(COLOR_TO_FACE[color] for color in PAIR_COLOR_EVIDENCE_COLORS)
@@ -119,6 +120,11 @@ MIN_U_LOGO_ANCHOR_QUALITY = 120.0
 MAX_U_LOGO_ANCHOR_GRID_SAMPLES = 1
 MAX_U_LOGO_ANCHOR_CENTER_CONFIDENCE = 0.42
 MAX_U_LOGO_ANCHOR_WHITE_DISTANCE_DELTA = 24.0
+# Issue #85 diagnostic only: tuned to tag Sets 46-49 background-driven
+# sticker evidence failures without firing on Set 17's separate image-B weakness.
+MAX_BACKGROUND_STICKER_NOISE_ANCHOR_SELF_FACE_CELLS = 1
+MIN_BACKGROUND_STICKER_NOISE_DOMINANT_GRID_CENTER_COUNT = 14
+MIN_BACKGROUND_STICKER_NOISE_DOMINANT_GRID_CENTER_SHARE = 0.60
 # Tuned to tag Sets 17/21/22 without firing on unrelated hard-case or corpus
 # rejects; revisit these gates when new red/orange captures are added.
 RED_ORANGE_SKEW_MIN_GAP = 3
@@ -305,13 +311,18 @@ class WhiteUpRecognizer:
 
     def _recognize_from_analyses(self, analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> RecognitionResult:
         recognition_signals = _base_recognition_signals(analysis_a, analysis_b)
-        checks = _white_up_checks(analysis_a, analysis_b)
+        checks = _failed_checks_with_context(_white_up_checks(analysis_a, analysis_b), analysis_a, analysis_b)
         if checks:
             return RecognitionResult(
                 status="rejected",
                 reason=_reason_for_checks(checks),
                 failed_checks=checks,
-                recognition_signals=recognition_signals,
+                recognition_signals=_recognition_signals_with_failed_checks(
+                    recognition_signals,
+                    checks,
+                    analysis_a,
+                    analysis_b,
+                ),
             )
 
         workset = _recognition_workset(analysis_a, analysis_b)
@@ -382,12 +393,18 @@ class WhiteUpRecognizer:
         # categorized as retakes, so avoid the expensive cubie repair search.
         if len(candidates) < REPAIR_SKIP_DIRECT_CANDIDATE_THRESHOLD:
             recognition_signals.update(_repair_signal_summary([]))
+            failed_checks = _validation_failed_checks(invalid_reasons, analysis_a, analysis_b)
             return RecognitionResult(
                 status="rejected",
                 reason="No legal cube state matched the detected stickers.",
-                failed_checks=_validation_failed_checks(invalid_reasons, analysis_a, analysis_b),
+                failed_checks=failed_checks,
                 candidates=len(candidates),
-                recognition_signals=recognition_signals,
+                recognition_signals=_recognition_signals_with_failed_checks(
+                    recognition_signals,
+                    failed_checks,
+                    analysis_a,
+                    analysis_b,
+                ),
             )
 
         repair_details = self._legal_repair_candidate_details_from_workset(workset, release_merged_candidates=True)
@@ -449,16 +466,22 @@ class WhiteUpRecognizer:
                         recognition_signals={**recognition_signals, **_repair_signal_summary(repair_details, selected_state=state)},
                     )
 
+        failed_checks = _validation_failed_checks(
+            invalid_reasons or _candidate_validation_errors(candidates),
+            analysis_a,
+            analysis_b,
+        )
         return RecognitionResult(
             status="rejected",
             reason="No legal cube state matched the detected stickers.",
-            failed_checks=_validation_failed_checks(
-                invalid_reasons or _candidate_validation_errors(candidates),
+            failed_checks=failed_checks,
+            candidates=len(candidates),
+            recognition_signals=_recognition_signals_with_failed_checks(
+                recognition_signals,
+                failed_checks,
                 analysis_a,
                 analysis_b,
             ),
-            candidates=len(candidates),
-            recognition_signals=recognition_signals,
         )
 
     def _state_candidates(self, analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> List[Tuple[str, float, Dict[str, Any]]]:
@@ -1302,6 +1325,8 @@ def _face_triple_failure_check(label: str, grids_by_face: Dict[str, List[FaceGri
 
 
 def _reason_for_checks(checks: Sequence[str]) -> str:
+    if BACKGROUND_STICKER_NOISE_CHECK in checks:
+        return "The cube stickers appear to be mixed with a textured or high-saturation background; retake with the cube isolated on a plainer surface."
     if "image_a_U_anchor_missing" in checks:
         return "Image A must contain the white/U center face; a logo is allowed if the sampled center is still white-ish."
     if "image_b_D_anchor_missing" in checks:
@@ -1354,6 +1379,59 @@ def _attach_failed_pair_color_calibration_signal(
         calibrated_result,
     )
     result.recognition_signals = signals
+
+
+def _recognition_signals_with_failed_checks(
+    signals: Dict[str, Any],
+    checks: Sequence[str],
+    analysis_a: ImageAnalysis,
+    analysis_b: ImageAnalysis,
+) -> Dict[str, Any]:
+    if BACKGROUND_STICKER_NOISE_CHECK not in set(checks):
+        return signals
+    return {
+        **signals,
+        "backgroundStickerNoise": _background_sticker_noise_signal(
+            checks,
+            analysis_a,
+            analysis_b,
+        ),
+    }
+
+
+def _background_sticker_noise_signal(
+    checks: Sequence[str],
+    analysis_a: ImageAnalysis,
+    analysis_b: ImageAnalysis,
+) -> Dict[str, Any]:
+    return {
+        "status": "suspected",
+        "reason": _background_sticker_noise_reason(checks, analysis_a),
+        "images": {
+            "imageA": _background_sticker_noise_image_signal(analysis_a, anchor="U"),
+            "imageB": _background_sticker_noise_image_signal(analysis_b, anchor="D"),
+        },
+    }
+
+
+def _background_sticker_noise_reason(checks: Sequence[str], analysis_a: ImageAnalysis) -> str:
+    if "image_a_U_anchor_missing" in set(checks) and _dominant_grid_center_face(analysis_a)[0] == "B":
+        return "image_a_u_anchor_missing_with_blue_grid_dominance"
+    return "all_face_counts_failed_with_anchor_evidence_collapse"
+
+
+def _background_sticker_noise_image_signal(analysis: ImageAnalysis, *, anchor: str) -> Dict[str, Any]:
+    dominant_face, dominant_count, total_grids = _dominant_grid_center_face(analysis)
+    selected_anchor = _assigned_grid_by_face(analysis, anchor).get(anchor)
+    return {
+        "roi": list(getattr(analysis, "roi", ())),
+        "stickerFaceCounts": _face_count_dict(_face_counts_from_stickers(analysis)),
+        "gridCenterFaceCounts": _face_count_dict(_face_counts_from_grid_centers(analysis)),
+        "dominantGridCenterFace": dominant_face,
+        "dominantGridCenterCount": dominant_count,
+        "gridCount": total_grids,
+        "selectedAnchor": _grid_signal_summary(selected_anchor) if selected_anchor is not None else None,
+    }
 
 
 def _pair_color_calibration_signal(
@@ -1550,13 +1628,69 @@ def _summarize_validation_errors(errors: Sequence[str]) -> List[str]:
 
 
 def _validation_failed_checks(errors: Sequence[str], analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> List[str]:
-    checks = _summarize_validation_errors(errors)
-    if _red_orange_pair_calibration_suspected(checks, analysis_a, analysis_b):
-        suspected = [*checks, RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK]
+    return _failed_checks_with_context(_summarize_validation_errors(errors), analysis_a, analysis_b)
+
+
+def _failed_checks_with_context(
+    checks: Sequence[str],
+    analysis_a: ImageAnalysis,
+    analysis_b: ImageAnalysis,
+) -> List[str]:
+    contextual = list(checks)
+    if _red_orange_pair_calibration_suspected(contextual, analysis_a, analysis_b):
+        _append_failed_check(contextual, RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK)
         if _image_b_visible_face_evidence_weak(analysis_b):
-            suspected.append(IMAGE_B_VISIBLE_FACE_EVIDENCE_WEAK_CHECK)
-        return suspected
-    return checks
+            _append_failed_check(contextual, IMAGE_B_VISIBLE_FACE_EVIDENCE_WEAK_CHECK)
+    if _background_sticker_noise_suspected(contextual, analysis_a, analysis_b):
+        _append_failed_check(contextual, BACKGROUND_STICKER_NOISE_CHECK)
+    return contextual
+
+
+def _append_failed_check(checks: List[str], check: str) -> None:
+    if check not in checks:
+        checks.append(check)
+
+
+def _background_sticker_noise_suspected(
+    checks: Sequence[str],
+    analysis_a: ImageAnalysis,
+    analysis_b: ImageAnalysis,
+) -> bool:
+    unique = set(checks)
+    if _all_face_counts_failed(unique):
+        return (
+            _selected_anchor_self_face_count(analysis_a, "U") <= MAX_BACKGROUND_STICKER_NOISE_ANCHOR_SELF_FACE_CELLS
+            and _selected_anchor_self_face_count(analysis_b, "D") <= MAX_BACKGROUND_STICKER_NOISE_ANCHOR_SELF_FACE_CELLS
+        )
+    if "image_a_U_anchor_missing" in unique:
+        dominant_face, dominant_count, total_grids = _dominant_grid_center_face(analysis_a)
+        return (
+            dominant_face == "B"
+            and dominant_count >= MIN_BACKGROUND_STICKER_NOISE_DOMINANT_GRID_CENTER_COUNT
+            and total_grids > 0
+            and dominant_count / total_grids >= MIN_BACKGROUND_STICKER_NOISE_DOMINANT_GRID_CENTER_SHARE
+        )
+    return False
+
+
+def _all_face_counts_failed(checks: set[str]) -> bool:
+    return all(f"{face}_count_not_9" in checks for face in FACE_ORDER)
+
+
+def _selected_anchor_self_face_count(analysis: ImageAnalysis, anchor: str) -> int:
+    grid = _assigned_grid_by_face(analysis, anchor).get(anchor)
+    if grid is None:
+        return 9
+    return int(_grid_cell_face_counts(grid).get(anchor, 0))
+
+
+def _dominant_grid_center_face(analysis: ImageAnalysis) -> Tuple[Optional[str], int, int]:
+    counts = Counter(getattr(grid, "center_face", None) for grid in getattr(analysis, "grids", []))
+    counts = Counter({face: count for face, count in counts.items() if face in FACE_ORDER})
+    if not counts:
+        return None, 0, 0
+    face, count = counts.most_common(1)[0]
+    return face, int(count), int(sum(counts.values()))
 
 
 def _image_b_visible_face_evidence_weak(analysis_b: ImageAnalysis) -> bool:

@@ -203,11 +203,11 @@ authorized.
 - Opening a focused PR after completing scoped implementation work
 - Starting a timer/check loop after opening a PR to watch for Devin
   review comments
-- Addressing clear Devin review comments, then merging once Devin says
-  there are no blockers and normal merge checks are green
-- After merging UI/API/server changes, fast-forwarding `main`,
-  restarting the local server, and verifying `/api/diag` reports the
-  merged SHA on `main`
+- Addressing clear Devin review comments
+- Codex only: after independently verifying a PR, merging once Devin
+  says there are no blockers and normal merge checks are green, then
+  fast-forwarding `main`, restarting the local server for UI/API/server
+  changes, and verifying `/api/diag` reports the merged SHA on `main`
 - Posting comments on existing PRs/issues via `--body-file`
 - Replying to review feedback that you've already addressed
 
@@ -218,6 +218,8 @@ authorized.
   could reasonably surprise the user)
 - Opening a PR for ambiguous scope, broad refactors, or work the user
   has not already asked you to pursue
+- Claude: merging any PR, unless the user explicitly delegated that
+  merge in the current thread
 - Merging despite unresolved or ambiguous Devin comments, failing
   checks, merge conflicts, or anything requiring `--admin`
 - Sending external messages (emails, Slack DMs to non-collaborators)

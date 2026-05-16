@@ -154,10 +154,10 @@ metadata, pass `--image <photo.jpg>` for a single label file. Treat
 physical sticker truth; three visible faces physically imply 27
 stickers.
 
-Current canonical Set 46 geometry labels (2026-05-16):
-
-- A: `runs/labels/20260516-111836-705319-set-46-a-geometry-label.json`
-- B: `runs/labels/20260516-112302-474912-set-46-b-geometry-label.json`
+Do not treat exact `runs/labels/...` filenames as durable
+documentation unless the files have been copied into a tracked fixture
+or docs path; `runs/` is gitignored and those paths are often
+local-session context.
 
 ## Pre-commit verification — separate commands, explicit paths
 

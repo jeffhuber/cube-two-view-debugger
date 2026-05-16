@@ -223,6 +223,55 @@ interpreters as guardrail bypasses:
 This is the comparative-claims "view both" rule applied to
 *configs*: read what's already here before changing it.
 
+### 3. Branching from a shared checkout: audit working tree first
+
+Before `git checkout -b <new-branch>` from a checkout that may have
+uncommitted work — especially the primary checkout that other
+agents and sessions share — run `git status` as a *separate*
+command and audit the output. **Uncommitted modifications and
+untracked files carry over to your new branch** and will end up in
+your first commit if you later `git add -A` (or any other path
+that sweeps them in).
+
+**Wrong:**
+
+```bash
+git checkout main && git pull --ff-only
+git checkout -b claude/my-feature
+# edit + commit + push — silently includes whatever was pending
+```
+
+**Right:**
+
+```bash
+git status                 # what's pending in the working tree?
+# If anything is modified or untracked, decide *before* branching:
+#   - Belongs to me / this branch? → proceed, stage explicit paths
+#   - Doesn't belong and is tracked-only? →
+#     git stash push -m "preserving X work"
+#   - Doesn't belong and includes untracked files? →
+#     git stash push --include-untracked -m "preserving X work"
+#     Then branch, do my work, and pop later in the right context
+#   - Unclear who owns it? → ask the user
+git checkout -b claude/my-feature
+# stage explicit paths only — never -A / .
+```
+
+**This caused a real failure on ctvd#98 (2026-05-16):** I cut a new
+branch off the primary checkout while the user had uncommitted
+edits adding a "Geometry Labeler conventions" section to
+`CLAUDE.md`. My intended edit was a separate "Default to acting"
+section further down. When I committed, both changes ended up in
+my commit. Devin's review caught the unintended Geometry Labeler
+content; the fix was a follow-up commit removing those lines so
+the squash-merge diff against `main` was clean.
+
+Same shape as the `git add -A` failure mode in rule #1:
+**verification must happen before the action captures state**,
+not after. Rule #1 covers staging; this rule covers the analogous
+step at branch-creation time. Either misstep silently includes
+someone else's pending work in your commit.
+
 ## Default to acting on non-destructive next steps
 
 The `.claude/settings.json` allow list exists so routine operations

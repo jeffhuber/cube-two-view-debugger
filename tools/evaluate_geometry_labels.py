@@ -26,7 +26,12 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from rubik_recognizer.image_pipeline import ImageAnalysis, analyze_image  # noqa: E402
-from rubik_recognizer.recognizer import FACE_ORDER  # noqa: E402
+from rubik_recognizer.recognizer import (  # noqa: E402
+    FACE_ORDER,
+    _assigned_grid_by_face,
+    _candidate_grids_by_face,
+    _ranked_visible_face_triples,
+)
 from tools.audit_recognition_pair import file_sha256  # noqa: E402
 from tools.inspect_cube_isolation import (  # noqa: E402
     FACE_COLORS,
@@ -112,6 +117,18 @@ def geometry_metrics_for_analysis(
         anchor=expected_anchor,
     )
     sticker_rows = sticker_label_rows(analysis.stickers, label_hull, geometry["faceQuads"])
+    selected_grid_rows = selected_grid_label_rows(
+        analysis,
+        str(isolation.get("anchorUsed") or expected_anchor),
+        label_hull,
+        geometry["faceQuads"],
+    )
+    top_triple_grid_rows = top_visible_triple_label_rows(
+        analysis,
+        str(isolation.get("anchorUsed") or expected_anchor),
+        label_hull,
+        geometry["faceQuads"],
+    )
     summary = sticker_summary(sticker_rows)
     roi_metrics = roi_label_metrics(analysis.roi, label_hull)
     proposed = proposed_region_metrics(
@@ -167,10 +184,14 @@ def geometry_metrics_for_analysis(
         "metrics": {
             "stickers": summary,
             "faceCoverage": face_coverage(sticker_rows, geometry["faceQuads"]),
+            "selectedGridCells": selected_grid_summary(selected_grid_rows),
+            "topVisibleTripleGridCells": selected_grid_summary(top_triple_grid_rows),
             "roi": roi_metrics,
             "proposedCubeRegion": proposed,
         },
         "stickers": sticker_rows,
+        "selectedGridCells": selected_grid_rows,
+        "topVisibleTripleGridCells": top_triple_grid_rows,
         "artifacts": {},
     }
 
@@ -273,6 +294,159 @@ def sticker_summary(stickers: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
         "insideAnyFaceQuad": len(inside_face),
         "outsideLabeledCubeByDetectedFace": ordered_counts(row.get("detectedFace") for row in outside_cube),
         "outsideLabeledCubeBySource": ordered_counts(row.get("source") for row in outside_cube),
+    }
+
+
+def selected_grid_label_rows(
+    analysis: ImageAnalysis,
+    anchor: str,
+    label_hull: Sequence[Point],
+    face_quads: Dict[str, Sequence[Point]],
+) -> List[Dict[str, Any]]:
+    assignments = _assigned_grid_by_face(analysis, anchor) if anchor in ("U", "D") else {}
+    top_triple_grid_ids = top_visible_triple_grid_ids(analysis, anchor)
+    return grid_label_rows(
+        assignments,
+        label_hull,
+        face_quads,
+        top_triple_grid_ids=top_triple_grid_ids,
+    )
+
+
+def top_visible_triple_label_rows(
+    analysis: ImageAnalysis,
+    anchor: str,
+    label_hull: Sequence[Point],
+    face_quads: Dict[str, Sequence[Point]],
+) -> List[Dict[str, Any]]:
+    if anchor not in ("U", "D"):
+        return []
+    groups = _candidate_grids_by_face(analysis, anchor)
+    if anchor not in groups:
+        return []
+    triples = _ranked_visible_face_triples(groups, anchor)
+    if not triples:
+        return []
+    top_triple = triples[0][1]
+    top_triple_grid_ids = {getattr(grid, "id", id(grid)) for grid in top_triple.values()}
+    return grid_label_rows(
+        top_triple,
+        label_hull,
+        face_quads,
+        top_triple_grid_ids=top_triple_grid_ids,
+    )
+
+
+def grid_label_rows(
+    grids_by_face: Dict[str, Any],
+    label_hull: Sequence[Point],
+    face_quads: Dict[str, Sequence[Point]],
+    *,
+    top_triple_grid_ids: set[Any],
+) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    for selected_face in sorted(grids_by_face, key=FACE_ORDER.index):
+        grid = grids_by_face[selected_face]
+        grid_id = getattr(grid, "id", None)
+        in_top_triple = grid_id in top_triple_grid_ids
+        for row_index, sticker_row in enumerate(getattr(grid, "stickers", []) or []):
+            for col_index, sticker in enumerate(sticker_row):
+                center = (float(sticker.center[0]), float(sticker.center[1]))
+                matched_faces = [
+                    face
+                    for face in FACE_ORDER
+                    if face in face_quads and point_in_polygon(center, face_quads[face])
+                ]
+                selected_face_label = face_quads.get(selected_face)
+                inside_selected_face = (
+                    point_in_polygon(center, selected_face_label)
+                    if selected_face_label is not None
+                    else None
+                )
+                match = getattr(sticker, "match", None)
+                rows.append(
+                    {
+                        "gridFace": selected_face,
+                        "gridId": grid_id,
+                        "gridCenterFace": getattr(grid, "center_face", None),
+                        "inTopVisibleTriple": in_top_triple,
+                        "row": row_index,
+                        "col": col_index,
+                        "center": json_point(center),
+                        "source": getattr(sticker, "source", "unknown") or "unknown",
+                        "detectedFace": getattr(match, "face", None),
+                        "detectedColor": getattr(match, "color", None),
+                        "confidence": round(float(getattr(match, "confidence", 0.0)), 4),
+                        "insideLabeledCubeHull": point_in_polygon(center, label_hull),
+                        "insideAnyFaceQuad": bool(matched_faces),
+                        "labelFace": matched_faces[0] if matched_faces else None,
+                        "labelFaceHits": matched_faces,
+                        "selectedFaceLabelAvailable": selected_face_label is not None,
+                        "insideSelectedFaceQuad": inside_selected_face,
+                    }
+                )
+    return rows
+
+
+def top_visible_triple_grid_ids(analysis: ImageAnalysis, anchor: str) -> set[Any]:
+    if anchor not in ("U", "D"):
+        return set()
+    groups = _candidate_grids_by_face(analysis, anchor)
+    if anchor not in groups:
+        return set()
+    triples = _ranked_visible_face_triples(groups, anchor)
+    if not triples:
+        return set()
+    return {getattr(grid, "id", id(grid)) for grid in triples[0][1].values()}
+
+
+def selected_grid_summary(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+    return {
+        "overall": selected_grid_counts(rows),
+        "byGridFace": {
+            face: selected_grid_counts([row for row in rows if row.get("gridFace") == face])
+            for face in FACE_ORDER
+            if any(row.get("gridFace") == face for row in rows)
+        },
+    }
+
+
+def selected_grid_counts(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+    inside_cube = [row for row in rows if row["insideLabeledCubeHull"]]
+    outside_cube = [row for row in rows if not row["insideLabeledCubeHull"]]
+    inside_face = [row for row in rows if row["insideAnyFaceQuad"]]
+    outside_face = [row for row in rows if not row["insideAnyFaceQuad"]]
+    selected_label_rows = [row for row in rows if row["selectedFaceLabelAvailable"]]
+    inside_selected = [row for row in selected_label_rows if row["insideSelectedFaceQuad"] is True]
+    outside_selected = [row for row in selected_label_rows if row["insideSelectedFaceQuad"] is False]
+    grid_samples = [row for row in rows if row.get("source") == "grid_sample"]
+    return {
+        "cells": len(rows),
+        "insideLabeledCubeHull": len(inside_cube),
+        "outsideLabeledCubeHull": len(outside_cube),
+        "insideAnyFaceQuad": len(inside_face),
+        "outsideAnyFaceQuad": len(outside_face),
+        "selectedFaceLabelAvailable": len(selected_label_rows),
+        "insideSelectedFaceQuad": len(inside_selected),
+        "outsideSelectedFaceQuad": len(outside_selected),
+        "gridSampleCells": len(grid_samples),
+        "gridSampleCellsOutsideLabeledCubeHull": sum(
+            1 for row in grid_samples if not row["insideLabeledCubeHull"]
+        ),
+        "gridSampleCellsOutsideAnyFaceQuad": sum(
+            1 for row in grid_samples if not row["insideAnyFaceQuad"]
+        ),
+        "detectedFaceCounts": ordered_counts(row.get("detectedFace") for row in rows),
+        "labelFaceCounts": ordered_counts(row.get("labelFace") for row in rows),
+        "sourceCounts": ordered_counts(row.get("source") for row in rows),
+        "gridFacesWithoutLabels": sorted(
+            {
+                str(row.get("gridFace"))
+                for row in rows
+                if row.get("gridFace") and not row["selectedFaceLabelAvailable"]
+            },
+            key=lambda face: FACE_ORDER.index(face) if face in FACE_ORDER else len(FACE_ORDER),
+        ),
     }
 
 
@@ -465,6 +639,24 @@ def write_geometry_overlay(
             outline = (120, 0, 0, 255)
         radius = 5 if sticker.get("source") == "component" else 4
         draw.ellipse((x - radius, y - radius, x + radius, y + radius), fill=fill, outline=outline, width=2)
+    for cell in metrics.get("selectedGridCells", []):
+        if cell.get("source") != "grid_sample" and cell.get("insideAnyFaceQuad"):
+            continue
+        x, y = cell["center"]
+        if not cell["insideLabeledCubeHull"]:
+            fill = (240, 60, 60, 230)
+            outline = (120, 0, 0, 255)
+        elif not cell["insideAnyFaceQuad"]:
+            fill = (250, 190, 40, 230)
+            outline = (120, 80, 0, 255)
+        elif cell.get("source") == "grid_sample":
+            fill = (130, 70, 230, 220)
+            outline = (70, 30, 150, 255)
+        else:
+            fill = (0, 120, 220, 150)
+            outline = (0, 70, 150, 255)
+        size = 5 if cell.get("source") == "grid_sample" else 4
+        draw.rectangle((x - size, y - size, x + size, y + size), fill=fill, outline=outline, width=2)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     image.save(output_path)
 
@@ -479,11 +671,13 @@ def write_json(path: Path, results: Sequence[Dict[str, Any]]) -> None:
 
 
 def print_table(results: Sequence[Dict[str, Any]]) -> None:
-    print("Set Side Stk InCube OutCube FacePts ROI HullIoU PadIoU Label")
-    print("--- ---- --- ------ ------- ------- --- ------- ------ ----------------")
+    print("Set Side Stk InCube OutCube FacePts Grid GridOut GridFaceOut Top TopOut TopFaceOut ROI HullIoU PadIoU Label")
+    print("--- ---- --- ------ ------- ------- ---- ------- ----------- --- ------ ---------- --- ------- ------ ----------------")
     for result in results:
         metrics = result["metrics"]
         stickers = metrics["stickers"]
+        selected_grid = metrics.get("selectedGridCells", {}).get("overall", {})
+        top_grid = metrics.get("topVisibleTripleGridCells", {}).get("overall", {})
         roi = metrics["roi"]
         proposed = metrics["proposedCubeRegion"]
         print(
@@ -493,6 +687,12 @@ def print_table(results: Sequence[Dict[str, Any]]) -> None:
             f"{stickers['insideLabeledCubeHull']:6d} "
             f"{stickers['outsideLabeledCubeHull']:7d} "
             f"{stickers['insideAnyFaceQuad']:7d} "
+            f"{selected_grid.get('cells', 0):4d} "
+            f"{selected_grid.get('outsideLabeledCubeHull', 0):7d} "
+            f"{selected_grid.get('outsideAnyFaceQuad', 0):11d} "
+            f"{top_grid.get('cells', 0):3d} "
+            f"{top_grid.get('outsideLabeledCubeHull', 0):6d} "
+            f"{top_grid.get('outsideAnyFaceQuad', 0):10d} "
             f"{'yes' if roi['containsAllLabelHullVertices'] else 'no':>3} "
             f"{format_optional(proposed['iouWithLabelCubeHull']):>7} "
             f"{format_optional(proposed['paddedIouWithLabelCubeHull']):>6} "

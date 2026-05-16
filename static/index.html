@@ -118,10 +118,10 @@
         <section class="labelerControls panel">
           <h2 id="labelerHeading">Geometry Labeler</h2>
           <label class="dropZone" id="labelDropZone">
-            <span class="dropZoneTitle">Drop or click to add 1 photo</span>
-            <span class="dropZoneHint">Face quads and cube hull labels save as JSON.</span>
+            <span class="dropZoneTitle">Drop or click to add 2 photos</span>
+            <span class="dropZoneHint">A/B labels save as separate JSON documents.</span>
             <span class="dropZoneFiles" id="labelDropZoneFiles"></span>
-            <input id="labelImage" type="file" accept="image/*" />
+            <input id="labelImage" type="file" accept="image/*" multiple />
           </label>
           <div class="labelerFields">
             <label>
@@ -140,6 +140,7 @@
           <div class="segmentedControl" aria-label="Label mode">
             <button class="is-active" type="button" data-label-mode="face">Face Quad</button>
             <button type="button" data-label-mode="hull">Cube Hull</button>
+            <button type="button" data-label-mode="template">Template</button>
           </div>
           <div class="faceButtons" aria-label="Active face">
             <button class="is-active" type="button" data-face="U">U</button>
@@ -154,6 +155,7 @@
             <button id="labelUndo" type="button">Undo</button>
             <button id="labelClearActive" type="button">Clear Active</button>
             <button id="labelClearAll" type="button">Clear All</button>
+            <button id="labelTemplate" type="button">Place Template</button>
             <button id="labelSave" type="button">Save JSON</button>
           </div>
           <label>

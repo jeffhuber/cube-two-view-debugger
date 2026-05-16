@@ -171,12 +171,33 @@ by set name when the names contain `A` and `B` markers, otherwise by sorted
 order. The drop zone is the same surface used for both single-pair and batch
 recognition.
 
-The web UI also has a Geometry Labeler tab for human cube/body labels. Drop one
-photo, click four corners for any visible face (`U/R/F/D/L/B`), optionally trace
-the cube hull, then save JSON. Labels are stored under `runs/labels/` and
-exposed through `GET /api/labels`; each document includes the image filename,
+The web UI also has a Geometry Labeler tab for human cube/body labels. Drop an
+A/B photo pair, use the image-side selector to switch between them, then click
+four corners for any visible face (`U/R/F/D/L/B`) or place the seven-anchor
+template to derive the cube hull and all three visible face quads. Labels are
+stored under `runs/labels/` and exposed through `GET /api/labels`; each saved
+JSON document is still side-specific and includes the image filename,
 browser-natural dimensions, image SHA256, face quads, cube-hull points, set id,
 side, and notes.
+
+Geometry labels follow a few conventions so saved JSONs can be compared across
+runs:
+
+- Coordinates are `browser_image_natural`: the EXIF-corrected natural image
+  size reported by the browser, not the raw stored JPEG pixel orientation.
+- Image A uses the canonical visible faces `U/R/F`; image B uses `D/L/B`.
+  For a single ad-hoc image, use the canonical WCA face labels visible in that
+  photo.
+- Face quads are the four exterior face corners clicked in perimeter order.
+  Start at the topmost or upper-left visible corner when possible, then continue
+  clockwise or counter-clockwise. The evaluator treats the quad as a polygon,
+  while the overlay grid uses that order for a stable visual.
+- The cube hull is the outer cube silhouette, also clicked in perimeter order.
+  For the normal three-face isometric photos this is usually a six-point hull;
+  do not include interior face seams.
+- When several draft labels exist for the same set/side, pass the intended
+  label JSON paths explicitly to diagnostic tools instead of relying on the
+  default `runs/labels/*.json` sweep.
 
 Evaluate saved geometry labels against the current detection pipeline with:
 
@@ -191,7 +212,14 @@ The evaluator resolves the source photo from the hard-case/corpus manifests or
 the labelled filename, converts browser-natural label coordinates into the
 resized processing-image coordinate space, and reports ROI containment,
 off-cube sticker candidates, per-face detected-center counts, and overlap
-between the human-labelled cube hull and the current selected-grid hull.
+between the human-labelled cube hull and the current selected-grid hull. It
+also classifies the recognizer's selected grid cells, including synthesized
+`grid_sample` cells, against the labelled face quads and cube hull so
+cube-isolation diagnostics can distinguish missed component stickers from
+off-cube grid extrapolation. The JSON also includes
+`topVisibleTripleGridCells`, which filters those assigned grid cells down to
+the highest-ranked visible-face triple so artifact side grids can be separated
+from the grids recognition would actually consider first.
 
 For ad-hoc single-pair recognition from the command line — useful when
 filing or reproducing a bug report — use `tools/recognize_pair.py`:

@@ -427,6 +427,11 @@ td code {
   height: auto;
   min-height: 320px;
   cursor: crosshair;
+  touch-action: none;
+}
+
+#labelCanvas[data-mode="template"] {
+  cursor: grab;
 }
 
 #labelCanvas:empty {

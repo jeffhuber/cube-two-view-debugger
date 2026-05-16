@@ -78,6 +78,19 @@ def test_geometry_metrics_count_stickers_against_labeled_cube_and_faces():
     assert sticker_metrics["outsideLabeledCubeByDetectedFace"] == {"B": 1}
     assert metrics["metrics"]["faceCoverage"]["U"]["detectedCenters"] == 1
     assert metrics["metrics"]["faceCoverage"]["U"]["coverageVsNine"] == 0.1111
+    selected_grid = metrics["metrics"]["selectedGridCells"]["overall"]
+    assert selected_grid["cells"] == 27
+    assert selected_grid["insideLabeledCubeHull"] == 27
+    assert selected_grid["outsideLabeledCubeHull"] == 0
+    assert selected_grid["selectedFaceLabelAvailable"] == 9
+    assert selected_grid["insideSelectedFaceQuad"] == 6
+    assert selected_grid["outsideSelectedFaceQuad"] == 3
+    assert set(selected_grid["gridFacesWithoutLabels"]) == {"F", "R"}
+    top_grid = metrics["metrics"]["topVisibleTripleGridCells"]["overall"]
+    assert top_grid["cells"] == 27
+    assert top_grid["insideLabeledCubeHull"] == 27
+    assert top_grid["outsideLabeledCubeHull"] == 0
+    assert {row["gridFace"] for row in metrics["selectedGridCells"] if row["inTopVisibleTriple"]} == {"F", "R", "U"}
     assert metrics["metrics"]["roi"]["containsAllLabelHullVertices"]
     assert metrics["imageSha256"]["matches"]
 

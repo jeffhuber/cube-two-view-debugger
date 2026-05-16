@@ -26,6 +26,7 @@ const labelFaceGuidance = document.querySelector("#labelFaceGuidance");
 const labelUndo = document.querySelector("#labelUndo");
 const labelClearActive = document.querySelector("#labelClearActive");
 const labelClearAll = document.querySelector("#labelClearAll");
+const labelTemplate = document.querySelector("#labelTemplate");
 
 const faceOrder = ["U", "R", "F", "D", "L", "B"];
 const facesByImageSide = {
@@ -49,15 +50,65 @@ const faceColors = {
 
 let activeMode = "face";
 let activeFace = "U";
+let activeSide = labelImageSide ? labelImageSide.value : "A";
 let currentImage = null;
 let pendingFacePoints = [];
 let labels = emptyLabels();
+let templateAnchors = null;
+let templateDrag = null;
+let suppressNextTemplateClick = false;
+const labelStates = {
+  A: emptyLabelState(),
+  B: emptyLabelState(),
+  single: emptyLabelState(),
+};
 
 function emptyLabels() {
   return {
     faceQuads: {},
     cubeHull: [],
   };
+}
+
+function emptyLabelState() {
+  return {
+    image: null,
+    labels: emptyLabels(),
+    pendingFacePoints: [],
+    templateAnchors: null,
+    savedUrl: null,
+  };
+}
+
+function stateForSide(side) {
+  if (!labelStates[side]) labelStates[side] = emptyLabelState();
+  return labelStates[side];
+}
+
+function setLabels(nextLabels) {
+  labels = nextLabels;
+  stateForSide(activeSide).labels = nextLabels;
+}
+
+function setPendingFacePoints(points) {
+  pendingFacePoints = points;
+  stateForSide(activeSide).pendingFacePoints = points;
+}
+
+function setTemplateAnchors(anchors) {
+  templateAnchors = anchors;
+  stateForSide(activeSide).templateAnchors = anchors;
+}
+
+function bindActiveSide(side) {
+  activeSide = side;
+  const state = stateForSide(side);
+  currentImage = state.image;
+  labels = state.labels;
+  pendingFacePoints = state.pendingFacePoints;
+  templateAnchors = state.templateAnchors;
+  templateDrag = null;
+  updateImageChrome();
 }
 
 function setView(view) {
@@ -89,54 +140,128 @@ function setupLabelDropZone() {
     });
   }
   labelDropZone.addEventListener("drop", (event) => {
-    const file = Array.from(event.dataTransfer.files || []).find((item) => item.type.startsWith("image/"));
-    if (!file) return;
+    const files = Array.from(event.dataTransfer.files || []).filter((item) => item.type.startsWith("image/"));
+    if (!files.length) return;
     const dataTransfer = new DataTransfer();
-    dataTransfer.items.add(file);
+    for (const file of files.slice(0, 2)) dataTransfer.items.add(file);
     labelImageInput.files = dataTransfer.files;
-    loadLabelImage(file);
+    loadLabelImages(labelImageInput.files);
   });
   labelImageInput.addEventListener("change", () => {
-    const file = labelImageInput.files && labelImageInput.files[0];
-    if (file) loadLabelImage(file);
+    if (labelImageInput.files && labelImageInput.files.length) loadLabelImages(labelImageInput.files);
   });
 }
 
-async function loadLabelImage(file) {
-  labels = emptyLabels();
-  pendingFacePoints = [];
-  labelSavedLink.hidden = true;
-  labelSavedLink.href = "#";
-  setLabelStatus("Loading image...");
+async function loadLabelImages(fileList) {
+  const files = Array.from(fileList || []).filter((file) => file.type.startsWith("image/")).slice(0, 2);
+  if (!files.length) return;
+  setLabelStatus(`Loading ${files.length} image${files.length === 1 ? "" : "s"}...`);
+  const pairing = pairLabelFiles(files);
+  const loadedSides = [];
+  for (const [side, file] of Object.entries(pairing)) {
+    if (!file) continue;
+    const imageRecord = await readLabelImage(file);
+    const state = stateForSide(side);
+    state.image = imageRecord;
+    state.labels = emptyLabels();
+    state.pendingFacePoints = [];
+    state.templateAnchors = null;
+    state.savedUrl = null;
+    loadedSides.push(side);
+    inferSetFields(file.name, { updateSide: files.length === 1 });
+  }
+  const nextSide = files.length > 1 && pairing.A ? "A" : loadedSides[0] || activeSide;
+  if (labelImageSide.value !== nextSide) labelImageSide.value = nextSide;
+  bindActiveSide(labelImageSide.value);
+  updateFaceControls();
+  drawLabels();
+  updateLabelJson();
+  setLabelStatus(`Loaded ${loadedSides.join("/")}.`);
+}
+
+function pairLabelFiles(files) {
+  const [first, second] = files;
+  if (!second) {
+    const marker = detectLabelABMarker(first.name);
+    const side = marker || (labelImageSide.value === "B" ? "B" : labelImageSide.value === "single" ? "single" : "A");
+    return { [side]: first };
+  }
+
+  const firstMarker = detectLabelABMarker(first.name);
+  const secondMarker = detectLabelABMarker(second.name);
+  if (firstMarker === "A" && secondMarker === "B") return { A: first, B: second };
+  if (firstMarker === "B" && secondMarker === "A") return { A: second, B: first };
+  return { A: first, B: second };
+}
+
+function detectLabelABMarker(name) {
+  const stem = name.replace(/\.[^./]+$/, "");
+  const token = /(?:^|[\s_-])([ab])(?:[\s_-]|$)/i.exec(stem);
+  if (token) return token[1].toUpperCase();
+  const imageToken = /\bimage\s*([ab])\b/i.exec(stem);
+  if (imageToken) return imageToken[1].toUpperCase();
+  return null;
+}
+
+async function readLabelImage(file) {
   const url = URL.createObjectURL(file);
   const image = new Image();
-  image.onload = async () => {
-    URL.revokeObjectURL(url);
-    currentImage = {
-      file,
-      element: image,
-      name: file.name,
-      type: file.type,
-      bytes: file.size,
-      width: image.naturalWidth,
-      height: image.naturalHeight,
-      lastModified: file.lastModified,
-      sha256: await sha256Hex(file),
+  return new Promise((resolve, reject) => {
+    image.onload = async () => {
+      URL.revokeObjectURL(url);
+      resolve({
+        file,
+        element: image,
+        name: file.name,
+        type: file.type,
+        bytes: file.size,
+        width: image.naturalWidth,
+        height: image.naturalHeight,
+        lastModified: file.lastModified,
+        sha256: await sha256Hex(file),
+      });
     };
-    inferSetFields(file.name);
-    labelCanvas.width = currentImage.width;
-    labelCanvas.height = currentImage.height;
-    labelImageTitle.textContent = file.name;
-    labelDropZoneFiles.textContent = `${file.name} (${currentImage.width} x ${currentImage.height})`;
-    setLabelStatus("Ready");
-    drawLabels();
-    updateLabelJson();
-  };
-  image.onerror = () => {
-    URL.revokeObjectURL(url);
-    setLabelStatus("Could not load image.");
-  };
-  image.src = url;
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      setLabelStatus("Could not load image.");
+      reject(new Error(`Could not load ${file.name}`));
+    };
+    image.src = url;
+  });
+}
+
+function updateImageChrome() {
+  const activeState = stateForSide(activeSide);
+  const image = activeState.image;
+  labelSavedLink.href = activeState.savedUrl || "#";
+  labelSavedLink.hidden = !activeState.savedUrl;
+  if (image) {
+    labelCanvas.width = image.width;
+    labelCanvas.height = image.height;
+    labelImageTitle.textContent = `${activeSide}: ${image.name}`;
+  } else {
+    labelCanvas.width = 0;
+    labelCanvas.height = 0;
+    labelImageTitle.textContent = `${activeSide}: Image`;
+  }
+  renderLabelDropZoneFiles();
+}
+
+function renderLabelDropZoneFiles() {
+  labelDropZoneFiles.innerHTML = "";
+  for (const side of ["A", "B"]) {
+    const image = stateForSide(side).image;
+    if (!image) continue;
+    const div = document.createElement("div");
+    div.textContent = `${side}: ${image.name} (${image.width} x ${image.height})`;
+    labelDropZoneFiles.append(div);
+  }
+  const singleImage = stateForSide("single").image;
+  if (singleImage && !stateForSide("A").image && !stateForSide("B").image) {
+    const div = document.createElement("div");
+    div.textContent = `single: ${singleImage.name} (${singleImage.width} x ${singleImage.height})`;
+    labelDropZoneFiles.append(div);
+  }
 }
 
 async function sha256Hex(file) {
@@ -145,22 +270,23 @@ async function sha256Hex(file) {
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
-function inferSetFields(name) {
+function inferSetFields(name, { updateSide = true } = {}) {
   if (!labelSetId.value.trim()) {
     const setMatch = /\bset\s*([0-9]+)\b/i.exec(name);
     if (setMatch) labelSetId.value = `Set ${setMatch[1]}`;
   }
   const sideMatch = /(?:^|[\s_-])([ab])(?:[\s_-]|$)/i.exec(name.replace(/\.[^./]+$/, ""));
-  if (sideMatch) labelImageSide.value = sideMatch[1].toUpperCase();
+  if (updateSide && sideMatch) labelImageSide.value = sideMatch[1].toUpperCase();
   updateFaceControls();
 }
 
 function setActiveMode(mode) {
   activeMode = mode;
-  pendingFacePoints = [];
+  setPendingFacePoints([]);
   for (const button of labelModeButtons) {
     button.classList.toggle("is-active", button.dataset.labelMode === mode);
   }
+  labelCanvas.dataset.mode = mode;
   updateFaceControls();
   drawLabels();
   updateLabelJson();
@@ -170,7 +296,8 @@ function setActiveFace(face) {
   if (!allowedFacesForCurrentSide().includes(face)) return;
   activeFace = face;
   activeMode = "face";
-  pendingFacePoints = [];
+  setPendingFacePoints([]);
+  labelCanvas.dataset.mode = "face";
   updateFaceControls();
   for (const button of labelModeButtons) {
     button.classList.toggle("is-active", button.dataset.labelMode === "face");
@@ -200,23 +327,11 @@ function faceQuadsForCurrentSide() {
   return out;
 }
 
-function pruneFaceQuadsForCurrentSide() {
-  const allowedFaces = allowedFacesForCurrentSide();
-  let removed = false;
-  for (const face of Object.keys(labels.faceQuads)) {
-    if (!allowedFaces.includes(face)) {
-      delete labels.faceQuads[face];
-      removed = true;
-    }
-  }
-  return removed;
-}
-
 function updateFaceControls() {
   const allowedFaces = allowedFacesForCurrentSide();
   if (!allowedFaces.includes(activeFace)) {
     activeFace = allowedFaces[0] || "U";
-    pendingFacePoints = [];
+    setPendingFacePoints([]);
   }
   for (const button of labelFaceButtons) {
     const face = button.dataset.face;
@@ -228,7 +343,9 @@ function updateFaceControls() {
   if (labelFaceGuidance) {
     labelFaceGuidance.textContent = activeMode === "hull"
       ? "Cube Hull mode: face labels are ignored; click the outer cube silhouette."
-      : (faceGuidanceBySide[labelImageSide.value] || faceGuidanceBySide.single);
+      : activeMode === "template"
+        ? "Template mode: seven anchors derive the hull and all three visible face quads."
+        : (faceGuidanceBySide[labelImageSide.value] || faceGuidanceBySide.single);
   }
 }
 
@@ -238,11 +355,19 @@ labelCanvas.addEventListener("click", (event) => {
     return;
   }
   const point = canvasPoint(event);
+  if (activeMode === "template") {
+    if (suppressNextTemplateClick) {
+      suppressNextTemplateClick = false;
+      return;
+    }
+    placeTemplate(point);
+    return;
+  }
   if (activeMode === "face") {
     pendingFacePoints.push(point);
     if (pendingFacePoints.length === 4) {
       labels.faceQuads[activeFace] = pendingFacePoints;
-      pendingFacePoints = [];
+      setPendingFacePoints([]);
       setLabelStatus(`${activeFace} face saved.`);
     }
   } else {
@@ -251,6 +376,46 @@ labelCanvas.addEventListener("click", (event) => {
   }
   drawLabels();
   updateLabelJson();
+});
+
+labelCanvas.addEventListener("pointerdown", (event) => {
+  if (!currentImage || activeMode !== "template" || !templateAnchors) return;
+  const point = canvasPoint(event);
+  const hit = hitTemplateAnchor(point);
+  if (!hit) return;
+  templateDrag = {
+    pointerId: event.pointerId,
+    hit,
+    startPoint: point,
+    startAnchors: cloneTemplateAnchors(templateAnchors),
+    moved: false,
+  };
+  suppressNextTemplateClick = true;
+  labelCanvas.setPointerCapture(event.pointerId);
+  event.preventDefault();
+});
+
+labelCanvas.addEventListener("pointermove", (event) => {
+  if (!templateDrag || templateDrag.pointerId !== event.pointerId) return;
+  moveTemplateAnchor(templateDrag, canvasPoint(event));
+  templateDrag.moved = true;
+  suppressNextTemplateClick = true;
+  drawLabels();
+  updateLabelJson();
+});
+
+labelCanvas.addEventListener("pointerup", (event) => {
+  if (!templateDrag || templateDrag.pointerId !== event.pointerId) return;
+  if (labelCanvas.hasPointerCapture(event.pointerId)) labelCanvas.releasePointerCapture(event.pointerId);
+  setLabelStatus("Template updated.");
+  templateDrag = null;
+});
+
+labelCanvas.addEventListener("pointercancel", (event) => {
+  if (!templateDrag || templateDrag.pointerId !== event.pointerId) return;
+  if (labelCanvas.hasPointerCapture(event.pointerId)) labelCanvas.releasePointerCapture(event.pointerId);
+  templateDrag = null;
+  suppressNextTemplateClick = false;
 });
 
 function canvasPoint(event) {
@@ -267,11 +432,169 @@ function roundPoint(value) {
   return Math.round(value * 10) / 10;
 }
 
+function defaultTemplateCenter() {
+  return {
+    x: roundPoint(currentImage.width * 0.47),
+    y: roundPoint(currentImage.height * 0.52),
+  };
+}
+
+function placeTemplate(center) {
+  const nextAnchors = templateAnchors
+    ? translateTemplate(templateAnchors, center)
+    : makeDefaultTemplate(center);
+  setTemplateAnchors(nextAnchors);
+  applyTemplateLabels();
+  drawLabels();
+  updateLabelJson();
+  setLabelStatus("Template placed.");
+}
+
+function makeDefaultTemplate(center) {
+  const w = currentImage.width;
+  const h = currentImage.height;
+  const hull = [
+    { x: center.x + w * 0.0, y: center.y - h * 0.3 },
+    { x: center.x + w * 0.34, y: center.y - h * 0.18 },
+    { x: center.x + w * 0.3, y: center.y + h * 0.08 },
+    { x: center.x + w * 0.02, y: center.y + h * 0.32 },
+    { x: center.x - w * 0.28, y: center.y + h * 0.08 },
+    { x: center.x - w * 0.34, y: center.y - h * 0.18 },
+  ].map(clampPointToImage);
+  return {
+    center: clampPointToImage(center),
+    hull,
+  };
+}
+
+function translateTemplate(anchors, nextCenter) {
+  return translateTemplateByDelta(anchors, nextCenter.x - anchors.center.x, nextCenter.y - anchors.center.y);
+}
+
+function translateTemplateByDelta(anchors, dx, dy) {
+  const points = [anchors.center, ...anchors.hull];
+  const minX = Math.min(...points.map((point) => point.x));
+  const maxX = Math.max(...points.map((point) => point.x));
+  const minY = Math.min(...points.map((point) => point.y));
+  const maxY = Math.max(...points.map((point) => point.y));
+  const boundedDx = Math.max(-minX, Math.min(currentImage.width - maxX, dx));
+  const boundedDy = Math.max(-minY, Math.min(currentImage.height - maxY, dy));
+  return {
+    center: clampPointToImage({ x: anchors.center.x + boundedDx, y: anchors.center.y + boundedDy }),
+    hull: anchors.hull.map((point) => clampPointToImage({ x: point.x + boundedDx, y: point.y + boundedDy })),
+  };
+}
+
+function cloneTemplateAnchors(anchors) {
+  return {
+    center: { ...anchors.center },
+    hull: anchors.hull.map((point) => ({ ...point })),
+  };
+}
+
+function clampPointToImage(point) {
+  return {
+    x: roundPoint(Math.max(0, Math.min(currentImage.width, point.x))),
+    y: roundPoint(Math.max(0, Math.min(currentImage.height, point.y))),
+  };
+}
+
+function moveTemplateAnchor(drag, point) {
+  if (!templateAnchors) return;
+  let next;
+  if (drag.hit.kind === "center" || drag.hit.kind === "body") {
+    next = translateTemplateByDelta(
+      drag.startAnchors,
+      point.x - drag.startPoint.x,
+      point.y - drag.startPoint.y,
+    );
+  } else {
+    next = cloneTemplateAnchors(templateAnchors);
+    next.hull[drag.hit.index] = clampPointToImage(point);
+  }
+  setTemplateAnchors(next);
+  applyTemplateLabels();
+}
+
+function hitTemplateAnchor(point) {
+  if (!templateAnchors) return null;
+  const hullThreshold = templateHitThreshold();
+  const centerThreshold = templateCenterHitThreshold();
+  const anchors = [{ kind: "center", index: -1, point: templateAnchors.center, threshold: centerThreshold }];
+  templateAnchors.hull.forEach((hullPoint, index) => anchors.push({ kind: "hull", index, point: hullPoint }));
+  let best = null;
+  for (const anchor of anchors) {
+    const distance = Math.hypot(anchor.point.x - point.x, anchor.point.y - point.y);
+    const threshold = anchor.threshold || hullThreshold;
+    if (distance <= threshold && (!best || distance < best.distance)) best = { ...anchor, distance };
+  }
+  if (best) return { kind: best.kind, index: best.index };
+  return pointInTemplateHull(point) ? { kind: "body", index: -1 } : null;
+}
+
+function templateHitThreshold() {
+  const scale = templateVisualScale();
+  return Math.max(24, 18 * scale);
+}
+
+function templateCenterHitThreshold() {
+  const scale = templateVisualScale();
+  return Math.max(44, 42 * scale);
+}
+
+function templateVisualScale() {
+  const rect = labelCanvas.getBoundingClientRect();
+  return labelCanvas.width / Math.max(1, rect.width);
+}
+
+function pointInTemplateHull(point) {
+  if (!templateAnchors || templateAnchors.hull.length < 3) return false;
+  let inside = false;
+  for (let i = 0, j = templateAnchors.hull.length - 1; i < templateAnchors.hull.length; j = i, i += 1) {
+    const a = templateAnchors.hull[i];
+    const b = templateAnchors.hull[j];
+    const crosses = (a.y > point.y) !== (b.y > point.y)
+      && point.x < ((b.x - a.x) * (point.y - a.y)) / (b.y - a.y) + a.x;
+    if (crosses) inside = !inside;
+  }
+  return inside;
+}
+
+function applyTemplateLabels() {
+  if (!templateAnchors) return;
+  const [topFace, rightFace, leftFace] = templateFacesForCurrentSide();
+  const hull = templateAnchors.hull.map((point) => ({ ...point }));
+  const center = { ...templateAnchors.center };
+  setLabels({
+    faceQuads: {
+      [topFace]: [hull[0], hull[1], center, hull[5]],
+      [rightFace]: [hull[1], hull[2], hull[3], center],
+      [leftFace]: [hull[5], center, hull[3], hull[4]],
+    },
+    cubeHull: hull,
+  });
+  setPendingFacePoints([]);
+}
+
+function templateFacesForCurrentSide() {
+  if (labelImageSide.value === "B") return ["D", "L", "B"];
+  return ["U", "R", "F"];
+}
+
+function clearTemplateLabels() {
+  setTemplateAnchors(null);
+  setLabels(emptyLabels());
+  setPendingFacePoints([]);
+  setLabelStatus("Template cleared.");
+}
+
 labelUndo.addEventListener("click", () => {
   if (activeMode === "face" && pendingFacePoints.length) {
     pendingFacePoints.pop();
   } else if (activeMode === "hull" && labels.cubeHull.length) {
     labels.cubeHull.pop();
+  } else if (activeMode === "template" && templateAnchors) {
+    clearTemplateLabels();
   } else if (activeMode === "face" && labels.faceQuads[activeFace]) {
     delete labels.faceQuads[activeFace];
   }
@@ -281,21 +604,35 @@ labelUndo.addEventListener("click", () => {
 
 labelClearActive.addEventListener("click", () => {
   if (activeMode === "face") {
-    pendingFacePoints = [];
+    setPendingFacePoints([]);
     delete labels.faceQuads[activeFace];
-  } else {
+  } else if (activeMode === "hull") {
     labels.cubeHull = [];
+  } else {
+    clearTemplateLabels();
   }
   drawLabels();
   updateLabelJson();
 });
 
 labelClearAll.addEventListener("click", () => {
-  labels = emptyLabels();
-  pendingFacePoints = [];
+  setLabels(emptyLabels());
+  setPendingFacePoints([]);
+  setTemplateAnchors(null);
   drawLabels();
   updateLabelJson();
 });
+
+if (labelTemplate) {
+  labelTemplate.addEventListener("click", () => {
+    if (!currentImage) {
+      setLabelStatus("Add an image first.");
+      return;
+    }
+    setActiveMode("template");
+    placeTemplate(defaultTemplateCenter());
+  });
+}
 
 labelCopyJson.addEventListener("click", async () => {
   await navigator.clipboard.writeText(labelJson.textContent || "");
@@ -326,6 +663,7 @@ labelSave.addEventListener("click", async () => {
   }
   labelSavedLink.href = saved.labelUrl;
   labelSavedLink.hidden = false;
+  stateForSide(activeSide).savedUrl = saved.labelUrl;
   setLabelStatus(`Saved ${saved.labelId}.`);
   fetchSavedLabels().catch(() => {});
 });
@@ -338,12 +676,12 @@ for (const input of [labelSetId, labelImageSide, labelNotes]) {
   input.addEventListener("input", updateLabelJson);
 }
 labelImageSide.addEventListener("change", () => {
-  pendingFacePoints = [];
-  const removed = pruneFaceQuadsForCurrentSide();
+  bindActiveSide(labelImageSide.value);
+  setPendingFacePoints([]);
   updateFaceControls();
   drawLabels();
   updateLabelJson();
-  if (removed) setLabelStatus(`Removed face labels not valid for side ${labelImageSide.value}.`);
+  setLabelStatus(currentImage ? `Showing ${labelImageSide.value}.` : `No ${labelImageSide.value} image loaded.`);
 });
 
 document.addEventListener("keydown", (event) => {
@@ -414,6 +752,7 @@ function drawLabels() {
   if (activeMode === "face" && pendingFacePoints.length) {
     drawFaceQuad(ctx, activeFace, pendingFacePoints, true);
   }
+  if (templateAnchors) drawTemplateAnchors(ctx, templateAnchors);
 }
 
 function drawHull(ctx, points) {
@@ -502,6 +841,59 @@ function drawFaceLabel(ctx, face, point, color) {
   ctx.restore();
 }
 
+function drawTemplateAnchors(ctx, anchors) {
+  ctx.save();
+  const scale = templateVisualScale();
+  const center = anchors.center;
+
+  ctx.lineWidth = 5 * scale;
+  ctx.strokeStyle = "#111820";
+  ctx.fillStyle = "rgba(255,255,255,0.88)";
+  ctx.beginPath();
+  ctx.arc(center.x, center.y, 30 * scale, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.strokeStyle = "#ff4d3d";
+  ctx.lineWidth = 4 * scale;
+  ctx.beginPath();
+  ctx.arc(center.x, center.y, 13 * scale, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(center.x - 38 * scale, center.y);
+  ctx.lineTo(center.x - 18 * scale, center.y);
+  ctx.moveTo(center.x + 18 * scale, center.y);
+  ctx.lineTo(center.x + 38 * scale, center.y);
+  ctx.moveTo(center.x, center.y - 38 * scale);
+  ctx.lineTo(center.x, center.y - 18 * scale);
+  ctx.moveTo(center.x, center.y + 18 * scale);
+  ctx.lineTo(center.x, center.y + 38 * scale);
+  ctx.stroke();
+
+  drawAnchorText(ctx, "C", center, "#111820", 22 * scale);
+  anchors.hull.forEach((point, index) => {
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#111820";
+    ctx.lineWidth = 4 * scale;
+    ctx.beginPath();
+    ctx.rect(point.x - 13 * scale, point.y - 13 * scale, 26 * scale, 26 * scale);
+    ctx.fill();
+    ctx.stroke();
+    drawAnchorText(ctx, String(index + 1), point, "#111820", 15 * scale);
+  });
+  ctx.restore();
+}
+
+function drawAnchorText(ctx, text, point, color, fontSize = 24) {
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.font = `bold ${fontSize}px system-ui, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, point.x, point.y);
+  ctx.restore();
+}
+
 function line(ctx, a, b) {
   ctx.beginPath();
   ctx.moveTo(a.x, a.y);
@@ -585,6 +977,8 @@ function formatLabelDate(iso) {
 }
 
 setupLabelDropZone();
+bindActiveSide(activeSide);
+labelCanvas.dataset.mode = activeMode;
 updateFaceControls();
 updateLabelJson();
 fetchSavedLabels().catch(() => {});

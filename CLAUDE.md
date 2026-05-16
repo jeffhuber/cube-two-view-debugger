@@ -200,6 +200,14 @@ authorized.
 - Inspecting saved-run outputs in `runs/`
 - Restarting the local dev server when it's stale (per the
   "After merging a PR that affects the running UI/API" section)
+- Opening a focused PR after completing scoped implementation work
+- Starting a timer/check loop after opening a PR to watch for Devin
+  review comments
+- Addressing clear Devin review comments, then merging once Devin says
+  there are no blockers and normal merge checks are green
+- After merging UI/API/server changes, fast-forwarding `main`,
+  restarting the local server, and verifying `/api/diag` reports the
+  merged SHA on `main`
 - Posting comments on existing PRs/issues via `--body-file`
 - Replying to review feedback that you've already addressed
 
@@ -208,10 +216,10 @@ authorized.
 - Destructive ops (`rm`, force push, `reset --hard`, `branch -D` on
   shared branches, anything outside the existing deny list that
   could reasonably surprise the user)
-- Opening a new PR — the user may want to weigh in on scope/framing
-  before code commits
-- Merging a PR — `gh pr merge ... --admin` bypasses branch
-  protection; that's a deliberate human call
+- Opening a PR for ambiguous scope, broad refactors, or work the user
+  has not already asked you to pursue
+- Merging despite unresolved or ambiguous Devin comments, failing
+  checks, merge conflicts, or anything requiring `--admin`
 - Sending external messages (emails, Slack DMs to non-collaborators)
 - Operations touching paths outside the active repos / worktrees /
   `/tmp` / `/private/tmp` / Codex worktrees

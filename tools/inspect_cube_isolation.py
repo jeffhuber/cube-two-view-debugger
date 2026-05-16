@@ -94,7 +94,7 @@ def point_in_polygon(point: Point, poly: Sequence[Point]) -> bool:
         if _point_on_segment(point, previous, current):
             return True
         if (y1 > y) != (y2 > y):
-            x_at_y = (x2 - x1) * (y - y1) / max(1e-9, y2 - y1) + x1
+            x_at_y = (x2 - x1) * (y - y1) / (y2 - y1) + x1
             if x <= x_at_y:
                 inside = not inside
         previous = current

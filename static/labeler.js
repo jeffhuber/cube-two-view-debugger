@@ -22,11 +22,22 @@ const labelRows = document.querySelector("#labelRows");
 const labelRefresh = document.querySelector("#labelRefresh");
 const labelModeButtons = Array.from(document.querySelectorAll("[data-label-mode]"));
 const labelFaceButtons = Array.from(document.querySelectorAll("[data-face]"));
+const labelFaceGuidance = document.querySelector("#labelFaceGuidance");
 const labelUndo = document.querySelector("#labelUndo");
 const labelClearActive = document.querySelector("#labelClearActive");
 const labelClearAll = document.querySelector("#labelClearAll");
 
 const faceOrder = ["U", "R", "F", "D", "L", "B"];
+const facesByImageSide = {
+  A: ["U", "R", "F"],
+  B: ["D", "L", "B"],
+  single: faceOrder,
+};
+const faceGuidanceBySide = {
+  A: "Image A: label the visible faces as U, R, and F.",
+  B: "Image B: label the visible faces as D, L, and B.",
+  single: "Single image: use the canonical WCA face labels visible in the photo.",
+};
 const faceColors = {
   U: "#f8f8f2",
   R: "#d83b31",
@@ -141,6 +152,7 @@ function inferSetFields(name) {
   }
   const sideMatch = /(?:^|[\s_-])([ab])(?:[\s_-]|$)/i.exec(name.replace(/\.[^./]+$/, ""));
   if (sideMatch) labelImageSide.value = sideMatch[1].toUpperCase();
+  updateFaceControls();
 }
 
 function setActiveMode(mode) {
@@ -149,17 +161,17 @@ function setActiveMode(mode) {
   for (const button of labelModeButtons) {
     button.classList.toggle("is-active", button.dataset.labelMode === mode);
   }
+  updateFaceControls();
   drawLabels();
   updateLabelJson();
 }
 
 function setActiveFace(face) {
+  if (!allowedFacesForCurrentSide().includes(face)) return;
   activeFace = face;
   activeMode = "face";
   pendingFacePoints = [];
-  for (const button of labelFaceButtons) {
-    button.classList.toggle("is-active", button.dataset.face === face);
-  }
+  updateFaceControls();
   for (const button of labelModeButtons) {
     button.classList.toggle("is-active", button.dataset.labelMode === "face");
   }
@@ -173,6 +185,51 @@ for (const button of labelModeButtons) {
 
 for (const button of labelFaceButtons) {
   button.addEventListener("click", () => setActiveFace(button.dataset.face));
+}
+
+function allowedFacesForCurrentSide() {
+  return facesByImageSide[labelImageSide.value] || faceOrder;
+}
+
+function faceQuadsForCurrentSide() {
+  const allowedFaces = allowedFacesForCurrentSide();
+  const out = {};
+  for (const face of allowedFaces) {
+    if (labels.faceQuads[face]) out[face] = labels.faceQuads[face];
+  }
+  return out;
+}
+
+function pruneFaceQuadsForCurrentSide() {
+  const allowedFaces = allowedFacesForCurrentSide();
+  let removed = false;
+  for (const face of Object.keys(labels.faceQuads)) {
+    if (!allowedFaces.includes(face)) {
+      delete labels.faceQuads[face];
+      removed = true;
+    }
+  }
+  return removed;
+}
+
+function updateFaceControls() {
+  const allowedFaces = allowedFacesForCurrentSide();
+  if (!allowedFaces.includes(activeFace)) {
+    activeFace = allowedFaces[0] || "U";
+    pendingFacePoints = [];
+  }
+  for (const button of labelFaceButtons) {
+    const face = button.dataset.face;
+    const enabled = activeMode === "face" && allowedFaces.includes(face);
+    button.disabled = !enabled;
+    button.classList.toggle("is-muted", !enabled);
+    button.classList.toggle("is-active", activeMode === "face" && face === activeFace);
+  }
+  if (labelFaceGuidance) {
+    labelFaceGuidance.textContent = activeMode === "hull"
+      ? "Cube Hull mode: face labels are ignored; click the outer cube silhouette."
+      : (faceGuidanceBySide[labelImageSide.value] || faceGuidanceBySide.single);
+  }
 }
 
 labelCanvas.addEventListener("click", (event) => {
@@ -280,16 +337,25 @@ if (labelRefresh) {
 for (const input of [labelSetId, labelImageSide, labelNotes]) {
   input.addEventListener("input", updateLabelJson);
 }
+labelImageSide.addEventListener("change", () => {
+  pendingFacePoints = [];
+  const removed = pruneFaceQuadsForCurrentSide();
+  updateFaceControls();
+  drawLabels();
+  updateLabelJson();
+  if (removed) setLabelStatus(`Removed face labels not valid for side ${labelImageSide.value}.`);
+});
 
 document.addEventListener("keydown", (event) => {
   const tag = event.target && event.target.tagName;
   if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
   const key = event.key.toUpperCase();
-  if (faceOrder.includes(key)) setActiveFace(key);
+  if (faceOrder.includes(key) && allowedFacesForCurrentSide().includes(key)) setActiveFace(key);
   if (event.key === "Escape") labelUndo.click();
 });
 
 function buildLabelPayload() {
+  const faceQuads = faceQuadsForCurrentSide();
   return {
     schemaVersion: 1,
     labelType: "cube_geometry",
@@ -310,11 +376,11 @@ function buildLabelPayload() {
         }
       : null,
     labels: {
-      faceQuads: sortedFaceQuads(labels.faceQuads),
+      faceQuads: sortedFaceQuads(faceQuads),
       cubeHull: labels.cubeHull,
     },
     counts: {
-      faceQuads: Object.keys(labels.faceQuads).length,
+      faceQuads: Object.keys(faceQuads).length,
       cubeHullPoints: labels.cubeHull.length,
     },
     notes: labelNotes.value.trim() || null,
@@ -519,5 +585,6 @@ function formatLabelDate(iso) {
 }
 
 setupLabelDropZone();
+updateFaceControls();
 updateLabelJson();
 fetchSavedLabels().catch(() => {});

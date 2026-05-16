@@ -377,6 +377,22 @@ td code {
   padding: 0;
 }
 
+.faceButtons button.is-muted {
+  opacity: 0.32;
+}
+
+.faceButtons button:disabled {
+  cursor: not-allowed;
+}
+
+.labelFaceGuidance {
+  min-height: 18px;
+  margin: -4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+
 .labelerActions button {
   flex: 1 1 120px;
 }

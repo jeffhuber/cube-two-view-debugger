@@ -339,6 +339,28 @@ round-trip Codex had just completed — and I asked "Want me to run
 it now?" instead of running it. The user (correctly) called out
 that the question itself is the cost.
 
+### Devin PR audit routing
+
+Use labels as a current-head-SHA state machine in
+`jeffhuber/cube-two-view-debugger` and `jeffhuber/cube-snap`:
+
+- `needs-devin-audit`: current PR head SHA needs Devin review.
+- `devin-audit-done`: Devin reviewed current PR head SHA with no
+  blockers.
+- `devin-audit-blocked`: Devin found blockers or could not complete
+  review.
+
+When a PR is ready for Devin review, apply `needs-devin-audit`. When
+adding commits after Devin has reviewed, remove stale
+`devin-audit-done` / `devin-audit-blocked` and apply
+`needs-devin-audit` again. Do not repeatedly ping Devin; the
+automation dedupes by repo + PR + head SHA.
+
+Keep merge authority separate from audit authority: Devin reviews
+only. Codex may merge after Devin is clear and Codex independently
+verifies checks/diff. Claude asks before merging unless explicitly
+delegated in-thread.
+
 ## Other Claude/Codex working conventions
 
 - **GitHub markdown bodies: body-file only.** Never pass PR, issue,

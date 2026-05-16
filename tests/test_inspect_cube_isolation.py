@@ -25,6 +25,20 @@ def test_expand_polygon_and_point_in_polygon_include_boundary():
     assert not point_in_polygon((20, 20), expanded)
 
 
+def test_point_in_polygon_handles_downward_edges():
+    hull = [
+        (378.636, 251.505),
+        (670.672, 368.388),
+        (624.351, 656.572),
+        (394.741, 880.241),
+        (147.03, 672.687),
+        (82.58, 382.506),
+    ]
+
+    assert point_in_polygon((378.0, 509.0), hull)
+    assert not point_in_polygon((40.0, 509.0), hull)
+
+
 def test_isolation_diagnostics_classifies_stickers_outside_selected_grid_hull():
     inside = _sticker(1, (30, 30), "U")
     outside = _sticker(2, (180, 180), "B")

@@ -223,6 +223,73 @@ interpreters as guardrail bypasses:
 This is the comparative-claims "view both" rule applied to
 *configs*: read what's already here before changing it.
 
+## Default to acting on non-destructive next steps
+
+The `.claude/settings.json` allow list exists so routine operations
+don't need per-step confirmation. If the next step is obviously the
+right move AND it's in your allow list AND it's non-destructive,
+**just do it**. Don't draft "Want me to X?" / "Should I Y?" — that's
+asking the user to authorize something the settings already
+authorized.
+
+### Do without asking
+
+- Catching up on PRs / `gh pr list` / `gh pr view` / `gh api`
+- Running diagnostic probes (`tools/probe_*.py`, `tools/inspect_*.py`,
+  `tools/diagnose_*.py`, `tools/evaluate_*.py`)
+- Running tests, builds, typechecks (`pytest`, `npm test`,
+  `npm run build`, `tsc --noEmit`)
+- Reading files, JSON outputs, photos (with EXIF protocol)
+- Querying APIs (`curl http://localhost:8080/api/diag`)
+- Inspecting saved-run outputs in `runs/`
+- Restarting the local dev server when it's stale (per the
+  "After merging a PR that affects the running UI/API" section)
+- Opening a focused PR after completing scoped implementation work
+- Starting a timer/check loop after opening a PR to watch for Devin
+  review comments
+- Addressing clear Devin review comments
+- Codex only: after independently verifying a PR, merging once Devin
+  says there are no blockers and normal merge checks are green, then
+  fast-forwarding `main`, restarting the local server for UI/API/server
+  changes, and verifying `/api/diag` reports the merged SHA on `main`
+- Posting comments on existing PRs/issues via `--body-file`
+- Replying to review feedback that you've already addressed
+
+### Ask first
+
+- Destructive ops (`rm`, force push, `reset --hard`, `branch -D` on
+  shared branches, anything outside the existing deny list that
+  could reasonably surprise the user)
+- Opening a PR for ambiguous scope, broad refactors, or work the user
+  has not already asked you to pursue
+- Claude: merging any PR, unless the user explicitly delegated that
+  merge in the current thread
+- Merging despite unresolved or ambiguous Devin comments, failing
+  checks, merge conflicts, or anything requiring `--admin`
+- Sending external messages (emails, Slack DMs to non-collaborators)
+- Operations touching paths outside the active repos / worktrees /
+  `/tmp` / `/private/tmp` / Codex worktrees
+- Anything that costs money (cloud-LLM API calls in cube-snap's
+  eval pipeline, etc.)
+- Anything irreversible that you can't undo with `git reset` or a
+  follow-up PR
+
+### The trigger
+
+When you find yourself drafting "Want me to X?" / "Should I Y?" /
+"Let me know if you want me to Z" — and X/Y/Z is in the "do without
+asking" list — **delete the question and do it instead**. Report
+the result, including the data it produced. The user can interrupt
+if they wanted a different next step.
+
+This caused real friction on 2026-05-16 during the Set 46 evaluator
+analysis: I knew the next step was running
+`tools/evaluate_geometry_labels.py`, the tool was in my allow list,
+the data answer was the whole point of the geometry-labeling
+round-trip Codex had just completed — and I asked "Want me to run
+it now?" instead of running it. The user (correctly) called out
+that the question itself is the cost.
+
 ## Other Claude/Codex working conventions
 
 - **GitHub markdown bodies: body-file only.** Never pass PR, issue,

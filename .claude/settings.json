@@ -81,6 +81,8 @@
       "Bash(jq:*)",
       "Bash(diff:*)",
       "Bash(pwd:*)",
+      "Bash(cd:*)",
+      "Bash(sleep:*)",
       "Bash(mkdir:*)",
       "Bash(chmod:*)",
       "Bash(touch:*)",

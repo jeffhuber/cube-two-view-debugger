@@ -115,47 +115,6 @@ discipline from the EXIF section above to *any* comparative claim.
 The EXIF rule is "view the photo before reading it"; this rule is
 "view both photos before comparing them."
 
-## Geometry Labeler conventions
-
-The Geometry Labeler is a diagnostic annotation surface only; saved
-labels do not change recognizer behavior. Labels live under
-`runs/labels/` and use `coordinateSpace: browser_image_natural`,
-meaning the EXIF-corrected natural image size
-reported by the browser, not raw sideways iPhone storage pixels.
-
-Face labels must use canonical cube faces, not "left side of the
-photo" shorthand:
-
-- Image A: label the visible faces as `U`, `R`, and `F`.
-- Image B: label the visible faces as `D`, `L`, and `B`.
-- Single-image/ad-hoc labels: use whichever canonical WCA faces are
-  visible in the photo.
-
-For face quads, click the four exterior corners in perimeter order.
-Prefer starting at the topmost or upper-left visible corner, then
-continue clockwise or counter-clockwise. For cube hulls, click only the
-outer cube silhouette in perimeter order; the normal three-face
-isometric photos usually have a six-point hull. Do not include interior
-face seams as hull vertices.
-
-When multiple draft labels exist, never assume "latest timestamp" is
-canonical unless the user says so. Pass explicit label JSON paths to
-`tools/evaluate_geometry_labels.py` so the run is reproducible.
-
-Current canonical Set 46 geometry labels (2026-05-16):
-
-- A: `runs/labels/20260516-111836-705319-set-46-a-geometry-label.json`
-- B: `runs/labels/20260516-112302-474912-set-46-b-geometry-label.json`
-
-Before using those labels for cube-isolation conclusions, evaluate
-both with `tools/evaluate_geometry_labels.py` and inspect the generated
-overlays or JSON metrics. The evaluator reports both all assigned
-`selectedGridCells` and the filtered `topVisibleTripleGridCells`; use
-the latter when you need to distinguish artifact side grids from the
-highest-ranked visible-face triple. Keep the comparative-claim rule
-active: check both A and B metrics before claiming a Set 46 pair-level
-pattern.
-
 ## Pre-commit verification — separate commands, explicit paths
 
 Two patterns hit me on cube-snap#114 / ctvd#94 in quick

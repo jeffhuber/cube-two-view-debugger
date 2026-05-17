@@ -192,7 +192,7 @@ def load_samples(path: Path) -> Tuple[np.ndarray, np.ndarray, List[str], List[st
             rgbs.append(sample["rgb"])
             ys.append(COLOR_INDEX[sample["gtColor"]])
             set_ids.append(sample["setId"])
-            current_colors.append(sample["currentColor"])
+            current_colors.append(sample.get("currentColor") or sample.get("defaultClassifier"))
     X = np.array(rgbs, dtype=np.float64)
     y = np.array(ys, dtype=np.int64)
     return X, y, set_ids, current_colors

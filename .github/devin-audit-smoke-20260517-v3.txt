@@ -1,0 +1,1 @@
+Smoke-test marker (v3) — verify ctvd#116 colon/LABEL_UPDATE_FAILED fix end-to-end.

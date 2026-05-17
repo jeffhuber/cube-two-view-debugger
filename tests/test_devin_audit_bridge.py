@@ -400,6 +400,55 @@ def test_labeler_classifies_devin_audit_result_heading():
     assert decision.add_label == DONE_LABEL
 
 
+def test_labeler_classifies_devin_audit_result_heading_with_colon():
+    body = """## Devin Audit Result: PASS
+
+**Head SHA:** `abc1234`
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label done"
+    assert decision is not None
+    assert decision.add_label == DONE_LABEL
+
+
+def test_labeler_classifies_label_update_failed_intended_labels_done():
+    body = """## Devin Audit Result: PASS
+
+**Head SHA:** `abc1234`
+
+**Label state:** LABEL_UPDATE_FAILED: Built-in `git_add_labels` / `git_remove_labels` tools are not available in this environment. Intended labels: add `devin-audit-done`, remove `needs-devin-audit`.
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label done"
+    assert decision is not None
+    assert decision.add_label == DONE_LABEL
+
+
+def test_labeler_classifies_label_update_failed_intended_labels_blocked():
+    body = """## Devin Audit Result: BLOCKED
+
+**Head SHA:** `abc1234`
+
+**Label state:** LABEL_UPDATE_FAILED: tools unavailable. Intended labels: add `devin-audit-blocked`, remove `devin-audit-done`.
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label blocked"
+    assert decision is not None
+    assert decision.add_label == BLOCKED_LABEL
+
+
 def test_labeler_classifies_bold_intended_label_state():
     body = """Head SHA: `abc1234`
 

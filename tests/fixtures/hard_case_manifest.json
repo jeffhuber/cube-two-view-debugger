@@ -222,7 +222,7 @@
       "currentCategory": "reject_retake",
       "currentCandidates": 0,
       "currentFailedChecks": [
-        "no_legal_state",
+        "visible_face_color_count_imbalance",
         "background_sticker_noise_suspected"
       ],
       "targetFailedChecksPresent": [
@@ -230,7 +230,7 @@
       ],
       "targetStatus": "rejected",
       "targetCategory": "reject_retake",
-      "notes": "Issue #85 +90 capture-yaw textured-background hard case. Shares Set 46's canonical corrected state; Fixer save includes captureYawQuarterTurns=1. Contaminated-grid gating now rejects before generating candidates, while collapsed anchor evidence keeps the textured-background diagnostic."
+      "notes": "Issue #85 +90 capture-yaw textured-background hard case. Shares Set 46's canonical corrected state; Fixer save includes captureYawQuarterTurns=1. Pair-level visible-face color-count imbalance catches the contaminated side grids before merge search."
     },
     {
       "setId": "48",
@@ -245,15 +245,9 @@
       "expectedScoreOnceFixed": null,
       "currentStatus": "rejected",
       "currentCategory": "reject_retake",
-      "currentCandidates": 152320,
+      "currentCandidates": 0,
       "currentFailedChecks": [
-        "B_count_not_9",
-        "D_count_not_9",
-        "F_count_not_9",
-        "L_count_not_9",
-        "R_count_not_9",
-        "U_count_not_9",
-        "piece_legality_invalid",
+        "visible_face_color_count_imbalance",
         "background_sticker_noise_suspected"
       ],
       "targetFailedChecksPresent": [
@@ -261,7 +255,7 @@
       ],
       "targetStatus": "rejected",
       "targetCategory": "reject_retake",
-      "notes": "Issue #85 +180 capture-yaw textured-background hard case. Shares Set 46's canonical corrected state; Fixer save includes captureYawQuarterTurns=2. The baseline capture returned full-frame ROI for both images and rejected after many noisy candidates."
+      "notes": "Issue #85 +180 capture-yaw textured-background hard case. Shares Set 46's canonical corrected state; Fixer save includes captureYawQuarterTurns=2. Pair-level visible-face color-count imbalance now rejects before generating noisy candidates."
     },
     {
       "setId": "49",
@@ -278,7 +272,7 @@
       "currentCategory": "reject_retake",
       "currentCandidates": 0,
       "currentFailedChecks": [
-        "no_legal_state",
+        "visible_face_color_count_imbalance",
         "background_sticker_noise_suspected"
       ],
       "targetFailedChecksPresent": [
@@ -286,7 +280,7 @@
       ],
       "targetStatus": "rejected",
       "targetCategory": "reject_retake",
-      "notes": "Issue #85 +270 capture-yaw textured-background hard case. Shares Set 46's canonical corrected state; Fixer save includes captureYawQuarterTurns=3. White-center preservation now recovers the image-A U anchor, but selected side grids are still background-contaminated and no legal state is generated."
+      "notes": "Issue #85 +270 capture-yaw textured-background hard case. Shares Set 46's canonical corrected state; Fixer save includes captureYawQuarterTurns=3. Pair-level visible-face color-count imbalance catches the contaminated side grids before merge search."
     }
   ]
 }

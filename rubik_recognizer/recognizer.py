@@ -114,6 +114,7 @@ RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK = "red_orange_pair_calibration_suspe
 IMAGE_B_VISIBLE_FACE_EVIDENCE_WEAK_CHECK = "image_b_visible_face_evidence_weak"
 BACKGROUND_STICKER_NOISE_CHECK = "background_sticker_noise_suspected"
 FACE_TRIPLE_OVERLAP_LOW_QUALITY_CHECK = "face_triple_overlap_low_quality"
+VISIBLE_FACE_COLOR_COUNT_IMBALANCE_CHECK = "visible_face_color_count_imbalance"
 PAIR_COLOR_EVIDENCE_COLORS = ("white", "red", "orange")
 PAIR_COLOR_EVIDENCE_FACES = tuple(COLOR_TO_FACE[color] for color in PAIR_COLOR_EVIDENCE_COLORS)
 # Image A may have a non-white logo on the white center. Admit that as a U
@@ -129,6 +130,7 @@ MAX_U_LOGO_ANCHOR_WHITE_DISTANCE_DELTA = 24.0
 MAX_BACKGROUND_STICKER_NOISE_ANCHOR_SELF_FACE_CELLS = 1
 MIN_BACKGROUND_STICKER_NOISE_DOMINANT_GRID_CENTER_COUNT = 14
 MIN_BACKGROUND_STICKER_NOISE_DOMINANT_GRID_CENTER_SHARE = 0.60
+MAX_VISIBLE_FACE_PAIR_COLOR_COUNT_IMBALANCE = 13
 # Tuned to tag Sets 17/21/22 without firing on unrelated hard-case or corpus
 # rejects; revisit these gates when new red/orange captures are added.
 RED_ORANGE_SKEW_MIN_GAP = 3
@@ -1343,6 +1345,8 @@ def _white_up_checks(analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> Li
     ]
     if set(side_centers) != {"R", "F", "L", "B"}:
         checks.append("missing_side_face_coverage")
+    if _visible_face_color_count_imbalance_suspected(analysis_a, analysis_b):
+        checks.append(VISIBLE_FACE_COLOR_COUNT_IMBALANCE_CHECK)
     return checks
 
 
@@ -1371,6 +1375,8 @@ def _reason_for_checks(checks: Sequence[str]) -> str:
         return "Image B did not contain a reliable non-overlapping three-face grid."
     if "missing_side_face_coverage" in checks:
         return "The two flip photos do not expose all four side face centers."
+    if VISIBLE_FACE_COLOR_COUNT_IMBALANCE_CHECK in checks:
+        return "The selected visible grids have implausible two-view sticker color counts."
     return "The images did not satisfy the two-view flip recognition prerequisites."
 
 
@@ -1439,6 +1445,7 @@ def _background_sticker_noise_signal(
             "imageA": _background_sticker_noise_image_signal(analysis_a, anchor="U"),
             "imageB": _background_sticker_noise_image_signal(analysis_b, anchor="D"),
         },
+        "visibleFacePairColorCounts": _visible_face_pair_color_count_signal(analysis_a, analysis_b),
     }
 
 
@@ -1447,14 +1454,19 @@ def _background_sticker_noise_reason(
     analysis_a: ImageAnalysis,
     analysis_b: ImageAnalysis,
 ) -> str:
+    unique = set(checks)
     if "image_a_U_anchor_missing" in set(checks) and _dominant_grid_center_face(analysis_a)[0] == "B":
         return "image_a_u_anchor_missing_with_blue_grid_dominance"
-    if "no_legal_state" in set(checks) and _dominant_grid_center_face(analysis_a)[0] == "B":
+    if "no_legal_state" in unique and _dominant_grid_center_face(analysis_a)[0] == "B":
         return "no_legal_state_with_blue_grid_dominance"
-    if "no_legal_state" in set(checks) and _anchor_evidence_collapsed(analysis_a, analysis_b):
+    if "no_legal_state" in unique and _anchor_evidence_collapsed(analysis_a, analysis_b):
         return "no_legal_state_with_anchor_evidence_collapse"
-    if "image_a_face_triple_overlap_low_quality" in set(checks):
+    if "image_a_face_triple_overlap_low_quality" in unique:
         return "image_a_face_triple_low_quality_with_anchor_evidence_collapse"
+    if VISIBLE_FACE_COLOR_COUNT_IMBALANCE_CHECK in unique:
+        return "visible_face_color_count_imbalance_with_anchor_evidence_collapse"
+    if _many_face_counts_failed(unique):
+        return "multi_face_count_failure_with_anchor_evidence_collapse"
     return "all_face_counts_failed_with_anchor_evidence_collapse"
 
 
@@ -1695,7 +1707,7 @@ def _background_sticker_noise_suspected(
     analysis_b: ImageAnalysis,
 ) -> bool:
     unique = set(checks)
-    if _all_face_counts_failed(unique):
+    if _all_face_counts_failed(unique) or _many_face_counts_failed(unique):
         return (
             _selected_anchor_self_face_count(analysis_a, "U") <= MAX_BACKGROUND_STICKER_NOISE_ANCHOR_SELF_FACE_CELLS
             and _selected_anchor_self_face_count(analysis_b, "D") <= MAX_BACKGROUND_STICKER_NOISE_ANCHOR_SELF_FACE_CELLS
@@ -1719,11 +1731,73 @@ def _background_sticker_noise_suspected(
         return blue_grid_dominance or _anchor_evidence_collapsed(analysis_a, analysis_b)
     if "image_a_face_triple_overlap_low_quality" in unique:
         return _anchor_evidence_collapsed(analysis_a, analysis_b)
+    if VISIBLE_FACE_COLOR_COUNT_IMBALANCE_CHECK in unique:
+        return _anchor_evidence_collapsed(analysis_a, analysis_b)
     return False
 
 
 def _all_face_counts_failed(checks: set[str]) -> bool:
     return all(f"{face}_count_not_9" in checks for face in FACE_ORDER)
+
+
+def _many_face_counts_failed(checks: set[str]) -> bool:
+    face_count_failures = sum(1 for face in FACE_ORDER if f"{face}_count_not_9" in checks)
+    return face_count_failures >= 5 and "piece_legality_invalid" in checks
+
+
+def _visible_face_color_count_imbalance_suspected(analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> bool:
+    counts = _top_visible_face_pair_color_counts(analysis_a, analysis_b)
+    if counts is None:
+        return False
+    imbalance = sum(abs(int(counts.get(face, 0)) - 9) for face in FACE_ORDER)
+    return (
+        imbalance > MAX_VISIBLE_FACE_PAIR_COLOR_COUNT_IMBALANCE
+        and _anchor_evidence_collapsed(analysis_a, analysis_b)
+    )
+
+
+def _top_visible_face_pair_color_counts(
+    analysis_a: ImageAnalysis,
+    analysis_b: ImageAnalysis,
+) -> Optional[Dict[str, int]]:
+    counts = Counter()
+    for analysis, anchor in ((analysis_a, "U"), (analysis_b, "D")):
+        image_counts = _top_visible_face_color_counts(analysis, anchor)
+        if image_counts is None:
+            return None
+        counts.update(image_counts)
+    return {face: int(counts.get(face, 0)) for face in FACE_ORDER}
+
+
+def _top_visible_face_color_counts(analysis: ImageAnalysis, anchor: str) -> Optional[Dict[str, int]]:
+    if not _can_rank_grid_triples(analysis):
+        return None
+    groups = _candidate_grids_by_face(analysis, anchor)
+    if anchor not in groups:
+        return None
+    triples = _ranked_visible_face_triples(groups, anchor)
+    if not triples:
+        return None
+    counts = Counter()
+    for grid in triples[0][1].values():
+        counts.update(_grid_cell_face_counts(grid))
+    return {face: int(counts.get(face, 0)) for face in FACE_ORDER}
+
+
+def _visible_face_pair_color_count_signal(
+    analysis_a: ImageAnalysis,
+    analysis_b: ImageAnalysis,
+) -> Optional[Dict[str, Any]]:
+    counts = _top_visible_face_pair_color_counts(analysis_a, analysis_b)
+    if counts is None:
+        return None
+    imbalance = sum(abs(int(counts.get(face, 0)) - 9) for face in FACE_ORDER)
+    return {
+        "counts": counts,
+        "imbalance": imbalance,
+        "maxAllowedImbalance": MAX_VISIBLE_FACE_PAIR_COLOR_COUNT_IMBALANCE,
+        "suspected": imbalance > MAX_VISIBLE_FACE_PAIR_COLOR_COUNT_IMBALANCE,
+    }
 
 
 def _selected_anchor_self_face_count(analysis: ImageAnalysis, anchor: str) -> int:

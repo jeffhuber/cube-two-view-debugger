@@ -33,7 +33,8 @@ CANONICAL_RGB: Dict[str, RGB] = {
 CLASSIFIER_MODE_ENV = "CUBE_RECOGNIZER_CLASSIFIER"
 CLASSIFIER_CANONICAL = "canonical"
 CLASSIFIER_KNN5_LAB = "knn5_lab"
-CLASSIFIER_MODES = (CLASSIFIER_CANONICAL, CLASSIFIER_KNN5_LAB)
+CLASSIFIER_KNN5_LAB_FULL = "knn5_lab_full"
+CLASSIFIER_MODES = (CLASSIFIER_CANONICAL, CLASSIFIER_KNN5_LAB, CLASSIFIER_KNN5_LAB_FULL)
 KNN5_NEIGHBORS = 5
 KNN5_DISTANCE_SCALE = 48.0
 # Selected from a sweep over the 1,512 clean hull-label samples: this keeps
@@ -81,6 +82,8 @@ def classify_rgb_with_mode(
         return _classify_rgb_canonical(rgb, prototypes)
     if mode == CLASSIFIER_KNN5_LAB:
         return _classify_rgb_knn5_lab(rgb, prototypes)
+    if mode == CLASSIFIER_KNN5_LAB_FULL:
+        return _classify_rgb_knn5_lab_full(rgb, prototypes)
     raise ValueError(f"Unsupported {CLASSIFIER_MODE_ENV} value: {mode!r}")
 
 
@@ -130,6 +133,10 @@ def _classify_rgb_knn5_lab(rgb: RGB, prototypes: Mapping[str, RGB] | None = None
     if _knn5_red_orange_override_allowed(canonical, knn):
         return _canonical_match_with_preferred_color(canonical, knn.color, min(canonical.confidence, knn.confidence))
     return canonical
+
+
+def _classify_rgb_knn5_lab_full(rgb: RGB, prototypes: Mapping[str, RGB] | None = None) -> ColorMatch:
+    return _raw_knn5_lab_match(rgb, prototypes)
 
 
 def _raw_knn5_lab_match(rgb: RGB, prototypes: Mapping[str, RGB] | None = None) -> ColorMatch:

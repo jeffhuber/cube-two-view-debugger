@@ -40,8 +40,13 @@ def test_hard_case_manifest_records_open_issue_sets():
         "image_a_face_triple_overlap_low_quality",
         "background_sticker_noise_suspected",
     ]
+    assert rows["47"]["currentFailedChecks"] == [
+        "visible_face_color_count_imbalance",
+        "background_sticker_noise_suspected",
+    ]
+    assert rows["48"]["currentCandidates"] == 0
     assert rows["49"]["currentFailedChecks"] == [
-        "no_legal_state",
+        "visible_face_color_count_imbalance",
         "background_sticker_noise_suspected",
     ]
     for set_id in ("46", "47", "48", "49"):

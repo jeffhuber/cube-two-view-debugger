@@ -5,6 +5,7 @@ from rubik_recognizer.colors import (
     CANONICAL_RGB,
     CLASSIFIER_CANONICAL,
     CLASSIFIER_KNN5_LAB,
+    CLASSIFIER_KNN5_LAB_FULL,
     CLASSIFIER_MODE_ENV,
     COLOR_TO_FACE,
     ColorMatch,
@@ -119,6 +120,36 @@ def test_classify_rgb_env_switch_uses_knn5(monkeypatch):
 
     assert match.color == "red"
     assert match.face == "R"
+
+
+def test_full_knn5_mode_uses_knn_for_all_colors(monkeypatch):
+    calls = []
+
+    def fake_raw_knn(rgb, prototypes=None):
+        calls.append((rgb, prototypes))
+        return _match("yellow", confidence=0.91)
+
+    monkeypatch.setattr(color_module, "_raw_knn5_lab_match", fake_raw_knn)
+
+    match = classify_rgb_with_mode((226, 226, 222), CLASSIFIER_KNN5_LAB_FULL)
+
+    assert match.color == "yellow"
+    assert match.face == "D"
+    assert calls == [((226, 226, 222), None)]
+
+
+def test_classify_rgb_env_switch_uses_full_knn5(monkeypatch):
+    monkeypatch.setenv(CLASSIFIER_MODE_ENV, CLASSIFIER_KNN5_LAB_FULL)
+    monkeypatch.setattr(
+        color_module,
+        "_raw_knn5_lab_match",
+        lambda rgb, prototypes=None: _match("green", confidence=0.88),
+    )
+
+    match = classify_rgb((226, 226, 222))
+
+    assert match.color == "green"
+    assert match.face == "F"
 
 
 def test_knn5_mode_skips_confident_canonical_red_orange(monkeypatch):

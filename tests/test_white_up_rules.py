@@ -749,6 +749,67 @@ def test_failed_checks_tag_background_when_no_legal_state_has_collapsed_anchor_e
     assert signal["reason"] == "no_legal_state_with_anchor_evidence_collapse"
 
 
+def test_failed_checks_tag_background_when_many_face_counts_fail_with_collapsed_anchor_evidence():
+    a = type(
+        "Analysis",
+        (),
+        {
+            "grids": [_stub_face_grid("U", cell_faces=["U", "B", "D", "F", "L", "L", "L", "R", "B"])],
+            "stickers": [],
+            "roi": (0, 100, 800, 1100),
+        },
+    )()
+    b = type(
+        "Analysis",
+        (),
+        {
+            "grids": [_stub_face_grid("D", cell_faces=["D", "B", "F", "L", "R", "R", "U", "U", "B"])],
+            "stickers": [],
+            "roi": (0, 100, 800, 1100),
+        },
+    )()
+    checks = [
+        "B_count_not_9",
+        "D_count_not_9",
+        "F_count_not_9",
+        "R_count_not_9",
+        "U_count_not_9",
+        "piece_legality_invalid",
+    ]
+
+    contextual = _failed_checks_with_context(checks, a, b)
+
+    assert contextual == [*checks, BACKGROUND_STICKER_NOISE_CHECK]
+    signal = _recognition_signals_with_failed_checks({}, contextual, a, b)["backgroundStickerNoise"]
+    assert signal["reason"] == "multi_face_count_failure_with_anchor_evidence_collapse"
+
+
+def test_visible_face_color_count_imbalance_requires_collapsed_anchor_evidence(monkeypatch):
+    monkeypatch.setattr(
+        recognizer,
+        "_top_visible_face_pair_color_counts",
+        lambda analysis_a, analysis_b: {"U": 8, "R": 7, "F": 8, "D": 6, "L": 10, "B": 15},
+    )
+    monkeypatch.setattr(recognizer, "_anchor_evidence_collapsed", lambda analysis_a, analysis_b: True)
+
+    assert recognizer._visible_face_color_count_imbalance_suspected(object(), object())
+
+    monkeypatch.setattr(recognizer, "_anchor_evidence_collapsed", lambda analysis_a, analysis_b: False)
+
+    assert not recognizer._visible_face_color_count_imbalance_suspected(object(), object())
+
+
+def test_visible_face_color_count_imbalance_allows_success_control_counts(monkeypatch):
+    monkeypatch.setattr(
+        recognizer,
+        "_top_visible_face_pair_color_counts",
+        lambda analysis_a, analysis_b: {"U": 10, "R": 6, "F": 10, "D": 8, "L": 12, "B": 8},
+    )
+    monkeypatch.setattr(recognizer, "_anchor_evidence_collapsed", lambda analysis_a, analysis_b: True)
+
+    assert not recognizer._visible_face_color_count_imbalance_suspected(object(), object())
+
+
 def _stub_face_grid(face, *, matched_count=9, fit_error=1.0, grid_samples=0, cell_faces=None, grid_id=None):
     from rubik_recognizer.colors import ColorMatch
 

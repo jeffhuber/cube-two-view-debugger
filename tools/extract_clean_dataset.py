@@ -35,6 +35,7 @@ sys.path.insert(0, str(REPO_ROOT))
 from rubik_recognizer.colors import (  # noqa: E402
     CLASSIFIER_CANONICAL,
     CLASSIFIER_KNN5_LAB,
+    CLASSIFIER_KNN5_LAB_FULL,
     build_adaptive_palette,
     classify_rgb_with_mode,
 )
@@ -133,6 +134,8 @@ def process_pair(task: PairTask, inset: float) -> Tuple[List[Dict], Dict]:
                     "canonical_adaptive": classify_rgb_with_mode(rgb, CLASSIFIER_CANONICAL, palette).color,
                     "knn5_lab": classify_rgb_with_mode(rgb, CLASSIFIER_KNN5_LAB).color,
                     "knn5_lab_adaptive": classify_rgb_with_mode(rgb, CLASSIFIER_KNN5_LAB, palette).color,
+                    "knn5_lab_full": classify_rgb_with_mode(rgb, CLASSIFIER_KNN5_LAB_FULL).color,
+                    "knn5_lab_full_adaptive": classify_rgb_with_mode(rgb, CLASSIFIER_KNN5_LAB_FULL, palette).color,
                 }
                 samples.append({
                     "setId": task.set_id,

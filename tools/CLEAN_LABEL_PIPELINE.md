@@ -23,6 +23,8 @@ checkout — `runs/labels/` is gitignored and lives here, not in worktrees).
   - `canonical_adaptive`
   - `knn5_lab`
   - `knn5_lab_adaptive`
+  - `knn5_lab_full`
+  - `knn5_lab_full_adaptive`
 
 Expected: perfectly balanced 252/color, 2 sets skipped (`ambiguous_face_id`
 on currently-flagged sets 27, 28).
@@ -69,6 +71,8 @@ actually use:
 - current canonical + adaptive palette
 - KNN5 Lab
 - KNN5 Lab + adaptive palette normalization
+- KNN5 Lab full-palette
+- KNN5 Lab full-palette + adaptive palette normalization
 
 Report both aggregate accuracy and per-set deltas. Treat RF-200 from the
 bake-off as an upper-bound benchmark, not the first runtime implementation.
@@ -90,9 +94,19 @@ mode sweep because they preserve wins on Sets 30/31/46, have no per-set
 clean-label regressions, and keep both the corpus and hard-case gates passing
 under `CUBE_RECOGNIZER_CLASSIFIER=knn5_lab`.
 
-Phase 2 should evaluate a broader learned-classifier replacement to recover
-more of the bake-off headroom, but only after measuring per-set deltas and
-recognizer gates as strictly as this first runtime path.
+`knn5_lab_full` is the broader phase-2 A/B mode: it applies the same KNN5 Lab
+constants to every color instead of only red/orange. Keep it opt-in until its
+per-set clean-label deltas and recognizer gates prove it is safe to promote:
+
+```bash
+CUBE_RECOGNIZER_CLASSIFIER=knn5_lab_full .venv/bin/python tools/probe_corpus.py --fail-on-contract
+CUBE_RECOGNIZER_CLASSIFIER=knn5_lab_full .venv/bin/python tools/probe_hard_cases.py --include-grid-cells --include-option-coverage
+```
+
+Current measurement: `knn5_lab_full` improves clean-label mode accuracy
+substantially, but it is **not default-safe** yet because the full recognizer
+corpus gate regresses solved cases. Treat it as an investigation switch, not a
+promotion candidate.
 
 ## 6. Unit tests
 
@@ -135,6 +149,6 @@ module docstring for the full design. Short version:
 - Not an RF-200 runtime port. RF-200 remains the measured upper-bound
   benchmark from the bake-off; the first runtime path is the smaller
   dependency-free `knn5_lab` mode.
-- Not a broad learned-classifier replacement. `knn5_lab` is deliberately
-  conservative and only overrides tight red/orange disagreements where
-  the KNN vote is confident enough to preserve corpus and hard-case gates.
+- Not a default broad learned-classifier replacement. `knn5_lab` remains
+  deliberately conservative; `knn5_lab_full` exists so broad KNN behavior can
+  be measured against the same gates before any default promotion.

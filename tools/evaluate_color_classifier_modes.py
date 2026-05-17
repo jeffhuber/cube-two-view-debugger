@@ -17,6 +17,7 @@ if str(ROOT) not in sys.path:
 from rubik_recognizer.colors import (  # noqa: E402
     CLASSIFIER_CANONICAL,
     CLASSIFIER_KNN5_LAB,
+    CLASSIFIER_KNN5_LAB_FULL,
     COLOR_ORDER,
     classify_rgb_with_mode,
 )
@@ -29,6 +30,8 @@ MODE_ORDER = (
     "canonical_adaptive",
     "knn5_lab",
     "knn5_lab_adaptive",
+    "knn5_lab_full",
+    "knn5_lab_full_adaptive",
 )
 
 
@@ -41,6 +44,8 @@ def _mode_prediction(row: Dict[str, Any], mode: str) -> str:
         return classify_rgb_with_mode(rgb, CLASSIFIER_CANONICAL).color
     if mode == "knn5_lab":
         return classify_rgb_with_mode(rgb, CLASSIFIER_KNN5_LAB).color
+    if mode == "knn5_lab_full":
+        return classify_rgb_with_mode(rgb, CLASSIFIER_KNN5_LAB_FULL).color
     if mode == "canonical_adaptive" and isinstance(row.get("calibratedClassifier"), str):
         return row["calibratedClassifier"]
     if mode == "canonical" and isinstance(row.get("defaultClassifier"), str):

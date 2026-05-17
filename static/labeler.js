@@ -651,25 +651,43 @@ labelSave.addEventListener("click", async () => {
     return;
   }
   setLabelStatus("Saving...");
-  const response = await fetch("/api/labels", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  const saved = await response.json();
-  if (!response.ok) {
-    setLabelStatus(saved.reason || "Save failed.");
+  let saved;
+  try {
+    const response = await fetch("/api/labels", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    saved = await response.json();
+    if (!response.ok) {
+      setLabelStatus(saved.reason || "Save failed.");
+      return;
+    }
+  } catch (error) {
+    setLabelStatus("Save failed.");
     return;
   }
   labelSavedLink.href = saved.labelUrl;
   labelSavedLink.hidden = false;
   stateForSide(activeSide).savedUrl = saved.labelUrl;
-  setLabelStatus(`Saved ${saved.labelId}.`);
-  fetchSavedLabels().catch(() => {});
+  try {
+    await fetchSavedLabels();
+    setLabelStatus(`Saved ${saved.labelId}. Saved Labels updated.`);
+  } catch (error) {
+    setLabelStatus(`Saved ${saved.labelId}. Use Refresh if the list did not update.`);
+  }
 });
 
 if (labelRefresh) {
-  labelRefresh.addEventListener("click", () => fetchSavedLabels().catch(() => {}));
+  labelRefresh.addEventListener("click", async () => {
+    setLabelStatus("Refreshing saved labels...");
+    try {
+      await fetchSavedLabels();
+      setLabelStatus("Saved Labels refreshed.");
+    } catch (error) {
+      setLabelStatus("Could not refresh Saved Labels.");
+    }
+  });
 }
 
 for (const input of [labelSetId, labelImageSide, labelNotes]) {
@@ -745,9 +763,10 @@ function drawLabels() {
     return;
   }
   ctx.drawImage(currentImage.element, 0, 0, labelCanvas.width, labelCanvas.height);
-  drawHull(ctx, labels.cubeHull);
+  const templateEditing = activeMode === "template" && Boolean(templateAnchors);
+  drawHull(ctx, labels.cubeHull, { showPoints: !templateEditing });
   for (const face of faceOrder) {
-    if (labels.faceQuads[face]) drawFaceQuad(ctx, face, labels.faceQuads[face], false);
+    if (labels.faceQuads[face]) drawFaceQuad(ctx, face, labels.faceQuads[face], false, { showPoints: !templateEditing });
   }
   if (activeMode === "face" && pendingFacePoints.length) {
     drawFaceQuad(ctx, activeFace, pendingFacePoints, true);
@@ -755,7 +774,7 @@ function drawLabels() {
   if (templateAnchors) drawTemplateAnchors(ctx, templateAnchors);
 }
 
-function drawHull(ctx, points) {
+function drawHull(ctx, points, { showPoints = true } = {}) {
   if (!points.length) return;
   ctx.save();
   ctx.strokeStyle = "#111820";
@@ -766,11 +785,11 @@ function drawHull(ctx, points) {
   if (points.length >= 3) ctx.fill();
   ctx.stroke();
   ctx.setLineDash([]);
-  drawPoints(ctx, points, "#111820");
+  if (showPoints) drawPoints(ctx, points, "#111820");
   ctx.restore();
 }
 
-function drawFaceQuad(ctx, face, points, pending) {
+function drawFaceQuad(ctx, face, points, pending, { showPoints = true } = {}) {
   const color = faceColors[face] || "#ff00ff";
   ctx.save();
   ctx.strokeStyle = color;
@@ -784,7 +803,7 @@ function drawFaceQuad(ctx, face, points, pending) {
   }
   ctx.stroke();
   ctx.setLineDash([]);
-  drawPoints(ctx, points, color);
+  if (showPoints) drawPoints(ctx, points, color);
   if (points.length) drawFaceLabel(ctx, face, points[0], color);
   ctx.restore();
 }
@@ -846,42 +865,55 @@ function drawTemplateAnchors(ctx, anchors) {
   const scale = templateVisualScale();
   const center = anchors.center;
 
-  ctx.lineWidth = 5 * scale;
-  ctx.strokeStyle = "#111820";
-  ctx.fillStyle = "rgba(255,255,255,0.88)";
+  ctx.lineWidth = 3 * scale;
+  ctx.strokeStyle = "rgba(17,24,32,0.55)";
+  ctx.fillStyle = "rgba(255,255,255,0.1)";
   ctx.beginPath();
-  ctx.arc(center.x, center.y, 30 * scale, 0, Math.PI * 2);
+  ctx.arc(center.x, center.y, 34 * scale, 0, Math.PI * 2);
   ctx.fill();
   ctx.stroke();
 
-  ctx.strokeStyle = "#ff4d3d";
-  ctx.lineWidth = 4 * scale;
+  ctx.strokeStyle = "rgba(255,77,61,0.78)";
+  ctx.lineWidth = 3 * scale;
   ctx.beginPath();
-  ctx.arc(center.x, center.y, 13 * scale, 0, Math.PI * 2);
+  ctx.arc(center.x, center.y, 8 * scale, 0, Math.PI * 2);
   ctx.stroke();
   ctx.beginPath();
-  ctx.moveTo(center.x - 38 * scale, center.y);
-  ctx.lineTo(center.x - 18 * scale, center.y);
-  ctx.moveTo(center.x + 18 * scale, center.y);
-  ctx.lineTo(center.x + 38 * scale, center.y);
-  ctx.moveTo(center.x, center.y - 38 * scale);
-  ctx.lineTo(center.x, center.y - 18 * scale);
-  ctx.moveTo(center.x, center.y + 18 * scale);
-  ctx.lineTo(center.x, center.y + 38 * scale);
+  ctx.moveTo(center.x - 42 * scale, center.y);
+  ctx.lineTo(center.x - 12 * scale, center.y);
+  ctx.moveTo(center.x + 12 * scale, center.y);
+  ctx.lineTo(center.x + 42 * scale, center.y);
+  ctx.moveTo(center.x, center.y - 42 * scale);
+  ctx.lineTo(center.x, center.y - 12 * scale);
+  ctx.moveTo(center.x, center.y + 12 * scale);
+  ctx.lineTo(center.x, center.y + 42 * scale);
   ctx.stroke();
 
-  drawAnchorText(ctx, "C", center, "#111820", 22 * scale);
+  drawAnchorText(ctx, "C", { x: center.x, y: center.y - 24 * scale }, "rgba(17,24,32,0.5)", 17 * scale);
   anchors.hull.forEach((point, index) => {
-    ctx.fillStyle = "#ffffff";
-    ctx.strokeStyle = "#111820";
-    ctx.lineWidth = 4 * scale;
+    const half = 15 * scale;
+    ctx.fillStyle = "rgba(255,255,255,0.08)";
+    ctx.strokeStyle = "rgba(17,24,32,0.58)";
+    ctx.lineWidth = 3 * scale;
     ctx.beginPath();
-    ctx.rect(point.x - 13 * scale, point.y - 13 * scale, 26 * scale, 26 * scale);
+    ctx.rect(point.x - half, point.y - half, half * 2, half * 2);
     ctx.fill();
     ctx.stroke();
-    drawAnchorText(ctx, String(index + 1), point, "#111820", 15 * scale);
+    ctx.strokeStyle = "rgba(255,77,61,0.66)";
+    ctx.lineWidth = 2 * scale;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, 5 * scale, 0, Math.PI * 2);
+    ctx.stroke();
+    drawAnchorText(ctx, String(index + 1), anchorLabelPoint(point, scale), "rgba(17,24,32,0.55)", 14 * scale);
   });
   ctx.restore();
+}
+
+function anchorLabelPoint(point, scale) {
+  return {
+    x: Math.max(16 * scale, Math.min(labelCanvas.width - 16 * scale, point.x + 22 * scale)),
+    y: Math.max(16 * scale, Math.min(labelCanvas.height - 16 * scale, point.y - 22 * scale)),
+  };
 }
 
 function drawAnchorText(ctx, text, point, color, fontSize = 24) {
@@ -921,10 +953,11 @@ function setLabelStatus(message) {
 }
 
 async function fetchSavedLabels() {
-  const response = await fetch("/api/labels");
-  if (!response.ok) return;
+  const response = await fetch("/api/labels", { cache: "no-store" });
+  if (!response.ok) throw new Error("Could not load saved labels.");
   const payload = await response.json();
   renderSavedLabels(payload.labels || []);
+  return payload.labels || [];
 }
 
 function renderSavedLabels(items) {

@@ -37,7 +37,7 @@ def test_hard_case_manifest_records_open_issue_sets():
     assert rows["46"]["failureClass"] == "background_sticker_noise"
     assert rows["46"]["currentCandidates"] == 14080
     assert rows["49"]["currentFailedChecks"] == [
-        "image_a_U_anchor_missing",
+        "no_legal_state",
         "background_sticker_noise_suspected",
     ]
     for set_id in ("46", "47", "48", "49"):

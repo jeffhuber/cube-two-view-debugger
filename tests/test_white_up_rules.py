@@ -661,6 +661,38 @@ def test_failed_checks_tag_background_blue_dominance_when_u_anchor_missing():
     assert signal["images"]["imageA"]["selectedAnchor"] is None
 
 
+def test_failed_checks_tag_background_blue_dominance_after_anchor_recovered():
+    a = type(
+        "Analysis",
+        (),
+        {
+            "grids": [
+                *[_stub_face_grid("B", grid_id=index) for index in range(14)],
+                _stub_face_grid("U", grid_id=30),
+            ],
+            "stickers": [],
+            "roi": (0, 100, 800, 1100),
+        },
+    )()
+    b = type(
+        "Analysis",
+        (),
+        {
+            "grids": [_stub_face_grid("D")],
+            "stickers": [],
+            "roi": (0, 100, 800, 1100),
+        },
+    )()
+
+    checks = _failed_checks_with_context(["no_legal_state"], a, b)
+
+    assert checks == ["no_legal_state", BACKGROUND_STICKER_NOISE_CHECK]
+    signal = _recognition_signals_with_failed_checks({}, checks, a, b)["backgroundStickerNoise"]
+    assert signal["reason"] == "no_legal_state_with_blue_grid_dominance"
+    assert signal["images"]["imageA"]["dominantGridCenterFace"] == "B"
+    assert signal["images"]["imageA"]["selectedAnchor"]["centerFace"] == "U"
+
+
 def _stub_face_grid(face, *, matched_count=9, fit_error=1.0, grid_samples=0, cell_faces=None, grid_id=None):
     from rubik_recognizer.colors import ColorMatch
 

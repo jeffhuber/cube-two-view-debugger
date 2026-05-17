@@ -186,6 +186,10 @@ def test_payload_contains_sha_dedupe_key_and_review_instructions():
     assert "Use git_remove_labels to remove needs-devin-audit" in payload["instructions"]
     assert "Use git_view_pr to re-read and verify final labels" in payload["instructions"]
     assert "Label state: devin-audit-done" in payload["instructions"]
+    assert "Required machine-readable trailer" in payload["instructions"]
+    assert "<!-- DEVIN_AUDIT_STATE: devin-audit-done -->" in payload["instructions"]
+    assert "<!-- DEVIN_AUDIT_STATE: devin-audit-blocked -->" in payload["instructions"]
+    assert "<!-- DEVIN_AUDIT_STATE: needs-devin-audit -->" in payload["instructions"]
 
 
 def test_devin_already_reviewed_sha_detects_same_sha_in_devin_comment():
@@ -572,3 +576,172 @@ def test_labeler_requires_head_sha_for_final_state():
 
     assert decision is None
     assert "missing Head SHA" in reason
+
+
+# Trailer contract — authoritative machine-readable signal.
+
+
+def test_labeler_honors_done_trailer():
+    body = """Some prose Devin chose to write.
+
+**Head SHA:** `abc1234`
+
+<!-- DEVIN_AUDIT_STATE: devin-audit-done -->
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label done"
+    assert decision is not None
+    assert decision.add_label == DONE_LABEL
+
+
+def test_labeler_honors_blocked_trailer():
+    body = """Free-form blocker discussion.
+
+**Head SHA:** `abc1234`
+
+<!-- DEVIN_AUDIT_STATE: devin-audit-blocked -->
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label blocked"
+    assert decision is not None
+    assert decision.add_label == BLOCKED_LABEL
+
+
+def test_labeler_honors_needs_trailer_requeue():
+    body = """Head moved while reviewing.
+
+<!-- DEVIN_AUDIT_STATE: needs-devin-audit -->
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label needs audit"
+    assert decision is not None
+    assert decision.add_label == LABELER_NEEDS_LABEL
+
+
+def test_labeler_trailer_overrides_conflicting_prose_verdict():
+    body = """## Devin Audit Result: PASS
+
+**Head SHA:** `abc1234`
+
+After deeper inspection I am blocking.
+
+<!-- DEVIN_AUDIT_STATE: devin-audit-blocked -->
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label blocked"
+    assert decision is not None
+    assert decision.add_label == BLOCKED_LABEL
+
+
+def test_labeler_trailer_wins_over_head_changed_structured_line():
+    # Per the bridge contract: "trailer wins" is authoritative. If Devin emits
+    # both signals contradicting each other, that is a Devin bug — we honor the
+    # stated contract.
+    body = """HEAD_CHANGED_DURING_REVIEW: reviewed abc1234, current def5678
+
+**Head SHA:** `abc1234`
+
+<!-- DEVIN_AUDIT_STATE: devin-audit-done -->
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label done"
+    assert decision is not None
+    assert decision.add_label == DONE_LABEL
+
+
+def test_labeler_bare_head_changed_substring_in_prose_does_not_mask_trailer():
+    # Regression for the cube-snap#130 / ctvd#118 failure: Devin's audit
+    # comment described the labeler's precedence rules in prose, quoting the
+    # bare identifier "HEAD_CHANGED_DURING_REVIEW". The loose substring check
+    # false-positived; the trailer should win.
+    body = """## Devin Audit Result: PASS
+
+**Head SHA:** `abc1234`
+
+The labeler precedence is: HEAD_CHANGED_DURING_REVIEW > trailer > prose fallbacks.
+
+<!-- DEVIN_AUDIT_STATE: devin-audit-done -->
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label done"
+    assert decision is not None
+    assert decision.add_label == DONE_LABEL
+
+
+def test_labeler_bare_head_changed_substring_in_prose_without_structured_form_is_ignored():
+    # No trailer, no structured HEAD_CHANGED line — falls through to header
+    # regex which matches PASS. The bare identifier in prose must not requeue.
+    body = """## Devin Audit Result: PASS
+
+**Head SHA:** `abc1234`
+
+The code uses HEAD_CHANGED_DURING_REVIEW as a marker.
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label done"
+    assert decision is not None
+    assert decision.add_label == DONE_LABEL
+
+
+# Backward-compat fallbacks for Devin sessions that haven't adopted the
+# trailer yet — observed during v3 smoke testing.
+
+
+def test_labeler_classifies_devin_audit_pass_without_result_colon():
+    body = """## Devin Audit: PASS
+
+**Head SHA:** `abc1234`
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label done"
+    assert decision is not None
+    assert decision.add_label == DONE_LABEL
+
+
+def test_labeler_classifies_expected_labels_fallback_done():
+    body = """## Devin Audit Result: PASS
+
+**Head SHA:** `abc1234`
+
+**Expected labels:** `devin-audit-done`
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label done"
+    assert decision is not None
+    assert decision.add_label == DONE_LABEL

@@ -50,8 +50,38 @@ def extract_reviewed_sha(body: str) -> Optional[str]:
     return None
 
 
+TRAILER_PATTERN = re.compile(
+    r"<!--\s*DEVIN_AUDIT_STATE:\s*"
+    r"(devin-audit-done|devin-audit-blocked|needs-devin-audit)"
+    r"\s*-->",
+    flags=re.IGNORECASE,
+)
+
+# Tightened to the structured form Devin is instructed to emit:
+#   "HEAD_CHANGED_DURING_REVIEW: reviewed <old>, current <new>"
+# A bare substring match false-positives on code review prose that
+# mentions the identifier (e.g., when Devin audits this script).
+HEAD_CHANGED_PATTERN = re.compile(
+    r"HEAD_CHANGED_DURING_REVIEW\s*:\s*reviewed\b",
+    flags=re.IGNORECASE,
+)
+
+
 def classify_audit_comment(body: str) -> Optional[str]:
-    if "HEAD_CHANGED_DURING_REVIEW" in body:
+    # Authoritative machine-readable trailer wins over everything per the
+    # bridge contract. Putting it first also prevents prose mentions of
+    # HEAD_CHANGED_DURING_REVIEW from masking a valid trailer verdict.
+    trailer = TRAILER_PATTERN.search(body)
+    if trailer:
+        label = trailer.group(1).lower()
+        if label == "devin-audit-done":
+            return "done"
+        if label == "devin-audit-blocked":
+            return "blocked"
+        return "needs"
+
+    # Structured HEAD_CHANGED form. Conservative requeue when no trailer.
+    if HEAD_CHANGED_PATTERN.search(body):
         return "needs"
 
     if re.search(
@@ -61,13 +91,13 @@ def classify_audit_comment(body: str) -> Optional[str]:
     ):
         return "done"
     if re.search(
-        r"\**(?:Intended\s+)?Label state:\**\s*`?\bdevin-audit-done\b",
+        r"\**(?:Intended\s+|Expected\s+)?Label state:\**\s*`?\bdevin-audit-done\b",
         body,
         flags=re.IGNORECASE,
     ):
         return "done"
     if re.search(
-        r"Intended\s+labels?:\s*add\s+`?devin-audit-done\b",
+        r"(?:Intended|Expected)\s+labels?:\s*(?:add\s+)?`?devin-audit-done\b",
         body,
         flags=re.IGNORECASE,
     ):
@@ -83,13 +113,13 @@ def classify_audit_comment(body: str) -> Optional[str]:
     ):
         return "blocked"
     if re.search(
-        r"\**(?:Intended\s+)?Label state:\**\s*`?\bdevin-audit-blocked\b",
+        r"\**(?:Intended\s+|Expected\s+)?Label state:\**\s*`?\bdevin-audit-blocked\b",
         body,
         flags=re.IGNORECASE,
     ):
         return "blocked"
     if re.search(
-        r"Intended\s+labels?:\s*add\s+`?devin-audit-blocked\b",
+        r"(?:Intended|Expected)\s+labels?:\s*(?:add\s+)?`?devin-audit-blocked\b",
         body,
         flags=re.IGNORECASE,
     ):

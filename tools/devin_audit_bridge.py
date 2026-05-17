@@ -57,16 +57,32 @@ DEVIN_INSTRUCTIONS = textwrap.dedent(
       HEAD_CHANGED_DURING_REVIEW: reviewed <old>, current <new> and leave/re-add
       {NEEDS_LABEL}.
 
+    Required machine-readable trailer (authoritative signal):
+    - Every final audit comment MUST end with exactly one trailer line, on its
+      own line, with no other text on that line:
+        <!-- DEVIN_AUDIT_STATE: {DONE_LABEL} -->     (audit pass)
+        <!-- DEVIN_AUDIT_STATE: {BLOCKED_LABEL} -->  (audit blocked or incomplete)
+        <!-- DEVIN_AUDIT_STATE: {NEEDS_LABEL} -->    (head changed during review)
+    - The downstream labeler workflow uses this trailer as the authoritative
+      signal. Prose phrasing (Label state:, Intended labels:, headings) may
+      drift; the trailer must not.
+    - HTML comments do not render visibly in PR comments, so this adds no
+      visible noise.
+    - If your final-state interpretation would conflict with the trailer, the
+      trailer wins. Make them agree.
+
     Pass path:
     - Re-read the PR head SHA and confirm it still matches the reviewed SHA.
     - Add label {DONE_LABEL} using git_add_labels.
     - Remove label {NEEDS_LABEL} using git_remove_labels.
     - Re-read the PR using git_view_pr and verify final labels include
       {DONE_LABEL} and do not include {NEEDS_LABEL}.
-    - Post one final audit-pass PR comment with Head SHA: <sha>, checks run, and
-      Label state: {DONE_LABEL}.
+    - Post one final audit-pass PR comment with Head SHA: <sha>, checks run,
+      Label state: {DONE_LABEL}, and the trailer
+      <!-- DEVIN_AUDIT_STATE: {DONE_LABEL} --> on its own final line.
     - If label updates or verification fail, post the final audit comment with
-      LABEL_UPDATE_FAILED: <reason> and the observed labels.
+      LABEL_UPDATE_FAILED: <reason>, the observed labels, and the trailer
+      <!-- DEVIN_AUDIT_STATE: {DONE_LABEL} --> on its own final line.
 
     Blocked path:
     - Re-read the PR head SHA and confirm it still matches the reviewed SHA.
@@ -75,9 +91,12 @@ DEVIN_INSTRUCTIONS = textwrap.dedent(
     - Re-read the PR using git_view_pr and verify final labels include
       {BLOCKED_LABEL} and do not include {NEEDS_LABEL}.
     - Post one final blocker/incomplete PR comment with Head SHA: <sha>,
-      blocker summary or incomplete reason, and Label state: {BLOCKED_LABEL}.
+      blocker summary or incomplete reason, Label state: {BLOCKED_LABEL}, and
+      the trailer <!-- DEVIN_AUDIT_STATE: {BLOCKED_LABEL} --> on its own final
+      line.
     - If label updates or verification fail, post the final blocker/incomplete
-      comment with LABEL_UPDATE_FAILED: <reason> and the observed labels.
+      comment with LABEL_UPDATE_FAILED: <reason>, the observed labels, and the
+      trailer <!-- DEVIN_AUDIT_STATE: {BLOCKED_LABEL} --> on its own final line.
     """
 ).strip()
 

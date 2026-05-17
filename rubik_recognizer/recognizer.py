@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import math
+import os
 from collections import Counter
 from dataclasses import dataclass, field
 from itertools import product
@@ -115,6 +116,7 @@ IMAGE_B_VISIBLE_FACE_EVIDENCE_WEAK_CHECK = "image_b_visible_face_evidence_weak"
 BACKGROUND_STICKER_NOISE_CHECK = "background_sticker_noise_suspected"
 FACE_TRIPLE_OVERLAP_LOW_QUALITY_CHECK = "face_triple_overlap_low_quality"
 VISIBLE_FACE_COLOR_COUNT_IMBALANCE_CHECK = "visible_face_color_count_imbalance"
+BALANCED_COLOR_SCORING_ENV = "CUBE_RECOGNIZER_BALANCED_COLOR_SCORING"
 PAIR_COLOR_EVIDENCE_COLORS = ("white", "red", "orange")
 PAIR_COLOR_EVIDENCE_FACES = tuple(COLOR_TO_FACE[color] for color in PAIR_COLOR_EVIDENCE_COLORS)
 # Image A may have a non-white logo on the white center. Admit that as a U
@@ -131,6 +133,14 @@ MAX_BACKGROUND_STICKER_NOISE_ANCHOR_SELF_FACE_CELLS = 1
 MIN_BACKGROUND_STICKER_NOISE_DOMINANT_GRID_CENTER_COUNT = 14
 MIN_BACKGROUND_STICKER_NOISE_DOMINANT_GRID_CENTER_SHARE = 0.60
 MAX_VISIBLE_FACE_PAIR_COLOR_COUNT_IMBALANCE = 13
+MAX_BALANCED_COLOR_ASSIGNMENT_EXACT_CHANGES = 7
+MAX_BALANCED_COLOR_ASSIGNMENT_MOVES_PER_TARGET = 48
+BALANCED_COLOR_ASSIGNMENT_HIGH_COST = 18.0
+MAX_BALANCED_COLOR_ASSIGNMENT_SCORE_PENALTY = 26.0
+BALANCED_COLOR_ASSIGNMENT_COST_SCALE = 0.035
+BALANCED_COLOR_ASSIGNMENT_CHANGE_WEIGHT = 1.1
+BALANCED_COLOR_ASSIGNMENT_HIGH_COST_WEIGHT = 1.8
+BALANCED_COLOR_ASSIGNMENT_DEVIATION_WEIGHT = 1.45
 # Tuned to tag Sets 17/21/22 without firing on unrelated hard-case or corpus
 # rejects; revisit these gates when new red/orange captures are added.
 RED_ORANGE_SKEW_MIN_GAP = 3
@@ -578,6 +588,12 @@ class WhiteUpRecognizer:
                 "preRepairFaceCounts": face_counts,
                 "repairSource": repair_source,
             }
+            balanced_assignment = merged.get("_balanced_color_assignment")
+            if isinstance(balanced_assignment, dict):
+                detail["balancedColorAssignment"] = balanced_assignment
+            balanced_penalty = merged.get("_balanced_color_assignment_score_penalty")
+            if balanced_penalty is not None:
+                detail["balancedColorAssignmentScorePenalty"] = balanced_penalty
             current = candidates.get(state)
             if current is None or confidence > current["confidence"]:
                 candidates[state] = detail
@@ -753,6 +769,7 @@ def _base_recognition_signals(analysis_a: ImageAnalysis, analysis_b: ImageAnalys
             "imageA": _top_visible_triple_quality(analysis_a, "U"),
             "imageB": _top_visible_triple_quality(analysis_b, "D"),
         },
+        "topVisibleBalancedColorAssignment": _top_visible_face_pair_balanced_assignment_signal(analysis_a, analysis_b),
     }
 
 
@@ -870,12 +887,19 @@ def _repair_orientation_rank_sum(detail: Dict[str, Any]) -> int:
 
 
 def _candidate_selection_detail(merged: Dict[str, List[List[Any]]]) -> Dict[str, Any]:
-    return {
+    detail = {
         "sidePairA": _side_pair_key(merged.get("_side_pair_a")),
         "sidePairB": _side_pair_key(merged.get("_side_pair_b")),
         "orderedSidePairA": _ordered_side_pair_key(merged.get("_ordered_side_pair_a")),
         "orderedSidePairB": _ordered_side_pair_key(merged.get("_ordered_side_pair_b")),
     }
+    balanced_assignment = merged.get("_balanced_color_assignment")
+    if isinstance(balanced_assignment, dict):
+        detail["balancedColorAssignment"] = balanced_assignment
+    penalty = merged.get("_balanced_color_assignment_score_penalty")
+    if penalty is not None:
+        detail["balancedColorAssignmentScorePenalty"] = penalty
+    return detail
 
 
 def _selected_faces_signal(selection: Optional[Dict[str, Any]], state: Optional[str] = None) -> Dict[str, Any]:
@@ -889,6 +913,12 @@ def _selected_faces_signal(selection: Optional[Dict[str, Any]], state: Optional[
     if sides:
         signal["selectedSidesByImage"] = sides
         signal["captureYaw"] = _capture_yaw_signal(sides, state=state)
+    balanced_assignment = selection.get("balancedColorAssignment")
+    if isinstance(balanced_assignment, dict):
+        signal["selectedBalancedColorAssignment"] = balanced_assignment
+    penalty = selection.get("balancedColorAssignmentScorePenalty")
+    if penalty is not None:
+        signal["selectedBalancedColorAssignmentScorePenalty"] = penalty
     return signal
 
 
@@ -1095,6 +1125,7 @@ def _public_repair_detail(item: Dict[str, Any]) -> Dict[str, Any]:
         "preRerankConfidence",
         "repairSelectionScore",
         "repairOrientationRerankBonus",
+        "balancedColorAssignmentScorePenalty",
     ):
         if public.get(key) is not None:
             public[key] = round(float(public[key]), 4)
@@ -1800,6 +1831,275 @@ def _visible_face_pair_color_count_signal(
     }
 
 
+def _top_visible_face_pair_balanced_assignment_signal(
+    analysis_a: ImageAnalysis,
+    analysis_b: ImageAnalysis,
+) -> Optional[Dict[str, Any]]:
+    facelets = _top_visible_face_pair_facelets(analysis_a, analysis_b)
+    if facelets is None:
+        return None
+    summary = _balanced_color_assignment_summary_from_facelets(facelets, include_changes=True)
+    return {
+        **summary,
+        "scorePenalty": round(_balanced_color_assignment_score_penalty(summary), 4),
+        "source": "top_visible_triples",
+    }
+
+
+def _top_visible_face_pair_facelets(
+    analysis_a: ImageAnalysis,
+    analysis_b: ImageAnalysis,
+) -> Optional[List[Tuple[str, int, int, Any]]]:
+    facelets: List[Tuple[str, int, int, Any]] = []
+    for analysis, anchor in ((analysis_a, "U"), (analysis_b, "D")):
+        if not _can_rank_grid_triples(analysis):
+            return None
+        groups = _candidate_grids_by_face(analysis, anchor)
+        if anchor not in groups:
+            return None
+        triples = _ranked_visible_face_triples(groups, anchor)
+        if not triples:
+            return None
+        for face, grid in triples[0][1].items():
+            for row_index, row in enumerate(getattr(grid, "stickers", []) or []):
+                for col_index, facelet in enumerate(row):
+                    facelets.append((face, row_index, col_index, facelet))
+    return facelets
+
+
+def _balanced_color_assignment_summary(
+    faces: Dict[str, List[List[Any]]],
+    *,
+    include_changes: bool = False,
+) -> Dict[str, Any]:
+    return _balanced_color_assignment_summary_from_facelets(
+        _visible_facelets_from_faces(faces),
+        include_changes=include_changes,
+    )
+
+
+def _balanced_color_assignment_scoring_summary(faces: Dict[str, List[List[Any]]]) -> Dict[str, Any]:
+    return _balanced_color_assignment_scoring_summary_from_counts(_primary_face_counts(faces))
+
+
+def _balanced_color_assignment_scoring_summary_from_counts(counts: Dict[str, int]) -> Dict[str, Any]:
+    primary_counts = Counter(counts)
+    imbalance = _face_count_deviation(primary_counts)
+    required_changes = sum(max(0, int(primary_counts.get(face, 0)) - 9) for face in FACE_ORDER)
+    status = "balanced" if imbalance == 0 else "primary_count_scored"
+    summary: Dict[str, Any] = {
+        "status": status,
+        "cellCount": sum(int(primary_counts.get(face, 0)) for face in FACE_ORDER),
+        "primaryCounts": _full_face_counts_dict(primary_counts),
+        "assignedCounts": _full_face_counts_dict(primary_counts),
+        "imbalance": int(imbalance),
+        "requiredChanges": int(required_changes),
+        "cost": None if status != "balanced" else 0.0,
+        "maxChangeCost": None if status != "balanced" else 0.0,
+        "highCostChanges": 0,
+        "maxExactChanges": 0,
+    }
+    return summary
+
+
+def _visible_facelets_from_faces(faces: Dict[str, List[List[Any]]]) -> List[Tuple[str, int, int, Any]]:
+    facelets: List[Tuple[str, int, int, Any]] = []
+    for face in FACE_ORDER:
+        matrix = faces.get(face)
+        if not matrix:
+            continue
+        for row_index, row in enumerate(matrix):
+            for col_index, facelet in enumerate(row):
+                facelets.append((face, row_index, col_index, facelet))
+    return facelets
+
+
+def _balanced_color_assignment_summary_from_facelets(
+    facelets: Sequence[Tuple[str, int, int, Any]],
+    *,
+    include_changes: bool = False,
+    max_exact_changes: int = MAX_BALANCED_COLOR_ASSIGNMENT_EXACT_CHANGES,
+    facelet_options_cache: Optional[Dict[FaceletOptionsKey, List[Tuple[str, float]]]] = None,
+) -> Dict[str, Any]:
+    options_by_cell = [_cached_facelet_options(facelet, facelet_options_cache) for _, _, _, facelet in facelets]
+    primary = [options[0][0] if options else "unknown" for options in options_by_cell]
+    primary_counts = Counter(face for face in primary if face in FACE_ORDER)
+    unknown_count = sum(1 for face in primary if face not in FACE_ORDER)
+    if unknown_count:
+        primary_counts["unknown"] = unknown_count
+    imbalance = _face_count_deviation(primary_counts)
+    required_changes = sum(max(0, int(primary_counts.get(face, 0)) - 9) for face in FACE_ORDER)
+    base_summary: Dict[str, Any] = {
+        "status": "balanced",
+        "cellCount": len(facelets),
+        "primaryCounts": _full_face_counts_dict(primary_counts),
+        "assignedCounts": _full_face_counts_dict(primary_counts),
+        "imbalance": int(imbalance),
+        "requiredChanges": int(required_changes),
+        "cost": 0.0,
+        "maxChangeCost": 0.0,
+        "highCostChanges": 0,
+        "maxExactChanges": max_exact_changes,
+    }
+    if len(facelets) != 54:
+        return {
+            **base_summary,
+            "status": "incomplete",
+            "assignedCounts": _full_face_counts_dict(primary_counts),
+            "cost": None,
+        }
+    if imbalance == 0:
+        if include_changes:
+            base_summary["changes"] = []
+        return base_summary
+    if required_changes > max_exact_changes:
+        return {
+            **base_summary,
+            "status": "too_imbalanced",
+            "cost": None,
+        }
+
+    surplus = {face: int(primary_counts.get(face, 0)) - 9 for face in FACE_ORDER if primary_counts.get(face, 0) > 9}
+    deficits = {face: 9 - int(primary_counts.get(face, 0)) for face in FACE_ORDER if primary_counts.get(face, 0) < 9}
+    moves_by_target: Dict[str, List[Tuple[float, int, str, str]]] = {face: [] for face in deficits}
+    for index, (from_face, options) in enumerate(zip(primary, options_by_cell)):
+        if surplus.get(from_face, 0) <= 0:
+            continue
+        seen_targets = set()
+        for rank, (to_face, cost) in enumerate(options[1:], start=1):
+            if to_face not in deficits or to_face in seen_targets:
+                continue
+            move_cost = float(cost) + rank * 0.05
+            moves_by_target[to_face].append((move_cost, index, from_face, to_face))
+            seen_targets.add(to_face)
+    for moves in moves_by_target.values():
+        moves.sort(key=lambda item: item[0])
+        del moves[MAX_BALANCED_COLOR_ASSIGNMENT_MOVES_PER_TARGET:]
+
+    best_cost = float("inf")
+    best_moves: List[Tuple[float, int, str, str]] = []
+
+    greedy_surplus = dict(surplus)
+    greedy_deficits = dict(deficits)
+    greedy_used: set[int] = set()
+    greedy_moves: List[Tuple[float, int, str, str]] = []
+    greedy_cost = 0.0
+    for target in sorted(greedy_deficits, key=lambda face: greedy_deficits[face], reverse=True):
+        while greedy_deficits.get(target, 0) > 0:
+            move = next(
+                (
+                    item
+                    for item in moves_by_target.get(target, [])
+                    if item[1] not in greedy_used and greedy_surplus.get(item[2], 0) > 0
+                ),
+                None,
+            )
+            if move is None:
+                break
+            move_cost, index, from_face, to_face = move
+            greedy_used.add(index)
+            greedy_surplus[from_face] -= 1
+            greedy_deficits[to_face] -= 1
+            greedy_moves.append(move)
+            greedy_cost += move_cost
+    if all(count == 0 for count in greedy_deficits.values()):
+        best_cost = greedy_cost
+        best_moves = list(greedy_moves)
+
+    def backtrack(
+        remaining_surplus: Dict[str, int],
+        remaining_deficits: Dict[str, int],
+        used: set[int],
+        chosen: List[Tuple[float, int, str, str]],
+        cost: float,
+    ) -> None:
+        nonlocal best_cost, best_moves
+        if cost >= best_cost:
+            return
+        targets = [face for face, count in remaining_deficits.items() if count > 0]
+        if not targets:
+            best_cost = cost
+            best_moves = list(chosen)
+            return
+        target = max(targets, key=lambda face: (remaining_deficits[face], -len(moves_by_target.get(face, []))))
+        for move in moves_by_target.get(target, []):
+            move_cost, index, from_face, to_face = move
+            if index in used:
+                continue
+            if remaining_surplus.get(from_face, 0) <= 0 or remaining_deficits.get(to_face, 0) <= 0:
+                continue
+            next_surplus = dict(remaining_surplus)
+            next_deficits = dict(remaining_deficits)
+            next_surplus[from_face] -= 1
+            next_deficits[to_face] -= 1
+            used.add(index)
+            chosen.append(move)
+            backtrack(next_surplus, next_deficits, used, chosen, cost + move_cost)
+            chosen.pop()
+            used.remove(index)
+
+    backtrack(surplus, deficits, set(), [], 0.0)
+    if not best_moves:
+        return {
+            **base_summary,
+            "status": "unassignable",
+            "cost": None,
+        }
+
+    assigned_counts = Counter(primary_counts)
+    change_rows: List[Dict[str, Any]] = []
+    for move_cost, index, from_face, to_face in best_moves:
+        assigned_counts[from_face] -= 1
+        assigned_counts[to_face] += 1
+        if include_changes:
+            face, row, col, _ = facelets[index]
+            change_rows.append(
+                {
+                    "cell": f"{face}{row}{col}",
+                    "from": from_face,
+                    "to": to_face,
+                    "cost": round(float(move_cost), 3),
+                }
+            )
+    change_costs = [move[0] for move in best_moves]
+    summary = {
+        **base_summary,
+        "status": "assigned",
+        "assignedCounts": _full_face_counts_dict(assigned_counts),
+        "cost": round(float(best_cost), 4),
+        "maxChangeCost": round(max(change_costs), 4) if change_costs else 0.0,
+        "highCostChanges": sum(1 for cost in change_costs if cost >= BALANCED_COLOR_ASSIGNMENT_HIGH_COST),
+    }
+    if include_changes:
+        summary["changes"] = change_rows
+    return summary
+
+
+def _balanced_color_assignment_score_penalty(summary: Dict[str, Any]) -> float:
+    status = summary.get("status")
+    if status == "balanced":
+        return 0.0
+    if status == "assigned":
+        penalty = (
+            _int_signal(summary.get("requiredChanges")) * BALANCED_COLOR_ASSIGNMENT_CHANGE_WEIGHT
+            + _float_signal(summary.get("cost")) * BALANCED_COLOR_ASSIGNMENT_COST_SCALE
+            + _int_signal(summary.get("highCostChanges")) * BALANCED_COLOR_ASSIGNMENT_HIGH_COST_WEIGHT
+        )
+    elif status == "primary_count_scored":
+        penalty = _int_signal(summary.get("imbalance")) * BALANCED_COLOR_ASSIGNMENT_DEVIATION_WEIGHT
+    else:
+        penalty = _int_signal(summary.get("imbalance")) * BALANCED_COLOR_ASSIGNMENT_DEVIATION_WEIGHT
+    return min(MAX_BALANCED_COLOR_ASSIGNMENT_SCORE_PENALTY, max(0.0, penalty))
+
+
+def _balanced_color_assignment_scoring_enabled() -> bool:
+    return os.environ.get(BALANCED_COLOR_SCORING_ENV, "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _full_face_counts_dict(counts: Counter[str] | Dict[str, int]) -> Dict[str, int]:
+    return {face: int(counts.get(face, 0)) for face in FACE_ORDER}
+
+
 def _selected_anchor_self_face_count(analysis: ImageAnalysis, anchor: str) -> int:
     if not hasattr(analysis, "grids"):
         return 9
@@ -1934,6 +2234,7 @@ def _oriented_face_option_candidates(analysis: ImageAnalysis, anchor: str) -> Li
     ranked_results.sort(key=lambda item: item[0], reverse=True)
 
     candidates = []
+    balanced_scoring_enabled = _balanced_color_assignment_scoring_enabled()
     for selection_score, side_pair, ordered_side_pair, orientation_score, orientation_rank, option in ranked_results:
         scored = dict(option)
         scored["_score"] = selection_score + orientation_score * ORIENTATION_SCORE_WEIGHT
@@ -1942,6 +2243,8 @@ def _oriented_face_option_candidates(analysis: ImageAnalysis, anchor: str) -> Li
         scored["_orientation_rank"] = orientation_rank
         scored["_side_pair"] = side_pair
         scored["_ordered_side_pair"] = ordered_side_pair
+        if balanced_scoring_enabled:
+            scored["_visible_color_counts"] = _primary_face_counts(scored)
         candidates.append(scored)
     return candidates
 
@@ -2800,6 +3103,20 @@ def _merge_faces(a: Dict[str, List[List[Any]]], b: Dict[str, List[List[Any]]]) -
     required = set(FACE_ORDER)
     if not required.issubset(merged):
         return None
+    if _balanced_color_assignment_scoring_enabled():
+        counts_a = a.get("_visible_color_counts")
+        counts_b = b.get("_visible_color_counts")
+        if isinstance(counts_a, dict) and isinstance(counts_b, dict):
+            color_counts = {face: int(counts_a.get(face, 0)) + int(counts_b.get(face, 0)) for face in FACE_ORDER}
+            balanced_assignment = _balanced_color_assignment_scoring_summary_from_counts(color_counts)
+        else:
+            balanced_assignment = _balanced_color_assignment_scoring_summary(merged)
+        score_penalty = _balanced_color_assignment_score_penalty(balanced_assignment)
+        if score_penalty > 0.0:
+            merged["_score"] = float(merged.get("_score", 0.0)) - score_penalty
+            merged["_balanced_color_assignment_score_penalty"] = round(score_penalty, 4)
+        if score_penalty > 0.0 or balanced_assignment.get("status") != "balanced":
+            merged["_balanced_color_assignment"] = balanced_assignment
     return merged
 
 

@@ -577,6 +577,12 @@ chosen winner. `baseConfidence` is the pre-penalty repair confidence, and
 deviation, orientation rank, and heavier repair paths. `preRepairConflicts`
 contains stable integer keys for missing, duplicate-color, invalid, and duplicate-cubie corner/edge
 counts plus `validCorners`, `validEdges`, and `totalConflicts`; absent conflicts are reported as `0`.
+`recognitionSignals.topVisibleBalancedColorAssignment` is a diagnostic for the top selected A/B
+visible triples: it asks how cheaply the 54 visible cells could be reassigned to exactly nine of
+each cube color. High cost, high required changes, or `too_imbalanced` status is treated as
+contamination evidence, not as permission to force a legal result. Runtime ranking can optionally
+apply the same idea with `CUBE_RECOGNIZER_BALANCED_COLOR_SCORING=1`; keep that switch off by default
+until corpus and hard-case A/B gates prove it is safe.
 Sample slim payloads live in `tests/fixtures/recognition_signals_direct.json` and
 `tests/fixtures/recognition_signals_repair.json`.
 

@@ -1,6 +1,13 @@
 import json
 
 from tools import devin_audit_bridge
+from tools.devin_audit_labeler import (
+    BLOCKED_LABEL,
+    DONE_LABEL,
+    NEEDS_LABEL as LABELER_NEEDS_LABEL,
+    classify_audit_comment,
+    resolve_label_decision,
+)
 from tools.devin_audit_bridge import (
     NEEDS_LABEL,
     build_payload,
@@ -30,6 +37,14 @@ def fetcher(pr):
         return pr
 
     return _fetch
+
+
+def make_comment_event(*, body, author="devin-ai-integration[bot]", number=17):
+    return {
+        "action": "created",
+        "issue": {"number": number, "pull_request": {"url": "https://api.github.com/pr"}},
+        "comment": {"body": body, "user": {"login": author}},
+    }
 
 
 def test_labeled_needs_devin_audit_dispatches():
@@ -329,3 +344,77 @@ def test_run_force_comment_posts_even_when_devin_already_reviewed_current_sha(
     assert devin_audit_bridge.run() == 0
     assert len(calls) == 1
     assert calls[0][2]["dedupe_key"] == "jeffhuber/cube-two-view-debugger#17@abc123"
+
+
+def test_labeler_classifies_pass_comment():
+    body = """## Devin Audit — PASS
+
+**Head SHA:** `abc1234`
+
+### Label state
+LABEL_UPDATE_FAILED: tools unavailable
+"""
+    assert classify_audit_comment(body) == "done"
+
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label done"
+    assert decision is not None
+    assert decision.add_label == DONE_LABEL
+    assert decision.remove_labels == (LABELER_NEEDS_LABEL, BLOCKED_LABEL)
+    assert decision.reviewed_sha == "abc1234"
+
+
+def test_labeler_classifies_blocked_comment():
+    body = """## Devin Audit — BLOCKED
+
+**Head SHA:** `def5678`
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="def5678",
+    )
+
+    assert reason == "label blocked"
+    assert decision is not None
+    assert decision.add_label == BLOCKED_LABEL
+    assert decision.remove_labels == (LABELER_NEEDS_LABEL, DONE_LABEL)
+
+
+def test_labeler_requeues_when_head_sha_changed():
+    body = """## Devin Audit — PASS
+
+**Head SHA:** `abc1234`
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="def5678",
+    )
+
+    assert reason == "label needs audit"
+    assert decision is not None
+    assert decision.add_label == LABELER_NEEDS_LABEL
+    assert decision.remove_labels == (DONE_LABEL, BLOCKED_LABEL)
+
+
+def test_labeler_skips_non_devin_comments():
+    decision, reason = resolve_label_decision(
+        make_comment_event(body="## Devin Audit — PASS", author="jeffhuber"),
+        current_head_sha="abc1234",
+    )
+
+    assert decision is None
+    assert "ignored comment author" in reason
+
+
+def test_labeler_skips_non_audit_comments():
+    decision, reason = resolve_label_decision(
+        make_comment_event(body="unrelated status update"),
+        current_head_sha="abc1234",
+    )
+
+    assert decision is None
+    assert "not a final Devin audit result" in reason

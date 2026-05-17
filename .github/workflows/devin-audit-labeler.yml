@@ -1,0 +1,33 @@
+# Devin audit labeler
+#
+# Devin webhook-created sessions currently cannot always access built-in label
+# tools, so this workflow applies the final audit-state labels when Devin posts
+# its audit result comment. It only reacts to Devin-authored PR comments.
+
+name: Devin audit labeler
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  label:
+    if: github.actor == 'devin-ai-integration[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out labeler code from default branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+
+      - name: Apply Devin audit labels
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python tools/devin_audit_labeler.py

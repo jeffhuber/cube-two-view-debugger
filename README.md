@@ -221,6 +221,17 @@ off-cube grid extrapolation. The JSON also includes
 the highest-ranked visible-face triple so artifact side grids can be separated
 from the grids recognition would actually consider first.
 
+For a repeatable labelled-set baseline, use `tools/label_geometry_baseline.py`.
+It selects the latest label per set/side, runs the same evaluator, and writes a
+single table/JSON payload suitable for before/after recognizer comparisons:
+
+```sh
+.venv/bin/python tools/label_geometry_baseline.py \
+  --set-id 46 --set-id 47 --set-id 48 --set-id 49 \
+  --json-output /tmp/label-geometry-baseline.json \
+  --overlay-dir /tmp/label-geometry-baseline-overlays
+```
+
 For ad-hoc single-pair recognition from the command line — useful when
 filing or reproducing a bug report — use `tools/recognize_pair.py`:
 

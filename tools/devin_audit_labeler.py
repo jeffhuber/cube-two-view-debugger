@@ -55,7 +55,7 @@ def classify_audit_comment(body: str) -> Optional[str]:
         return "needs"
 
     if re.search(
-        r"Devin Audit(?:\s+Result)?\s*[—–-]\s*PASS\b",
+        r"Devin Audit(?:\s+Result)?\s*[—–:-]\s*PASS\b",
         body,
         flags=re.IGNORECASE,
     ):
@@ -66,10 +66,16 @@ def classify_audit_comment(body: str) -> Optional[str]:
         flags=re.IGNORECASE,
     ):
         return "done"
+    if re.search(
+        r"Intended\s+labels?:\s*add\s+`?devin-audit-done\b",
+        body,
+        flags=re.IGNORECASE,
+    ):
+        return "done"
 
     if re.search(
         (
-            r"Devin Audit(?:\s+Result)?\s*[—–-]\s*"
+            r"Devin Audit(?:\s+Result)?\s*[—–:-]\s*"
             r"(BLOCKED|BLOCKER|INCOMPLETE)\b"
         ),
         body,
@@ -78,6 +84,12 @@ def classify_audit_comment(body: str) -> Optional[str]:
         return "blocked"
     if re.search(
         r"\**(?:Intended\s+)?Label state:\**\s*`?\bdevin-audit-blocked\b",
+        body,
+        flags=re.IGNORECASE,
+    ):
+        return "blocked"
+    if re.search(
+        r"Intended\s+labels?:\s*add\s+`?devin-audit-blocked\b",
         body,
         flags=re.IGNORECASE,
     ):

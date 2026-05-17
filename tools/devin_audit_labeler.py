@@ -50,8 +50,29 @@ def extract_reviewed_sha(body: str) -> Optional[str]:
     return None
 
 
+TRAILER_PATTERN = re.compile(
+    r"<!--\s*DEVIN_AUDIT_STATE:\s*"
+    r"(devin-audit-done|devin-audit-blocked|needs-devin-audit)"
+    r"\s*-->",
+    flags=re.IGNORECASE,
+)
+
+
 def classify_audit_comment(body: str) -> Optional[str]:
+    # HEAD_CHANGED is conservative — wins over any positive trailer to avoid
+    # marking a PR done/blocked when Devin observed the head moving mid-review.
     if "HEAD_CHANGED_DURING_REVIEW" in body:
+        return "needs"
+
+    # Authoritative machine-readable trailer. Prose phrasing below is kept as
+    # a fallback for any Devin sessions that haven't yet adopted the trailer.
+    trailer = TRAILER_PATTERN.search(body)
+    if trailer:
+        label = trailer.group(1).lower()
+        if label == "devin-audit-done":
+            return "done"
+        if label == "devin-audit-blocked":
+            return "blocked"
         return "needs"
 
     if re.search(
@@ -61,13 +82,13 @@ def classify_audit_comment(body: str) -> Optional[str]:
     ):
         return "done"
     if re.search(
-        r"\**(?:Intended\s+)?Label state:\**\s*`?\bdevin-audit-done\b",
+        r"\**(?:Intended\s+|Expected\s+)?Label state:\**\s*`?\bdevin-audit-done\b",
         body,
         flags=re.IGNORECASE,
     ):
         return "done"
     if re.search(
-        r"Intended\s+labels?:\s*add\s+`?devin-audit-done\b",
+        r"(?:Intended|Expected)\s+labels?:\s*(?:add\s+)?`?devin-audit-done\b",
         body,
         flags=re.IGNORECASE,
     ):
@@ -83,13 +104,13 @@ def classify_audit_comment(body: str) -> Optional[str]:
     ):
         return "blocked"
     if re.search(
-        r"\**(?:Intended\s+)?Label state:\**\s*`?\bdevin-audit-blocked\b",
+        r"\**(?:Intended\s+|Expected\s+)?Label state:\**\s*`?\bdevin-audit-blocked\b",
         body,
         flags=re.IGNORECASE,
     ):
         return "blocked"
     if re.search(
-        r"Intended\s+labels?:\s*add\s+`?devin-audit-blocked\b",
+        r"(?:Intended|Expected)\s+labels?:\s*(?:add\s+)?`?devin-audit-blocked\b",
         body,
         flags=re.IGNORECASE,
     ):

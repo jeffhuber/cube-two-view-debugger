@@ -186,6 +186,10 @@ def test_payload_contains_sha_dedupe_key_and_review_instructions():
     assert "Use git_remove_labels to remove needs-devin-audit" in payload["instructions"]
     assert "Use git_view_pr to re-read and verify final labels" in payload["instructions"]
     assert "Label state: devin-audit-done" in payload["instructions"]
+    assert "Required machine-readable trailer" in payload["instructions"]
+    assert "<!-- DEVIN_AUDIT_STATE: devin-audit-done -->" in payload["instructions"]
+    assert "<!-- DEVIN_AUDIT_STATE: devin-audit-blocked -->" in payload["instructions"]
+    assert "<!-- DEVIN_AUDIT_STATE: needs-devin-audit -->" in payload["instructions"]
 
 
 def test_devin_already_reviewed_sha_detects_same_sha_in_devin_comment():
@@ -572,3 +576,125 @@ def test_labeler_requires_head_sha_for_final_state():
 
     assert decision is None
     assert "missing Head SHA" in reason
+
+
+# Trailer contract — authoritative machine-readable signal.
+
+
+def test_labeler_honors_done_trailer():
+    body = """Some prose Devin chose to write.
+
+**Head SHA:** `abc1234`
+
+<!-- DEVIN_AUDIT_STATE: devin-audit-done -->
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label done"
+    assert decision is not None
+    assert decision.add_label == DONE_LABEL
+
+
+def test_labeler_honors_blocked_trailer():
+    body = """Free-form blocker discussion.
+
+**Head SHA:** `abc1234`
+
+<!-- DEVIN_AUDIT_STATE: devin-audit-blocked -->
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label blocked"
+    assert decision is not None
+    assert decision.add_label == BLOCKED_LABEL
+
+
+def test_labeler_honors_needs_trailer_requeue():
+    body = """Head moved while reviewing.
+
+<!-- DEVIN_AUDIT_STATE: needs-devin-audit -->
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label needs audit"
+    assert decision is not None
+    assert decision.add_label == LABELER_NEEDS_LABEL
+
+
+def test_labeler_trailer_overrides_conflicting_prose_verdict():
+    body = """## Devin Audit Result: PASS
+
+**Head SHA:** `abc1234`
+
+After deeper inspection I am blocking.
+
+<!-- DEVIN_AUDIT_STATE: devin-audit-blocked -->
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label blocked"
+    assert decision is not None
+    assert decision.add_label == BLOCKED_LABEL
+
+
+def test_labeler_head_changed_overrides_positive_trailer():
+    body = """HEAD_CHANGED_DURING_REVIEW: reviewed abc1234, current def5678
+
+<!-- DEVIN_AUDIT_STATE: devin-audit-done -->
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label needs audit"
+    assert decision is not None
+    assert decision.add_label == LABELER_NEEDS_LABEL
+
+
+# Backward-compat fallbacks for Devin sessions that haven't adopted the
+# trailer yet — observed during v3 smoke testing.
+
+
+def test_labeler_classifies_devin_audit_pass_without_result_colon():
+    body = """## Devin Audit: PASS
+
+**Head SHA:** `abc1234`
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label done"
+    assert decision is not None
+    assert decision.add_label == DONE_LABEL
+
+
+def test_labeler_classifies_expected_labels_fallback_done():
+    body = """## Devin Audit Result: PASS
+
+**Head SHA:** `abc1234`
+
+**Expected labels:** `devin-audit-done`
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label done"
+    assert decision is not None
+    assert decision.add_label == DONE_LABEL

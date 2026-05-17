@@ -57,15 +57,20 @@ TRAILER_PATTERN = re.compile(
     flags=re.IGNORECASE,
 )
 
+# Tightened to the structured form Devin is instructed to emit:
+#   "HEAD_CHANGED_DURING_REVIEW: reviewed <old>, current <new>"
+# A bare substring match false-positives on code review prose that
+# mentions the identifier (e.g., when Devin audits this script).
+HEAD_CHANGED_PATTERN = re.compile(
+    r"HEAD_CHANGED_DURING_REVIEW\s*:\s*reviewed\b",
+    flags=re.IGNORECASE,
+)
+
 
 def classify_audit_comment(body: str) -> Optional[str]:
-    # HEAD_CHANGED is conservative — wins over any positive trailer to avoid
-    # marking a PR done/blocked when Devin observed the head moving mid-review.
-    if "HEAD_CHANGED_DURING_REVIEW" in body:
-        return "needs"
-
-    # Authoritative machine-readable trailer. Prose phrasing below is kept as
-    # a fallback for any Devin sessions that haven't yet adopted the trailer.
+    # Authoritative machine-readable trailer wins over everything per the
+    # bridge contract. Putting it first also prevents prose mentions of
+    # HEAD_CHANGED_DURING_REVIEW from masking a valid trailer verdict.
     trailer = TRAILER_PATTERN.search(body)
     if trailer:
         label = trailer.group(1).lower()
@@ -73,6 +78,10 @@ def classify_audit_comment(body: str) -> Optional[str]:
             return "done"
         if label == "devin-audit-blocked":
             return "blocked"
+        return "needs"
+
+    # Structured HEAD_CHANGED form. Conservative requeue when no trailer.
+    if HEAD_CHANGED_PATTERN.search(body):
         return "needs"
 
     if re.search(

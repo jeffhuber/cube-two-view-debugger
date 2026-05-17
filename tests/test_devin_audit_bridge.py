@@ -649,8 +649,13 @@ After deeper inspection I am blocking.
     assert decision.add_label == BLOCKED_LABEL
 
 
-def test_labeler_head_changed_overrides_positive_trailer():
+def test_labeler_trailer_wins_over_head_changed_structured_line():
+    # Per the bridge contract: "trailer wins" is authoritative. If Devin emits
+    # both signals contradicting each other, that is a Devin bug — we honor the
+    # stated contract.
     body = """HEAD_CHANGED_DURING_REVIEW: reviewed abc1234, current def5678
+
+**Head SHA:** `abc1234`
 
 <!-- DEVIN_AUDIT_STATE: devin-audit-done -->
 """
@@ -659,9 +664,51 @@ def test_labeler_head_changed_overrides_positive_trailer():
         current_head_sha="abc1234",
     )
 
-    assert reason == "label needs audit"
+    assert reason == "label done"
     assert decision is not None
-    assert decision.add_label == LABELER_NEEDS_LABEL
+    assert decision.add_label == DONE_LABEL
+
+
+def test_labeler_bare_head_changed_substring_in_prose_does_not_mask_trailer():
+    # Regression for the cube-snap#130 / ctvd#118 failure: Devin's audit
+    # comment described the labeler's precedence rules in prose, quoting the
+    # bare identifier "HEAD_CHANGED_DURING_REVIEW". The loose substring check
+    # false-positived; the trailer should win.
+    body = """## Devin Audit Result: PASS
+
+**Head SHA:** `abc1234`
+
+The labeler precedence is: HEAD_CHANGED_DURING_REVIEW > trailer > prose fallbacks.
+
+<!-- DEVIN_AUDIT_STATE: devin-audit-done -->
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label done"
+    assert decision is not None
+    assert decision.add_label == DONE_LABEL
+
+
+def test_labeler_bare_head_changed_substring_in_prose_without_structured_form_is_ignored():
+    # No trailer, no structured HEAD_CHANGED line — falls through to header
+    # regex which matches PASS. The bare identifier in prose must not requeue.
+    body = """## Devin Audit Result: PASS
+
+**Head SHA:** `abc1234`
+
+The code uses HEAD_CHANGED_DURING_REVIEW as a marker.
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label done"
+    assert decision is not None
+    assert decision.add_label == DONE_LABEL
 
 
 # Backward-compat fallbacks for Devin sessions that haven't adopted the

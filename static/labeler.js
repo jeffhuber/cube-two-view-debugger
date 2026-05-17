@@ -157,6 +157,8 @@ async function loadLabelImages(fileList) {
   if (!files.length) return;
   setLabelStatus(`Loading ${files.length} image${files.length === 1 ? "" : "s"}...`);
   const pairing = pairLabelFiles(files);
+  const inferredSetId = inferSetIdFromFiles(files);
+  labelSetId.value = inferredSetId || "";
   const loadedSides = [];
   for (const [side, file] of Object.entries(pairing)) {
     if (!file) continue;
@@ -176,7 +178,7 @@ async function loadLabelImages(fileList) {
   updateFaceControls();
   drawLabels();
   updateLabelJson();
-  setLabelStatus(`Loaded ${loadedSides.join("/")}.`);
+  setLabelStatus(`Loaded ${loadedSides.join("/")}${inferredSetId ? ` as ${inferredSetId}` : ""}.`);
 }
 
 function pairLabelFiles(files) {
@@ -201,6 +203,17 @@ function detectLabelABMarker(name) {
   const imageToken = /\bimage\s*([ab])\b/i.exec(stem);
   if (imageToken) return imageToken[1].toUpperCase();
   return null;
+}
+
+function inferSetIdFromFiles(files) {
+  const inferred = files.map((file) => inferSetIdFromName(file.name)).filter(Boolean);
+  const unique = Array.from(new Set(inferred));
+  return unique.length === 1 ? unique[0] : null;
+}
+
+function inferSetIdFromName(name) {
+  const setMatch = /\bset\s*([0-9]+)\b/i.exec(name);
+  return setMatch ? `Set ${setMatch[1]}` : null;
 }
 
 async function readLabelImage(file) {
@@ -271,10 +284,6 @@ async function sha256Hex(file) {
 }
 
 function inferSetFields(name, { updateSide = true } = {}) {
-  if (!labelSetId.value.trim()) {
-    const setMatch = /\bset\s*([0-9]+)\b/i.exec(name);
-    if (setMatch) labelSetId.value = `Set ${setMatch[1]}`;
-  }
   const sideMatch = /(?:^|[\s_-])([ab])(?:[\s_-]|$)/i.exec(name.replace(/\.[^./]+$/, ""));
   if (updateSide && sideMatch) labelImageSide.value = sideMatch[1].toUpperCase();
   updateFaceControls();

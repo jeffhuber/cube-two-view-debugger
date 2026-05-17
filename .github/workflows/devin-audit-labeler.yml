@@ -30,4 +30,4 @@ jobs:
       - name: Apply Devin audit labels
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python tools/devin_audit_labeler.py
+        run: python3 tools/devin_audit_labeler.py

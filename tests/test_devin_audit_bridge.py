@@ -400,6 +400,24 @@ def test_labeler_requeues_when_head_sha_changed():
     assert decision.remove_labels == (DONE_LABEL, BLOCKED_LABEL)
 
 
+def test_labeler_requeues_when_devin_reports_head_changed():
+    body = """## Devin Audit — PASS
+
+**Head SHA:** `abc1234`
+
+HEAD_CHANGED_DURING_REVIEW: reviewed abc1234, current def5678
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label needs audit"
+    assert decision is not None
+    assert decision.add_label == LABELER_NEEDS_LABEL
+    assert decision.remove_labels == (DONE_LABEL, BLOCKED_LABEL)
+
+
 def test_labeler_skips_non_devin_comments():
     decision, reason = resolve_label_decision(
         make_comment_event(body="## Devin Audit — PASS", author="jeffhuber"),

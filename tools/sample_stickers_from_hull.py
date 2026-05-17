@@ -34,7 +34,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
-from PIL import Image, ImageDraw, ImageOps
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
@@ -506,7 +506,15 @@ def finish_side(
     return {"image": prepared["image"], "face_samples": face_samples, "palette": palette}
 
 
-def render_overlay(image: Image.Image, face_samples: List[Dict], out_path: Path) -> None:
+PER_FACE_AMBIGUOUS_THRESHOLD = 5.0  # match_count below this = mark face as uncertain
+
+
+def render_overlay(
+    image: Image.Image,
+    face_samples: List[Dict],
+    out_path: Path,
+    pair_status: str = "ok",
+) -> None:
     canvas = image.copy()
     draw = ImageDraw.Draw(canvas, "RGBA")
     # Light dim of the original to make dots pop
@@ -514,13 +522,37 @@ def render_overlay(image: Image.Image, face_samples: List[Dict], out_path: Path)
     canvas = Image.alpha_composite(canvas.convert("RGBA"), dim).convert("RGB")
     draw = ImageDraw.Draw(canvas)
 
-    # Draw the face quad outlines first (thin grey)
+    try:
+        warn_font = ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial Bold.ttf", 28)
+    except OSError:
+        warn_font = ImageFont.load_default()
+
+    # If the JOINT face identification was ambiguous, slap a red banner across
+    # the top so the viewer can't miss that this overlay is suspect.
+    if pair_status == "ambiguous":
+        banner_h = 44
+        draw.rectangle((0, 0, canvas.width, banner_h), fill=(180, 20, 20))
+        text = "⚠ AMBIGUOUS PAIR-LEVEL FACE ID — dataset extractor would SKIP this pair"
+        draw.text((10, 6), text, font=warn_font, fill=(255, 255, 255))
+
+    # Draw the face quad outlines first (thin grey for ok; red+thick when
+    # the per-face orientation match is below the uncertainty threshold)
     for fs in face_samples:
         q = fs["canonical_quad"]
+        match_count = fs["orientation"].get("match_count", 9.0)
+        uncertain = match_count < PER_FACE_AMBIGUOUS_THRESHOLD
+        outline_color = (220, 30, 30) if uncertain else (200, 200, 200)
+        outline_width = 5 if uncertain else 2
         for i in range(4):
             a = q[i]
             b = q[(i + 1) % 4]
-            draw.line([a, b], fill=(200, 200, 200), width=2)
+            draw.line([a, b], fill=outline_color, width=outline_width)
+        # If uncertain, paint a big "?" near the face centroid as a second cue
+        if uncertain:
+            cx = sum(p[0] for p in q) / 4.0
+            cy = sum(p[1] for p in q) / 4.0
+            label = f"?  (face match {match_count:.1f}/9)"
+            draw.text((cx - 60, cy - 14), label, font=warn_font, fill=(220, 30, 30))
 
     # Draw the 9 dots per face
     for fs in face_samples:
@@ -580,6 +612,14 @@ def main() -> int:
             tag = "" if label == true else f"  ⚠ relabeled: {label} → {true}"
             print(f"  side {side} label {label} → true face {true}{tag}", file=sys.stderr)
     print(f"  joint multiset score: {joint_score}/{max_score}  ({joint_status})", file=sys.stderr)
+    if joint_status == "ambiguous":
+        print("", file=sys.stderr)
+        print("  ⚠⚠⚠ AMBIGUOUS PAIR-LEVEL FACE ID ⚠⚠⚠", file=sys.stderr)
+        print("  Top two yaw configurations are within 4 stickers of each other.", file=sys.stderr)
+        print("  The dataset extractor (extract_clean_dataset.py) would SKIP this pair.", file=sys.stderr)
+        print("  Rendered overlay may show ground-truth colors at WRONG sticker positions.", file=sys.stderr)
+        print("  ⚠⚠⚠", file=sys.stderr)
+        print("", file=sys.stderr)
 
     # Step 3: collect 5 face-center anchors (skip U because of logo)
     combined_anchors: Dict[str, List[Tuple[int, int, int]]] = {}
@@ -602,16 +642,17 @@ def main() -> int:
     for side, prepared in prepared_sides.items():
         result = finish_side(prepared, gt_state, args.inset, palette, label_maps[side])
         out_path = OUT_DIR / f"cal-geom-set-{set_id}-{side}{args.suffix}.png"
-        render_overlay(result["image"], result["face_samples"], out_path)
+        render_overlay(result["image"], result["face_samples"], out_path, pair_status=joint_status)
         print(f"  side {side}: wrote {out_path}", file=sys.stderr)
         for fs in result["face_samples"]:
             ori = fs["orientation"]
             mismatches = sum(1 for s in fs["stickers"] if s["classifier"] != s["gtColor"])
+            warn = "  ⚠ UNCERTAIN FACE" if ori["match_count"] < PER_FACE_AMBIGUOUS_THRESHOLD else ""
             print(
                 f"    face {fs['face']}: orientation (mirror={ori['mirror']}, "
                 f"rot_ccw={ori['rotation_quarters_ccw']}, "
                 f"orientation_match={ori['match_count']:.2f}/9), "
-                f"classifier mismatches per-position vs gt = {mismatches}/9",
+                f"classifier mismatches per-position vs gt = {mismatches}/9{warn}",
                 file=sys.stderr,
             )
 

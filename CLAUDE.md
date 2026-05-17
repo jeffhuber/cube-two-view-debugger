@@ -378,6 +378,43 @@ the repository secret `DEVIN_AUDIT_LABEL_TOKEN` to a fine-grained
 token with Issues read/write access for that repository; the labeler
 falls back to `github.token` when the secret is absent.
 
+#### Audit chain implementation
+
+- **Bridge**: `tools/devin_audit_bridge.py` builds the webhook payload
+  (with `DEVIN_INSTRUCTIONS`) and posts it to Devin. Triggered by
+  `.github/workflows/devin-audit-bridge.yml` on `pull_request_target`
+  events (open / synchronize / reopen / labeled `needs-devin-audit`)
+  and on `issue_comment` containing `@devin audit` from trusted
+  commenters.
+- **Labeler**: `tools/devin_audit_labeler.py` parses Devin's audit
+  comment and applies the terminal label. Triggered by
+  `.github/workflows/devin-audit-labeler.yml` on `issue_comment` from
+  `devin-ai-integration[bot]` only. Checks out `default_branch` (not
+  the PR branch) so a malicious PR cannot modify the script that
+  judges it.
+- **The contract** is the HTML-comment trailer Devin appends to every
+  audit comment, on its own final line:
+  - `<!-- DEVIN_AUDIT_STATE: devin-audit-done -->` (pass)
+  - `<!-- DEVIN_AUDIT_STATE: devin-audit-blocked -->` (blocked or
+    incomplete)
+  - `<!-- DEVIN_AUDIT_STATE: needs-devin-audit -->` (head changed
+    during review)
+
+  The labeler treats this trailer as authoritative. Prose phrasing
+  (headers, `Label state:`, `Intended labels:`, `Expected labels:`)
+  is kept only as fallback for Devin sessions that haven't adopted
+  the trailer.
+
+`tools/devin_audit_bridge.py`, `tools/devin_audit_labeler.py`, and
+both `.github/workflows/devin-audit-*.yml` files MUST stay
+byte-identical across `cube-two-view-debugger` and `cube-snap`.
+Verify with `diff` before changing either side; PRs land in lockstep.
+
+Tests live in `tests/test_devin_audit_bridge.py` (pytest, bridge +
+labeler combined, full coverage including trailer /
+Expected-labels / HEAD_CHANGED-substring-vs-structured regression
+cases). Run with `python3 -m pytest tests/test_devin_audit_bridge.py`.
+
 ## Other Claude/Codex working conventions
 
 - **GitHub markdown bodies: body-file only.** Never pass PR, issue,

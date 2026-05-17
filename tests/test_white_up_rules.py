@@ -772,6 +772,69 @@ def test_grid_signal_summary_reports_cell_face_and_source_counts():
 
     assert summary["cellFaceCounts"] == {"U": 4, "R": 1, "F": 1, "D": 1, "L": 1, "B": 1}
     assert summary["cellSourceCounts"] == {"component": 7, "grid_sample": 2}
+    assert summary["unsupportedSamples"] == 0
+    assert summary["unsupportedSampleScore"] == 0.0
+
+
+def test_unsupported_grid_sample_score_measures_white_extrapolation():
+    def sample(
+        source,
+        *,
+        outside=0.0,
+        nearest=70.0,
+        spacing=70.0,
+        grid_outside=None,
+        grid_nearest=None,
+    ):
+        facelet = type(
+            "Facelet",
+            (),
+            {
+                "source": source,
+                "rgb": (230, 230, 230),
+                "shape_angle": None,
+                "match": type(
+                    "Match",
+                    (),
+                    {
+                        "face": "U",
+                        "color": "white",
+                        "confidence": 0.82,
+                        "alternatives": [("white", 0.0)],
+                    },
+                )(),
+                "grid_spacing": spacing,
+                "outside_component_hull_distance": outside,
+                "nearest_component_distance": nearest,
+                "outside_grid_component_hull_distance": outside if grid_outside is None else grid_outside,
+                "nearest_grid_component_distance": nearest if grid_nearest is None else grid_nearest,
+            },
+        )()
+        return facelet
+
+    supported = sample("grid_sample", outside=0.0, nearest=70.0)
+    unsupported = sample("grid_sample", outside=70.0, nearest=120.0)
+    grid_local_unsupported = sample(
+        "grid_sample",
+        outside=0.0,
+        nearest=70.0,
+        grid_outside=70.0,
+        grid_nearest=120.0,
+    )
+
+    assert (
+        recognizer._unsupported_grid_sample_score(unsupported)
+        > recognizer._unsupported_grid_sample_score(supported) + 2.0
+    )
+    assert recognizer._unsupported_grid_sample_score(grid_local_unsupported) > 2.0
+    assert recognizer._unsupported_grid_sample_score(sample("component", outside=70.0, nearest=120.0)) == 0.0
+    zero_spacing_sample = sample(
+        "grid_sample",
+        outside=70.0,
+        nearest=120.0,
+        spacing=0.0,
+    )
+    assert recognizer._unsupported_grid_sample_score(zero_spacing_sample) == 0.0
 
 
 def test_pair_color_calibration_signal_reports_red_orange_counts():
@@ -1122,6 +1185,15 @@ def test_ranked_visible_face_triples_rescues_small_overlap_when_strict_empty():
     assert len(triples) == 1
     assert set(triples[0][1]) == {"U", "B", "L"}
     assert recognizer._triple_overlap_count(triples[0][1].values()) == 6
+
+
+def test_grid_usable_for_triple_rejects_low_match_suspect_samples(monkeypatch):
+    grid = type("Grid", (), {"matched_count": 5})()
+
+    monkeypatch.setattr(recognizer, "_grid_suspect_sample_score", lambda candidate: 4.9)
+    monkeypatch.setattr(recognizer, "_grid_bad_sample_count", lambda candidate: 0)
+
+    assert not recognizer._grid_usable_for_triple(grid)
 
 
 def test_face_triple_failure_check_reports_low_quality_overlap_rescue():

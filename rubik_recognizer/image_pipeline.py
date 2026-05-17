@@ -386,10 +386,19 @@ def _fit_face_grids(stickers: List[Sticker], arr: np.ndarray, scale: float) -> L
 
     candidates = _grid_candidates(points, list(range(len(stickers))), spacing, arr, stickers)
     selected = _add_supplemental_grids(_select_grid_combo(candidates), candidates, max_grids=24)
+    component_hull = _convex_hull([sticker.center for sticker in stickers])
     grids: List[FaceGrid] = []
     for grid_id, candidate in enumerate(selected):
         matched_indices = set(candidate["matched"])
-        sampled = _sample_grid_stickers(arr, candidate["centers"], candidate.get("cell_matches"), stickers, matched_indices, scale)
+        sampled = _sample_grid_stickers(
+            arr,
+            candidate["centers"],
+            candidate.get("cell_matches"),
+            stickers,
+            matched_indices,
+            scale,
+            component_hull=component_hull,
+        )
         grids.append(
             FaceGrid(
                 id=grid_id,
@@ -833,10 +842,19 @@ def _sample_grid_stickers(
     source_stickers: List[Sticker],
     matched_indices: Iterable[int],
     scale: float,
+    *,
+    component_hull: Sequence[Point],
 ) -> List[List[Sticker]]:
     spacing = _grid_spacing(centers)
     radius = max(3, int(spacing * 0.16))
     matched_set = set(matched_indices)
+    source_centers = [sticker.center for sticker in source_stickers]
+    matched_source_centers = [
+        source_stickers[index].center
+        for index in matched_set
+        if 0 <= index < len(source_stickers)
+    ]
+    matched_component_hull = _convex_hull(matched_source_centers)
     rows: List[List[Sticker]] = []
     next_id = 1000
     for r in range(3):
@@ -855,6 +873,23 @@ def _sample_grid_stickers(
                 match = classify_rgb(rgb)
                 bbox = (cx - radius, cy - radius, cx + radius, cy + radius)
                 sticker = Sticker(next_id, (cx, cy), bbox, rgb, match, radius * radius, "grid_sample")
+                sticker.grid_spacing = spacing  # type: ignore[attr-defined]
+                sticker.nearest_component_distance = _nearest_point_distance(  # type: ignore[attr-defined]
+                    (cx, cy),
+                    source_centers,
+                )
+                sticker.outside_component_hull_distance = _outside_polygon_distance(  # type: ignore[attr-defined]
+                    (cx, cy),
+                    component_hull,
+                )
+                sticker.nearest_grid_component_distance = _nearest_point_distance(  # type: ignore[attr-defined]
+                    (cx, cy),
+                    matched_source_centers,
+                )
+                sticker.outside_grid_component_hull_distance = _outside_polygon_distance(  # type: ignore[attr-defined]
+                    (cx, cy),
+                    matched_component_hull,
+                )
                 next_id += 1
             row.append(sticker)
         rows.append(row)
@@ -888,6 +923,75 @@ def _grid_spacing(centers: List[List[Point]]) -> float:
         for c in range(3):
             distances.append(math.hypot(centers[r][c][0] - centers[r + 1][c][0], centers[r][c][1] - centers[r + 1][c][1]))
     return float(np.median(distances)) if distances else 12.0
+
+
+def _nearest_point_distance(point: Point, points: Sequence[Point]) -> float:
+    if not points:
+        return 0.0
+    return min(math.hypot(point[0] - other[0], point[1] - other[1]) for other in points)
+
+
+def _outside_polygon_distance(point: Point, polygon: Sequence[Point]) -> float:
+    if len(polygon) < 3 or _point_in_polygon(point, polygon):
+        return 0.0
+    return min(
+        _point_segment_distance(point, polygon[index], polygon[(index + 1) % len(polygon)])
+        for index in range(len(polygon))
+    )
+
+
+def _point_segment_distance(point: Point, start: Point, end: Point) -> float:
+    px, py = point
+    ax, ay = start
+    bx, by = end
+    dx = bx - ax
+    dy = by - ay
+    denom = dx * dx + dy * dy
+    if denom <= 1e-9:
+        return math.hypot(px - ax, py - ay)
+    t = max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / denom))
+    return math.hypot(px - (ax + t * dx), py - (ay + t * dy))
+
+
+def _point_in_polygon(point: Point, polygon: Sequence[Point]) -> bool:
+    x, y = point
+    inside = False
+    j = len(polygon) - 1
+    for i, (xi, yi) in enumerate(polygon):
+        xj, yj = polygon[j]
+        denom = yj - yi
+        if abs(denom) < 1e-9:
+            denom = 1e-9
+        intersects = (yi > y) != (yj > y) and x < (xj - xi) * (y - yi) / denom + xi
+        if intersects:
+            inside = not inside
+        j = i
+    return inside
+
+
+def _convex_hull(points: Sequence[Point]) -> List[Point]:
+    unique = sorted({(float(x), float(y)) for x, y in points})
+    if len(unique) <= 1:
+        return list(unique)
+
+    def cross(origin: Point, first: Point, second: Point) -> float:
+        return (first[0] - origin[0]) * (second[1] - origin[1]) - (
+            first[1] - origin[1]
+        ) * (second[0] - origin[0])
+
+    lower: List[Point] = []
+    for point in unique:
+        while len(lower) >= 2 and cross(lower[-2], lower[-1], point) <= 0:
+            lower.pop()
+        lower.append(point)
+
+    upper: List[Point] = []
+    for point in reversed(unique):
+        while len(upper) >= 2 and cross(upper[-2], upper[-1], point) <= 0:
+            upper.pop()
+        upper.append(point)
+
+    return lower[:-1] + upper[:-1]
 
 
 def _rgb_to_hsv_arrays(arr: np.ndarray) -> np.ndarray:

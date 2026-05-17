@@ -99,6 +99,7 @@ MAX_DIAGNOSTIC_TRIPLES = 12
 MAX_DIAGNOSTIC_MERGES = 5000
 MAX_DIAGNOSTIC_EXAMPLES = 8
 SUSPECT_GRID_SAMPLE_THRESHOLD = 2.5
+MAX_LOW_MATCH_GRID_SUSPECT_SAMPLE_SCORE = 4.8
 MAX_SUSPECT_SAMPLE_ALTERNATIVE_DELTA = 58.0
 MAX_TRIPLE_COMPONENT_OVERLAP = 3
 # Used only when strict triple selection finds no candidates. This lets
@@ -743,6 +744,10 @@ def _base_recognition_signals(analysis_a: ImageAnalysis, analysis_b: ImageAnalys
             "imageA": _selected_grid_quality(analysis_a, "U"),
             "imageB": _selected_grid_quality(analysis_b, "D"),
         },
+        "topVisibleTripleQuality": {
+            "imageA": _top_visible_triple_quality(analysis_a, "U"),
+            "imageB": _top_visible_triple_quality(analysis_b, "D"),
+        },
     }
 
 
@@ -750,6 +755,22 @@ def _selected_grid_quality(analysis: ImageAnalysis, anchor: str) -> Dict[str, Di
     return {
         face: _grid_signal_summary(grid)
         for face, grid in _assigned_grid_by_face(analysis, anchor).items()
+    }
+
+
+def _top_visible_triple_quality(analysis: ImageAnalysis, anchor: str) -> Optional[Dict[str, Any]]:
+    groups = _candidate_grids_by_face(analysis, anchor)
+    if anchor not in groups:
+        return None
+    triples = _ranked_visible_face_triples(groups, anchor)
+    if not triples:
+        return None
+    score, subset = triples[0]
+    return {
+        "score": round(float(score), 3),
+        "sidePair": _side_pair_key(face for face in subset if face in SIDE_NEIGHBORS),
+        "componentOverlap": _triple_overlap_count(tuple(subset.values())),
+        "grids": {face: _grid_signal_summary(grid) for face, grid in sorted(subset.items())},
     }
 
 
@@ -763,6 +784,8 @@ def _grid_signal_summary(grid: FaceGrid) -> Dict[str, Any]:
         "gridSamples": _grid_sample_count(grid),
         "badSamples": _grid_bad_sample_count(grid),
         "suspectSamples": round(_grid_suspect_sample_score(grid), 3),
+        "unsupportedSamples": _grid_unsupported_sample_count(grid),
+        "unsupportedSampleScore": round(_grid_unsupported_sample_score(grid), 3),
         "cellFaceCounts": _grid_cell_face_counts(grid),
         "cellSourceCounts": _grid_cell_source_counts(grid),
     }
@@ -1088,6 +1111,8 @@ def _orientation_diagnostics(analysis: ImageAnalysis, anchor: str, options: Sequ
                     "gridSamples": _grid_sample_count(grid),
                     "badSamples": _grid_bad_sample_count(grid),
                     "suspectSamples": round(_grid_suspect_sample_score(grid), 3),
+                    "unsupportedSamples": _grid_unsupported_sample_count(grid),
+                    "unsupportedSampleScore": round(_grid_unsupported_sample_score(grid), 3),
                 }
                 for grid in grids
             ]
@@ -2046,7 +2071,7 @@ def _grid_usable_for_triple(grid: FaceGrid) -> bool:
     if grid.matched_count < 5:
         return False
     suspect = _grid_suspect_sample_score(grid)
-    if grid.matched_count <= 5 and suspect >= 5.0:
+    if grid.matched_count <= 5 and suspect >= MAX_LOW_MATCH_GRID_SUSPECT_SAMPLE_SCORE:
         return False
     if grid.matched_count <= 6 and _grid_bad_sample_count(grid) >= 4:
         return False
@@ -2063,6 +2088,19 @@ def _grid_sample_count(grid: FaceGrid) -> int:
 
 def _grid_suspect_sample_score(grid: FaceGrid) -> float:
     return sum(_suspect_grid_sample_score(sticker) for row in getattr(grid, "stickers", []) for sticker in row)
+
+
+def _grid_unsupported_sample_score(grid: FaceGrid) -> float:
+    return sum(_unsupported_grid_sample_score(sticker) for row in getattr(grid, "stickers", []) for sticker in row)
+
+
+def _grid_unsupported_sample_count(grid: FaceGrid) -> int:
+    return sum(
+        1
+        for row in getattr(grid, "stickers", [])
+        for sticker in row
+        if _unsupported_grid_sample_score(sticker) > 0.0
+    )
 
 
 def _grid_bad_sample_count(grid: FaceGrid) -> int:
@@ -2106,6 +2144,44 @@ def _suspect_grid_sample_score(sticker: Any) -> float:
     if 0.04 <= hue <= 0.16 and 0.18 <= saturation <= 0.42 and color in {"white", "orange", "yellow"}:
         score += 1.6
 
+    return score
+
+
+def _unsupported_grid_sample_score(sticker: Any) -> float:
+    if getattr(sticker, "source", "") != "grid_sample":
+        return 0.0
+    color = sticker.match.color
+    if color != "white":
+        return 0.0
+
+    spacing = float(getattr(sticker, "grid_spacing", 0.0) or 0.0)
+    if spacing <= 1e-6:
+        return 0.0
+
+    score = 0.0
+    outside_distance = float(
+        getattr(
+            sticker,
+            "outside_grid_component_hull_distance",
+            getattr(sticker, "outside_component_hull_distance", 0.0),
+        )
+        or 0.0
+    )
+    outside_ratio = outside_distance / spacing
+    if outside_ratio > 0.45:
+        score += min(3.0, (outside_ratio - 0.45) * 5.0)
+
+    nearest_distance = float(
+        getattr(
+            sticker,
+            "nearest_grid_component_distance",
+            getattr(sticker, "nearest_component_distance", 0.0),
+        )
+        or 0.0
+    )
+    nearest_ratio = nearest_distance / spacing
+    if nearest_ratio > 1.35:
+        score += min(1.8, (nearest_ratio - 1.35) * 2.6)
     return score
 
 

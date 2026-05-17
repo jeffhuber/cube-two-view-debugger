@@ -268,6 +268,109 @@ def process_side(
     return {"image": image, "arr": arr, "quads": quads, "expected": expected}
 
 
+def _multiset_overlap(
+    label: str,
+    true_face: str,
+    sampled_multisets: Dict[str, Counter],
+    gt_state: str,
+) -> int:
+    if label not in sampled_multisets:
+        return 0
+    gt_mset = Counter(face_colors_from_state(gt_state, true_face))
+    samp = sampled_multisets[label]
+    return sum(min(samp.get(c, 0), gt_mset.get(c, 0)) for c in COLOR_ORDER)
+
+
+def _sample_multisets(prepared: Dict, inset: float) -> Dict[str, Counter]:
+    arr = prepared["arr"]
+    quads = prepared["quads"]
+    out: Dict[str, Counter] = {}
+    for label in prepared["expected"]:
+        if label not in quads:
+            continue
+        canonical_quad = canonical_corner_order([tuple(p) for p in quads[label]])
+        centers = sticker_centers(canonical_quad, inset=inset)
+        rgbs = [sample_rgb(arr, x, y) for (x, y) in centers]
+        out[label] = Counter(classify_rgb(rgb).color for rgb in rgbs)
+    return out
+
+
+def identify_faces_jointly(
+    prepared_sides: Dict[str, Dict],
+    gt_state: str,
+    inset: float,
+) -> Tuple[Dict[str, Dict[str, str]], int, str]:
+    """Pair-level face identification: enumerates the 16 valid (yaw ×
+    side-A-label-order × side-B-label-order) combinations and picks the
+    one with the highest TOTAL multiset overlap across both images.
+
+    The pair-level invariant — across A+B, exactly 6 distinct true faces
+    (U/R/F/D/L/B) — is enforced by construction. The 4 valid yaw configs
+    pair side-A side-faces with side-B side-faces such that their union
+    spans {R, F, L, B}:
+
+        A_yaw0:  A side=(R, F)  →  B side=(L, B)  (canonical)
+        A_yaw1:  A side=(R, B)  →  B side=(L, F)
+        A_yaw2:  A side=(L, B)  →  B side=(R, F)  (Set 23 was here)
+        A_yaw3:  A side=(L, F)  →  B side=(R, B)
+
+    Returns ({side: label_to_true}, best_score, status).
+    status ∈ {"ok", "ambiguous", "missing_side"}. "ambiguous" means the
+    top-2 scores are within `tie_margin` of each other — caller should
+    skip such pairs to avoid contaminating the clean dataset."""
+    # Each yaw fixes the set of A-side faces and B-side faces. Within
+    # each side, the 2 labels can be permuted onto the 2 true faces.
+    yaw_configs = [
+        ("yaw0", ("R", "F"), ("L", "B")),  # canonical
+        ("yaw1", ("R", "B"), ("L", "F")),
+        ("yaw2", ("L", "B"), ("R", "F")),  # Set 23 pair
+        ("yaw3", ("L", "F"), ("R", "B")),
+    ]
+
+    sampled_by_side = {side: _sample_multisets(p, inset) for side, p in prepared_sides.items()}
+    have_a = "A" in prepared_sides
+    have_b = "B" in prepared_sides
+    if not (have_a and have_b):
+        # Fall back to per-side (rare; only when one side has no hull label)
+        per_side: Dict[str, Dict[str, str]] = {}
+        for side, prepared in prepared_sides.items():
+            anchor = "U" if side == "A" else "D"
+            mapping = {anchor: anchor}
+            for label in prepared["expected"]:
+                if label != anchor and label in prepared["quads"]:
+                    mapping[label] = label  # best effort
+            per_side[side] = mapping
+        return per_side, 0, "missing_side"
+
+    expected_a = ["R", "F"]  # labeler always writes labels in this order for A
+    expected_b = ["L", "B"]  # ...and this for B
+
+    best_score = -1
+    best_second = -1
+    best_mapping: Dict[str, Dict[str, str]] = {}
+    for _name, a_side_faces, b_side_faces in yaw_configs:
+        for a_perm in (a_side_faces, a_side_faces[::-1]):
+            for b_perm in (b_side_faces, b_side_faces[::-1]):
+                a_map = {"U": "U", expected_a[0]: a_perm[0], expected_a[1]: a_perm[1]}
+                b_map = {"D": "D", expected_b[0]: b_perm[0], expected_b[1]: b_perm[1]}
+                score = 0
+                for label, true_face in a_map.items():
+                    score += _multiset_overlap(label, true_face, sampled_by_side["A"], gt_state)
+                for label, true_face in b_map.items():
+                    score += _multiset_overlap(label, true_face, sampled_by_side["B"], gt_state)
+                if score > best_score:
+                    best_second = best_score
+                    best_score = score
+                    best_mapping = {"A": a_map, "B": b_map}
+                elif score > best_second:
+                    best_second = score
+
+    status = "ok"
+    if best_score - best_second < 4:  # margin: at least 4 stickers of separation
+        status = "ambiguous"
+    return best_mapping, best_score, status
+
+
 def identify_faces_from_multisets(
     prepared: Dict,
     gt_state: str,
@@ -465,18 +568,18 @@ def main() -> int:
         hull_doc = load_hull_label(hull_path)
         prepared_sides[side] = process_side(image_path, hull_doc, gt_state, side, inset=args.inset)
 
-    # Step 2: identify true face identities via per-face multiset matching
-    # against the ground-truth state. Robust to red/orange center
-    # misclassification and natural to yaw rotations.
-    label_maps: Dict[str, Dict[str, str]] = {}
-    for side, prepared in prepared_sides.items():
-        label_to_true, score = identify_faces_from_multisets(prepared, gt_state, args.inset)
-        label_maps[side] = label_to_true
-        max_score = 9 * len(label_to_true)
-        for label, true in label_to_true.items():
+    # Step 2: JOINT face identification across A+B (enforces 6-distinct-
+    # faces pair-level invariant — prevents Set 28's L-duplicate /
+    # R-missing bug that single-sided matching produced).
+    label_maps, joint_score, joint_status = identify_faces_jointly(
+        prepared_sides, gt_state, args.inset
+    )
+    max_score = 9 * sum(len(m) for m in label_maps.values())
+    for side, mapping in label_maps.items():
+        for label, true in mapping.items():
             tag = "" if label == true else f"  ⚠ relabeled: {label} → {true}"
             print(f"  side {side} label {label} → true face {true}{tag}", file=sys.stderr)
-        print(f"  side {side} multiset score: {score}/{max_score}", file=sys.stderr)
+    print(f"  joint multiset score: {joint_score}/{max_score}  ({joint_status})", file=sys.stderr)
 
     # Step 3: collect 5 face-center anchors (skip U because of logo)
     combined_anchors: Dict[str, List[Tuple[int, int, int]]] = {}

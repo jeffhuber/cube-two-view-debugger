@@ -43,7 +43,7 @@ from tools.extract_color_samples import (  # noqa: E402
 from tools.sample_stickers_from_hull import (  # noqa: E402
     collect_anchor_rgbs,
     finish_side,
-    identify_faces_from_multisets,
+    identify_faces_jointly,
     latest_hull_label,
     load_hull_label,
     process_side,
@@ -75,18 +75,36 @@ def process_pair(task: PairTask, inset: float) -> Tuple[List[Dict], Dict]:
 
     if not prepared_sides:
         return [], {"setId": task.set_id, "skipped": "no_hull_labels"}
+    if len(prepared_sides) < 2:
+        return [], {"setId": task.set_id, "skipped": "single_side_only"}
 
-    # Step 2: face identification via multisets
-    label_maps: Dict[str, Dict[str, str]] = {}
+    # Step 2: JOINT face identification across A+B (enforces 6-distinct-
+    # faces pair-level invariant — fixes Set 28's L-duplicate / R-missing
+    # bug from single-sided multiset matching).
+    label_maps, joint_score, joint_status = identify_faces_jointly(
+        prepared_sides, gt_state, inset
+    )
+    if joint_status == "ambiguous":
+        return [], {"setId": task.set_id, "skipped": "ambiguous_face_id", "score": joint_score}
+
     yaw_detected = False
-    for side, prepared in prepared_sides.items():
-        label_to_true, _ = identify_faces_from_multisets(prepared, gt_state, inset)
-        label_maps[side] = label_to_true
-        for label, true in label_to_true.items():
-            # Anchor-letter mismatch indicates a yaw or flip-swap.
-            anchor = "U" if side == "A" else "D"
+    for side, mapping in label_maps.items():
+        anchor = "U" if side == "A" else "D"
+        for label, true in mapping.items():
             if label != anchor and label != true:
                 yaw_detected = True
+
+    # Verify pair-level invariant: union of true faces across both sides
+    # equals {U, R, F, D, L, B}. If not, skip — would corrupt the dataset.
+    all_true = set()
+    for mapping in label_maps.values():
+        all_true.update(mapping.values())
+    if all_true != set("URFDLB"):
+        return [], {
+            "setId": task.set_id,
+            "skipped": "invariant_violation",
+            "trueFaces": sorted(all_true),
+        }
 
     # Step 3: combined adaptive palette
     combined_anchors: Dict[str, List[Tuple[int, int, int]]] = {}

@@ -32,7 +32,12 @@ from typing import Dict, List, Tuple
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from rubik_recognizer.colors import build_adaptive_palette, classify_rgb  # noqa: E402
+from rubik_recognizer.colors import (  # noqa: E402
+    CLASSIFIER_CANONICAL,
+    CLASSIFIER_KNN5_LAB,
+    build_adaptive_palette,
+    classify_rgb_with_mode,
+)
 from tools.extract_color_samples import (  # noqa: E402
     CORPUS_MANIFEST,
     PairTask,
@@ -123,6 +128,12 @@ def process_pair(task: PairTask, inset: float) -> Tuple[List[Dict], Dict]:
         for fs in result["face_samples"]:
             for s in fs["stickers"]:
                 rgb = tuple(s["rgb"])
+                classifier_modes = {
+                    "canonical": classify_rgb_with_mode(rgb, CLASSIFIER_CANONICAL).color,
+                    "canonical_adaptive": classify_rgb_with_mode(rgb, CLASSIFIER_CANONICAL, palette).color,
+                    "knn5_lab": classify_rgb_with_mode(rgb, CLASSIFIER_KNN5_LAB).color,
+                    "knn5_lab_adaptive": classify_rgb_with_mode(rgb, CLASSIFIER_KNN5_LAB, palette).color,
+                }
                 samples.append({
                     "setId": task.set_id,
                     "side": side,
@@ -132,8 +143,9 @@ def process_pair(task: PairTask, inset: float) -> Tuple[List[Dict], Dict]:
                     "col": s["col"],
                     "isCenter": (s["row"] == 1 and s["col"] == 1),
                     "rgb": list(rgb),
-                    "calibratedClassifier": s["classifier"],
-                    "defaultClassifier": classify_rgb(rgb).color,
+                    "calibratedClassifier": classifier_modes["canonical_adaptive"],
+                    "defaultClassifier": classifier_modes["canonical"],
+                    "classifierModes": classifier_modes,
                     "gtColor": s["gtColor"],
                 })
     return samples, {

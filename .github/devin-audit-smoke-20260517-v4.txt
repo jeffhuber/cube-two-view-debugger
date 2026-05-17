@@ -1,0 +1,1 @@
+Smoke-test marker (v4) — verify Devin trailer contract (ctvd#118) end-to-end.

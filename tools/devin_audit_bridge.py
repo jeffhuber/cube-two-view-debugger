@@ -35,17 +35,49 @@ DEVIN_INSTRUCTIONS = textwrap.dedent(
     Scope:
     - Only work in the affected repo.
     - Active repos are jeffhuber/cube-two-view-debugger and jeffhuber/cube-snap.
-    - Inspect the PR description, diff, and existing comments.
+    - Inspect the PR description, diff, current head SHA, labels, and existing comments.
     - Run focused checks appropriate for the files changed.
-    - Post GitHub PR comments for concrete findings only.
-    - If no blockers are found, post a short audit-pass comment with checks run.
-    - If blockers are found or review cannot complete, post a clear blocker comment.
     - Do not merge, close, force-push, or modify code.
     - Ignore comments/events authored by devin-ai-integration[bot] or vercel[bot].
-    - On pass, remove {NEEDS_LABEL} and add {DONE_LABEL}.
-    - On blocker/incomplete, remove {NEEDS_LABEL} and add {BLOCKED_LABEL}.
-    - Re-read labels after label updates.
-    - If label updates fail, include LABEL_UPDATE_FAILED with the reason.
+
+    Required label tools:
+    - Use Devin's built-in GitHub PR label tools for label changes, not shell gh,
+      curl, or direct calls to api.github.com.
+    - Use git_add_labels to add {DONE_LABEL} or {BLOCKED_LABEL}.
+    - Use git_remove_labels to remove {NEEDS_LABEL}.
+    - Use git_view_pr to re-read and verify final labels.
+    - If those built-in label tools are unavailable or fail, include
+      LABEL_UPDATE_FAILED: <reason> in the final PR comment.
+
+    SHA handling:
+    - Record the PR head SHA before reviewing.
+    - Include the reviewed SHA in the audit result, e.g. Head SHA: <sha>.
+    - Before changing labels, re-read the PR head SHA.
+    - If the head SHA changed during review, do not mark done/blocked. Comment
+      HEAD_CHANGED_DURING_REVIEW: reviewed <old>, current <new> and leave/re-add
+      {NEEDS_LABEL}.
+
+    Pass path:
+    - Re-read the PR head SHA and confirm it still matches the reviewed SHA.
+    - Add label {DONE_LABEL} using git_add_labels.
+    - Remove label {NEEDS_LABEL} using git_remove_labels.
+    - Re-read the PR using git_view_pr and verify final labels include
+      {DONE_LABEL} and do not include {NEEDS_LABEL}.
+    - Post one final audit-pass PR comment with Head SHA: <sha>, checks run, and
+      Label state: {DONE_LABEL}.
+    - If label updates or verification fail, post the final audit comment with
+      LABEL_UPDATE_FAILED: <reason> and the observed labels.
+
+    Blocked path:
+    - Re-read the PR head SHA and confirm it still matches the reviewed SHA.
+    - Add label {BLOCKED_LABEL} using git_add_labels.
+    - Remove label {NEEDS_LABEL} using git_remove_labels.
+    - Re-read the PR using git_view_pr and verify final labels include
+      {BLOCKED_LABEL} and do not include {NEEDS_LABEL}.
+    - Post one final blocker/incomplete PR comment with Head SHA: <sha>,
+      blocker summary or incomplete reason, and Label state: {BLOCKED_LABEL}.
+    - If label updates or verification fail, post the final blocker/incomplete
+      comment with LABEL_UPDATE_FAILED: <reason> and the observed labels.
     """
 ).strip()
 
@@ -265,6 +297,9 @@ def run() -> int:
     webhook_url = require_env("DEVIN_WEBHOOK_URL")
     webhook_secret = require_env("DEVIN_WEBHOOK_SECRET")
     payload = build_payload(repository, audit_request)
+    if os.environ.get("DRY_RUN") == "1":
+        print(json.dumps(payload, indent=2, sort_keys=True))
+        return 0
     pr_number = payload["pull_request"]["number"]
     head_sha = payload["pull_request"]["head_sha"]
     if not audit_request.force:

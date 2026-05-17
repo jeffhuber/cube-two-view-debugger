@@ -166,7 +166,11 @@ def test_payload_contains_sha_dedupe_key_and_review_instructions():
 
     assert payload["dedupe_key"] == "jeffhuber/cube-two-view-debugger#42@def456"
     assert payload["pull_request"]["head_sha"] == "def456"
-    assert "On pass, remove needs-devin-audit" in payload["instructions"]
+    assert "Use Devin's built-in GitHub PR label tools" in payload["instructions"]
+    assert "Use git_add_labels to add devin-audit-done" in payload["instructions"]
+    assert "Use git_remove_labels to remove needs-devin-audit" in payload["instructions"]
+    assert "Use git_view_pr to re-read and verify final labels" in payload["instructions"]
+    assert "Label state: devin-audit-done" in payload["instructions"]
 
 
 def test_devin_already_reviewed_sha_detects_same_sha_in_devin_comment():
@@ -239,6 +243,42 @@ def test_run_skips_webhook_when_devin_already_reviewed_current_sha(tmp_path, mon
     monkeypatch.setattr(devin_audit_bridge, "post_webhook", fail_post_webhook)
 
     assert devin_audit_bridge.run() == 0
+
+
+def test_run_dry_run_prints_payload_without_dedupe_lookup(tmp_path, monkeypatch, capsys):
+    event_path = tmp_path / "event.json"
+    event_path.write_text(
+        json.dumps(
+            {
+                "label": {"name": NEEDS_LABEL},
+                "pull_request": make_pr(labels=[NEEDS_LABEL], sha="abc123"),
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("GITHUB_EVENT_PATH", str(event_path))
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "pull_request_target")
+    monkeypatch.setenv("GITHUB_EVENT_ACTION", "labeled")
+    monkeypatch.setenv("GITHUB_REPOSITORY", "jeffhuber/cube-two-view-debugger")
+    monkeypatch.setenv("GITHUB_ACTOR", "codex")
+    monkeypatch.setenv("GITHUB_TOKEN", "token")
+    monkeypatch.setenv("DEVIN_WEBHOOK_URL", "https://devin.example/webhook")
+    monkeypatch.setenv("DEVIN_WEBHOOK_SECRET", "secret")
+    monkeypatch.setenv("DRY_RUN", "1")
+
+    def fail_paginated(_path, _token):
+        raise AssertionError("dry run should skip dedupe lookups")
+
+    def fail_post_webhook(_url, _secret, _payload):
+        raise AssertionError("dry run should not post the webhook")
+
+    monkeypatch.setattr(devin_audit_bridge, "github_api_paginated", fail_paginated)
+    monkeypatch.setattr(devin_audit_bridge, "post_webhook", fail_post_webhook)
+
+    assert devin_audit_bridge.run() == 0
+    output = capsys.readouterr().out
+    assert "jeffhuber/cube-two-view-debugger#17@abc123" in output
+    assert "Use Devin's built-in GitHub PR label tools" in output
 
 
 def test_run_force_comment_posts_even_when_devin_already_reviewed_current_sha(

@@ -418,3 +418,13 @@ def test_labeler_skips_non_audit_comments():
 
     assert decision is None
     assert "not a final Devin audit result" in reason
+
+
+def test_labeler_requires_head_sha_for_final_state():
+    decision, reason = resolve_label_decision(
+        make_comment_event(body="## Devin Audit — PASS"),
+        current_head_sha="abc1234",
+    )
+
+    assert decision is None
+    assert "missing Head SHA" in reason

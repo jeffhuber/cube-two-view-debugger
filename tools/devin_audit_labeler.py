@@ -63,7 +63,7 @@ def classify_audit_comment(body: str) -> Optional[str]:
         return "done"
 
     if re.search(
-        r"Devin Audit\s*[—–-]\s*(BLOCKED|INCOMPLETE)\b",
+        r"Devin Audit\s*[—–-]\s*(BLOCKED|BLOCKER|INCOMPLETE)\b",
         body,
         flags=re.IGNORECASE,
     ):
@@ -98,6 +98,8 @@ def resolve_label_decision(
 
     issue_number = int(issue["number"])
     reviewed_sha = extract_reviewed_sha(body)
+    if status != "needs" and not reviewed_sha:
+        return None, "audit result is missing Head SHA"
     if reviewed_sha and current_head_sha and reviewed_sha != current_head_sha:
         return LabelDecision(
             issue_number=issue_number,

@@ -31,6 +31,9 @@
       "Bash(git merge --ff-only:*)",
       "Bash(git push --force-with-lease:*)",
 
+      "Bash(git -C /Users/jhuber/cube-snap:*)",
+      "Bash(git -C /Users/jhuber/cube-two-view-debugger:*)",
+
       "Bash(gh pr view:*)",
       "Bash(gh pr list:*)",
       "Bash(gh pr diff:*)",

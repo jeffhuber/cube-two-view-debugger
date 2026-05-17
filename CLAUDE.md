@@ -415,6 +415,18 @@ labeler combined, full coverage including trailer /
 Expected-labels / HEAD_CHANGED-substring-vs-structured regression
 cases). Run with `python3 -m pytest tests/test_devin_audit_bridge.py`.
 
+**Self-audit gotcha** — when modifying `tools/devin_audit_*.py`,
+remember that Devin's audit comment on your PR will likely quote
+identifiers from the labeler code in prose (e.g., describing the
+precedence ordering as `HEAD_CHANGED_DURING_REVIEW > trailer > prose
+fallbacks`). Any labeler match that uses a bare substring check on
+such an identifier will false-positive on Devin's own review of the
+PR. Require structured forms — `HEAD_CHANGED_DURING_REVIEW:\s*reviewed\b`
+matches the protocol form Devin is instructed to emit; the bare
+identifier in prose does not. Verified by the self-audit failure on
+cube-snap#130 / ctvd#118 (caught during smoke verification, fixed in
+the same PRs).
+
 ## Other Claude/Codex working conventions
 
 - **GitHub markdown bodies: body-file only.** Never pass PR, issue,

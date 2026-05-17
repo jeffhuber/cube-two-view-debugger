@@ -693,6 +693,62 @@ def test_failed_checks_tag_background_blue_dominance_after_anchor_recovered():
     assert signal["images"]["imageA"]["selectedAnchor"]["centerFace"] == "U"
 
 
+def test_failed_checks_tag_background_when_image_a_triple_collapses_anchor_evidence():
+    a = type(
+        "Analysis",
+        (),
+        {
+            "grids": [_stub_face_grid("U", cell_faces=["U", "B", "D", "F", "L", "L", "L", "R", "B"])],
+            "stickers": [],
+            "roi": (0, 100, 800, 1100),
+        },
+    )()
+    b = type(
+        "Analysis",
+        (),
+        {
+            "grids": [_stub_face_grid("D", cell_faces=["D", "B", "F", "L", "R", "R", "U", "U", "B"])],
+            "stickers": [],
+            "roi": (0, 100, 800, 1100),
+        },
+    )()
+
+    checks = _failed_checks_with_context(["image_a_face_triple_overlap_low_quality"], a, b)
+
+    assert checks == ["image_a_face_triple_overlap_low_quality", BACKGROUND_STICKER_NOISE_CHECK]
+    signal = _recognition_signals_with_failed_checks({}, checks, a, b)["backgroundStickerNoise"]
+    assert signal["reason"] == "image_a_face_triple_low_quality_with_anchor_evidence_collapse"
+    assert signal["images"]["imageA"]["selectedAnchor"]["cellFaceCounts"]["U"] == 1
+    assert signal["images"]["imageB"]["selectedAnchor"]["cellFaceCounts"]["D"] == 1
+
+
+def test_failed_checks_tag_background_when_no_legal_state_has_collapsed_anchor_evidence():
+    a = type(
+        "Analysis",
+        (),
+        {
+            "grids": [_stub_face_grid("U", cell_faces=["U", "B", "D", "F", "L", "L", "L", "R", "B"])],
+            "stickers": [],
+            "roi": (0, 100, 800, 1100),
+        },
+    )()
+    b = type(
+        "Analysis",
+        (),
+        {
+            "grids": [_stub_face_grid("D", cell_faces=["D", "B", "F", "L", "R", "R", "U", "U", "B"])],
+            "stickers": [],
+            "roi": (0, 100, 800, 1100),
+        },
+    )()
+
+    checks = _failed_checks_with_context(["no_legal_state"], a, b)
+
+    assert checks == ["no_legal_state", BACKGROUND_STICKER_NOISE_CHECK]
+    signal = _recognition_signals_with_failed_checks({}, checks, a, b)["backgroundStickerNoise"]
+    assert signal["reason"] == "no_legal_state_with_anchor_evidence_collapse"
+
+
 def _stub_face_grid(face, *, matched_count=9, fit_error=1.0, grid_samples=0, cell_faces=None, grid_id=None):
     from rubik_recognizer.colors import ColorMatch
 
@@ -1222,10 +1278,52 @@ def test_ranked_visible_face_triples_rescues_small_overlap_when_strict_empty():
 def test_grid_usable_for_triple_rejects_low_match_suspect_samples(monkeypatch):
     grid = type("Grid", (), {"matched_count": 5})()
 
-    monkeypatch.setattr(recognizer, "_grid_suspect_sample_score", lambda candidate: 4.9)
+    monkeypatch.setattr(recognizer, "_grid_suspect_sample_score", lambda candidate: 3.1)
     monkeypatch.setattr(recognizer, "_grid_bad_sample_count", lambda candidate: 0)
 
     assert not recognizer._grid_usable_for_triple(grid)
+
+
+def test_triple_rejects_contaminated_side_when_anchor_evidence_collapses(monkeypatch):
+    anchor_grid = type("Grid", (), {"matched_count": 9})()
+    contaminated_grid = type("Grid", (), {"matched_count": 6})()
+    clean_grid = type("Grid", (), {"matched_count": 9})()
+
+    monkeypatch.setattr(recognizer, "_grid_cell_face_counts", lambda candidate: {"U": 2})
+    monkeypatch.setattr(
+        recognizer,
+        "_grid_suspect_sample_score",
+        lambda candidate: 3.1 if candidate is contaminated_grid else 0.0,
+    )
+    monkeypatch.setattr(
+        recognizer,
+        "_grid_bad_sample_count",
+        lambda candidate: 2 if candidate is contaminated_grid else 0,
+    )
+
+    assert recognizer._triple_has_collapsed_anchor_contamination(
+        anchor_grid,
+        contaminated_grid,
+        clean_grid,
+        "U",
+    )
+
+
+def test_triple_keeps_contaminated_side_when_anchor_evidence_is_solid(monkeypatch):
+    anchor_grid = type("Grid", (), {"matched_count": 9})()
+    contaminated_grid = type("Grid", (), {"matched_count": 6})()
+    clean_grid = type("Grid", (), {"matched_count": 9})()
+
+    monkeypatch.setattr(recognizer, "_grid_cell_face_counts", lambda candidate: {"U": 4})
+    monkeypatch.setattr(recognizer, "_grid_suspect_sample_score", lambda candidate: 3.1)
+    monkeypatch.setattr(recognizer, "_grid_bad_sample_count", lambda candidate: 2)
+
+    assert not recognizer._triple_has_collapsed_anchor_contamination(
+        anchor_grid,
+        contaminated_grid,
+        clean_grid,
+        "U",
+    )
 
 
 def test_face_triple_failure_check_reports_low_quality_overlap_rescue():

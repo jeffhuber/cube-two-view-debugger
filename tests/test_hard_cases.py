@@ -35,7 +35,11 @@ def test_hard_case_manifest_records_open_issue_sets():
     assert rows["30"]["currentStatus"] == "success"
     assert {rows[set_id]["linkedIssue"] for set_id in ("46", "47", "48", "49")} == {85}
     assert rows["46"]["failureClass"] == "background_sticker_noise"
-    assert rows["46"]["currentCandidates"] == 14080
+    assert rows["46"]["currentCandidates"] == 0
+    assert rows["46"]["currentFailedChecks"] == [
+        "image_a_face_triple_overlap_low_quality",
+        "background_sticker_noise_suspected",
+    ]
     assert rows["49"]["currentFailedChecks"] == [
         "no_legal_state",
         "background_sticker_noise_suspected",

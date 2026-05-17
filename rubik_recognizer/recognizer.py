@@ -1442,6 +1442,8 @@ def _background_sticker_noise_signal(
 def _background_sticker_noise_reason(checks: Sequence[str], analysis_a: ImageAnalysis) -> str:
     if "image_a_U_anchor_missing" in set(checks) and _dominant_grid_center_face(analysis_a)[0] == "B":
         return "image_a_u_anchor_missing_with_blue_grid_dominance"
+    if "no_legal_state" in set(checks) and _dominant_grid_center_face(analysis_a)[0] == "B":
+        return "no_legal_state_with_blue_grid_dominance"
     return "all_face_counts_failed_with_anchor_evidence_collapse"
 
 
@@ -1688,6 +1690,14 @@ def _background_sticker_noise_suspected(
             and _selected_anchor_self_face_count(analysis_b, "D") <= MAX_BACKGROUND_STICKER_NOISE_ANCHOR_SELF_FACE_CELLS
         )
     if "image_a_U_anchor_missing" in unique:
+        dominant_face, dominant_count, total_grids = _dominant_grid_center_face(analysis_a)
+        return (
+            dominant_face == "B"
+            and dominant_count >= MIN_BACKGROUND_STICKER_NOISE_DOMINANT_GRID_CENTER_COUNT
+            and total_grids > 0
+            and dominant_count / total_grids >= MIN_BACKGROUND_STICKER_NOISE_DOMINANT_GRID_CENTER_SHARE
+        )
+    if "no_legal_state" in unique:
         dominant_face, dominant_count, total_grids = _dominant_grid_center_face(analysis_a)
         return (
             dominant_face == "B"

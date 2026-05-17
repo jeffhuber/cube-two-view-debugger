@@ -12,6 +12,7 @@ from rubik_recognizer.image_pipeline import (
     _find_cube_roi,
     _find_cube_roi_at_threshold,
     _nearest_available_point,
+    _preserve_white_component_center,
     _roi_covers_full_frame,
     _score_grid_centers,
 )
@@ -127,6 +128,78 @@ def test_tiny_white_component_filter_requires_many_white_candidates():
     ]
 
     assert _filter_tiny_white_components(white) is white
+
+
+def test_preserve_white_component_center_ignores_dark_ring_sample():
+    source_match = ColorMatch("white", "U", 0.0, 0.82, [("white", 0.0), ("blue", 40.0)])
+    sampled_match = ColorMatch("blue", "B", 41.8, 0.15, [("blue", 41.8), ("white", 51.3)])
+    source = Sticker(
+        id=1,
+        center=(10.0, 10.0),
+        bbox=(0, 0, 20, 20),
+        rgb=(226, 245, 254),
+        match=source_match,
+        area=1200,
+    )
+
+    rgb, match = _preserve_white_component_center(source, (105, 100, 97), sampled_match)
+
+    assert rgb == source.rgb
+    assert match is source_match
+
+
+def test_preserve_white_component_center_keeps_white_ring_sample():
+    source_match = ColorMatch("white", "U", 0.0, 0.82, [("white", 0.0), ("blue", 40.0)])
+    sampled_match = ColorMatch("white", "U", 2.0, 0.78, [("white", 2.0), ("blue", 45.0)])
+    source = Sticker(
+        id=1,
+        center=(10.0, 10.0),
+        bbox=(0, 0, 20, 20),
+        rgb=(226, 245, 254),
+        match=source_match,
+        area=1200,
+    )
+
+    rgb, match = _preserve_white_component_center(source, (220, 225, 230), sampled_match)
+
+    assert rgb == (220, 225, 230)
+    assert match is sampled_match
+
+
+def test_preserve_white_component_center_keeps_bright_ring_sample():
+    source_match = ColorMatch("white", "U", 0.0, 0.82, [("white", 0.0), ("green", 40.0)])
+    sampled_match = ColorMatch("green", "F", 34.0, 0.27, [("green", 34.0), ("white", 46.0)])
+    source = Sticker(
+        id=1,
+        center=(10.0, 10.0),
+        bbox=(0, 0, 20, 20),
+        rgb=(230, 246, 254),
+        match=source_match,
+        area=1200,
+    )
+
+    rgb, match = _preserve_white_component_center(source, (142, 163, 118), sampled_match)
+
+    assert rgb == (142, 163, 118)
+    assert match is sampled_match
+
+
+def test_preserve_white_component_center_keeps_dim_component_sample():
+    source_match = ColorMatch("white", "U", 0.0, 0.82, [("white", 0.0), ("blue", 40.0)])
+    sampled_match = ColorMatch("blue", "B", 41.8, 0.15, [("blue", 41.8), ("white", 51.3)])
+    source = Sticker(
+        id=1,
+        center=(10.0, 10.0),
+        bbox=(0, 0, 20, 20),
+        rgb=(176, 175, 173),
+        match=source_match,
+        area=1200,
+    )
+
+    rgb, match = _preserve_white_component_center(source, (105, 100, 97), sampled_match)
+
+    assert rgb == (105, 100, 97)
+    assert match is sampled_match
 
 
 def _synthetic_image(height: int, width: int, *, background_sat: float, cube_box=None) -> np.ndarray:

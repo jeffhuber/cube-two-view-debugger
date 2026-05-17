@@ -10,7 +10,7 @@ from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 import numpy as np
 from PIL import Image, ImageDraw, ImageOps
 
-from .colors import ColorMatch, RGB, classify_rgb
+from .colors import ColorMatch, RGB, classify_rgb, rgb_to_hsv
 
 
 Point = Tuple[float, float]
@@ -490,6 +490,8 @@ def _annotate_candidate(candidate: Dict, arr: Optional[np.ndarray], points: np.n
     spacing = _grid_spacing(centers)
     rgb = _sample_patch(arr, cx, cy, max(3, int(spacing * 0.16)), avoid_core=True)
     match = classify_rgb(rgb)
+    if source_stickers and 0 <= center_idx < len(source_stickers):
+        rgb, match = _preserve_white_component_center(source_stickers[center_idx], rgb, match)
     candidate["center_rgb"] = rgb
     candidate["center_face"] = match.face
     candidate["center_confidence"] = match.confidence
@@ -867,6 +869,8 @@ def _sample_grid_stickers(
                 sample_x, sample_y = source.center
                 rgb = _sample_patch(arr, sample_x, sample_y, radius, avoid_core=(r == 1 and c == 1))
                 match = classify_rgb(rgb)
+                if r == 1 and c == 1:
+                    rgb, match = _preserve_white_component_center(source, rgb, match)
                 sticker = Sticker(source.id, source.center, source.bbox, rgb, match, source.area, source.source, source.shape_angle)
             else:
                 rgb = _sample_patch(arr, cx, cy, radius, avoid_core=(r == 1 and c == 1))
@@ -894,6 +898,22 @@ def _sample_grid_stickers(
             row.append(sticker)
         rows.append(row)
     return rows
+
+
+def _preserve_white_component_center(source: Sticker, sampled_rgb: RGB, sampled_match: ColorMatch) -> Tuple[RGB, ColorMatch]:
+    source_match = source.match
+    if source_match.color != "white" or source_match.confidence < 0.45:
+        return sampled_rgb, sampled_match
+    _, _, source_value = rgb_to_hsv(source.rgb)
+    if source_value < 0.86:
+        return sampled_rgb, sampled_match
+    if sampled_match.color == "white":
+        return sampled_rgb, sampled_match
+
+    _, sampled_saturation, sampled_value = rgb_to_hsv(sampled_rgb)
+    if sampled_value < 0.58 or (sampled_saturation < 0.18 and sampled_match.confidence < 0.35):
+        return source.rgb, source_match
+    return sampled_rgb, sampled_match
 
 
 def _sample_patch(arr: np.ndarray, cx: float, cy: float, radius: int, avoid_core: bool) -> RGB:

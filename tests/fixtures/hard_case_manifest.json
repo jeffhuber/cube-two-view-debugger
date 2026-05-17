@@ -288,7 +288,7 @@
       "currentCategory": "reject_retake",
       "currentCandidates": 0,
       "currentFailedChecks": [
-        "image_a_U_anchor_missing",
+        "no_legal_state",
         "background_sticker_noise_suspected"
       ],
       "targetFailedChecksPresent": [
@@ -296,7 +296,7 @@
       ],
       "targetStatus": "rejected",
       "targetCategory": "reject_retake",
-      "notes": "Issue #85 +270 capture-yaw textured-background hard case. Shares Set 46's canonical corrected state; Fixer save includes captureYawQuarterTurns=3. The baseline capture returned full-frame ROI for both images and rejected at the image-A U-anchor prerequisite."
+      "notes": "Issue #85 +270 capture-yaw textured-background hard case. Shares Set 46's canonical corrected state; Fixer save includes captureYawQuarterTurns=3. White-center preservation now recovers the image-A U anchor, but selected side grids are still background-contaminated and no legal state is generated."
     }
   ]
 }

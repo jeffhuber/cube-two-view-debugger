@@ -195,7 +195,7 @@
       "expectedScoreOnceFixed": null,
       "currentStatus": "rejected",
       "currentCategory": "reject_retake",
-      "currentCandidates": 24200,
+      "currentCandidates": 14080,
       "currentFailedChecks": [
         "B_count_not_9",
         "D_count_not_9",

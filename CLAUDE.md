@@ -154,6 +154,16 @@ metadata, pass `--image <photo.jpg>` for a single label file. Treat
 physical sticker truth; three visible faces physically imply 27
 stickers.
 
+When comparing many labelled sets before/after recognizer changes, use
+the label baseline tool instead of hand-maintaining ad hoc command lists:
+
+```bash
+.venv/bin/python tools/label_geometry_baseline.py \
+  --set-id 46 --set-id 47 --set-id 48 --set-id 49 \
+  --json-output /tmp/label-geometry-baseline.json \
+  --overlay-dir /tmp/label-geometry-baseline-overlays
+```
+
 Do not treat exact `runs/labels/...` filenames as durable
 documentation unless the files have been copied into a tracked fixture
 or docs path; `runs/` is gitignored and those paths are often

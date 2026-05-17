@@ -176,6 +176,22 @@ def test_fit_hexagon_to_tiny_hull_returns_none():
     assert _fit_hexagon_to_hull([(0, 0), (1, 0), (0, 1)]) is None
 
 
+# ---- portability: discover_additional_tasks degrades gracefully on
+#      clean environments without /Users/jhuber/Downloads ----
+
+
+def test_discover_additional_tasks_returns_empty_when_downloads_missing(monkeypatch, tmp_path):
+    """Devin PR-#127 review caught this: on a clean CI/VM without the
+    local Downloads asset directory, tooling crashed with FileNotFoundError
+    instead of returning empty. This regression test pins the fix."""
+    from tools import extract_color_samples
+
+    missing = tmp_path / "definitely-does-not-exist"
+    monkeypatch.setattr(extract_color_samples, "DOWNLOADS", missing)
+    result = extract_color_samples.discover_additional_tasks(set())
+    assert result == []
+
+
 # ---- recognizer_impact_diagnostics (smoke test only — full coverage
 #      requires real images; integration-tested by the full sweep) ----
 
@@ -192,7 +208,14 @@ def test_recognizer_impact_diagnostics_smoke():
     )
     from tools.propose_geometry_labels import PROPOSERS
 
-    targets = discover_label_targets()
+    try:
+        targets = discover_label_targets()
+    except (FileNotFoundError, OSError):
+        # Clean CI/VM environments lack /Users/jhuber/Downloads or
+        # runs/labels; the test isn't applicable there.
+        pytest.skip("Local image/label assets not available in this environment")
+    if not targets:
+        pytest.skip("No (setId, side) labels discoverable in this environment")
     set_15 = next((t for t in targets if t.set_id == "15" and t.side == "A"), None)
     if set_15 is None:
         pytest.skip("Set 15 image A label not available in this environment")

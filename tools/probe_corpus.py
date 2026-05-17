@@ -898,6 +898,8 @@ def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
         "baseConfidence": selected.get("baseConfidence"),
         "repairChanges": selected.get("repairChanges"),
         "preRepairConflicts": selected.get("preRepairConflicts"),
+        "selectedGridQuality": signals.get("selectedGridQuality"),
+        "topVisibleTripleQuality": signals.get("topVisibleTripleQuality"),
         "imageHashes": image_hashes,
         "groundTruth_sha256": ground_truth_sha,
         "inputDrift": input_drift,

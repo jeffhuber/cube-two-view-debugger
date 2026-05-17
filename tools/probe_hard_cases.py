@@ -449,6 +449,7 @@ def probe_pair(
         "pairColorCalibration": signals.get("pairColorCalibration"),
         "backgroundStickerNoise": signals.get("backgroundStickerNoise"),
         "selectedGridQuality": signals.get("selectedGridQuality"),
+        "topVisibleTripleQuality": signals.get("topVisibleTripleQuality"),
         # Repair audit trail. Surfaces both the standard repair path and the
         # PR #76 conflict-backfill path so an operator scanning the hard-case
         # JSON can tell, per set, whether repair fired, whether backfill

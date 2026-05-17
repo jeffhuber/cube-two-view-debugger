@@ -195,14 +195,9 @@
       "expectedScoreOnceFixed": null,
       "currentStatus": "rejected",
       "currentCategory": "reject_retake",
-      "currentCandidates": 14080,
+      "currentCandidates": 0,
       "currentFailedChecks": [
-        "B_count_not_9",
-        "D_count_not_9",
-        "F_count_not_9",
-        "L_count_not_9",
-        "R_count_not_9",
-        "U_count_not_9",
+        "image_a_face_triple_overlap_low_quality",
         "background_sticker_noise_suspected"
       ],
       "targetFailedChecksPresent": [
@@ -210,7 +205,7 @@
       ],
       "targetStatus": "rejected",
       "targetCategory": "reject_retake",
-      "notes": "Issue #85 WCA-frame textured-background hard case. The baseline capture returned full-frame ROI for both images and rejected with all six face-count checks. PR #82 targets the ROI portion only; ground truth is pinned so future sticker/texture fixes can be scored."
+      "notes": "Issue #85 WCA-frame textured-background hard case. Low-match contaminated-grid gating now rejects the polluted Image A face triple before generating invalid candidates; ground truth is pinned so future sticker/texture fixes can be scored."
     },
     {
       "setId": "47",
@@ -225,14 +220,9 @@
       "expectedScoreOnceFixed": null,
       "currentStatus": "rejected",
       "currentCategory": "reject_retake",
-      "currentCandidates": 7920,
+      "currentCandidates": 0,
       "currentFailedChecks": [
-        "B_count_not_9",
-        "D_count_not_9",
-        "F_count_not_9",
-        "L_count_not_9",
-        "R_count_not_9",
-        "U_count_not_9",
+        "no_legal_state",
         "background_sticker_noise_suspected"
       ],
       "targetFailedChecksPresent": [
@@ -240,7 +230,7 @@
       ],
       "targetStatus": "rejected",
       "targetCategory": "reject_retake",
-      "notes": "Issue #85 +90 capture-yaw textured-background hard case. Shares Set 46's canonical corrected state; Fixer save includes captureYawQuarterTurns=1. The baseline capture returned full-frame ROI for both images and rejected with all six face-count checks."
+      "notes": "Issue #85 +90 capture-yaw textured-background hard case. Shares Set 46's canonical corrected state; Fixer save includes captureYawQuarterTurns=1. Contaminated-grid gating now rejects before generating candidates, while collapsed anchor evidence keeps the textured-background diagnostic."
     },
     {
       "setId": "48",

@@ -99,7 +99,10 @@ MAX_DIAGNOSTIC_TRIPLES = 12
 MAX_DIAGNOSTIC_MERGES = 5000
 MAX_DIAGNOSTIC_EXAMPLES = 8
 SUSPECT_GRID_SAMPLE_THRESHOLD = 2.5
-MAX_LOW_MATCH_GRID_SUSPECT_SAMPLE_SCORE = 4.8
+MAX_LOW_MATCH_GRID_SUSPECT_SAMPLE_SCORE = 3.0
+MAX_LOW_MATCH_GRID_BAD_SAMPLES = 2
+MAX_COLLAPSED_ANCHOR_GRID_SELF_FACE_CELLS = 2
+MAX_COLLAPSED_ANCHOR_SIDE_GRID_SUSPECT_SCORE = 3.0
 MAX_SUSPECT_SAMPLE_ALTERNATIVE_DELTA = 58.0
 MAX_TRIPLE_COMPONENT_OVERLAP = 3
 # Used only when strict triple selection finds no candidates. This lets
@@ -796,7 +799,7 @@ def _grid_cell_face_counts(grid: FaceGrid) -> Dict[str, int]:
     for row in getattr(grid, "stickers", []):
         for sticker in row:
             face = _primary_facelet_color(sticker)
-            counts[face if face in FACE_ORDER else "unknown"] += 1
+            counts[face if isinstance(face, str) and face in FACE_ORDER else "unknown"] += 1
     return {face: counts[face] for face in (*FACE_ORDER, "unknown") if counts[face]}
 
 
@@ -1431,7 +1434,7 @@ def _background_sticker_noise_signal(
 ) -> Dict[str, Any]:
     return {
         "status": "suspected",
-        "reason": _background_sticker_noise_reason(checks, analysis_a),
+        "reason": _background_sticker_noise_reason(checks, analysis_a, analysis_b),
         "images": {
             "imageA": _background_sticker_noise_image_signal(analysis_a, anchor="U"),
             "imageB": _background_sticker_noise_image_signal(analysis_b, anchor="D"),
@@ -1439,11 +1442,19 @@ def _background_sticker_noise_signal(
     }
 
 
-def _background_sticker_noise_reason(checks: Sequence[str], analysis_a: ImageAnalysis) -> str:
+def _background_sticker_noise_reason(
+    checks: Sequence[str],
+    analysis_a: ImageAnalysis,
+    analysis_b: ImageAnalysis,
+) -> str:
     if "image_a_U_anchor_missing" in set(checks) and _dominant_grid_center_face(analysis_a)[0] == "B":
         return "image_a_u_anchor_missing_with_blue_grid_dominance"
     if "no_legal_state" in set(checks) and _dominant_grid_center_face(analysis_a)[0] == "B":
         return "no_legal_state_with_blue_grid_dominance"
+    if "no_legal_state" in set(checks) and _anchor_evidence_collapsed(analysis_a, analysis_b):
+        return "no_legal_state_with_anchor_evidence_collapse"
+    if "image_a_face_triple_overlap_low_quality" in set(checks):
+        return "image_a_face_triple_low_quality_with_anchor_evidence_collapse"
     return "all_face_counts_failed_with_anchor_evidence_collapse"
 
 
@@ -1699,12 +1710,15 @@ def _background_sticker_noise_suspected(
         )
     if "no_legal_state" in unique:
         dominant_face, dominant_count, total_grids = _dominant_grid_center_face(analysis_a)
-        return (
+        blue_grid_dominance = (
             dominant_face == "B"
             and dominant_count >= MIN_BACKGROUND_STICKER_NOISE_DOMINANT_GRID_CENTER_COUNT
             and total_grids > 0
             and dominant_count / total_grids >= MIN_BACKGROUND_STICKER_NOISE_DOMINANT_GRID_CENTER_SHARE
         )
+        return blue_grid_dominance or _anchor_evidence_collapsed(analysis_a, analysis_b)
+    if "image_a_face_triple_overlap_low_quality" in unique:
+        return _anchor_evidence_collapsed(analysis_a, analysis_b)
     return False
 
 
@@ -1713,10 +1727,19 @@ def _all_face_counts_failed(checks: set[str]) -> bool:
 
 
 def _selected_anchor_self_face_count(analysis: ImageAnalysis, anchor: str) -> int:
+    if not hasattr(analysis, "grids"):
+        return 9
     grid = _assigned_grid_by_face(analysis, anchor).get(anchor)
     if grid is None:
         return 9
     return int(_grid_cell_face_counts(grid).get(anchor, 0))
+
+
+def _anchor_evidence_collapsed(analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> bool:
+    return (
+        _selected_anchor_self_face_count(analysis_a, "U") <= MAX_BACKGROUND_STICKER_NOISE_ANCHOR_SELF_FACE_CELLS
+        and _selected_anchor_self_face_count(analysis_b, "D") <= MAX_BACKGROUND_STICKER_NOISE_ANCHOR_SELF_FACE_CELLS
+    )
 
 
 def _dominant_grid_center_face(analysis: ImageAnalysis) -> Tuple[Optional[str], int, int]:
@@ -1904,6 +1927,8 @@ def _visible_face_triples(
                 continue
             if not all(_grid_usable_for_triple(grid) for grid in (anchor_grid, first_grid, second_grid)):
                 continue
+            if _triple_has_collapsed_anchor_contamination(anchor_grid, first_grid, second_grid, anchor):
+                continue
             overlap = _triple_overlap_count((anchor_grid, first_grid, second_grid))
             if overlap > max_overlap:
                 continue
@@ -2083,9 +2108,26 @@ def _grid_usable_for_triple(grid: FaceGrid) -> bool:
     suspect = _grid_suspect_sample_score(grid)
     if grid.matched_count <= 5 and suspect >= MAX_LOW_MATCH_GRID_SUSPECT_SAMPLE_SCORE:
         return False
-    if grid.matched_count <= 6 and _grid_bad_sample_count(grid) >= 4:
-        return False
     return True
+
+
+def _triple_has_collapsed_anchor_contamination(
+    anchor_grid: FaceGrid,
+    first_grid: FaceGrid,
+    second_grid: FaceGrid,
+    anchor: str,
+) -> bool:
+    if _grid_cell_face_counts(anchor_grid).get(anchor, 0) > MAX_COLLAPSED_ANCHOR_GRID_SELF_FACE_CELLS:
+        return False
+    return any(_side_grid_contaminated_near_collapsed_anchor(grid) for grid in (first_grid, second_grid))
+
+
+def _side_grid_contaminated_near_collapsed_anchor(grid: FaceGrid) -> bool:
+    return (
+        grid.matched_count <= 7
+        and _grid_bad_sample_count(grid) >= MAX_LOW_MATCH_GRID_BAD_SAMPLES
+        and _grid_suspect_sample_score(grid) >= MAX_COLLAPSED_ANCHOR_SIDE_GRID_SUSPECT_SCORE
+    )
 
 
 def _grid_sample_penalty(grid: FaceGrid) -> float:
@@ -2481,7 +2523,7 @@ def _primary_facelet_color(facelet: Any) -> Optional[str]:
     if match is not None and getattr(match, "face", None) in FACE_ORDER:
         return match.face
     face = getattr(facelet, "face", None)
-    return face if face in FACE_ORDER else None
+    return face if isinstance(face, str) and face in FACE_ORDER else None
 
 
 def _ranked_transforms(requirements: Dict[str, str], weights: Optional[Dict[str, float]] = None):

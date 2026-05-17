@@ -368,6 +368,21 @@ LABEL_UPDATE_FAILED: tools unavailable
     assert decision.reviewed_sha == "abc1234"
 
 
+def test_labeler_classifies_label_state_without_devin_audit_phrase():
+    body = """Head SHA: `abc1234`
+
+Label state: devin-audit-done
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label done"
+    assert decision is not None
+    assert decision.add_label == DONE_LABEL
+
+
 def test_labeler_classifies_blocked_comment():
     body = """## Devin Audit — BLOCKED
 
@@ -398,6 +413,21 @@ def test_labeler_requeues_when_head_sha_changed():
     assert decision is not None
     assert decision.add_label == LABELER_NEEDS_LABEL
     assert decision.remove_labels == (DONE_LABEL, BLOCKED_LABEL)
+
+
+def test_labeler_accepts_short_sha_prefix():
+    body = """Label state: devin-audit-done
+
+Head SHA: `abc1234`
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234def5678",
+    )
+
+    assert reason == "label done"
+    assert decision is not None
+    assert decision.add_label == DONE_LABEL
 
 
 def test_labeler_requeues_when_devin_reports_head_changed():

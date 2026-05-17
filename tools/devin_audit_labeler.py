@@ -51,9 +51,6 @@ def extract_reviewed_sha(body: str) -> Optional[str]:
 
 
 def classify_audit_comment(body: str) -> Optional[str]:
-    if "devin audit" not in body.lower():
-        return None
-
     if "HEAD_CHANGED_DURING_REVIEW" in body:
         return "needs"
 
@@ -72,6 +69,12 @@ def classify_audit_comment(body: str) -> Optional[str]:
         return "blocked"
 
     return None
+
+
+def sha_matches_reviewed_head(reviewed_sha: str, current_head_sha: str) -> bool:
+    reviewed = reviewed_sha.lower()
+    current = current_head_sha.lower()
+    return reviewed == current or current.startswith(reviewed)
 
 
 def resolve_label_decision(
@@ -100,7 +103,7 @@ def resolve_label_decision(
     reviewed_sha = extract_reviewed_sha(body)
     if status != "needs" and not reviewed_sha:
         return None, "audit result is missing Head SHA"
-    if reviewed_sha and current_head_sha and reviewed_sha != current_head_sha:
+    if reviewed_sha and current_head_sha and not sha_matches_reviewed_head(reviewed_sha, current_head_sha):
         return LabelDecision(
             issue_number=issue_number,
             add_label=NEEDS_LABEL,

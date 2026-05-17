@@ -15,16 +15,18 @@ import urllib.error
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterable, Optional, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
 
 
 NEEDS_LABEL = "needs-devin-audit"
 DONE_LABEL = "devin-audit-done"
 BLOCKED_LABEL = "devin-audit-blocked"
 TRIGGER_PHRASE = "@devin audit"
+FORCE_TRIGGER_PHRASE = "@devin audit force"
 IGNORED_ACTORS = {"devin-ai-integration[bot]", "vercel[bot]"}
 TRUSTED_COMMENTER_ASSOCIATIONS = {"OWNER", "MEMBER", "COLLABORATOR"}
 PULL_REQUEST_ACTIONS = {"opened", "synchronize", "reopened", "labeled"}
+DEVIN_COMMENT_AUTHORS = {"devin-ai-integration", "devin-ai-integration[bot]"}
 
 DEVIN_INSTRUCTIONS = textwrap.dedent(
     f"""\
@@ -52,6 +54,7 @@ DEVIN_INSTRUCTIONS = textwrap.dedent(
 class AuditRequest:
     pull_request: Dict[str, Any]
     trigger: Dict[str, str]
+    force: bool = False
 
 
 def load_json(path: Path) -> Dict[str, Any]:
@@ -64,6 +67,10 @@ def pr_labels(pr: Dict[str, Any]) -> set[str]:
 
 def has_trigger_phrase(text: str) -> bool:
     return TRIGGER_PHRASE in text.lower()
+
+
+def has_force_trigger_phrase(text: str) -> bool:
+    return FORCE_TRIGGER_PHRASE in text.lower()
 
 
 def resolve_audit_request(
@@ -109,9 +116,11 @@ def resolve_audit_request(
         pr = fetch_pull_request(int(issue["number"]))
         if pr.get("state") != "open":
             return None, "pull request is not open"
+        force = has_force_trigger_phrase(comment.get("body") or "")
         return AuditRequest(
             pull_request=pr,
             trigger={"event": event_name, "action": action, "actor": actor},
+            force=force,
         ), "dispatch"
 
     return None, f"unsupported event: {event_name}"
@@ -144,6 +153,25 @@ def build_payload(repository: str, request: AuditRequest) -> Dict[str, Any]:
     }
 
 
+def comment_author_login(comment: Dict[str, Any]) -> str:
+    user = comment.get("user") or comment.get("author") or {}
+    login = user.get("login")
+    return login if isinstance(login, str) else ""
+
+
+def comment_body(comment: Dict[str, Any]) -> str:
+    body = comment.get("body")
+    return body if isinstance(body, str) else ""
+
+
+def is_devin_comment(comment: Dict[str, Any]) -> bool:
+    return comment_author_login(comment) in DEVIN_COMMENT_AUTHORS
+
+
+def devin_already_reviewed_sha(head_sha: str, comments: Iterable[Dict[str, Any]]) -> bool:
+    return any(is_devin_comment(comment) and head_sha in comment_body(comment) for comment in comments)
+
+
 def github_api_json(path: str, token: str) -> Dict[str, Any]:
     request = urllib.request.Request(
         f"https://api.github.com{path}",
@@ -155,6 +183,21 @@ def github_api_json(path: str, token: str) -> Dict[str, Any]:
     )
     with urllib.request.urlopen(request, timeout=20) as response:
         return json.load(response)
+
+
+def github_api_paginated(path: str, token: str) -> List[Dict[str, Any]]:
+    items: List[Dict[str, Any]] = []
+    page = 1
+    while True:
+        separator = "&" if "?" in path else "?"
+        page_path = f"{path}{separator}per_page=100&page={page}"
+        batch = github_api_json(page_path, token)
+        if not isinstance(batch, list):
+            raise RuntimeError(f"expected list response from GitHub API path {page_path}")
+        items.extend(batch)
+        if len(batch) < 100:
+            return items
+        page += 1
 
 
 def post_webhook(url: str, secret: str, payload: Dict[str, Any]) -> Tuple[int, str]:
@@ -186,6 +229,10 @@ def require_env(name: str) -> str:
 
 
 def main() -> int:
+    return run()
+
+
+def run() -> int:
     event_path = Path(require_env("GITHUB_EVENT_PATH"))
     event_name = require_env("GITHUB_EVENT_NAME")
     action = os.environ.get("GITHUB_EVENT_ACTION", "")
@@ -193,9 +240,16 @@ def main() -> int:
     actor = require_env("GITHUB_ACTOR")
     event = load_json(event_path)
 
+    token: Optional[str] = None
+
+    def github_token() -> str:
+        nonlocal token
+        if token is None:
+            token = require_env("GITHUB_TOKEN")
+        return token
+
     def fetch_pull_request(number: int) -> Dict[str, Any]:
-        token = require_env("GITHUB_TOKEN")
-        return github_api_json(f"/repos/{repository}/pulls/{number}", token)
+        return github_api_json(f"/repos/{repository}/pulls/{number}", github_token())
 
     audit_request, reason = resolve_audit_request(
         event_name=event_name,
@@ -211,6 +265,14 @@ def main() -> int:
     webhook_url = require_env("DEVIN_WEBHOOK_URL")
     webhook_secret = require_env("DEVIN_WEBHOOK_SECRET")
     payload = build_payload(repository, audit_request)
+    pr_number = payload["pull_request"]["number"]
+    head_sha = payload["pull_request"]["head_sha"]
+    if not audit_request.force:
+        comments = github_api_paginated(f"/repos/{repository}/issues/{pr_number}/comments", github_token())
+        reviews = github_api_paginated(f"/repos/{repository}/pulls/{pr_number}/reviews", github_token())
+        if devin_already_reviewed_sha(head_sha, [*comments, *reviews]):
+            print(f"skip: Devin already reviewed head SHA {head_sha}")
+            return 0
     status, body = post_webhook(webhook_url, webhook_secret, payload)
     print(f"Devin webhook response: HTTP {status}")
     if body:

@@ -108,6 +108,22 @@ substantially, but it is **not default-safe** yet because the full recognizer
 corpus gate regresses solved cases. Treat it as an investigation switch, not a
 promotion candidate.
 
+Balanced 54-cell color assignment is a separate recognizer diagnostic. It
+keeps the cube invariant explicit: across the two selected three-face views,
+the visible cells should be assignable to exactly nine of each cube color. The
+default runtime reports `recognitionSignals.topVisibleBalancedColorAssignment`
+but does not let that assignment rewrite colors or reorder candidates. The
+ranking A/B switch is:
+
+```bash
+CUBE_RECOGNIZER_BALANCED_COLOR_SCORING=1 .venv/bin/python tools/probe_corpus.py --fail-on-contract
+CUBE_RECOGNIZER_BALANCED_COLOR_SCORING=1 .venv/bin/python tools/probe_hard_cases.py --include-grid-cells --include-option-coverage
+```
+
+Keep the switch opt-in until per-set corpus and hard-case deltas show the
+score penalty improves ranking without slowing broad repair cases or promoting
+background-contaminated grids.
+
 ## 6. Unit tests
 
 ```bash

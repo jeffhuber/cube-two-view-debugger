@@ -14,11 +14,14 @@ from rubik_recognizer.recognizer import (
     _assigned_grid_by_face,
     _attach_failed_pair_color_calibration_signal,
     _capture_yaw_state_to_wca,
+    _balanced_color_assignment_score_penalty,
+    _balanced_color_assignment_summary,
     _corner_assignment,
     _failed_checks_with_context,
     _grid_signal_summary,
     _image_b_visible_face_evidence_weak,
     _grid_matrix_for_orientation,
+    _merge_faces,
     _merged_face_candidates,
     _pair_calibration_anchors,
     _oriented_options_for_grid_map,
@@ -808,6 +811,101 @@ def test_visible_face_color_count_imbalance_allows_success_control_counts(monkey
     monkeypatch.setattr(recognizer, "_anchor_evidence_collapsed", lambda analysis_a, analysis_b: True)
 
     assert not recognizer._visible_face_color_count_imbalance_suspected(object(), object())
+
+
+def test_balanced_color_assignment_uses_cheapest_surplus_change():
+    faces = _solved_facelet_matrices()
+    faces["R"][0][0] = _facelet_with_alternatives("U", [("white", 0.0), ("red", 3.0)])
+
+    summary = _balanced_color_assignment_summary(faces, include_changes=True)
+
+    assert summary["status"] == "assigned"
+    assert summary["primaryCounts"]["U"] == 10
+    assert summary["primaryCounts"]["R"] == 8
+    assert summary["assignedCounts"] == {face: 9 for face in recognizer.FACE_ORDER}
+    assert summary["requiredChanges"] == 1
+    assert summary["changes"] == [{"cell": "R00", "from": "U", "to": "R", "cost": 3.4}]
+    assert _balanced_color_assignment_score_penalty(summary) > 0.0
+
+
+def test_balanced_color_assignment_reports_unassignable_when_no_alternative_can_fill_deficit():
+    faces = _solved_facelet_matrices()
+    faces["R"][0][0] = _facelet_with_alternatives("U", [("white", 0.0)])
+
+    summary = _balanced_color_assignment_summary(faces, include_changes=True)
+
+    assert summary["status"] == "unassignable"
+    assert summary["requiredChanges"] == 1
+    assert summary["cost"] is None
+    assert _balanced_color_assignment_score_penalty(summary) > 0.0
+
+
+def test_merge_faces_applies_opt_in_balanced_assignment_score_penalty(monkeypatch):
+    monkeypatch.setenv(recognizer.BALANCED_COLOR_SCORING_ENV, "1")
+    faces = _solved_facelet_matrices()
+    faces["R"][0][0] = _facelet_with_alternatives("U", [("white", 0.0), ("red", 3.0)])
+    image_a = {face: faces[face] for face in ("U", "R", "F")}
+    image_a["_score"] = 100.0
+    image_a["_visible_color_counts"] = recognizer._primary_face_counts(image_a)
+    image_b = {face: faces[face] for face in ("D", "L", "B")}
+    image_b["_score"] = 50.0
+    image_b["_visible_color_counts"] = recognizer._primary_face_counts(image_b)
+
+    merged = _merge_faces(image_a, image_b)
+
+    assert merged is not None
+    assert merged["_score"] < 150.0
+    assert merged["_balanced_color_assignment"]["status"] == "primary_count_scored"
+    assert merged["_balanced_color_assignment_score_penalty"] > 0.0
+
+
+def test_merge_faces_leaves_balanced_assignment_scoring_off_by_default():
+    faces = _solved_facelet_matrices()
+    faces["R"][0][0] = _facelet_with_alternatives("U", [("white", 0.0), ("red", 3.0)])
+    image_a = {face: faces[face] for face in ("U", "R", "F")}
+    image_a["_score"] = 100.0
+    image_b = {face: faces[face] for face in ("D", "L", "B")}
+    image_b["_score"] = 50.0
+
+    merged = _merge_faces(image_a, image_b)
+
+    assert merged is not None
+    assert merged["_score"] == 150.0
+    assert "_balanced_color_assignment" not in merged
+    assert "_balanced_color_assignment_score_penalty" not in merged
+
+
+def _solved_facelet_matrices():
+    return {
+        face: [[_facelet_with_alternatives(face, [(recognizer.FACE_TO_CENTER_COLOR[face], 0.0)]) for _ in range(3)] for _ in range(3)]
+        for face in recognizer.FACE_ORDER
+    }
+
+
+def _facelet_with_alternatives(face, alternatives):
+    from rubik_recognizer.colors import COLOR_TO_FACE, ColorMatch
+
+    color = recognizer.FACE_TO_CENTER_COLOR[face]
+    first_color, first_distance = alternatives[0]
+    match = ColorMatch(
+        first_color,
+        COLOR_TO_FACE[first_color],
+        first_distance,
+        0.8,
+        alternatives,
+    )
+    return type(
+        "Facelet",
+        (),
+        {
+            "source": "component",
+            "rgb": (230, 230, 230),
+            "shape_angle": None,
+            "match": match,
+            "face": face,
+            "color": color,
+        },
+    )()
 
 
 def _stub_face_grid(face, *, matched_count=9, fit_error=1.0, grid_samples=0, cell_faces=None, grid_id=None):

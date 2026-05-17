@@ -1,0 +1,44 @@
+# Devin audit bridge
+#
+# GitHub's direct webhook cannot send Devin's required `x-webhook-secret`
+# header, so this workflow acts as a tiny metadata-only bridge. It never
+# checks out or runs pull request code.
+#
+# Required repo secrets:
+#   DEVIN_WEBHOOK_URL     Custom Webhook URL from Devin
+#   DEVIN_WEBHOOK_SECRET  Secret Devin expects in the x-webhook-secret header
+
+name: Devin audit bridge
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, labeled]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+jobs:
+  dispatch:
+    if: >
+      github.actor != 'devin-ai-integration[bot]' &&
+      github.actor != 'vercel[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out bridge code from default branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+
+      - name: Dispatch Devin audit request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_EVENT_ACTION: ${{ github.event.action }}
+          DEVIN_WEBHOOK_URL: ${{ secrets.DEVIN_WEBHOOK_URL }}
+          DEVIN_WEBHOOK_SECRET: ${{ secrets.DEVIN_WEBHOOK_SECRET }}
+        run: python tools/devin_audit_bridge.py

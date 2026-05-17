@@ -383,6 +383,53 @@ Label state: devin-audit-done
     assert decision.add_label == DONE_LABEL
 
 
+def test_labeler_classifies_devin_audit_result_heading():
+    body = """## Devin Audit Result — PASS
+
+**Head SHA:** `abc1234`
+
+**Intended label state:** `devin-audit-done` (add), `needs-devin-audit` (remove if present).
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label done"
+    assert decision is not None
+    assert decision.add_label == DONE_LABEL
+
+
+def test_labeler_classifies_bold_intended_label_state():
+    body = """Head SHA: `abc1234`
+
+**Intended label state:** `devin-audit-done` (add), `needs-devin-audit` (remove if present).
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label done"
+    assert decision is not None
+    assert decision.add_label == DONE_LABEL
+
+
+def test_labeler_classifies_bold_intended_blocked_label_state():
+    body = """Head SHA: `abc1234`
+
+**Intended label state:** `devin-audit-blocked` (add), `devin-audit-done` (remove if present).
+"""
+    decision, reason = resolve_label_decision(
+        make_comment_event(body=body),
+        current_head_sha="abc1234",
+    )
+
+    assert reason == "label blocked"
+    assert decision is not None
+    assert decision.add_label == BLOCKED_LABEL
+
+
 def test_labeler_classifies_blocked_comment():
     body = """## Devin Audit — BLOCKED
 

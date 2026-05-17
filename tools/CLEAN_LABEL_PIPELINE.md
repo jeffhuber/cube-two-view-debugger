@@ -18,6 +18,11 @@ checkout — `runs/labels/` is gitignored and lives here, not in worktrees).
   invariant; ambiguous sets are skipped (not silently emitted)
 - Outputs `runs/color_samples_geom.jsonl` (one line per sticker, ~1500
   samples across 28 sets)
+- Includes production classifier mode predictions for:
+  - `canonical`
+  - `canonical_adaptive`
+  - `knn5_lab`
+  - `knn5_lab_adaptive`
 
 Expected: perfectly balanced 252/color, 2 sets skipped (`ambiguous_face_id`
 on currently-flagged sets 27, 28).
@@ -49,7 +54,47 @@ trusting the dataset.
 
 Expected: baseline ~95.6%, best learned candidate (RF-200) ~97.95%.
 
-## 4. Unit tests
+## 4. Evaluate production classifier modes
+
+```bash
+.venv/bin/python tools/evaluate_color_classifier_modes.py \
+  --input runs/color_samples_geom.jsonl \
+  --json-output runs/color_classifier_modes_report.json
+```
+
+This compares the runtime classifier modes that production recognizer code can
+actually use:
+
+- current canonical
+- current canonical + adaptive palette
+- KNN5 Lab
+- KNN5 Lab + adaptive palette normalization
+
+Report both aggregate accuracy and per-set deltas. Treat RF-200 from the
+bake-off as an upper-bound benchmark, not the first runtime implementation.
+
+## 5. Regenerate KNN5 runtime constants
+
+```bash
+.venv/bin/python tools/regenerate_knn_color_data.py \
+  --input runs/color_samples_geom.jsonl \
+  --output rubik_recognizer/knn_color_data.py
+```
+
+The shipped `knn5_lab` runtime mode is phase 1: it is dependency-free and
+conservative, using KNN5 only as a red/orange override when canonical Lab
+classification is already ambiguous. The current thresholds
+(`MAX_KNN5_RED_ORANGE_CANONICAL_DELTA = 5.0`,
+`MIN_KNN5_RED_ORANGE_CONFIDENCE = 0.64`) were selected from the clean-label
+mode sweep because they preserve wins on Sets 30/31/46, have no per-set
+clean-label regressions, and keep both the corpus and hard-case gates passing
+under `CUBE_RECOGNIZER_CLASSIFIER=knn5_lab`.
+
+Phase 2 should evaluate a broader learned-classifier replacement to recover
+more of the bake-off headroom, but only after measuring per-set deltas and
+recognizer gates as strictly as this first runtime path.
+
+## 6. Unit tests
 
 ```bash
 .venv/bin/python -m pytest tests/test_clean_label_pipeline.py -v
@@ -84,10 +129,12 @@ module docstring for the full design. Short version:
 
 ## What this is NOT
 
-- Not a production-recognizer change. `colors.py`, `recognizer.py`,
-  `image_pipeline.py` are untouched.
-- Not a Codex-style heuristic PR. Adds no thresholds.
-- Not a final-classifier ship. The bake-off identifies a winning
-  candidate (RF-200); a separate follow-up PR should hand-code the
-  winner's inference in numpy and integrate it into `colors.py` behind
-  an A/B path.
+- Not a default recognizer flip. The production recognizer still uses
+  canonical color classification unless `CUBE_RECOGNIZER_CLASSIFIER` is
+  explicitly set.
+- Not an RF-200 runtime port. RF-200 remains the measured upper-bound
+  benchmark from the bake-off; the first runtime path is the smaller
+  dependency-free `knn5_lab` mode.
+- Not a broad learned-classifier replacement. `knn5_lab` is deliberately
+  conservative and only overrides tight red/orange disagreements where
+  the KNN vote is confident enough to preserve corpus and hard-case gates.

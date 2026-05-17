@@ -42,11 +42,12 @@ sys.path.insert(0, str(REPO_ROOT))
 from collections import Counter  # noqa: E402
 
 from rubik_recognizer.colors import (  # noqa: E402
+    CLASSIFIER_CANONICAL,
     COLOR_ORDER,
     COLOR_TO_FACE,
     FACE_TO_COLOR,
     build_adaptive_palette,
-    classify_rgb,
+    classify_rgb_with_mode,
 )
 from rubik_recognizer.validation import FACE_ORDER  # noqa: E402
 from tools.extract_color_samples import (  # noqa: E402
@@ -183,7 +184,7 @@ def discover_orientation(
     Pass `palette` to use the adaptive (per-image) calibrated classifier
     instead of the default canonical palette. Required for shadowed faces
     (Image B's L/B faces in particular)."""
-    matches = [classify_rgb(rgb, prototypes=palette) for rgb in rgbs_row_major]
+    matches = [classify_rgb_with_mode(rgb, CLASSIFIER_CANONICAL, prototypes=palette) for rgb in rgbs_row_major]
     pairs = [(m.color, m.confidence) for m in matches]
     best = (False, 0, float("-inf"))
     for mirror, rot in product([False, True], range(4)):
@@ -215,7 +216,10 @@ def sample_face(
     canonical_quad = canonical_corner_order([tuple(p) for p in quad_image_coords])
     centers_sampled = sticker_centers(canonical_quad, inset=inset)
     rgbs_sampled = [sample_rgb(arr, x, y) for (x, y) in centers_sampled]
-    classified_sampled = [classify_rgb(rgb, prototypes=palette).color for rgb in rgbs_sampled]
+    classified_sampled = [
+        classify_rgb_with_mode(rgb, CLASSIFIER_CANONICAL, prototypes=palette).color
+        for rgb in rgbs_sampled
+    ]
 
     mirror, rot, matches = discover_orientation(rgbs_sampled, gt_colors, palette=palette)
 
@@ -291,7 +295,7 @@ def _sample_multisets(prepared: Dict, inset: float) -> Dict[str, Counter]:
         canonical_quad = canonical_corner_order([tuple(p) for p in quads[label]])
         centers = sticker_centers(canonical_quad, inset=inset)
         rgbs = [sample_rgb(arr, x, y) for (x, y) in centers]
-        out[label] = Counter(classify_rgb(rgb).color for rgb in rgbs)
+        out[label] = Counter(classify_rgb_with_mode(rgb, CLASSIFIER_CANONICAL).color for rgb in rgbs)
     return out
 
 
@@ -405,7 +409,7 @@ def identify_faces_from_multisets(
         canonical_quad = canonical_corner_order([tuple(p) for p in quads[label]])
         centers = sticker_centers(canonical_quad, inset=inset)
         rgbs = [sample_rgb(arr, x, y) for (x, y) in centers]
-        classified = [classify_rgb(rgb).color for rgb in rgbs]
+        classified = [classify_rgb_with_mode(rgb, CLASSIFIER_CANONICAL).color for rgb in rgbs]
         sampled_multisets[label] = Counter(classified)
 
     def score_mapping(mapping: Dict[str, str]) -> int:

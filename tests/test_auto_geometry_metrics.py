@@ -174,3 +174,43 @@ def test_fit_hexagon_to_regular_hexagonal_hull():
 
 def test_fit_hexagon_to_tiny_hull_returns_none():
     assert _fit_hexagon_to_hull([(0, 0), (1, 0), (0, 1)]) is None
+
+
+# ---- recognizer_impact_diagnostics (smoke test only — full coverage
+#      requires real images; integration-tested by the full sweep) ----
+
+
+def test_recognizer_impact_diagnostics_smoke():
+    """Verify the impact-diagnostics block has the expected schema when
+    run against a real labeled pair. This is a smoke test guarding the
+    output shape so downstream consumers (Devin's audit, the summary
+    table) don't break silently if fields are renamed."""
+    from tools.evaluate_auto_geometry import (
+        LabelTarget,
+        discover_label_targets,
+        recognizer_impact_diagnostics,
+    )
+    from tools.propose_geometry_labels import PROPOSERS
+
+    targets = discover_label_targets()
+    set_15 = next((t for t in targets if t.set_id == "15" and t.side == "A"), None)
+    if set_15 is None:
+        pytest.skip("Set 15 image A label not available in this environment")
+    set_15.load()
+    proposal = PROPOSERS["recognizer_grids"].propose(set_15)
+    impact = recognizer_impact_diagnostics(set_15, proposal)
+
+    # Schema check: all expected keys present with correct types
+    expected_keys = {
+        "stickerCount", "outsideHullStickerCount", "outsideHullFraction",
+        "outsideAllFacesStickerCount", "outsideAllFacesFraction",
+        "stickersPerProposedFace", "recognizerBestGridContainment",
+        "recognizerGridsAccepted", "recognizerGridsConsidered",
+    }
+    assert expected_keys.issubset(impact.keys())
+    assert isinstance(impact["stickerCount"], int) and impact["stickerCount"] > 0
+    assert 0.0 <= impact["outsideHullFraction"] <= 1.0
+    assert isinstance(impact["stickersPerProposedFace"], dict)
+    # recognizer_grids proposer trivially has all stickers inside its
+    # self-derived hull (the hull IS the convex hull of those stickers).
+    assert impact["outsideHullStickerCount"] == 0

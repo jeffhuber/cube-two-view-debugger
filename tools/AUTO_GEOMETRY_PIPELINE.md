@@ -35,6 +35,8 @@ Subset of proposers: `--proposers recognizer_grids saturation_hexagon`.
 
 ## 3. Metrics
 
+### Geometry accuracy
+
 For each (target, proposer):
 
 - **`cubeHullIoU`** — mask-based polygon IoU of proposed hull vs hand-labeled `cubeHull`
@@ -44,7 +46,19 @@ For each (target, proposer):
 - **`meanFaceIoU_byLabel`** — mean of `perFace.*.iou`. Penalises label mistakes.
 - **`meanFaceIoU_bestMatch`** — Hungarian best-assignment of proposed quads to GT quads, normalised by `max(|proposed|, |gt|)`. Reports geometric correctness independent of face-label correctness.
 
-Pass thresholds (used in the summary):
+### Recognizer-impact diagnostics
+
+"Would this proposed geometry have *helped* the recognizer's actual job?" Added per Devin's PR-#127 ask. For each (target, proposer), `recognizerImpact` captures:
+
+- **`stickerCount`** — total stickers `analyze_image` detected on this photo
+- **`outsideHullStickerCount`** / **`outsideHullFraction`** — stickers whose centers fall outside the *proposed* cube hull. High = proposer missed cube area OR mask is contaminated by background.
+- **`outsideAllFacesStickerCount`** / **`outsideAllFacesFraction`** — stickers not inside any *proposed* face quad. Recognizer would lose these stickers entirely if the proposed geometry replaced its current ROI/grid pipeline.
+- **`stickersPerProposedFace`** — per face: how many recognizer-detected stickers fall inside. Ideal = 9.
+- **`recognizerBestGridContainment`** — for each `FaceGrid` the recognizer's existing grid selection would pick (best matched_count per `center_face`), what fraction of its 9 predicted sticker centers lies inside *any* proposed face quad
+- **`recognizerGridsAccepted`** / **`recognizerGridsConsidered`** — count of recognizer-chosen grids passing the ≥7/9-contained threshold. A proposer that accepts most existing grids is a low-disruption integration; one that rejects most would force the recognizer to refit.
+
+### Pass thresholds (used in the summary)
+
 - `cubeHullIoU >= 0.85` for hull
 - `meanFaceIoU_bestMatch >= 0.75` for face quads
 

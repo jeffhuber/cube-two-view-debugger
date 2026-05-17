@@ -35,6 +35,7 @@ from PIL import Image, ImageDraw, ImageOps
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
+from rubik_recognizer.image_pipeline import analyze_image  # noqa: E402
 from rubik_recognizer.validation import FACE_ORDER  # noqa: E402
 from tools.extract_color_samples import (  # noqa: E402
     EXPECTED_FACES_BY_SIDE,
@@ -43,6 +44,7 @@ from tools.extract_color_samples import (  # noqa: E402
 )
 from tools.inspect_cube_isolation import (  # noqa: E402
     convex_hull,
+    expand_polygon,
     point_in_polygon,
 )
 from tools.propose_geometry_labels import (  # noqa: E402
@@ -267,6 +269,8 @@ def evaluate_target(target: LabelTarget, proposer) -> Dict:
     gt_quads = [target.gt_face_quads[f] for f in expected_faces if f in target.gt_face_quads]
     matched_face_iou = _best_match_face_iou(proposed_quads, gt_quads, w, h)
 
+    impact = recognizer_impact_diagnostics(target, proposal)
+
     return {
         "setId": target.set_id,
         "side": target.side,
@@ -277,7 +281,118 @@ def evaluate_target(target: LabelTarget, proposer) -> Dict:
         "meanFaceIoU_byLabel": round(float(np.mean(face_iou_vals)), 4) if face_iou_vals else 0.0,
         "meanFaceIoU_bestMatch": round(matched_face_iou, 4),
         "meanCornerErrorPx_byLabel": round(float(np.mean(face_corner_vals)), 2) if face_corner_vals else None,
+        "recognizerImpact": impact,
         "proposerNotes": proposal.notes,
+    }
+
+
+_ANALYSIS_CACHE: Dict[str, object] = {}
+
+
+def _cached_analyze_image(image_path: Path):
+    """Single analyze_image call per image path across all proposers in
+    one run. Cuts the sweep runtime ~4× since recognizer_impact_diagnostics
+    runs the recognizer once per (target, proposer) and `recognizer_grids`
+    also runs it once."""
+    key = str(image_path)
+    if key not in _ANALYSIS_CACHE:
+        _ANALYSIS_CACHE[key] = analyze_image(image_path.read_bytes())
+    return _ANALYSIS_CACHE[key]
+
+
+def recognizer_impact_diagnostics(
+    target: "LabelTarget",
+    proposal: "Proposal",
+) -> Dict:
+    """'Would the proposed geometry have helped recognition?'
+
+    For each proposed cube hull / face quad set, run analyze_image on the
+    same photo and report:
+
+      * outsideHullStickerCount — detected stickers whose centers fall
+        outside the proposed cube hull (high count = proposer missed cube
+        area OR mask is contaminated by background)
+      * outsideAllFacesStickerCount — detected stickers not inside any
+        proposed face quad
+      * stickersPerProposedFace — per face: how many recognizer-detected
+        stickers fall inside. Ideal=9 per face.
+      * recognizerGridsContainedFraction — for each best-matched-count
+        FaceGrid the recognizer chose per center_face, what fraction of
+        its 9 sticker centers lie inside ANY proposed face quad. A
+        proposer's face quad set "validates" a recognizer grid when this
+        is ≥0.78 (7+/9 inside); below that the grid would effectively be
+        rejected by the proposer's geometry.
+      * recognizerGridsAccepted — count of recognizer-chosen grids that
+        clear the 7/9-contained threshold
+
+    These metrics turn the IoU numbers into 'so what for the recognizer's
+    actual job', per Devin's PR-#127 ask."""
+    # Cached so one analyze_image call serves all proposers on the same
+    # image (the recognizer_grids proposer also runs analyze_image; without
+    # caching this would 5× the wall time on a full sweep).
+    analysis = _cached_analyze_image(target.image_path)
+    stickers = analysis.stickers
+
+    proposed_hull = proposal.cube_hull if len(proposal.cube_hull) >= 3 else []
+    proposed_faces = list(proposal.face_quads.items())  # [(face_name, quad)]
+
+    outside_hull = 0
+    outside_all_faces = 0
+    stickers_per_face: Dict[str, int] = {f: 0 for f, _ in proposed_faces}
+
+    for s in stickers:
+        cx, cy = float(s.center[0]), float(s.center[1])
+        if proposed_hull and not point_in_polygon((cx, cy), proposed_hull):
+            outside_hull += 1
+        in_any_face = False
+        for face_name, quad in proposed_faces:
+            if len(quad) >= 3 and point_in_polygon((cx, cy), quad):
+                stickers_per_face[face_name] += 1
+                in_any_face = True
+                break
+        if proposed_faces and not in_any_face:
+            outside_all_faces += 1
+
+    # Recognizer's best grid per face (its actual choice via matched_count)
+    grids_by_face: Dict[str, list] = {}
+    for grid in analysis.grids:
+        grids_by_face.setdefault(grid.center_face, []).append(grid)
+    best_grids = {
+        face: min(cands, key=lambda g: (-g.matched_count, g.fit_error))
+        for face, cands in grids_by_face.items()
+    }
+
+    grid_containment: Dict[str, float] = {}
+    accepted = 0
+    for face, grid in best_grids.items():
+        # 9 sticker centers from this grid
+        centers: List[Point] = []
+        for row in grid.points:
+            for (gx, gy) in row:
+                centers.append((float(gx), float(gy)))
+        if not centers:
+            continue
+        inside = 0
+        for cx, cy in centers:
+            for _f, quad in proposed_faces:
+                if len(quad) >= 3 and point_in_polygon((cx, cy), quad):
+                    inside += 1
+                    break
+        frac = inside / len(centers)
+        grid_containment[face] = round(frac, 3)
+        if frac >= 7 / 9:
+            accepted += 1
+
+    return {
+        "stickerCount": len(stickers),
+        "outsideHullStickerCount": outside_hull,
+        "outsideHullFraction": round(outside_hull / max(1, len(stickers)), 3),
+        "outsideAllFacesStickerCount": outside_all_faces,
+        "outsideAllFacesFraction": round(outside_all_faces / max(1, len(stickers)), 3),
+        "stickersPerProposedFace": stickers_per_face,
+        "recognizerBestGridContainment": grid_containment,
+        "recognizerGridsAccepted": accepted,
+        "recognizerGridsConsidered": len(best_grids),
     }
 
 
@@ -394,10 +509,13 @@ def main() -> int:
             if "error" in row:
                 print(f"  set {target.set_id} {target.side}: ERROR {row['error']}", file=sys.stderr)
                 continue
+            imp = row.get("recognizerImpact") or {}
             print(
                 f"  set {target.set_id} {target.side}: hullIoU={row['cubeHullIoU']:.3f}  "
                 f"face(byLabel)={row['meanFaceIoU_byLabel']:.3f}  "
-                f"face(bestMatch)={row['meanFaceIoU_bestMatch']:.3f}",
+                f"face(bestMatch)={row['meanFaceIoU_bestMatch']:.3f}  "
+                f"outsideHull={imp.get('outsideHullStickerCount', '?')}/{imp.get('stickerCount', '?')}  "
+                f"gridsAccepted={imp.get('recognizerGridsAccepted', '?')}/{imp.get('recognizerGridsConsidered', '?')}",
                 file=sys.stderr,
             )
             if not args.no_overlays:
@@ -453,6 +571,28 @@ def main() -> int:
             f"  {proposer_name:<28s}  hull≥0.85: {hull_pass}/{n} ({hull_pass/n:.0%})  "
             f"face≥0.75: {face_pass}/{n} ({face_pass/n:.0%})  "
             f"both: {both_pass}/{n} ({both_pass/n:.0%})"
+        )
+
+    # Recognizer-impact aggregates: would this proposer have helped the
+    # actual recognizer's job? Average across pairs.
+    summary_lines.append("")
+    summary_lines.append("recognizer impact (mean across pairs):")
+    summary_lines.append(
+        f"  {'proposer':<28s}  {'outsideHull':>13s}  {'outsideAllFaces':>16s}  {'gridsAccepted':>13s}"
+    )
+    for proposer_name in args.proposers:
+        rows_p = by_proposer.get(proposer_name, [])
+        impacts = [r["recognizerImpact"] for r in rows_p if "recognizerImpact" in r]
+        if not impacts:
+            continue
+        m_outside_hull = float(np.mean([i["outsideHullFraction"] for i in impacts]))
+        m_outside_all = float(np.mean([i["outsideAllFacesFraction"] for i in impacts]))
+        m_accepted = float(np.mean([
+            i["recognizerGridsAccepted"] / max(1, i["recognizerGridsConsidered"]) for i in impacts
+        ]))
+        summary_lines.append(
+            f"  {proposer_name:<28s}  {m_outside_hull:>12.1%}   {m_outside_all:>15.1%}   "
+            f"{m_accepted:>12.1%}"
         )
 
     # Per-proposer worst-3 (by hullIoU)

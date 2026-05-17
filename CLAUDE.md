@@ -361,6 +361,13 @@ only. Codex may merge after Devin is clear and Codex independently
 verifies checks/diff. Claude asks before merging unless explicitly
 delegated in-thread.
 
+The audit labeler reacts only to Devin-authored PR comments and runs
+default-branch code. If GitHub's built-in workflow token returns
+`Resource not accessible by integration` while applying labels, set
+the repository secret `DEVIN_AUDIT_LABEL_TOKEN` to a fine-grained
+token with Issues read/write access for that repository; the labeler
+falls back to `github.token` when the secret is absent.
+
 ## Other Claude/Codex working conventions
 
 - **GitHub markdown bodies: body-file only.** Never pass PR, issue,

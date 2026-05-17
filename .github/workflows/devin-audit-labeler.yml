@@ -3,6 +3,9 @@
 # Devin webhook-created sessions currently cannot always access built-in label
 # tools, so this workflow applies the final audit-state labels when Devin posts
 # its audit result comment. It only reacts to Devin-authored PR comments.
+#
+# If GitHub's built-in token cannot label Devin-authored events, configure
+# DEVIN_AUDIT_LABEL_TOKEN as a fine-grained token with Issues read/write access.
 
 name: Devin audit labeler
 
@@ -29,5 +32,5 @@ jobs:
 
       - name: Apply Devin audit labels
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.DEVIN_AUDIT_LABEL_TOKEN || github.token }}
         run: python3 tools/devin_audit_labeler.py

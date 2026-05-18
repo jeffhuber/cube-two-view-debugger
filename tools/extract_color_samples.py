@@ -111,6 +111,14 @@ def discover_additional_tasks(corpus_set_ids: Iterable[str]) -> List[PairTask]:
     crash, per Devin PR-#127 portability review."""
     if not DOWNLOADS.is_dir():
         return []
+    # Some sandboxed Bash environments (Claude Code worktree sessions) leave
+    # /Users/jhuber/Downloads listable=False even though is_dir() returns
+    # True. Same shape as the CI/VM-no-Downloads case the original guard
+    # was written for — return [] rather than raising PermissionError.
+    try:
+        next(iter(DOWNLOADS.iterdir()), None)
+    except (PermissionError, OSError):
+        return []
 
     seen = set(corpus_set_ids)
 

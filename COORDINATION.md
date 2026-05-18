@@ -57,7 +57,8 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 | Owner | Branch | PR | What | Touches | ETA |
 |---|---|---|---|---|---|
-| Claude | `claude/vertex-regressor` | [#142](https://github.com/jeffhuber/cube-two-view-debugger/pull/142) | Learned face-quad regressor on 68 hull labels (mixed result: better mean metrics, worse strict-pass rate vs RANSAC) | `tools/train_vertex_regressor.py` (new), `LearnedVertexProposer` in `tools/propose_geometry_labels.py`, new `tests/test_learned_vertex_proposer.py` | devin-audit-done; merging now |
+| Claude | `claude/tools-cleanup-nits` | [#146](https://github.com/jeffhuber/cube-two-view-debugger/pull/146) | Roll up Devin's non-blocking nits from #139 + #140 (unused imports, dead `_load_image_and_quads`, drop dead `category` key) | `tools/evaluate_mask_pipeline.py`, `tools/equalize_faces.py`, `tools/evaluate_equalize_lift.py` | needs-devin-audit |
+| Claude | `claude/coordination-cleanup` | this PR | Refresh COORDINATION.md (clear shipped, add merged-into-Recently-Shipped, supersede stale next-steps) + add `schedule`/`workflow_dispatch` triggers to CLAUDE.md audit-chain section | `COORDINATION.md`, `CLAUDE.md` | needs-devin-audit |
 
 *(Codex: please populate your row when you start something.)*
 
@@ -69,11 +70,15 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 ### Claude
 
+- **#142** — Learned vertex regressor (sklearn Ridge on 68 hull labels). Mixed result: +5.9pp mean face IoU and 3× lower sticker-center error vs RANSAC, but 0% vs 12% pass at face≥0.85. Lands as a checkpoint, not yet a production proposer; data is the binding constraint.
 - **#140** — Equalize-faces experiment. Negative result; confirms color equalization alone is not enough without better geometry.
 - **#139** — End-to-end mask-pipeline evaluator. Mask path currently averages 61.5% sticker accuracy; useful evaluator, not production path yet.
 - **#137** — RANSAC/Nelder-Mead hexagon fit + sticker-center error + classification accuracy. Face IoU 0.666 mean, 12% pass at ≥0.85 — geometry plateau confirmed.
 - **#136** — Face rectification + per-sticker color extraction. Flat 300×300 face images; trivial pixel slicing for color sampling.
-- **#133** — Rembg foundation-model proposers + grid-rejection diagnostic. Cube hull is solved (100% pass at hullIoU≥0.85, mean 0.962).
+
+### Infra (Devin-authored, mirrored across both repos)
+
+- **ctvd#144 / cube-snap#135** — Audit watchdog: 5-min `schedule` cron in `devin-audit-bridge.yml` re-scans open PRs with `needs-devin-audit`; head-SHA dedupe prevents re-pinging Devin. Catches missed event-driven dispatches.
 
 ### Codex
 
@@ -89,6 +94,8 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 Newest first. Each entry: date, decision, one-line why.
 
+- **2026-05-18 (end of day)** — Mask-path next-steps update: steps (1), (2), (3) all SHIPPED (#139, #140, #142). (3) — learned vertex regressor — shipped despite the original "only if (1)+(2) don't close the gap" framing because the negative result on (2) [equalize] confirmed classification is near-ceiling on rectified-from-human-quads (97.28%) and the regressor experiment itself was the right way to learn whether sklearn-on-15D could close the geometry gap. It cannot — Ridge smooths toward the mean. Only step **(4) synthetic corpus v2** remains as Claude's active mask-path investment; the binding constraint is the labeled-data budget (n=68), and synthetic v2 is the highest-leverage way to expand it. Meanwhile Codex's lane is closing the gap from the production-recognizer side (#141 hull guard, #145 grid-extrapolation guard).
+- **2026-05-18 (end of day)** — Audit chain hardened with Devin-authored watchdog (ctvd#144 / cube-snap#135). The event-driven dispatch (`pull_request_target` + `issue_comment`) had a stuck-state failure mode: PRs labeled `needs-devin-audit` could sit indefinitely if the `labeled` event failed to fire (manual labeling outside the `gh pr edit --add-label` path, workflow errors, races). The 5-min `schedule` cron + `scheduled_pull_requests()` scan converges these. `devin_already_reviewed_sha()` dedupe prevents re-pinging Devin for the same head SHA, so the watchdog doesn't become a billing problem.
 - **2026-05-18** — Learned vertex regressor (Ridge on 68 hull labels, 15-D cheap-hexagon features → 24-D face-quad coords) is a *mixed* result: better mean face IoU (0.728 vs 0.669), 3× lower sticker-center error (35.9 vs 106.4 px), +4.1pp classification accuracy — but 0% pass at face≥0.85 (vs 12% RANSAC) and lower gridsAccepted (62.5% vs 85.7%). Suggests Ridge is smoothing toward the mean and the 15-D feature is too sparse. Path forward: richer features (per-side training, mask-CNN features) and/or offset-from-hexagon targets, but a bigger labeled set (synthetic corpus v2) is likely the binding constraint at n=68. Land as a checkpoint, not yet a production proposer.
 - **2026-05-18** — Architecture direction is *rembg → optimized hexagon → rectify → classify*, with a parallel `recognizer_mask.py` path behind an env switch. Promote to production only when end-to-end mask-path evaluator shows it beats current recognizer on corpus + hard cases + has safe fallback policy. (Synthesis from Devin + Codex reviews on #137.)
 - **2026-05-18** — Mask-path next steps in order: (1) end-to-end evaluator [Claude], (2) equalize-faces experiment [Claude], (3) learned vertex regressor only if (1)+(2) don't close the gap [Claude], (4) synthetic corpus v2 as parallel investment [Claude].

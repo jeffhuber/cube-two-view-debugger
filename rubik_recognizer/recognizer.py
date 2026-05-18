@@ -102,6 +102,12 @@ MAX_DIAGNOSTIC_EXAMPLES = 8
 SUSPECT_GRID_SAMPLE_THRESHOLD = 2.5
 MAX_LOW_MATCH_GRID_SUSPECT_SAMPLE_SCORE = 3.0
 MAX_LOW_MATCH_GRID_BAD_SAMPLES = 2
+MIN_GRID_EXTRAPOLATION_GRID_SAMPLES = 3
+MAX_GRID_EXTRAPOLATION_MATCHED_COUNT = 6
+MIN_GRID_EXTRAPOLATION_UNSUPPORTED_SAMPLES = 3
+MIN_GRID_EXTRAPOLATION_UNSUPPORTED_SCORE = 3.0
+GRID_EXTRAPOLATION_PENALTY_SCALE = 7.5
+MAX_GRID_EXTRAPOLATION_PENALTY = 26.0
 MAX_COLLAPSED_ANCHOR_GRID_SELF_FACE_CELLS = 2
 MAX_COLLAPSED_ANCHOR_SIDE_GRID_SUSPECT_SCORE = 3.0
 MAX_SUSPECT_SAMPLE_ALTERNATIVE_DELTA = 58.0
@@ -825,8 +831,11 @@ def _grid_signal_summary(grid: FaceGrid) -> Dict[str, Any]:
         "gridSamples": _grid_sample_count(grid),
         "badSamples": _grid_bad_sample_count(grid),
         "suspectSamples": round(_grid_suspect_sample_score(grid), 3),
+        "extrapolatedSamples": _grid_extrapolated_sample_count(grid),
+        "extrapolatedSampleScore": round(_grid_extrapolated_sample_score(grid), 3),
         "unsupportedSamples": _grid_unsupported_sample_count(grid),
         "unsupportedSampleScore": round(_grid_unsupported_sample_score(grid), 3),
+        "gridExtrapolationPenalty": round(_grid_extrapolation_penalty(grid), 3),
         "cellFaceCounts": _grid_cell_face_counts(grid),
         "cellSourceCounts": _grid_cell_source_counts(grid),
     }
@@ -1177,8 +1186,11 @@ def _orientation_diagnostics(analysis: ImageAnalysis, anchor: str, options: Sequ
                     "gridSamples": _grid_sample_count(grid),
                     "badSamples": _grid_bad_sample_count(grid),
                     "suspectSamples": round(_grid_suspect_sample_score(grid), 3),
+                    "extrapolatedSamples": _grid_extrapolated_sample_count(grid),
+                    "extrapolatedSampleScore": round(_grid_extrapolated_sample_score(grid), 3),
                     "unsupportedSamples": _grid_unsupported_sample_count(grid),
                     "unsupportedSampleScore": round(_grid_unsupported_sample_score(grid), 3),
+                    "gridExtrapolationPenalty": round(_grid_extrapolation_penalty(grid), 3),
                 }
                 for grid in grids
             ]
@@ -2539,7 +2551,11 @@ def _side_grid_contaminated_near_collapsed_anchor(grid: FaceGrid) -> bool:
 
 
 def _grid_sample_penalty(grid: FaceGrid) -> float:
-    return _grid_sample_count(grid) * 2.5 + _grid_suspect_sample_score(grid) * 18.0
+    return (
+        _grid_sample_count(grid) * 2.5
+        + _grid_suspect_sample_score(grid) * 18.0
+        + _grid_extrapolation_penalty(grid)
+    )
 
 
 def _grid_sample_count(grid: FaceGrid) -> int:
@@ -2552,6 +2568,19 @@ def _grid_suspect_sample_score(grid: FaceGrid) -> float:
 
 def _grid_unsupported_sample_score(grid: FaceGrid) -> float:
     return sum(_unsupported_grid_sample_score(sticker) for row in getattr(grid, "stickers", []) for sticker in row)
+
+
+def _grid_extrapolated_sample_score(grid: FaceGrid) -> float:
+    return sum(_extrapolated_grid_sample_score(sticker) for row in getattr(grid, "stickers", []) for sticker in row)
+
+
+def _grid_extrapolated_sample_count(grid: FaceGrid) -> int:
+    return sum(
+        1
+        for row in getattr(grid, "stickers", [])
+        for sticker in row
+        if _extrapolated_grid_sample_score(sticker) > 0.0
+    )
 
 
 def _grid_unsupported_sample_count(grid: FaceGrid) -> int:
@@ -2569,6 +2598,22 @@ def _grid_bad_sample_count(grid: FaceGrid) -> int:
         for row in getattr(grid, "stickers", [])
         for sticker in row
         if _suspect_grid_sample_score(sticker) >= SUSPECT_GRID_SAMPLE_THRESHOLD
+    )
+
+
+def _grid_extrapolation_penalty(grid: FaceGrid) -> float:
+    if (
+        getattr(grid, "matched_count", 0) > MAX_GRID_EXTRAPOLATION_MATCHED_COUNT
+        or _grid_sample_count(grid) < MIN_GRID_EXTRAPOLATION_GRID_SAMPLES
+        or _grid_unsupported_sample_count(grid) < MIN_GRID_EXTRAPOLATION_UNSUPPORTED_SAMPLES
+    ):
+        return 0.0
+    unsupported_score = _grid_unsupported_sample_score(grid)
+    if unsupported_score <= MIN_GRID_EXTRAPOLATION_UNSUPPORTED_SCORE:
+        return 0.0
+    return min(
+        MAX_GRID_EXTRAPOLATION_PENALTY,
+        (unsupported_score - MIN_GRID_EXTRAPOLATION_UNSUPPORTED_SCORE) * GRID_EXTRAPOLATION_PENALTY_SCALE,
     )
 
 
@@ -2642,6 +2687,42 @@ def _unsupported_grid_sample_score(sticker: Any) -> float:
     nearest_ratio = nearest_distance / spacing
     if nearest_ratio > 1.35:
         score += min(1.8, (nearest_ratio - 1.35) * 2.6)
+    return score
+
+
+def _extrapolated_grid_sample_score(sticker: Any) -> float:
+    if getattr(sticker, "source", "") != "grid_sample":
+        return 0.0
+
+    spacing = float(getattr(sticker, "grid_spacing", 0.0) or 0.0)
+    if spacing <= 1e-6:
+        return 0.0
+
+    outside_distance = float(
+        getattr(
+            sticker,
+            "outside_grid_component_hull_distance",
+            getattr(sticker, "outside_component_hull_distance", 0.0),
+        )
+        or 0.0
+    )
+    nearest_distance = float(
+        getattr(
+            sticker,
+            "nearest_grid_component_distance",
+            getattr(sticker, "nearest_component_distance", 0.0),
+        )
+        or 0.0
+    )
+
+    score = 0.0
+    outside_ratio = outside_distance / spacing
+    if outside_ratio > 0.75:
+        score += min(3.0, (outside_ratio - 0.75) * 4.0)
+
+    nearest_ratio = nearest_distance / spacing
+    if nearest_ratio > 1.75:
+        score += min(2.0, (nearest_ratio - 1.75) * 2.4)
     return score
 
 

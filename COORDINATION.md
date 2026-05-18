@@ -57,8 +57,7 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 | Owner | Branch | PR | What | Touches | ETA |
 |---|---|---|---|---|---|
-| Codex | `codex/color-eval-recompute` | pending | Recompute runtime color modes in clean-label evaluator | `tools/evaluate_color_classifier_modes.py`, focused test | Opening PR |
-| Claude | `claude/mask-pipeline-eval` | #139 | End-to-end mask-path evaluator (Devin's missing piece) | `tools/evaluate_mask_pipeline.py` (new), no others | In review |
+| Codex | `codex/grid-extrapolation-guard` | pending | Conservative default grid-extrapolation scoring/gating | `rubik_recognizer/*`, focused tests, probes | In progress |
 
 *(Codex: please populate your row when you start something.)*
 
@@ -70,19 +69,19 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 ### Claude
 
+- **#140** — Equalize-faces experiment. Negative result; confirms color equalization alone is not enough without better geometry.
+- **#139** — End-to-end mask-pipeline evaluator. Mask path currently averages 61.5% sticker accuracy; useful evaluator, not production path yet.
 - **#137** — RANSAC/Nelder-Mead hexagon fit + sticker-center error + classification accuracy. Face IoU 0.666 mean, 12% pass at ≥0.85 — geometry plateau confirmed.
 - **#136** — Face rectification + per-sticker color extraction. Flat 300×300 face images; trivial pixel slicing for color sampling.
 - **#133** — Rembg foundation-model proposers + grid-rejection diagnostic. Cube hull is solved (100% pass at hullIoU≥0.85, mean 0.962).
-- **#132** — Synthetic cube renderer v1. Geometric scaffolding; v2 adds variety.
-- **#127** — Auto-geometry evaluation framework. 4 baseline proposers + IoU/corner metrics + recognizer-impact diagnostics.
 
 ### Codex
 
+- **#143** — Clean-label color evaluator recomputes runtime classifier modes. Prevents stale JSONL predictions from hiding KNN regressions.
 - **#141** — Opt-in rembg hull guard for grid ranking. Penalizes selected grids with <7/9 centers inside the U2-Net cube hull; default behavior unchanged.
 - **#135** — Discover hyphenated `white-up` photos. Sets 57/58/61/62 now seen by all tools.
 - **#134** — Downgrade skewed repair false positives. Confident wrong → retake/review.
 - **#131** — Balanced visible color assignment diagnostics.
-- **#130** — Reject imbalanced visible color grids.
 
 ---
 

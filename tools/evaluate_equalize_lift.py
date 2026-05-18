@@ -24,7 +24,6 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from collections import Counter
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -34,7 +33,6 @@ from PIL import Image, ImageOps
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from rubik_recognizer.colors import classify_rgb  # noqa: E402
 from tools.equalize_faces import equalize_face  # noqa: E402
 from tools.extract_color_samples import (  # noqa: E402
     discover_additional_tasks,
@@ -62,16 +60,6 @@ DEFAULT_SUMMARY = REPO_ROOT / "runs" / "equalize_lift_summary.txt"
 PROCESSING_MAX = 1150
 
 EXPECTED_FACES_BY_SIDE = {"A": ("U", "R", "F"), "B": ("D", "L", "B")}
-
-
-def _load_image_and_quads(
-    image_path: Path,
-    side: str,
-) -> Optional[Tuple[Image.Image, np.ndarray, Dict[str, List[Tuple[float, float]]]]]:
-    hull_path = latest_hull_label(side[:1].upper() and "/dev/null", side)  # dummy; replaced below
-    # Actually we need (set_id, side). Re-derive from path:
-    # This function is called via run_pair which has set_id.
-    raise NotImplementedError  # use run_pair which has the context
 
 
 def _classify_face_chunk(

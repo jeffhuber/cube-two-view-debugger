@@ -5,6 +5,8 @@ import numpy as np
 from rubik_recognizer.image_pipeline import (
     Sticker,
     _binary_dilate_square,
+    _annotate_candidates_with_cube_hull,
+    _combo_score,
     _candidate_component_overlap,
     _candidate_key,
     _candidate_matched_set,
@@ -15,6 +17,7 @@ from rubik_recognizer.image_pipeline import (
     _preserve_white_component_center,
     _roi_covers_full_frame,
     _score_grid_centers,
+    cube_hull_grid_penalty,
 )
 from rubik_recognizer.colors import ColorMatch
 
@@ -86,6 +89,41 @@ def test_candidate_key_and_overlap_reuse_cached_matched_collections():
     assert _candidate_component_overlap([first, second, third]) == 1
     assert second["_matched_set"] == {2, 4}
     assert third["_matched_set"] == {9}
+
+
+def test_cube_hull_grid_penalty_starts_below_seven_inside_cells():
+    assert cube_hull_grid_penalty(None) == 0.0
+    assert cube_hull_grid_penalty(7) == 0.0
+    assert cube_hull_grid_penalty(6) == 200.0
+    assert cube_hull_grid_penalty(0) == 440.0
+
+
+def test_combo_score_penalizes_grids_outside_inferred_cube_hull():
+    def candidate(index, centers):
+        return {
+            "matched": [index * 10 + offset for offset in range(9)],
+            "matched_count": 9,
+            "error": 1.0,
+            "shape_spread": 5.0,
+            "center_face": ("U", "R", "F")[index % 3],
+            "centers": centers,
+        }
+
+    inside_centers = [[(10.0 + c * 5.0, 10.0 + r * 5.0) for c in range(3)] for r in range(3)]
+    outside_centers = [[(100.0 + c * 5.0, 100.0 + r * 5.0) for c in range(3)] for r in range(3)]
+    inside_a = candidate(0, inside_centers)
+    inside_b = candidate(1, inside_centers)
+    inside_c = candidate(2, inside_centers)
+    outside = candidate(2, outside_centers)
+    hull = [(0.0, 0.0), (30.0, 0.0), (30.0, 30.0), (0.0, 30.0)]
+
+    _annotate_candidates_with_cube_hull([inside_a, inside_b, inside_c, outside], hull)
+
+    assert inside_a["cube_hull_inside_count"] == 9
+    assert outside["cube_hull_inside_count"] == 0
+    clean_score = _combo_score([inside_a, inside_b, inside_c], overlap=0)
+    penalized_score = _combo_score([inside_a, inside_b, outside], overlap=0)
+    assert clean_score - penalized_score == cube_hull_grid_penalty(0)
 
 
 def test_tiny_white_components_are_removed_when_colored_stickers_anchor_scale():

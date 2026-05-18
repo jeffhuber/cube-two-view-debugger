@@ -1007,6 +1007,9 @@ def test_grid_signal_summary_reports_cell_face_and_source_counts():
             "center_sticker": facelet("U"),
             "matched_count": 7,
             "fit_error": 1.25,
+            "cube_hull_inside_count": 6,
+            "cube_hull_outside_count": 3,
+            "cube_hull_source": "rembg_u2net_hull",
             "stickers": [
                 [facelet("U"), facelet("U", "grid_sample"), facelet("R")],
                 [facelet("D"), facelet("U"), facelet("B")],
@@ -1021,6 +1024,10 @@ def test_grid_signal_summary_reports_cell_face_and_source_counts():
     assert summary["cellSourceCounts"] == {"component": 7, "grid_sample": 2}
     assert summary["unsupportedSamples"] == 0
     assert summary["unsupportedSampleScore"] == 0.0
+    assert summary["cubeHullInsideCount"] == 6
+    assert summary["cubeHullOutsideCount"] == 3
+    assert summary["cubeHullSource"] == "rembg_u2net_hull"
+    assert summary["cubeHullPenalty"] == 200.0
 
 
 def test_unsupported_grid_sample_score_measures_white_extrapolation():

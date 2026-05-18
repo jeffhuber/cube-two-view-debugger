@@ -57,7 +57,7 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 | Owner | Branch | PR | What | Touches | ETA |
 |---|---|---|---|---|---|
-| Claude | `claude/mask-pipeline-eval` | TBD | End-to-end mask-path evaluator (Devin's missing piece) | `tools/evaluate_mask_pipeline.py` (new), no others | Open after sweep results in |
+| Claude | `claude/mask-pipeline-eval` | #139 | End-to-end mask-path evaluator (Devin's missing piece) | `tools/evaluate_mask_pipeline.py` (new), no others | In review |
 
 *(Codex: please populate your row when you start something.)*
 
@@ -77,11 +77,11 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 ### Codex
 
+- **#141** — Opt-in rembg hull guard for grid ranking. Penalizes selected grids with <7/9 centers inside the U2-Net cube hull; default behavior unchanged.
 - **#135** — Discover hyphenated `white-up` photos. Sets 57/58/61/62 now seen by all tools.
 - **#134** — Downgrade skewed repair false positives. Confident wrong → retake/review.
 - **#131** — Balanced visible color assignment diagnostics.
 - **#130** — Reject imbalanced visible color grids.
-- **#129** — Reject collapsed anchor contaminated triples.
 
 ---
 

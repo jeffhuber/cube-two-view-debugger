@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from .colors import COLOR_TO_FACE, build_adaptive_palette, classify_rgb, rgb_to_hsv
 from .geometry import TRANSFORMS, closest_edge, possible_transforms
-from .image_pipeline import FaceGrid, ImageAnalysis, Sticker, analyze_image
+from .image_pipeline import FaceGrid, ImageAnalysis, Sticker, analyze_image, cube_hull_grid_penalty
 from .validation import (
     CENTER_INDICES,
     CORNER_COLORS,
@@ -816,7 +816,7 @@ def _top_visible_triple_quality(analysis: ImageAnalysis, anchor: str) -> Optiona
 
 
 def _grid_signal_summary(grid: FaceGrid) -> Dict[str, Any]:
-    return {
+    summary = {
         "gridId": grid.id,
         "centerFace": grid.center_face,
         "matchedCount": grid.matched_count,
@@ -830,6 +830,17 @@ def _grid_signal_summary(grid: FaceGrid) -> Dict[str, Any]:
         "cellFaceCounts": _grid_cell_face_counts(grid),
         "cellSourceCounts": _grid_cell_source_counts(grid),
     }
+    if getattr(grid, "cube_hull_inside_count", None) is not None:
+        inside_count = getattr(grid, "cube_hull_inside_count", None)
+        summary.update(
+            {
+                "cubeHullInsideCount": inside_count,
+                "cubeHullOutsideCount": getattr(grid, "cube_hull_outside_count", None),
+                "cubeHullSource": getattr(grid, "cube_hull_source", None),
+                "cubeHullPenalty": round(cube_hull_grid_penalty(inside_count), 3),
+            }
+        )
+    return summary
 
 
 def _grid_cell_face_counts(grid: FaceGrid) -> Dict[str, int]:
@@ -2390,6 +2401,7 @@ def _face_plane_score(anchor_grid: FaceGrid, first_grid: FaceGrid, second_grid: 
     score = sum(grid.matched_count * 12.0 - grid.fit_error * 0.9 for grid in grids)
     score -= sum(min(65.0, _grid_shape_spread(grid)) for grid in grids) * 0.75
     score -= sum(_grid_sample_penalty(grid) for grid in grids) * 0.9
+    score -= sum(_grid_cube_hull_penalty(grid) for grid in grids)
 
     anchor_x, anchor_y = _grid_center(anchor_grid)
     side_centers = [_grid_center(first_grid), _grid_center(second_grid)]
@@ -3048,7 +3060,17 @@ def _assumed_anchor_grid(grids: Sequence[FaceGrid], anchor: str) -> Optional[Fac
 
 
 def _grid_quality_score(grid: FaceGrid) -> float:
-    return grid.matched_count * 18.0 - grid.fit_error * 1.2 - min(65.0, _grid_shape_spread(grid)) * 1.2 - _grid_sample_penalty(grid)
+    return (
+        grid.matched_count * 18.0
+        - grid.fit_error * 1.2
+        - min(65.0, _grid_shape_spread(grid)) * 1.2
+        - _grid_sample_penalty(grid)
+        - _grid_cube_hull_penalty(grid)
+    )
+
+
+def _grid_cube_hull_penalty(grid: FaceGrid) -> float:
+    return cube_hull_grid_penalty(getattr(grid, "cube_hull_inside_count", None))
 
 
 def _center_sample_is_whiteish(grid: FaceGrid) -> bool:

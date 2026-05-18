@@ -2088,6 +2088,44 @@ def test_recognition_category_downgrades_repair_with_paired_pre_count_skew():
     assert category["reason"] == "repair_path_pre_repair_color_count_skew"
 
 
+def test_recognition_category_downgrades_repair_with_unstable_pre_repair_piece_evidence():
+    fixture_dir = Path(__file__).parent / "fixtures"
+    payload = json.loads((fixture_dir / "recognition_signals_repair.json").read_text())
+    signals = json.loads(json.dumps(payload["recognitionSignals"]))
+    selected = signals["selectedRepairCandidate"]
+    selected["confidence"] = 0.647
+    selected["repairRankingPenalty"] = 0.137
+    selected["repairChanges"] = 4
+    selected["preRepairConflicts"] = {
+        "missingCorners": 0,
+        "duplicateColorCorners": 1,
+        "missingUdCorners": 1,
+        "invalidCorners": 3,
+        "missingEdges": 0,
+        "duplicateColorEdges": 0,
+        "invalidEdges": 0,
+        "duplicateCornerCubies": 0,
+        "duplicateEdgeCubies": 1,
+        "validCorners": 5,
+        "validEdges": 12,
+        "totalConflicts": 6,
+    }
+    signals["topRepairCandidates"][0] = selected
+    result = RecognitionResult(
+        status=payload["status"],
+        state=payload["state"],
+        confidence=0.647,
+        reason=payload["reason"],
+        candidates=134_208,
+        recognition_signals=signals,
+    )
+
+    category = _recognition_category_payload(result)
+
+    assert category["category"] == "needs_manual_review"
+    assert category["reason"] == "repair_path_unstable_pre_repair_piece_evidence"
+
+
 def test_recognition_category_allows_one_sided_pre_count_skew():
     fixture_dir = Path(__file__).parent / "fixtures"
     payload = json.loads((fixture_dir / "recognition_signals_repair.json").read_text())

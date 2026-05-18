@@ -162,6 +162,8 @@ MAX_REPAIR_RANKING_PENALTY = 0.18
 DIRECT_CLEAN_CONFIDENCE_THRESHOLD = 0.78
 REPAIRED_HIGH_CONFIDENCE_THRESHOLD = 0.60
 REPAIRED_HIGH_MAX_RANKING_PENALTY = 0.16
+REPAIRED_HIGH_MAX_PRE_REPAIR_CONFLICTS = 5
+REPAIRED_HIGH_MIN_VALID_PRE_REPAIR_CORNERS = 8
 REPAIR_PRE_COUNT_SKEW_DELTA = 2
 REPAIR_RETAKE_CONFIDENCE_THRESHOLD = 0.50
 REPAIR_RETAKE_MIN_CANDIDATES = 50_000
@@ -688,6 +690,11 @@ def _recognition_category_payload(result: RecognitionResult) -> Dict[str, str]:
             "category": "needs_manual_review",
             "reason": "repair_path_pre_repair_color_count_skew",
         }
+    if _repair_pre_piece_evidence_unstable(selected):
+        return {
+            "category": "needs_manual_review",
+            "reason": "repair_path_unstable_pre_repair_piece_evidence",
+        }
     if (
         result.confidence >= REPAIRED_HIGH_CONFIDENCE_THRESHOLD
         and penalty < REPAIRED_HIGH_MAX_RANKING_PENALTY
@@ -713,6 +720,21 @@ def _repair_pre_count_skew_suspected(selected: Dict[str, Any]) -> bool:
         except (TypeError, ValueError):
             return False
     return max(deltas) >= REPAIR_PRE_COUNT_SKEW_DELTA and min(deltas) <= -REPAIR_PRE_COUNT_SKEW_DELTA
+
+
+def _repair_pre_piece_evidence_unstable(selected: Dict[str, Any]) -> bool:
+    conflicts = selected.get("preRepairConflicts")
+    if not isinstance(conflicts, dict):
+        return False
+    try:
+        total_conflicts = int(conflicts.get("totalConflicts", 0))
+        valid_corners = int(conflicts.get("validCorners", 8))
+    except (TypeError, ValueError):
+        return False
+    return (
+        total_conflicts > REPAIRED_HIGH_MAX_PRE_REPAIR_CONFLICTS
+        or valid_corners < REPAIRED_HIGH_MIN_VALID_PRE_REPAIR_CORNERS
+    )
 
 
 def _weak_selected_grid_count(signals: Dict[str, Any]) -> int:

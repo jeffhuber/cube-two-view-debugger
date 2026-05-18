@@ -192,6 +192,31 @@ def test_discover_additional_tasks_returns_empty_when_downloads_missing(monkeypa
     assert result == []
 
 
+def test_discover_additional_tasks_accepts_hyphenated_white_up(monkeypatch, tmp_path):
+    from tools import extract_color_samples
+
+    downloads = tmp_path / "Downloads"
+    labels = tmp_path / "labels"
+    downloads.mkdir()
+    labels.mkdir()
+    (downloads / "Set 57 - A - white-up IMG_7510.JPG").write_bytes(b"a")
+    (downloads / "Set 57 - B - white-up IMG_7511.JPG").write_bytes(b"b")
+    (downloads / "Set 57 - cube-ground-truth-1779061595609.json").write_text(
+        '{"corrected":"UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"}'
+    )
+    (labels / "20260517-221741-370191-set-57-a-geometry-label.json").write_text("{}")
+    (labels / "20260517-221829-438689-set-57-b-geometry-label.json").write_text("{}")
+    monkeypatch.setattr(extract_color_samples, "DOWNLOADS", downloads)
+    monkeypatch.setattr(extract_color_samples, "HULL_LABEL_DIR", labels)
+
+    tasks = extract_color_samples.discover_additional_tasks(set())
+
+    assert len(tasks) == 1
+    assert tasks[0].set_id == "57"
+    assert tasks[0].image_a.name == "Set 57 - A - white-up IMG_7510.JPG"
+    assert tasks[0].image_b.name == "Set 57 - B - white-up IMG_7511.JPG"
+
+
 # ---- recognizer_impact_diagnostics (smoke test only — full coverage
 #      requires real images; integration-tested by the full sweep) ----
 

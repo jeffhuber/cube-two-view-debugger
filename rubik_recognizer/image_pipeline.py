@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import io
 import math
+import os
 from collections import deque
 from dataclasses import dataclass
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
@@ -35,6 +36,18 @@ _ROI_SATURATION_MIN_DEFAULT = 0.23
 _ROI_SATURATION_MIN_RETRY = 0.40
 _ROI_FRAME_COVERAGE_THRESHOLD = 0.95
 
+REMBG_GRID_GUARD_ENV = "CUBE_RECOGNIZER_REMBG_GRID_GUARD"
+REMBG_GRID_GUARD_SOURCE = "rembg_u2net_hull"
+REMBG_GRID_INSIDE_MIN = 7
+REMBG_GRID_OUTSIDE_BASE_PENALTY = 160.0
+REMBG_GRID_OUTSIDE_EXTRA_PENALTY = 40.0
+REMBG_HULL_PADDING_FRACTION = 0.025
+REMBG_HULL_MIN_AREA_FRACTION = 0.015
+REMBG_HULL_MAX_AREA_FRACTION = 0.80
+REMBG_HULL_POINT_TOLERANCE = 2.0
+
+_REMBG_SESSIONS: Dict[str, object] = {}
+
 
 @dataclass
 class Sticker:
@@ -59,6 +72,9 @@ class FaceGrid:
     points: List[List[Point]]
     matched_count: int
     fit_error: float
+    cube_hull_inside_count: Optional[int] = None
+    cube_hull_outside_count: Optional[int] = None
+    cube_hull_source: Optional[str] = None
 
     @property
     def center_sticker(self) -> Sticker:
@@ -80,21 +96,30 @@ class ImageAnalysis:
     warnings: List[str]
 
     def summary(self) -> Dict:
+        grids = []
+        for grid in self.grids:
+            row = {
+                "id": grid.id,
+                "centerFace": grid.center_face,
+                "centerColor": grid.center_sticker.match.color,
+                "matchedCount": grid.matched_count,
+                "fitError": round(grid.fit_error, 2),
+            }
+            if grid.cube_hull_inside_count is not None:
+                row.update(
+                    {
+                        "cubeHullInsideCount": grid.cube_hull_inside_count,
+                        "cubeHullOutsideCount": grid.cube_hull_outside_count,
+                        "cubeHullSource": grid.cube_hull_source,
+                    }
+                )
+            grids.append(row)
         return {
             "width": self.width,
             "height": self.height,
             "roi": self.roi,
             "stickers": len(self.stickers),
-            "grids": [
-                {
-                    "id": grid.id,
-                    "centerFace": grid.center_face,
-                    "centerColor": grid.center_sticker.match.color,
-                    "matchedCount": grid.matched_count,
-                    "fitError": round(grid.fit_error, 2),
-                }
-                for grid in self.grids
-            ],
+            "grids": grids,
             "warnings": self.warnings,
         }
 
@@ -105,8 +130,11 @@ def analyze_image(image_bytes: bytes) -> ImageAnalysis:
     arr = np.asarray(process_image).astype(np.uint8)
     roi = _find_cube_roi(arr)
     stickers = _find_stickers(arr, roi)
-    grids = _fit_face_grids(stickers, arr, scale)
+    cube_hull, cube_hull_warning = _rembg_cube_hull_if_enabled(process_image)
+    grids = _fit_face_grids(stickers, arr, scale, cube_hull=cube_hull)
     warnings = []
+    if cube_hull_warning:
+        warnings.append(cube_hull_warning)
     if len(stickers) < 18:
         warnings.append("Few sticker candidates detected.")
     if len(grids) < 3:
@@ -135,6 +163,45 @@ def _resize_for_processing(image: Image.Image, max_side: int) -> Tuple[Image.Ima
     scale = max_side / float(side)
     size = (int(image.width * scale), int(image.height * scale))
     return image.resize(size, Image.Resampling.LANCZOS), scale
+
+
+def _rembg_cube_hull_if_enabled(image: Image.Image) -> Tuple[Optional[List[Point]], Optional[str]]:
+    if not _rembg_grid_guard_enabled():
+        return None, None
+    try:
+        from rembg import new_session, remove
+    except ImportError:
+        return None, "rembg grid guard requested but rembg is not installed."
+
+    try:
+        session = _REMBG_SESSIONS.get("u2net")
+        if session is None:
+            session = new_session("u2net")
+            _REMBG_SESSIONS["u2net"] = session
+        rgba = remove(image, session=session)
+    except Exception as exc:
+        return None, f"rembg grid guard failed: {exc.__class__.__name__}."
+
+    if rgba.mode != "RGBA":
+        rgba = rgba.convert("RGBA")
+    alpha = np.asarray(rgba.split()[-1], dtype=np.uint8)
+    mask = alpha > 128
+    if not mask.any():
+        return None, "rembg grid guard skipped: empty cube mask."
+
+    area_fraction = float(mask.sum()) / float(mask.size)
+    if area_fraction < REMBG_HULL_MIN_AREA_FRACTION or area_fraction > REMBG_HULL_MAX_AREA_FRACTION:
+        return None, "rembg grid guard skipped: implausible cube mask area."
+
+    hull = _hull_from_mask(mask)
+    if len(hull) < 3:
+        return None, "rembg grid guard skipped: cube hull too small."
+    return _expand_polygon(hull, REMBG_HULL_PADDING_FRACTION), None
+
+
+def _rembg_grid_guard_enabled() -> bool:
+    value = os.environ.get(REMBG_GRID_GUARD_ENV, "").strip().lower()
+    return value in {"1", "true", "yes", "on", "u2net", REMBG_GRID_GUARD_SOURCE}
 
 
 def _find_cube_roi(arr: np.ndarray) -> Tuple[int, int, int, int]:
@@ -376,7 +443,13 @@ def _component_shape_angle(comp: Dict) -> Optional[float]:
     return math.degrees(math.atan2(float(axis[1]), float(axis[0]))) % 180.0
 
 
-def _fit_face_grids(stickers: List[Sticker], arr: np.ndarray, scale: float) -> List[FaceGrid]:
+def _fit_face_grids(
+    stickers: List[Sticker],
+    arr: np.ndarray,
+    scale: float,
+    *,
+    cube_hull: Optional[Sequence[Point]] = None,
+) -> List[FaceGrid]:
     if len(stickers) < 9:
         return []
     points = np.array([sticker.center for sticker in stickers], dtype=float)
@@ -385,6 +458,7 @@ def _fit_face_grids(stickers: List[Sticker], arr: np.ndarray, scale: float) -> L
         return []
 
     candidates = _grid_candidates(points, list(range(len(stickers))), spacing, arr, stickers)
+    _annotate_candidates_with_cube_hull(candidates, cube_hull)
     selected = _add_supplemental_grids(_select_grid_combo(candidates), candidates, max_grids=24)
     component_hull = _convex_hull([sticker.center for sticker in stickers])
     grids: List[FaceGrid] = []
@@ -406,6 +480,9 @@ def _fit_face_grids(stickers: List[Sticker], arr: np.ndarray, scale: float) -> L
                 points=candidate["centers"],
                 matched_count=candidate["matched_count"],
                 fit_error=candidate["error"],
+                cube_hull_inside_count=_optional_int(candidate.get("cube_hull_inside_count")),
+                cube_hull_outside_count=_optional_int(candidate.get("cube_hull_outside_count")),
+                cube_hull_source=candidate.get("cube_hull_source"),
             )
         )
     return grids
@@ -525,6 +602,37 @@ def _undirected_angle_spread(angles: Sequence[float]) -> float:
     concentration = max(1e-6, min(1.0, math.hypot(x, y)))
     circular_std = math.sqrt(max(0.0, -2.0 * math.log(concentration)))
     return math.degrees(circular_std) / 2.0
+
+
+def _annotate_candidates_with_cube_hull(candidates: Sequence[Dict], cube_hull: Optional[Sequence[Point]]) -> None:
+    if not cube_hull or len(cube_hull) < 3:
+        return
+    for candidate in candidates:
+        centers = candidate.get("centers") or []
+        inside = 0
+        total = 0
+        for row in centers:
+            for point in row:
+                total += 1
+                if _outside_polygon_distance(point, cube_hull) <= REMBG_HULL_POINT_TOLERANCE:
+                    inside += 1
+        if total == 0:
+            continue
+        candidate["cube_hull_inside_count"] = inside
+        candidate["cube_hull_outside_count"] = max(0, total - inside)
+        candidate["cube_hull_source"] = REMBG_GRID_GUARD_SOURCE
+
+
+def cube_hull_grid_penalty(inside_count: object) -> float:
+    inside = _optional_int(inside_count)
+    if inside is None or inside >= REMBG_GRID_INSIDE_MIN:
+        return 0.0
+    missing = REMBG_GRID_INSIDE_MIN - max(0, inside)
+    return REMBG_GRID_OUTSIDE_BASE_PENALTY + missing * REMBG_GRID_OUTSIDE_EXTRA_PENALTY
+
+
+def _cube_hull_candidate_penalty(candidate: Dict) -> float:
+    return cube_hull_grid_penalty(_optional_int(candidate.get("cube_hull_inside_count")))
 
 
 def _select_grid_combo(candidates: List[Dict]) -> List[Dict]:
@@ -669,7 +777,17 @@ def _combo_score(combo: Sequence[Dict], overlap: int) -> float:
     distinct_centers = len(set(center_faces))
     anchor_bonus = 70.0 * len({face for face in center_faces if face in {"U", "D"}})
     side_bonus = 8.0 * len({face for face in center_faces if face in {"R", "F", "L", "B"}})
-    return matched * 36.0 - error * 1.7 - shape_spread * 0.9 + distinct_centers * 24.0 + anchor_bonus + side_bonus - overlap * 18.0
+    geometry_penalty = sum(_cube_hull_candidate_penalty(candidate) for candidate in combo)
+    return (
+        matched * 36.0
+        - error * 1.7
+        - shape_spread * 0.9
+        + distinct_centers * 24.0
+        + anchor_bonus
+        + side_bonus
+        - overlap * 18.0
+        - geometry_penalty
+    )
 
 
 def _score_grid(points: np.ndarray, indices: List[int], origin: np.ndarray, u: np.ndarray, v: np.ndarray, spacing: float) -> Dict:
@@ -989,6 +1107,33 @@ def _point_in_polygon(point: Point, polygon: Sequence[Point]) -> bool:
     return inside
 
 
+def _hull_from_mask(mask: np.ndarray) -> List[Point]:
+    boundary = np.zeros_like(mask, dtype=bool)
+    boundary[:-1, :] |= mask[:-1, :] != mask[1:, :]
+    boundary[:, :-1] |= mask[:, :-1] != mask[:, 1:]
+    ys, xs = np.where(boundary)
+    if len(xs) < 3:
+        ys, xs = np.where(mask)
+    if len(xs) < 3:
+        return []
+    points = [(float(x), float(y)) for x, y in zip(xs, ys)]
+    return _convex_hull(points)
+
+
+def _expand_polygon(poly: Sequence[Point], padding_fraction: float) -> List[Point]:
+    if len(poly) < 3:
+        return [(float(x), float(y)) for x, y in poly]
+    cx = sum(x for x, _ in poly) / len(poly)
+    cy = sum(y for _, y in poly) / len(poly)
+    return [
+        (
+            float(cx + (x - cx) * (1.0 + padding_fraction)),
+            float(cy + (y - cy) * (1.0 + padding_fraction)),
+        )
+        for x, y in poly
+    ]
+
+
 def _convex_hull(points: Sequence[Point]) -> List[Point]:
     unique = sorted({(float(x), float(y)) for x, y in points})
     if len(unique) <= 1:
@@ -1012,6 +1157,15 @@ def _convex_hull(points: Sequence[Point]) -> List[Point]:
         upper.append(point)
 
     return lower[:-1] + upper[:-1]
+
+
+def _optional_int(value: object) -> Optional[int]:
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
 
 
 def _rgb_to_hsv_arrays(arr: np.ndarray) -> np.ndarray:

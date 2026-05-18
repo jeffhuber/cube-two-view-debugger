@@ -443,6 +443,20 @@ The batch probe prints ROI fraction, saturated-pixel fraction, sticker/grid coun
 grid-center face, selected-anchor strength, and the same proposed keep/drop partition. It is meant
 to answer whether a proposed cube hull is viable before any recognizer behavior change.
 
+The production recognizer also has an opt-in rembg hull guard for A/B evaluation:
+
+```sh
+CUBE_RECOGNIZER_REMBG_GRID_GUARD=1 \
+  .venv/bin/python tools/probe_hard_cases.py --set-id 46 --set-id 47 \
+  --include-grid-cells --include-option-coverage
+```
+
+When enabled and `rembg` is available, `analyze_image(...)` derives a U2-Net cube hull and penalizes
+grid candidates with fewer than 7 of 9 sampled centers inside that hull. The switch is off by default
+because it adds a model-backed dependency/cost and is intended as a measured grid-ranking guard.
+If rembg is unavailable or returns an implausible mask, the recognizer skips the guard and records a
+warning rather than changing normal recognition behavior.
+
 ## How Recognition Works
 
 The recognizer is a CV-first pipeline with cube-constraint validation at the end. It intentionally

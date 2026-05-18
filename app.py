@@ -421,6 +421,29 @@ def _git_branch() -> Optional[str]:
     return result.stdout.strip() or None
 
 
+def _git_dirty() -> Optional[bool]:
+    """Whether tracked files had uncommitted changes at server start.
+
+    Deliberately ignores untracked files: local agent worktrees and
+    downloaded diagnostics can be useful but should not make the UI
+    permanently say "-dirty". A tracked-file diff is the signal that
+    the loaded server may not correspond exactly to a committed SHA.
+    """
+    try:
+        result = subprocess.run(
+            ["git", "status", "--porcelain", "--untracked-files=no"],
+            cwd=str(ROOT),
+            capture_output=True,
+            text=True,
+            timeout=2,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if result.returncode != 0:
+        return None
+    return bool(result.stdout.strip())
+
+
 # --- Server-staleness machinery (Codex review on PR #70 expanded this) -----
 #
 # Three module-level caches, all populated in `main()` at server start:
@@ -446,7 +469,7 @@ def _git_branch() -> Optional[str]:
 #
 # All three default to `None` for test-import scenarios (where `main()`
 # never runs). `_runtime_diag()` returns sensible defaults in that case.
-_IDENTITY_AT_START: Optional[Dict[str, Optional[str]]] = None
+_IDENTITY_AT_START: Optional[Dict[str, Any]] = None
 _GIT_FRESHNESS_AT_START: Optional[Dict[str, Any]] = None
 _GIT_FRESHNESS_CACHE: Optional[Dict[str, Any]] = None
 _GIT_FRESHNESS_CACHE_LOCK = threading.Lock()
@@ -629,6 +652,7 @@ def _runtime_diag() -> Dict[str, Any]:
         # banner-emission path doesn't use this fallback.
         "sha": _git_sha(),
         "branch": _git_branch(),
+        "dirty": _git_dirty(),
     }
     warnings: List[str] = []
     current_behind = current.get("commitsBehind")
@@ -659,6 +683,8 @@ def _runtime_diag() -> Dict[str, Any]:
             # always agree.
             "sha": identity.get("sha"),
             "branch": identity.get("branch"),
+            "dirty": identity.get("dirty"),
+            "dirtyScope": "tracked",
             "cwd": str(ROOT),
             # Lazy-refreshed: changes over the server's lifetime.
             "commitsBehind": current.get("commitsBehind"),
@@ -787,6 +813,8 @@ def _write_boot_record(host: str, port: int, diag: Dict[str, Any]) -> None:
     also has `O_APPEND`. See Devin's review on PR #75.
     """
     sha = diag["git"]["sha"] or "unknown"
+    if diag["git"].get("dirty") is True:
+        sha = f"{sha}-dirty"
     branch = diag["git"]["branch"] or "detached"
     lines = [
         f"[rubik-app] Serving http://{host}:{port}/",
@@ -881,7 +909,11 @@ def main() -> None:
     # `/api/diag` reports these as `git.sha` / `git.branch`. The same
     # values feed the startup banner so log-grep and HTTP API agree.
     global _IDENTITY_AT_START
-    _IDENTITY_AT_START = {"sha": _git_sha(), "branch": _git_branch()}
+    _IDENTITY_AT_START = {
+        "sha": _git_sha(),
+        "branch": _git_branch(),
+        "dirty": _git_dirty(),
+    }
 
     # Populate the freshness cache before the banner so (1) the banner
     # can surface a "behind origin" warning at startup, and (2) the

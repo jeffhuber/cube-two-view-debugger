@@ -378,14 +378,124 @@ class RoiBboxProposer:
         )
 
 
+# ---------------- foundation-model proposers (rembg + variants) ----------------
+
+
+_REMBG_SESSIONS: Dict[str, object] = {}
+
+
+def _get_rembg_session(model_name: str):
+    """Lazy-load and cache a rembg session by model name. Models supported
+    by the installed `rembg` package include:
+      u2net          — 176MB, default; SOTA-circa-2020 salient-object detector
+      birefnet-general — ~400MB, SOTA-circa-2024; bi-directional reference network
+      birefnet-general-lite — ~50MB, smaller BiRefNet variant
+      isnet-general-use — alternative architecture, similar quality to u2net
+    First call downloads weights to ~/.u2net/<model>.onnx (rembg's cache dir,
+    despite the name)."""
+    if model_name not in _REMBG_SESSIONS:
+        from rembg import new_session
+        _REMBG_SESSIONS[model_name] = new_session(model_name)
+    return _REMBG_SESSIONS[model_name]
+
+
+@dataclass
+class RembgProposer:
+    """Parameterized foundation-model proposer.
+
+    model_name picks the backing rembg session (e.g. "u2net", "birefnet-general").
+    mode picks the output shape:
+      hull   — precise convex hull from the mask. Best for cube-hull IoU;
+               produces no face quads.
+      hexagon — 6-vertex hexagon fit on top of the hull, with face quads
+               derived via the Geometry Labeler's template formula. Best
+               for face-quad IoU.
+      hybrid  — precise hull AND hexagon-derived face quads. Single mask
+               call shared between both outputs. Usually best overall.
+    """
+
+    model_name: str
+    mode: str = "hybrid"  # "hull" | "hexagon" | "hybrid"
+
+    @property
+    def name(self) -> str:
+        # Slug the model name to keep tool output ASCII-clean
+        slug = self.model_name.replace("-", "_")
+        return f"rembg_{slug}_{self.mode}"
+
+    def propose(self, target: "LabelTarget") -> Proposal:
+        if target.image is None:
+            target.load()
+        from rembg import remove
+
+        rgba = remove(target.image, session=_get_rembg_session(self.model_name))
+        alpha = np.array(rgba.split()[-1], dtype=np.uint8)
+        mask = alpha > 128
+
+        if not mask.any():
+            return Proposal(notes={"reason": "rembg_empty_mask", "model": self.model_name})
+
+        precise_hull = _hull_from_mask(mask)
+        common_notes = {
+            "model": self.model_name,
+            "mode": self.mode,
+            "maskPixels": int(mask.sum()),
+            "preciseHullVertexCount": len(precise_hull),
+        }
+
+        if self.mode == "hull":
+            return Proposal(cube_hull=precise_hull, face_quads={}, notes=common_notes)
+
+        if len(precise_hull) < 6:
+            return Proposal(
+                cube_hull=precise_hull, face_quads={},
+                notes={**common_notes, "reason": "hull_too_small"},
+            )
+        hexagon = _fit_hexagon_to_hull(precise_hull)
+        if hexagon is None:
+            return Proposal(
+                cube_hull=precise_hull, face_quads={},
+                notes={**common_notes, "reason": "hexagon_fit_failed"},
+            )
+        anonymous = _face_quads_from_hexagon(hexagon)
+        face_quads = _assign_face_labels(anonymous, list(target.gt_face_quads.keys()))
+
+        if self.mode == "hexagon":
+            # The hexagon IS the cube outline for this mode
+            return Proposal(cube_hull=hexagon, face_quads=face_quads, notes=common_notes)
+
+        # hybrid: precise hull for cube outline + hexagon-derived face quads
+        return Proposal(
+            cube_hull=precise_hull,
+            face_quads=face_quads,
+            notes={**common_notes, "hasFaceQuads": bool(face_quads)},
+        )
+
+
 # ---------------- registry ----------------
 
 
-PROPOSERS = {
-    cls.name: cls() for cls in (
-        RecognizerGridsProposer,
-        SaturationHexagonProposer,
-        SaturationHullProposer,
-        RoiBboxProposer,
-    )
-}
+def _build_registry():
+    proposers = {
+        RecognizerGridsProposer.name: RecognizerGridsProposer(),
+        SaturationHexagonProposer.name: SaturationHexagonProposer(),
+        SaturationHullProposer.name: SaturationHullProposer(),
+        RoiBboxProposer.name: RoiBboxProposer(),
+    }
+    try:
+        import rembg  # noqa: F401
+        # U²-Net variants (default; ~176MB)
+        for mode in ("hull", "hexagon", "hybrid"):
+            p = RembgProposer(model_name="u2net", mode=mode)
+            proposers[p.name] = p
+        # BiRefNet-general variants (~400MB; SOTA salient-object detection,
+        # ~3-5× slower than U²-Net but reportedly more precise at boundaries)
+        for mode in ("hull", "hybrid"):
+            p = RembgProposer(model_name="birefnet-general", mode=mode)
+            proposers[p.name] = p
+    except ImportError:
+        pass
+    return proposers
+
+
+PROPOSERS = _build_registry()

@@ -103,7 +103,15 @@ def load_corpus_tasks(manifest_path: Path) -> List[PairTask]:
 
 def discover_additional_tasks(corpus_set_ids: Iterable[str]) -> List[PairTask]:
     """Find hull-labelled (set, A+B) pairs that have matching ground truth
-    files in Downloads but aren't already in the corpus manifest."""
+    files in Downloads but aren't already in the corpus manifest.
+
+    Returns [] when /Users/jhuber/Downloads does not exist (clean CI/VM
+    environments, contributors without the local image assets). Tooling
+    that depends on this function should degrade gracefully rather than
+    crash, per Devin PR-#127 portability review."""
+    if not DOWNLOADS.is_dir():
+        return []
+
     seen = set(corpus_set_ids)
 
     # Build setId → ground truth file map (pick the most recent if multiple)

@@ -28,7 +28,7 @@
       "imageA_sha256_expected": "b69d96521eb6a0761506a2e2d24a11dd7c92fce72370c0087dc8ff36e85ab6f6",
       "imageB_sha256_expected": "8bd40ce743689721e5b2bca38528e1bf83d2a74c9fe7b47c81df7647213c74d9",
       "groundTruth_sha256_expected": "0db7baf12cf443e0ff9daf45f59299f885c0a2eda4bfa8d4fec89d30319f78af",
-      "expectedCategory": "success_repaired_high_confidence",
+      "expectedCategory": "needs_manual_review",
       "expectedScoreFloor": 52,
       "currentScoreObserved": 52,
       "expectedYaw": {
@@ -36,7 +36,7 @@
         "quarterTurns": 3,
         "normalizationApplied": true
       },
-      "notes": "Canonical-WCA ground truth captured post-PR-#95 (cube-snap); no _canonical_ground_truth_state rotation needed at parse time. Yaw=3, repaired high-confidence success. captureFrameState preserved in the saved file's recognitionSignals for the photo-frame projection."
+      "notes": "Canonical-WCA ground truth captured post-PR-#95 (cube-snap); no _canonical_ground_truth_state rotation needed at parse time. Yaw=3. Repair stays score-positive but is manual-review because pre-repair piece evidence is too conflicted for a trusted high-confidence result. captureFrameState preserved in the saved file's recognitionSignals for the photo-frame projection."
     },
     {
       "setId": "14",
@@ -46,10 +46,10 @@
       "imageA_sha256_expected": "5a9824d5e23843e72ed49a5d739a055c8b51012a871669f073db1504d147686c",
       "imageB_sha256_expected": "2cfb57b1811c04351646abf77f4275cb30cebb13dee32161c10ae4ac8446ac19",
       "groundTruth_sha256_expected": "734d7c8f858addc3bae25fac61a5434816023b9afeb07853ebcd234a945b4e56",
-      "expectedCategory": "success_repaired_high_confidence",
+      "expectedCategory": "needs_manual_review",
       "expectedScoreFloor": 50,
       "currentScoreObserved": 50,
-      "notes": "Known orientation-rank case; this local hashed pair currently scores above the cross-runner floor."
+      "notes": "Known orientation-rank case; this local hashed pair currently scores above the cross-runner floor, but the repaired candidate is manual-review because pre-repair piece evidence is too conflicted for a trusted high-confidence result."
     },
     {
       "setId": "15",

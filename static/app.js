@@ -10,6 +10,8 @@
 // an "A"/"B" marker auto-detect; otherwise the order they were
 // added.
 
+const APP_VERSION = "0.0.1";
+
 const form = document.querySelector("#recognizeForm");
 const batchForm = document.querySelector("#batchForm");
 const statusEl = document.querySelector("#status");
@@ -30,6 +32,7 @@ const manualImageA = document.querySelector("#imageA");
 const manualImageB = document.querySelector("#imageB");
 const recentRunsRows = document.querySelector("#recentRunsRows");
 const recentRunsRefresh = document.querySelector("#recentRunsRefresh");
+const buildFooter = document.querySelector("#buildFooter");
 
 // Detect an "A" or "B" marker in a filename — same logic the Python
 // `_image_marker()` uses but kept locally so we can label the drop
@@ -379,6 +382,58 @@ function formatCreatedAt(iso) {
   return dt.toLocaleString();
 }
 
+function shortSha(sha) {
+  if (!sha) return "unknown";
+  return String(sha).slice(0, 7);
+}
+
+function renderBuildFooter(diag) {
+  if (!buildFooter) return;
+  const git = (diag && diag.git) || {};
+  const python = (diag && diag.python) || {};
+  const libraries = (diag && diag.libraries) || {};
+  const warnings = Array.isArray(diag && diag.warnings) ? diag.warnings : [];
+  const sha = `${shortSha(git.sha)}${git.dirty === true ? "-dirty" : ""}`;
+  const branch = git.branch || "detached";
+  const parts = [
+    `Rubik Two-View Recognizer v${APP_VERSION}`,
+    `build ${sha} (${branch})`,
+    `Python ${python.version || "unknown"}`,
+    `Pillow ${libraries.pillow || "unknown"}`,
+    `NumPy ${libraries.numpy || "unknown"}`,
+    new Date().toLocaleString(),
+  ];
+  for (const warning of warnings) parts.push(warning);
+
+  buildFooter.textContent = parts.join(" · ");
+  buildFooter.title = [
+    `cwd: ${git.cwd || "unknown"}`,
+    `python: ${python.executable || "unknown"}`,
+    `dirty scope: ${git.dirtyScope || "unknown"}`,
+  ].join("\n");
+  const footer = buildFooter.closest(".appFooter");
+  if (footer) footer.classList.toggle("is-warning", warnings.length > 0);
+}
+
+async function fetchBuildFooter() {
+  if (!buildFooter) return;
+  try {
+    const response = await fetch("/api/diag", { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const diag = await response.json();
+    renderBuildFooter(diag);
+  } catch (err) {
+    buildFooter.textContent = [
+      `Rubik Two-View Recognizer v${APP_VERSION}`,
+      "build unavailable",
+      new Date().toLocaleString(),
+    ].join(" · ");
+    buildFooter.title = err && err.message ? err.message : String(err);
+    const footer = buildFooter.closest(".appFooter");
+    if (footer) footer.classList.add("is-warning");
+  }
+}
+
 // Load a saved run by fetching its result.json + summary.json + overlay
 // files. Mirrors renderResult shape so the experience is identical to
 // a fresh recognition.
@@ -444,3 +499,7 @@ function linkCell(label, href) {
 
 // Kick off initial recent-runs fetch on page load.
 fetchRecentRuns().catch(() => {});
+fetchBuildFooter().catch(() => {});
+setInterval(() => {
+  fetchBuildFooter().catch(() => {});
+}, 60000);

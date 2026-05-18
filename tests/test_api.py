@@ -186,12 +186,16 @@ def test_api_diag_exposes_git_identity(server):
     git = payload.get("git") or {}
     assert "sha" in git, f"expected git.sha in /api/diag, got keys: {sorted(git.keys())}"
     assert "branch" in git, f"expected git.branch in /api/diag, got keys: {sorted(git.keys())}"
+    assert "dirty" in git, f"expected git.dirty in /api/diag, got keys: {sorted(git.keys())}"
+    assert "dirtyScope" in git, f"expected git.dirtyScope in /api/diag, got keys: {sorted(git.keys())}"
     assert "cwd" in git, f"expected git.cwd in /api/diag, got keys: {sorted(git.keys())}"
     # cwd should be the repo root (where app.py lives).
     assert git["cwd"] == str(ROOT), f"git.cwd should equal ROOT ({ROOT}), got {git['cwd']!r}"
     # branch may be None for detached HEAD; otherwise it's a non-empty string.
     if git["branch"] is not None:
         assert isinstance(git["branch"], str) and git["branch"], "branch should be non-empty when present"
+    assert git["dirty"] in {True, False, None}
+    assert git["dirtyScope"] == "tracked"
 
 
 def test_runtime_diag_includes_branch_field():

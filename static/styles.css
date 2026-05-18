@@ -463,6 +463,21 @@ figcaption {
   font-weight: 750;
 }
 
+.appFooter {
+  margin-top: 22px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.appFooter.is-warning {
+  color: var(--danger);
+}
+
 img {
   display: block;
   width: 100%;

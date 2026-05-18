@@ -18,7 +18,7 @@ on:
   # Watchdog: periodically re-scan open PRs with needs-devin-audit so a
   # missed webhook/session wakeup does not leave Claude/Codex waiting.
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 permissions:

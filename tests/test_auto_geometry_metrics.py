@@ -217,6 +217,50 @@ def test_discover_additional_tasks_accepts_hyphenated_white_up(monkeypatch, tmp_
     assert tasks[0].image_b.name == "Set 57 - B - white-up IMG_7511.JPG"
 
 
+# ---- sticker_classification_accuracy: regression for Codex PR-#137
+#      bug where the metric collapsed to ~27% on perfect GT quads
+#      because it didn't run orientation discovery before comparing ----
+
+
+def test_sticker_classification_accuracy_on_perfect_gt_quads():
+    """If we feed sticker_classification_accuracy the HUMAN-labeled face
+    quads (perfect geometry) and run the FULL pipeline (sample_face's
+    discover_orientation/apply_orientation), accuracy on a clean corpus
+    set should be near-perfect — definitely not the ~27% Codex caught
+    with the broken row-major-direct-compare implementation.
+
+    Set 15 image A is a corpus pair with success_clean recognizer status
+    and canonical face centers. With perfect human quads + working
+    orientation discovery, the classifier should score near its baseline
+    on the corpus (~95%+ per PR #126 clean-label bake-off)."""
+    from tools.evaluate_auto_geometry import (
+        discover_label_targets,
+        sticker_classification_accuracy,
+    )
+
+    try:
+        targets = discover_label_targets()
+    except (FileNotFoundError, OSError):
+        pytest.skip("Local image/label assets not available")
+    if not targets:
+        pytest.skip("No labels discoverable")
+    set_15 = next((t for t in targets if t.set_id == "15" and t.side == "A"), None)
+    if set_15 is None:
+        pytest.skip("Set 15 image A not available")
+    set_15.load()
+
+    result = sticker_classification_accuracy(set_15, set_15.gt_face_quads)
+    assert result["accuracy"] is not None
+    # The bug Codex caught: this returned ~0.27 with broken orientation
+    # handling. With the fix it should be >> 0.85 on a corpus set with
+    # canonical centers and clean lighting.
+    assert result["accuracy"] >= 0.85, (
+        f"Expected >=0.85 with perfect human quads (corpus success_clean set), "
+        f"got {result['accuracy']}. This regresses PR #137 review fix — see "
+        f"https://github.com/jeffhuber/cube-two-view-debugger/pull/137"
+    )
+
+
 # ---- recognizer_impact_diagnostics (smoke test only — full coverage
 #      requires real images; integration-tested by the full sweep) ----
 

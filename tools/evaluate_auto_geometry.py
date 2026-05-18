@@ -58,6 +58,7 @@ from tools.sample_stickers_from_hull import (  # noqa: E402
     canonical_corner_order as _canonical_corner_order,
     latest_hull_label,
     load_hull_label,
+    sample_face as _sample_face,
     sample_rgb as _sample_rgb,
     scaled_face_quads,
     sticker_centers as _sticker_centers,
@@ -336,11 +337,12 @@ def sticker_classification_accuracy(
     per-sticker color sampler (the recognizer_mask path we'd build next),
     what fraction of stickers would classify correctly?
 
-    For each proposed face quad: derive 9 sticker centers via the same
-    homography used by sample_stickers_from_hull.py, sample 15×15 median
-    RGB at each, classify with the default classify_rgb (canonical
-    palette), and compare to the ground-truth state's color at the
-    matched (face, row, col) position.
+    Uses ``sample_face()`` from sample_stickers_from_hull.py, which does
+    the FULL per-face pipeline including ``discover_orientation()`` /
+    ``apply_orientation()`` to handle face rotations and mirrors. A naïve
+    direct row-major comparison (proposer's centers vs GT chunk) measures
+    rotation mismatch rather than classification — Codex's PR-#137 review
+    caught this regressing the metric to ~27% even with perfect GT quads.
 
     Per-face identity uses center-classification (with U/D anchor trust
     for the U-logo issue) to map the proposer's label → true face — same
@@ -361,33 +363,39 @@ def sticker_classification_accuracy(
     for label_face, quad in proposed_face_quads.items():
         if len(quad) != 4:
             continue
-        canonical = _canonical_corner_order([tuple(p) for p in quad])
-        centers = _sticker_centers(canonical, inset=inset)
-        if len(centers) != 9:
-            continue
-        # Identify true face: trust label for the anchor (U/D — U-center has
-        # the Rubik's logo so classifying it returns wrong color); otherwise
-        # classify the center sticker and reverse-lookup.
+        # Identify true face: trust label for anchor (U/D), otherwise classify
+        # the center sticker (which is invariant under orientation so we don't
+        # need orientation discovery just to identify the face).
         if label_face == anchor:
             true_face = anchor
         else:
+            canonical = _canonical_corner_order([tuple(p) for p in quad])
+            centers = _sticker_centers(canonical, inset=inset)
+            if len(centers) != 9:
+                continue
             center_rgb = _sample_rgb(arr, *centers[4])
             cls = classify_rgb(center_rgb).color
             true_face = COLOR_TO_FACE.get(cls, label_face)
 
         gt_colors = face_colors_from_state(target.gt_state, true_face)
-        face_correct = 0
-        for (x, y), gt in zip(centers, gt_colors):
-            rgb = _sample_rgb(arr, x, y)
-            if classify_rgb(rgb).color == gt:
-                face_correct += 1
+        # sample_face does: canonicalize quad, sample 9 RGBs, classify, then
+        # discover_orientation against gt_colors and apply_orientation to
+        # align the 9 stickers to the GT chunk's row-major positions.
+        try:
+            face_result = _sample_face(arr, quad, true_face, gt_colors, inset=inset)
+        except Exception:
+            continue
+        stickers = face_result.get("stickers", [])
+        face_correct = sum(1 for s in stickers if s.get("classifier") == s.get("gtColor"))
+        face_sampled = len(stickers)
         per_face[label_face] = {
             "trueFace": true_face,
-            "sampled": 9,
+            "orientationMatch": face_result.get("orientation", {}).get("match_count"),
+            "sampled": face_sampled,
             "correct": face_correct,
-            "accuracy": round(face_correct / 9, 4),
+            "accuracy": round(face_correct / face_sampled, 4) if face_sampled else None,
         }
-        total_sampled += 9
+        total_sampled += face_sampled
         total_correct += face_correct
 
     return {

@@ -35,12 +35,15 @@ from PIL import Image, ImageDraw, ImageOps
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
+from rubik_recognizer.colors import COLOR_TO_FACE, classify_rgb  # noqa: E402
 from rubik_recognizer.image_pipeline import analyze_image  # noqa: E402
 from rubik_recognizer.validation import FACE_ORDER  # noqa: E402
 from tools.extract_color_samples import (  # noqa: E402
     EXPECTED_FACES_BY_SIDE,
     discover_additional_tasks,
+    face_colors_from_state,
     load_corpus_tasks,
+    parse_ground_truth,
 )
 from tools.inspect_cube_isolation import (  # noqa: E402
     convex_hull,
@@ -52,9 +55,13 @@ from tools.propose_geometry_labels import (  # noqa: E402
     PROPOSERS,
 )
 from tools.sample_stickers_from_hull import (  # noqa: E402
+    canonical_corner_order as _canonical_corner_order,
     latest_hull_label,
     load_hull_label,
+    sample_face as _sample_face,
+    sample_rgb as _sample_rgb,
     scaled_face_quads,
+    sticker_centers as _sticker_centers,
 )
 
 PROCESSING_MAX = 1150
@@ -157,6 +164,7 @@ class LabelTarget:
     side: str
     image_path: Path
     label_path: Path
+    gt_state: Optional[str] = None  # 54-char URFDLB ground-truth state for sticker-classification eval
     # Filled in by load():
     image: Optional[Image.Image] = None
     proc_w: int = 0
@@ -204,6 +212,10 @@ def discover_label_targets() -> List[LabelTarget]:
 
     targets: List[LabelTarget] = []
     for task in tasks:
+        try:
+            gt_state = parse_ground_truth(task.ground_truth)
+        except Exception:
+            gt_state = None
         for side, image_path in (("A", task.image_a), ("B", task.image_b)):
             label_path = latest_hull_label(task.set_id, side)
             if label_path is None:
@@ -215,6 +227,7 @@ def discover_label_targets() -> List[LabelTarget]:
                 side=side,
                 image_path=image_path,
                 label_path=label_path,
+                gt_state=gt_state,
             ))
     return targets
 
@@ -271,6 +284,17 @@ def evaluate_target(target: LabelTarget, proposer) -> Dict:
 
     impact = recognizer_impact_diagnostics(target, proposal)
 
+    # Devin PR-#133 ask: sticker-center pixel error. Measures how far the
+    # proposer's would-be color samples would land from where they should.
+    sticker_err_px, sticker_err_per_face = mean_sticker_center_error(
+        proposal.face_quads, target.gt_face_quads,
+    )
+
+    # Devin PR-#133 second ask: end-to-end sticker classification accuracy.
+    # If the proposer's face quads drove a recognizer_mask path, what
+    # fraction of stickers would classify correctly?
+    classification = sticker_classification_accuracy(target, proposal.face_quads)
+
     return {
         "setId": target.set_id,
         "side": target.side,
@@ -281,6 +305,10 @@ def evaluate_target(target: LabelTarget, proposer) -> Dict:
         "meanFaceIoU_byLabel": round(float(np.mean(face_iou_vals)), 4) if face_iou_vals else 0.0,
         "meanFaceIoU_bestMatch": round(matched_face_iou, 4),
         "meanCornerErrorPx_byLabel": round(float(np.mean(face_corner_vals)), 2) if face_corner_vals else None,
+        "meanStickerCenterErrorPx": sticker_err_px if sticker_err_px != float("inf") else None,
+        "stickerCenterErrorPxPerFace": sticker_err_per_face,
+        "stickerClassificationAccuracy": classification.get("accuracy"),
+        "stickerClassificationDetail": classification,
         "recognizerImpact": impact,
         "proposerNotes": proposal.notes,
     }
@@ -298,6 +326,136 @@ def _cached_analyze_image(image_path: Path):
     if key not in _ANALYSIS_CACHE:
         _ANALYSIS_CACHE[key] = analyze_image(image_path.read_bytes())
     return _ANALYSIS_CACHE[key]
+
+
+def sticker_classification_accuracy(
+    target: "LabelTarget",
+    proposed_face_quads: Dict[str, Sequence[Point]],
+    inset: float = 0.20,
+) -> Dict:
+    """Devin's PR-#133 ask: if the proposer's face quads drove a real
+    per-sticker color sampler (the recognizer_mask path we'd build next),
+    what fraction of stickers would classify correctly?
+
+    Uses ``sample_face()`` from sample_stickers_from_hull.py, which does
+    the FULL per-face pipeline including ``discover_orientation()`` /
+    ``apply_orientation()`` to handle face rotations and mirrors. A naïve
+    direct row-major comparison (proposer's centers vs GT chunk) measures
+    rotation mismatch rather than classification — Codex's PR-#137 review
+    caught this regressing the metric to ~27% even with perfect GT quads.
+
+    Per-face identity uses center-classification (with U/D anchor trust
+    for the U-logo issue) to map the proposer's label → true face — same
+    logic that handles L/B-swap and yaw rotations in PR #126.
+
+    Returns dict with per-face accuracy + overall. None if no GT state
+    or no proposed face quads."""
+    if target.gt_state is None or not proposed_face_quads:
+        return {"sampled": 0, "correct": 0, "accuracy": None, "perFace": {}}
+    if target.arr is None:
+        target.load()
+    arr = target.arr
+    anchor = "U" if target.side == "A" else "D"
+
+    per_face: Dict[str, Dict] = {}
+    total_sampled = 0
+    total_correct = 0
+    for label_face, quad in proposed_face_quads.items():
+        if len(quad) != 4:
+            continue
+        # Identify true face: trust label for anchor (U/D), otherwise classify
+        # the center sticker (which is invariant under orientation so we don't
+        # need orientation discovery just to identify the face).
+        if label_face == anchor:
+            true_face = anchor
+        else:
+            canonical = _canonical_corner_order([tuple(p) for p in quad])
+            centers = _sticker_centers(canonical, inset=inset)
+            if len(centers) != 9:
+                continue
+            center_rgb = _sample_rgb(arr, *centers[4])
+            cls = classify_rgb(center_rgb).color
+            true_face = COLOR_TO_FACE.get(cls, label_face)
+
+        gt_colors = face_colors_from_state(target.gt_state, true_face)
+        # sample_face does: canonicalize quad, sample 9 RGBs, classify, then
+        # discover_orientation against gt_colors and apply_orientation to
+        # align the 9 stickers to the GT chunk's row-major positions.
+        try:
+            face_result = _sample_face(arr, quad, true_face, gt_colors, inset=inset)
+        except Exception:
+            continue
+        stickers = face_result.get("stickers", [])
+        face_correct = sum(1 for s in stickers if s.get("classifier") == s.get("gtColor"))
+        face_sampled = len(stickers)
+        per_face[label_face] = {
+            "trueFace": true_face,
+            "orientationMatch": face_result.get("orientation", {}).get("match_count"),
+            "sampled": face_sampled,
+            "correct": face_correct,
+            "accuracy": round(face_correct / face_sampled, 4) if face_sampled else None,
+        }
+        total_sampled += face_sampled
+        total_correct += face_correct
+
+    return {
+        "sampled": total_sampled,
+        "correct": total_correct,
+        "accuracy": round(total_correct / total_sampled, 4) if total_sampled else None,
+        "perFace": per_face,
+    }
+
+
+def _sticker_centers_per_face(
+    face_quads: Dict[str, Sequence[Point]],
+    inset: float = 0.20,
+) -> Dict[str, List[Point]]:
+    """For each face quad, return the 9 sticker centers a downstream
+    color-sampler would land at. Uses the same homography + inset that
+    sample_stickers_from_hull.py uses, so the numbers are comparable to
+    the clean-label pipeline from PR #126."""
+    out: Dict[str, List[Point]] = {}
+    for face, quad in face_quads.items():
+        if len(quad) != 4:
+            continue
+        canonical = _canonical_corner_order([tuple(p) for p in quad])
+        out[face] = _sticker_centers(canonical, inset=inset)
+    return out
+
+
+def mean_sticker_center_error(
+    proposed_face_quads: Dict[str, Sequence[Point]],
+    truth_face_quads: Dict[str, Sequence[Point]],
+    inset: float = 0.20,
+) -> Tuple[float, Dict[str, float]]:
+    """Per Devin's PR-#133 ask: how far (in pixels) would the proposer's
+    sticker samples land from where they should? For each face present in
+    BOTH proposed and truth, derive 9 sticker centers via the standard
+    homography and measure mean pairwise distance (position i in proposed
+    vs position i in truth). Returns (overall_mean_px, per_face_mean_px).
+
+    A clean test of 'would my colors land in the right stickers' — if
+    this error exceeds ~half a sticker spacing (typically 30-40px on
+    cube-snap photos), samples bleed into adjacent stickers or bezel."""
+    proposed_centers = _sticker_centers_per_face(proposed_face_quads, inset)
+    truth_centers = _sticker_centers_per_face(truth_face_quads, inset)
+    per_face: Dict[str, float] = {}
+    all_errors: List[float] = []
+    for face in proposed_centers.keys() & truth_centers.keys():
+        p_pts = proposed_centers[face]
+        t_pts = truth_centers[face]
+        if len(p_pts) != 9 or len(t_pts) != 9:
+            continue
+        # Element-wise pixel distance (position i vs position i, same
+        # canonicalized corner order via sample_stickers_from_hull's helper).
+        errs = [
+            ((p[0] - t[0]) ** 2 + (p[1] - t[1]) ** 2) ** 0.5
+            for p, t in zip(p_pts, t_pts)
+        ]
+        per_face[face] = round(float(np.mean(errs)), 2)
+        all_errors.extend(errs)
+    overall = float(np.mean(all_errors)) if all_errors else float("inf")
+    return round(overall, 2), per_face
 
 
 def recognizer_impact_diagnostics(
@@ -539,20 +697,25 @@ def main() -> int:
     summary_lines.append(f"Auto-geometry evaluation: {len(targets)} targets × {len(args.proposers)} proposer(s)")
     summary_lines.append("")
     summary_lines.append(
-        f"{'proposer':<30s}  {'n':>4s}  {'hullIoU':>9s}  {'face(byLabel)':>14s}  {'face(bestMatch)':>16s}"
+        f"{'proposer':<30s}  {'n':>4s}  {'hullIoU':>9s}  {'face(bM)':>10s}  {'ctrErrPx':>10s}  {'stickerClsAcc':>14s}"
     )
-    summary_lines.append("-" * 80)
+    summary_lines.append("-" * 88)
     for proposer_name in args.proposers:
         rows_p = by_proposer.get(proposer_name, [])
         n = len(rows_p)
         if n == 0:
-            summary_lines.append(f"{proposer_name:<30s}  {n:>4d}  {'—':>9s}  {'—':>14s}  {'—':>16s}")
+            summary_lines.append(f"{proposer_name:<30s}  {n:>4d}  {'—':>9s}  {'—':>10s}  {'—':>10s}  {'—':>14s}")
             continue
         m_hull = float(np.mean([r["cubeHullIoU"] for r in rows_p]))
-        m_face_lab = float(np.mean([r["meanFaceIoU_byLabel"] for r in rows_p]))
         m_face_bm = float(np.mean([r["meanFaceIoU_bestMatch"] for r in rows_p]))
+        sticker_errs = [r["meanStickerCenterErrorPx"] for r in rows_p if r.get("meanStickerCenterErrorPx") is not None]
+        m_sticker_err = float(np.mean(sticker_errs)) if sticker_errs else None
+        m_sticker_err_str = f"{m_sticker_err:>7.1f}px" if m_sticker_err is not None else "—"
+        cls_accs = [r["stickerClassificationAccuracy"] for r in rows_p if r.get("stickerClassificationAccuracy") is not None]
+        m_cls_acc = float(np.mean(cls_accs)) if cls_accs else None
+        m_cls_acc_str = f"{m_cls_acc:>13.1%}" if m_cls_acc is not None else "—"
         summary_lines.append(
-            f"{proposer_name:<30s}  {n:>4d}  {m_hull:>9.3f}  {m_face_lab:>14.3f}  {m_face_bm:>16.3f}"
+            f"{proposer_name:<30s}  {n:>4d}  {m_hull:>9.3f}  {m_face_bm:>10.3f}  {m_sticker_err_str:>10s}  {m_cls_acc_str:>14s}"
         )
 
     # Per-proposer pass thresholds (using best-match face IoU since labels
@@ -563,13 +726,16 @@ def main() -> int:
         rows_p = by_proposer.get(proposer_name, [])
         if not rows_p:
             continue
+        # Pass-gate raised to face >= 0.85 per Devin PR-#133 feedback
+        # (was 0.75; tightened because lower thresholds don't reflect what
+        # the recognizer actually needs for clean per-sticker sampling).
         hull_pass = sum(1 for r in rows_p if r["cubeHullIoU"] >= 0.85)
-        face_pass = sum(1 for r in rows_p if r["meanFaceIoU_bestMatch"] >= 0.75)
-        both_pass = sum(1 for r in rows_p if r["cubeHullIoU"] >= 0.85 and r["meanFaceIoU_bestMatch"] >= 0.75)
+        face_pass = sum(1 for r in rows_p if r["meanFaceIoU_bestMatch"] >= 0.85)
+        both_pass = sum(1 for r in rows_p if r["cubeHullIoU"] >= 0.85 and r["meanFaceIoU_bestMatch"] >= 0.85)
         n = len(rows_p)
         summary_lines.append(
             f"  {proposer_name:<28s}  hull≥0.85: {hull_pass}/{n} ({hull_pass/n:.0%})  "
-            f"face≥0.75: {face_pass}/{n} ({face_pass/n:.0%})  "
+            f"face≥0.85: {face_pass}/{n} ({face_pass/n:.0%})  "
             f"both: {both_pass}/{n} ({both_pass/n:.0%})"
         )
 

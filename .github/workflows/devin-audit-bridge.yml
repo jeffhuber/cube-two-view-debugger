@@ -15,6 +15,11 @@ on:
     types: [opened, synchronize, reopened, labeled]
   issue_comment:
     types: [created]
+  # Watchdog: periodically re-scan open PRs with needs-devin-audit so a
+  # missed webhook/session wakeup does not leave Claude/Codex waiting.
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
 
 permissions:
   contents: read

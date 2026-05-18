@@ -206,6 +206,33 @@ def build_payload(repository: str, request: AuditRequest) -> Dict[str, Any]:
     }
 
 
+def build_session_prompt(payload: Dict[str, Any]) -> str:
+    pr = payload["pull_request"]
+    return textwrap.dedent(
+        f"""\
+        @github_pr_audit_label_review
+        Review the GitHub webhook payload.
+        Only act for repositories jeffhuber/cube-two-view-debugger or jeffhuber/cube-snap.
+        Only act when the PR has {NEEDS_LABEL} or the comment contains {TRIGGER_PHRASE}.
+        Dedupe by repo + PR number + head SHA.
+        If the event does not match, exit without doing work.
+
+        Target PR: {payload["repository"]}#{pr["number"]}
+        PR URL: {pr["url"]}
+        Head SHA: {pr["head_sha"]}
+
+        ---
+        ## Triggering Event
+        **Source:** github-actions-devin-audit-bridge
+        **Event:** {payload["trigger"].get("event")} / {payload["trigger"].get("action")}
+
+        ```json
+        {json.dumps(payload, indent=2, sort_keys=True)}
+        ```
+        """
+    ).strip()
+
+
 def comment_author_login(comment: Dict[str, Any]) -> str:
     user = comment.get("user") or comment.get("author") or {}
     login = user.get("login")
@@ -303,6 +330,36 @@ def post_webhook(url: str, secret: str, payload: Dict[str, Any]) -> Tuple[int, s
         return exc.code, body
 
 
+def create_devin_session(api_token: str, org_id: str, payload: Dict[str, Any]) -> Tuple[int, str]:
+    pr = payload["pull_request"]
+    body = {
+        "title": f"Audit {payload['repository']}#{pr['number']}",
+        "prompt": build_session_prompt(payload),
+        "playbook_id": os.environ.get("DEVIN_PLAYBOOK_ID"),
+        "repos": [payload["repository"]],
+        "tags": ["github-pr-audit", "needs-devin-audit", payload["repository"]],
+    }
+    body = {key: value for key, value in body.items() if value is not None}
+    data = json.dumps(body, sort_keys=True).encode("utf-8")
+    request = urllib.request.Request(
+        f"https://api.devin.ai/v3/organizations/{org_id}/sessions",
+        data=data,
+        headers={
+            "Authorization": f"Bearer {api_token}",
+            "Content-Type": "application/json",
+            "User-Agent": "github-actions-devin-audit-bridge",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            response_body = response.read().decode("utf-8", errors="replace")
+            return response.status, response_body
+    except urllib.error.HTTPError as exc:
+        response_body = exc.read().decode("utf-8", errors="replace")
+        return exc.code, response_body
+
+
 def require_env(name: str) -> str:
     value = os.environ.get(name)
     if not value:
@@ -331,6 +388,20 @@ def dispatch_audit_request(
         if devin_already_reviewed_sha(head_sha, [*comments, *reviews]):
             print(f"skip: Devin already reviewed head SHA {head_sha}")
             return True
+
+    api_token = os.environ.get("DEVIN_API_TOKEN")
+    org_id = os.environ.get("DEVIN_ORG_ID")
+    if api_token and org_id:
+        status, body = create_devin_session(api_token, org_id, payload)
+        print(f"Devin session create response: HTTP {status}")
+        if body:
+            print("--- response body ---")
+            print(body)
+            print("--- end response body ---")
+        if 200 <= status < 300:
+            print(f"created repo-scoped audit session: {payload['dedupe_key']}")
+            return True
+        print(f"warning: Devin session create returned non-2xx status {status}; falling back to webhook", file=sys.stderr)
 
     status, body = post_webhook(webhook_url, webhook_secret, payload)
     print(f"Devin webhook response: HTTP {status}")

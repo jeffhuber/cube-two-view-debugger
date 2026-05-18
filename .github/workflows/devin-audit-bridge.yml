@@ -7,6 +7,9 @@
 # Required repo secrets:
 #   DEVIN_WEBHOOK_URL     Custom Webhook URL from Devin
 #   DEVIN_WEBHOOK_SECRET  Secret Devin expects in the x-webhook-secret header
+# Optional repo secrets for repo-scoped session creation:
+#   DEVIN_API_TOKEN       Devin API token with ManageOrgSessions permission
+#   DEVIN_ORG_ID          Devin organization ID
 
 name: Devin audit bridge
 
@@ -46,4 +49,7 @@ jobs:
           GITHUB_EVENT_ACTION: ${{ github.event.action }}
           DEVIN_WEBHOOK_URL: ${{ secrets.DEVIN_WEBHOOK_URL }}
           DEVIN_WEBHOOK_SECRET: ${{ secrets.DEVIN_WEBHOOK_SECRET }}
+          DEVIN_API_TOKEN: ${{ secrets.DEVIN_API_TOKEN }}
+          DEVIN_ORG_ID: ${{ secrets.DEVIN_ORG_ID }}
+          DEVIN_PLAYBOOK_ID: playbook-1fb021b63ce24f9ab6d38341f77c5453
         run: python tools/devin_audit_bridge.py

@@ -584,14 +584,22 @@ class LearnedVertexProposer:
         return cls._model_state
 
     def propose(self, target: "LabelTarget") -> Proposal:
-        if target.image is None:
-            target.load()
-        from rembg import remove
-
+        # Check the model file before doing anything else: per the PR
+        # contract this proposer must return a benign empty proposal
+        # in a clean env (absent model file OR absent optional rembg).
+        # Devin caught the original ordering as a real bug — Python
+        # imports raise ModuleNotFoundError before the state check
+        # could fire. (PR #142 audit.)
         state = self._get_model_state()
         if state is None:
             return Proposal(notes={"reason": "no_trained_model"})
+        try:
+            from rembg import remove
+        except ImportError:
+            return Proposal(notes={"reason": "rembg_unavailable"})
 
+        if target.image is None:
+            target.load()
         rgba = remove(target.image, session=_get_rembg_session("u2net"))
         alpha = np.array(rgba.split()[-1], dtype=np.uint8)
         mask = alpha > 128

@@ -383,9 +383,17 @@ falls back to `github.token` when the secret is absent.
 - **Bridge**: `tools/devin_audit_bridge.py` builds the webhook payload
   (with `DEVIN_INSTRUCTIONS`) and posts it to Devin. Triggered by
   `.github/workflows/devin-audit-bridge.yml` on `pull_request_target`
-  events (open / synchronize / reopen / labeled `needs-devin-audit`)
-  and on `issue_comment` containing `@devin audit` from trusted
-  commenters.
+  events (open / synchronize / reopen / labeled `needs-devin-audit`),
+  on `issue_comment` containing `@devin audit` from trusted
+  commenters, and on a 5-minute `schedule` watchdog (plus
+  `workflow_dispatch` for manual runs). The scheduled path calls
+  `scheduled_pull_requests()` to scan open PRs with the
+  `needs-devin-audit` label and dispatches each through the same
+  helper; `devin_already_reviewed_sha()` dedupe ensures Devin isn't
+  pinged twice for the same head SHA. The watchdog catches cases
+  where the event-driven dispatch was missed (manual label
+  application bypassing the `labeled` event, a workflow that errored
+  out, etc.).
 - **Labeler**: `tools/devin_audit_labeler.py` parses Devin's audit
   comment and applies the terminal label. Triggered by
   `.github/workflows/devin-audit-labeler.yml` on `issue_comment` from

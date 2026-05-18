@@ -12,6 +12,7 @@ import os
 import sys
 import textwrap
 import urllib.error
+import urllib.parse
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
@@ -26,6 +27,7 @@ FORCE_TRIGGER_PHRASE = "@devin audit force"
 IGNORED_ACTORS = {"devin-ai-integration[bot]", "vercel[bot]"}
 TRUSTED_COMMENTER_ASSOCIATIONS = {"OWNER", "MEMBER", "COLLABORATOR"}
 PULL_REQUEST_ACTIONS = {"opened", "synchronize", "reopened", "labeled"}
+SCAN_EVENTS = {"schedule", "workflow_dispatch"}
 DEVIN_COMMENT_AUTHORS = {"devin-ai-integration", "devin-ai-integration[bot]"}
 
 DEVIN_INSTRUCTIONS = textwrap.dedent(
@@ -223,6 +225,35 @@ def devin_already_reviewed_sha(head_sha: str, comments: Iterable[Dict[str, Any]]
     return any(is_devin_comment(comment) and head_sha in comment_body(comment) for comment in comments)
 
 
+def scheduled_pull_requests(
+    *,
+    event: Dict[str, Any],
+    repository: str,
+    token: str,
+) -> List[Dict[str, Any]]:
+    fixture_prs = event.get("pull_requests")
+    if isinstance(fixture_prs, list):
+        return [
+            pr for pr in fixture_prs
+            if pr.get("state") == "open" and NEEDS_LABEL in pr_labels(pr)
+        ]
+
+    encoded_label = urllib.parse.quote(NEEDS_LABEL)
+    issues = github_api_paginated(
+        f"/repos/{repository}/issues?state=open&labels={encoded_label}",
+        token,
+    )
+    prs: List[Dict[str, Any]] = []
+    for issue in issues:
+        if not issue.get("pull_request"):
+            continue
+        number = int(issue["number"])
+        pr = github_api_json(f"/repos/{repository}/pulls/{number}", token)
+        if pr.get("state") == "open" and NEEDS_LABEL in pr_labels(pr):
+            prs.append(pr)
+    return prs
+
+
 def github_api_json(path: str, token: str) -> Dict[str, Any]:
     request = urllib.request.Request(
         f"https://api.github.com{path}",
@@ -279,6 +310,41 @@ def require_env(name: str) -> str:
     return value
 
 
+def dispatch_audit_request(
+    *,
+    repository: str,
+    audit_request: AuditRequest,
+    token: str,
+    webhook_url: str,
+    webhook_secret: str,
+) -> bool:
+    payload = build_payload(repository, audit_request)
+    if os.environ.get("DRY_RUN") == "1":
+        print(json.dumps(payload, indent=2, sort_keys=True))
+        return True
+
+    pr_number = payload["pull_request"]["number"]
+    head_sha = payload["pull_request"]["head_sha"]
+    if not audit_request.force:
+        comments = github_api_paginated(f"/repos/{repository}/issues/{pr_number}/comments", token)
+        reviews = github_api_paginated(f"/repos/{repository}/pulls/{pr_number}/reviews", token)
+        if devin_already_reviewed_sha(head_sha, [*comments, *reviews]):
+            print(f"skip: Devin already reviewed head SHA {head_sha}")
+            return True
+
+    status, body = post_webhook(webhook_url, webhook_secret, payload)
+    print(f"Devin webhook response: HTTP {status}")
+    if body:
+        print("--- response body ---")
+        print(body)
+        print("--- end response body ---")
+    if not 200 <= status < 300:
+        print(f"error: Devin webhook returned non-2xx status {status}", file=sys.stderr)
+        return False
+    print(f"dispatched: {payload['dedupe_key']}")
+    return True
+
+
 def main() -> int:
     return run()
 
@@ -302,6 +368,37 @@ def run() -> int:
     def fetch_pull_request(number: int) -> Dict[str, Any]:
         return github_api_json(f"/repos/{repository}/pulls/{number}", github_token())
 
+    webhook_url = require_env("DEVIN_WEBHOOK_URL")
+    webhook_secret = require_env("DEVIN_WEBHOOK_SECRET")
+
+    if event_name in SCAN_EVENTS:
+        prs = scheduled_pull_requests(
+            event=event,
+            repository=repository,
+            token=github_token(),
+        )
+        if not prs:
+            print(f"skip: no open PRs with {NEEDS_LABEL}")
+            return 0
+        ok = True
+        for pr in prs:
+            request = AuditRequest(
+                pull_request=pr,
+                trigger={
+                    "event": event_name,
+                    "action": action or "scan",
+                    "actor": actor,
+                },
+            )
+            ok = dispatch_audit_request(
+                repository=repository,
+                audit_request=request,
+                token=github_token(),
+                webhook_url=webhook_url,
+                webhook_secret=webhook_secret,
+            ) and ok
+        return 0 if ok else 1
+
     audit_request, reason = resolve_audit_request(
         event_name=event_name,
         action=action,
@@ -313,31 +410,13 @@ def run() -> int:
         print(f"skip: {reason}")
         return 0
 
-    webhook_url = require_env("DEVIN_WEBHOOK_URL")
-    webhook_secret = require_env("DEVIN_WEBHOOK_SECRET")
-    payload = build_payload(repository, audit_request)
-    if os.environ.get("DRY_RUN") == "1":
-        print(json.dumps(payload, indent=2, sort_keys=True))
-        return 0
-    pr_number = payload["pull_request"]["number"]
-    head_sha = payload["pull_request"]["head_sha"]
-    if not audit_request.force:
-        comments = github_api_paginated(f"/repos/{repository}/issues/{pr_number}/comments", github_token())
-        reviews = github_api_paginated(f"/repos/{repository}/pulls/{pr_number}/reviews", github_token())
-        if devin_already_reviewed_sha(head_sha, [*comments, *reviews]):
-            print(f"skip: Devin already reviewed head SHA {head_sha}")
-            return 0
-    status, body = post_webhook(webhook_url, webhook_secret, payload)
-    print(f"Devin webhook response: HTTP {status}")
-    if body:
-        print("--- response body ---")
-        print(body)
-        print("--- end response body ---")
-    if not 200 <= status < 300:
-        print(f"error: Devin webhook returned non-2xx status {status}", file=sys.stderr)
-        return 1
-    print(f"dispatched: {payload['dedupe_key']}")
-    return 0
+    return 0 if dispatch_audit_request(
+        repository=repository,
+        audit_request=audit_request,
+        token=github_token(),
+        webhook_url=webhook_url,
+        webhook_secret=webhook_secret,
+    ) else 1
 
 
 if __name__ == "__main__":

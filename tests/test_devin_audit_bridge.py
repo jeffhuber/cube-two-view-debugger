@@ -13,6 +13,7 @@ from tools.devin_audit_bridge import (
     build_payload,
     devin_already_reviewed_sha,
     resolve_audit_request,
+    scheduled_pull_requests,
 )
 
 
@@ -298,6 +299,61 @@ def test_run_dry_run_prints_payload_without_dedupe_lookup(tmp_path, monkeypatch,
     output = capsys.readouterr().out
     assert "jeffhuber/cube-two-view-debugger#17@abc123" in output
     assert "Use Devin's built-in GitHub PR label tools" in output
+
+
+def test_scheduled_pull_requests_uses_fixture_prs_without_github_api(monkeypatch):
+    def fail_github_api_paginated(_path, _token):
+        raise AssertionError("fixture scan should not call GitHub API")
+
+    monkeypatch.setattr(devin_audit_bridge, "github_api_paginated", fail_github_api_paginated)
+
+    prs = scheduled_pull_requests(
+        event={
+            "pull_requests": [
+                make_pr(labels=[NEEDS_LABEL], sha="abc123", number=17),
+                make_pr(labels=["devin-audit-done"], sha="def456", number=18),
+                make_pr(labels=[NEEDS_LABEL], sha="closed", number=19, state="closed"),
+            ]
+        },
+        repository="jeffhuber/cube-two-view-debugger",
+        token="token",
+    )
+
+    assert [pr["number"] for pr in prs] == [17]
+
+
+def test_schedule_dry_run_dispatches_fixture_prs(tmp_path, monkeypatch, capsys):
+    event_path = tmp_path / "event.json"
+    event_path.write_text(
+        json.dumps(
+            {
+                "pull_requests": [
+                    make_pr(labels=[NEEDS_LABEL], sha="abc123", number=17),
+                    make_pr(labels=[NEEDS_LABEL], sha="def456", number=18),
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("GITHUB_EVENT_PATH", str(event_path))
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "schedule")
+    monkeypatch.setenv("GITHUB_REPOSITORY", "jeffhuber/cube-two-view-debugger")
+    monkeypatch.setenv("GITHUB_ACTOR", "github-actions[bot]")
+    monkeypatch.setenv("GITHUB_TOKEN", "token")
+    monkeypatch.setenv("DEVIN_WEBHOOK_URL", "https://devin.example/webhook")
+    monkeypatch.setenv("DEVIN_WEBHOOK_SECRET", "secret")
+    monkeypatch.setenv("DRY_RUN", "1")
+
+    def fail_post_webhook(_url, _secret, _payload):
+        raise AssertionError("dry run should not post the webhook")
+
+    monkeypatch.setattr(devin_audit_bridge, "post_webhook", fail_post_webhook)
+
+    assert devin_audit_bridge.run() == 0
+    output = capsys.readouterr().out
+    assert "jeffhuber/cube-two-view-debugger#17@abc123" in output
+    assert "jeffhuber/cube-two-view-debugger#18@def456" in output
+    assert '"event": "schedule"' in output
 
 
 def test_run_force_comment_posts_even_when_devin_already_reviewed_current_sha(

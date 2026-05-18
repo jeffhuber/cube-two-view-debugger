@@ -45,7 +45,7 @@ from PIL import Image, ImageOps
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from rubik_recognizer.colors import COLOR_TO_FACE, FACE_TO_COLOR, classify_rgb  # noqa: E402
+from rubik_recognizer.colors import COLOR_TO_FACE  # noqa: E402
 from rubik_recognizer.recognizer import WhiteUpRecognizer  # noqa: E402
 from rubik_recognizer.validation import FACE_ORDER  # noqa: E402
 from tools.extract_color_samples import (  # noqa: E402
@@ -64,7 +64,6 @@ from tools.sample_stickers_from_hull import (  # noqa: E402
     apply_orientation,
     discover_orientation,
     identify_faces_jointly,
-    latest_hull_label,
 )
 
 CORPUS_MANIFEST = REPO_ROOT / "tests" / "fixtures" / "corpus_manifest.json"
@@ -260,8 +259,7 @@ def run_existing_recognizer(image_a: Path, image_b: Path) -> Dict:
         return {"error": f"{type(e).__name__}: {e}", "state": None}
     return {
         "state": result.state,
-        "category": getattr(result, "category", None),
-        "confidence": getattr(result, "confidence", None),
+        "confidence": result.confidence,
     }
 
 
@@ -314,7 +312,7 @@ def evaluate_pair(
         },
         "existing": {
             "state": existing.get("state"),
-            "category": existing.get("category"),
+            "confidence": existing.get("confidence"),
             "perStickerAccuracy": existing_acc,
         },
         "verdict": verdict,

@@ -33,20 +33,17 @@ PR), which runs the rectify → [equalize] → classify pipeline twice
 from __future__ import annotations
 
 import argparse
-import json
 import sys
-from collections import Counter
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import numpy as np
-from PIL import Image, ImageDraw
+from PIL import Image
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from rubik_recognizer.colors import CANONICAL_RGB, FACE_TO_COLOR, classify_rgb  # noqa: E402
+from rubik_recognizer.colors import CANONICAL_RGB, FACE_TO_COLOR  # noqa: E402
 
 
 # ---------------- core equalization ----------------

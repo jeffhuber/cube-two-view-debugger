@@ -46,7 +46,9 @@ Per-image metadata schema:
 - 3D unit cube model with axis-aligned faces, parametric bezel and inter-sticker inset
 - Pinhole perspective camera (one preset per view A/B)
 - Flat per-face Lambertian-ish shading (U brightest, D dimmest, sides mid)
-- 54 stickers drawn as 4-corner polygons via PIL.ImageDraw
+- **Vivid cube-snap palette** matching the CubeVisualizer's hex colors (`#b71234` red, `#009b48` green, `#ff5800` orange, `#0046ad` blue, etc.) — not the muted recognizer canonical palette
+- **Dark cube body (#161616) showing between stickers** — the visual signature that makes the cube read as a real Rubik's cube rather than a polygon mesh
+- **Rounded sticker corners** via quadratic-Bezier chamfered polygons (`rounded_quad` helper, matches cube-snap's STICKER_RADIUS = 0.10 look)
 - Solid-color background (parameterizable RGB)
 - Pixel-perfect ground truth (face quads computed from projection; not approximated)
 

@@ -44,17 +44,19 @@ from PIL import Image, ImageDraw
 # ---------------- color palette ----------------
 
 
-# Match cube-snap / ctvd CANONICAL_RGB. Centers always have these colors;
-# 8 non-center stickers per face have one of these colors per state string.
+# Vivid cube-snap CubeVisualizer hex palette (FACE_COLORS in src/cube.ts).
+# Notably more saturated than the recognizer's CANONICAL_RGB which models
+# faded/lit physical-photo colors. The renderer mimics the visualizer
+# look, not the as-photographed look.
 CUBE_COLORS_RGB: Dict[str, Tuple[int, int, int]] = {
-    "U": (238, 238, 232),  # white
-    "R": (190, 48, 36),    # red
-    "F": (58, 145, 82),    # green
-    "D": (230, 210, 42),   # yellow
-    "L": (218, 112, 42),   # orange
-    "B": (62, 86, 150),    # blue
+    "U": (255, 255, 255),  # white  #ffffff
+    "R": (183, 18, 52),    # red    #b71234
+    "F": (0, 155, 72),     # green  #009b48
+    "D": (255, 213, 0),    # yellow #ffd500
+    "L": (255, 88, 0),     # orange #ff5800
+    "B": (0, 70, 173),     # blue   #0046ad
 }
-BEZEL_RGB = (15, 15, 15)  # cube body / between-sticker gaps
+BEZEL_RGB = (22, 22, 22)  # cube body, matches cube-snap's INTERIOR_COLOR #161616
 FACE_ORDER = "URFDLB"
 
 
@@ -75,11 +77,17 @@ class CubeModel:
     Each face has 9 stickers arranged 3×3 in face-local (u, v) coordinates,
     where (u=0, v=0) is the face's row-major "first sticker" corner.
     The mapping from face-local (u, v) to world (x, y, z) is fixed per face
-    to match the URFDLB sticker-position convention."""
+    to match the URFDLB sticker-position convention.
+
+    Geometry defaults are tuned to match cube-snap's CubeVisualizer
+    proportions: STICKER_SIZE/CUBIE_SIZE = 0.82/0.94 ≈ 0.87, with the
+    remaining 13% showing the dark cube body (the visible gap between
+    stickers — this is what makes the cube look like a real Rubik's
+    cube rather than a CGI block)."""
 
     size: float = 1.0
-    bezel_fraction: float = 0.04
-    sticker_inset_fraction: float = 0.04  # gap between stickers within a face
+    bezel_fraction: float = 0.02     # thin outer ring of cube body around face perimeter
+    sticker_inset_fraction: float = 0.09  # inset INSIDE each sticker cell (= visible body between stickers)
 
     def face_corners_3d(self, face: str) -> List[Tuple[float, float, float]]:
         """Return the 4 corners of the face in world coords, in row-major
@@ -239,6 +247,48 @@ def shade_color(rgb: Tuple[int, int, int], intensity: float) -> Tuple[int, int, 
     return tuple(max(0, min(255, int(round(c * intensity)))) for c in rgb)  # type: ignore
 
 
+def rounded_quad(corners: Sequence[Tuple[float, float]], radius_fraction: float = 0.18,
+                 segments_per_corner: int = 5) -> List[Tuple[float, float]]:
+    """Replace the 4 sharp corners of a quad with rounded fillets.
+
+    radius_fraction is the radius expressed as a fraction of the SHORTER
+    of the two adjacent edges at each corner. Higher = more rounding.
+    cube-snap's STICKER_RADIUS = 0.10 on a 0.82 sticker is ~12%; we use
+    ~18% which reads slightly more rounded in screenshot-resolution
+    images (compensates for the lack of anti-aliasing in PIL fill)."""
+    if len(corners) != 4:
+        return list(corners)
+    pts: List[Tuple[float, float]] = []
+    n = 4
+    for i in range(n):
+        prev_pt = corners[(i - 1) % n]
+        cur_pt = corners[i]
+        next_pt = corners[(i + 1) % n]
+        # Edge lengths into and out of this corner
+        dx_in = cur_pt[0] - prev_pt[0]
+        dy_in = cur_pt[1] - prev_pt[1]
+        len_in = (dx_in * dx_in + dy_in * dy_in) ** 0.5
+        dx_out = next_pt[0] - cur_pt[0]
+        dy_out = next_pt[1] - cur_pt[1]
+        len_out = (dx_out * dx_out + dy_out * dy_out) ** 0.5
+        if len_in < 1e-3 or len_out < 1e-3:
+            pts.append(cur_pt)
+            continue
+        r = radius_fraction * min(len_in, len_out)
+        # Two anchor points: r-along-in-edge backward from cur, r-along-out-edge forward
+        a = (cur_pt[0] - dx_in / len_in * r, cur_pt[1] - dy_in / len_in * r)
+        b = (cur_pt[0] + dx_out / len_out * r, cur_pt[1] + dy_out / len_out * r)
+        # Linear interpolate from a to b via cur_pt as a 1-stop bezier (quadratic)
+        for s in range(segments_per_corner + 1):
+            t = s / float(segments_per_corner)
+            # Quadratic Bezier with control = cur_pt
+            one_t = 1 - t
+            x = one_t * one_t * a[0] + 2 * one_t * t * cur_pt[0] + t * t * b[0]
+            y = one_t * one_t * a[1] + 2 * one_t * t * cur_pt[1] + t * t * b[1]
+            pts.append((x, y))
+    return pts
+
+
 # Approximate Lambertian shading — for the standard view, U is brightest
 # (faces a top light), R and F are mid-bright, D is dimmest. Tune per view.
 SHADING_BY_VIEW_FACE = {
@@ -296,8 +346,12 @@ def render_view(
                 shaded = shade_color(base_rgb, SHADING_BY_VIEW_FACE[view][face])
                 sticker_3d = cube.sticker_corners_3d(face, row, col)
                 sticker_2d = cam.project_many(sticker_3d)
-                draw.polygon(sticker_2d, fill=shaded)
-                # Record the sticker center (centroid of its 4 image-space corners)
+                # Round the sticker corners — visible signature of real
+                # plastic stickers vs CGI flat polygons
+                rounded = rounded_quad(sticker_2d, radius_fraction=0.20)
+                draw.polygon(rounded, fill=shaded)
+                # Record the sticker center (centroid of its 4 image-space corners,
+                # NOT the rounded shape — keep the GT metadata at the geometric center)
                 cx = sum(p[0] for p in sticker_2d) / 4.0
                 cy = sum(p[1] for p in sticker_2d) / 4.0
                 row_centers.append((round(cx, 2), round(cy, 2)))

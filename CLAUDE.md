@@ -169,6 +169,78 @@ documentation unless the files have been copied into a tracked fixture
 or docs path; `runs/` is gitignored and those paths are often
 local-session context.
 
+## Mutable state — re-pull before asserting (parallel-agent workflow)
+
+When the workflow involves another agent acting in parallel —
+Codex on the production recognizer, Devin on PR audits, the user
+merging from the GitHub UI — **state I observed earlier in the
+session is not state.** Before any sentence in user-facing
+output that asserts the current condition of something an
+external agent can touch, run a fresh query.
+
+The artifacts most often mutated between my turns:
+
+- PR state: open vs merged, `mergeStateStatus`, `mergeable`,
+  head SHA
+- PR labels: `needs-devin-audit`, `devin-audit-done`,
+  `devin-audit-blocked` — Devin's labeler flips these
+  asynchronously
+- CI check rollup status
+- Branch tips (Codex pushes to shared branches, force-pushes to
+  their own)
+- Worktree list (the user or Codex may have removed a worktree)
+- File contents in any path Codex owns (per `COORDINATION.md`
+  Lanes) or that's listed as **Shared**
+
+The cheap query before each shape of claim:
+
+| Claim shape | Cheap re-check |
+|---|---|
+| "PR #N is still open / in flight / pending" | `gh pr view <n> --json state,labels,mergeStateStatus` |
+| "Open PRs are…" | `gh pr list --state open` (each repo) |
+| "Label X is on PR #N" | `gh pr view <n> --json labels` |
+| "Branch X is at SHA Y" | `git fetch && git log --oneline -1 origin/<branch>` |
+| "Worktree X exists / is dangling" | `git worktree list` |
+| "File X says Y" (Codex-touched or Shared paths) | re-Read before quoting |
+
+### The trigger / mechanism
+
+Catch yourself on words that are claims about *current* state:
+**"still"**, **"currently"**, **"now"**, **"in flight"**,
+**"open"**, **"pending"**, **"hasn't yet"**, **"is at"**.
+These all need a current read — not memory from earlier in the
+session.
+
+Within a single turn, state I just read is fresh and trustworthy.
+Across user-message boundaries, treat all external state as
+stale by default: the user message itself is evidence that time
+has passed and other agents may have acted in that window.
+
+### The trade-off, made explicit
+
+Workflow is intentionally rapid (target: seconds, not minutes).
+Pulling fresh state costs ~1 second per `gh` query. The cost of a
+stale-state assertion is much higher: the user has to
+context-switch to verify, downstream decisions may build on the
+wrong premise, and trust degrades each time it happens.
+
+### This caused a real failure on 2026-05-18
+
+After I merged cube-snap#136, I posted "Open PRs now (2):
+ctvd#146, ctvd#147" — based on my last fresh observation of those
+PRs, which was when I labeled them `needs-devin-audit` 6-7
+minutes earlier. Codex had merged both in parallel (#146 at
+18:43:42 UTC, #147 at 18:45:59 UTC) before I posted at ~18:50.
+The user caught it: *"Codex said he merged #146 and #147. Why did
+you think they're still open?"* A `gh pr list` before the
+report would have taken 1 second and produced an accurate
+summary.
+
+This is the parallel-agent analogue of the comparative-claims
+"view both before comparing" rule: that one is pairwise (look at
+A and B); this one is temporal (re-look at X now, not as you
+remember it).
+
 ## Pre-commit verification — separate commands, explicit paths
 
 Two patterns hit me on cube-snap#114 / ctvd#94 in quick

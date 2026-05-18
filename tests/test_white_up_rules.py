@@ -1991,6 +1991,68 @@ def test_recognition_category_marks_moderate_repair_as_high_confidence():
     assert category["category"] == "success_repaired_high_confidence"
 
 
+def test_recognition_category_downgrades_repair_with_paired_pre_count_skew():
+    fixture_dir = Path(__file__).parent / "fixtures"
+    payload = json.loads((fixture_dir / "recognition_signals_repair.json").read_text())
+    signals = json.loads(json.dumps(payload["recognitionSignals"]))
+    selected = signals["selectedRepairCandidate"]
+    selected["confidence"] = 0.687
+    selected["repairRankingPenalty"] = 0.105
+    selected["repairChanges"] = 3
+    selected["preRepairFaceCounts"] = {
+        "U": 9,
+        "R": 7,
+        "F": 8,
+        "D": 9,
+        "L": 10,
+        "B": 11,
+    }
+    signals["topRepairCandidates"][0] = selected
+    result = RecognitionResult(
+        status=payload["status"],
+        state=payload["state"],
+        confidence=0.687,
+        reason=payload["reason"],
+        candidates=102_858,
+        recognition_signals=signals,
+    )
+
+    category = _recognition_category_payload(result)
+
+    assert category["category"] == "needs_manual_review"
+    assert category["reason"] == "repair_path_pre_repair_color_count_skew"
+
+
+def test_recognition_category_allows_one_sided_pre_count_skew():
+    fixture_dir = Path(__file__).parent / "fixtures"
+    payload = json.loads((fixture_dir / "recognition_signals_repair.json").read_text())
+    signals = json.loads(json.dumps(payload["recognitionSignals"]))
+    selected = signals["selectedRepairCandidate"]
+    selected["confidence"] = 0.637
+    selected["repairRankingPenalty"] = 0.148
+    selected["preRepairFaceCounts"] = {
+        "U": 9,
+        "R": 8,
+        "F": 11,
+        "D": 8,
+        "L": 10,
+        "B": 8,
+    }
+    signals["topRepairCandidates"][0] = selected
+    result = RecognitionResult(
+        status=payload["status"],
+        state=payload["state"],
+        confidence=0.637,
+        reason=payload["reason"],
+        candidates=134_208,
+        recognition_signals=signals,
+    )
+
+    category = _recognition_category_payload(result)
+
+    assert category["category"] == "success_repaired_high_confidence"
+
+
 def test_recognition_category_uses_evaluated_candidate_count_for_repair_retake_gate():
     fixture_dir = Path(__file__).parent / "fixtures"
     payload = json.loads((fixture_dir / "recognition_signals_repair.json").read_text())

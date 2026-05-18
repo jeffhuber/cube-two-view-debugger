@@ -1022,8 +1022,11 @@ def test_grid_signal_summary_reports_cell_face_and_source_counts():
 
     assert summary["cellFaceCounts"] == {"U": 4, "R": 1, "F": 1, "D": 1, "L": 1, "B": 1}
     assert summary["cellSourceCounts"] == {"component": 7, "grid_sample": 2}
+    assert summary["extrapolatedSamples"] == 0
+    assert summary["extrapolatedSampleScore"] == 0.0
     assert summary["unsupportedSamples"] == 0
     assert summary["unsupportedSampleScore"] == 0.0
+    assert summary["gridExtrapolationPenalty"] == 0.0
     assert summary["cubeHullInsideCount"] == 6
     assert summary["cubeHullOutsideCount"] == 3
     assert summary["cubeHullSource"] == "rembg_u2net_hull"
@@ -1089,6 +1092,61 @@ def test_unsupported_grid_sample_score_measures_white_extrapolation():
         spacing=0.0,
     )
     assert recognizer._unsupported_grid_sample_score(zero_spacing_sample) == 0.0
+
+
+def test_grid_extrapolation_penalty_targets_sparse_unsupported_white_samples():
+    def sample(source, color="white", *, outside=0.0, nearest=70.0, spacing=70.0):
+        return type(
+            "Facelet",
+            (),
+            {
+                "source": source,
+                "rgb": (230, 230, 230),
+                "shape_angle": None,
+                "match": type(
+                    "Match",
+                    (),
+                    {
+                        "face": "U" if color == "white" else "F",
+                        "color": color,
+                        "confidence": 0.82,
+                        "alternatives": [(color, 0.0)],
+                    },
+                )(),
+                "grid_spacing": spacing,
+                "outside_grid_component_hull_distance": outside,
+                "nearest_grid_component_distance": nearest,
+            },
+        )()
+
+    unsupported = sample("grid_sample", outside=90.0, nearest=140.0)
+    supported = sample("grid_sample", outside=0.0, nearest=70.0)
+    component = sample("component", outside=90.0, nearest=140.0)
+    sparse_grid = type(
+        "Grid",
+        (),
+        {
+            "matched_count": 5,
+            "stickers": [
+                [unsupported, unsupported, supported],
+                [component, unsupported, component],
+                [component, component, component],
+            ],
+        },
+    )()
+    strong_grid = type(
+        "Grid",
+        (),
+        {
+            "matched_count": 7,
+            "stickers": sparse_grid.stickers,
+        },
+    )()
+
+    assert recognizer._extrapolated_grid_sample_score(sample("grid_sample", "green", outside=90.0)) > 0.0
+    assert recognizer._grid_extrapolated_sample_count(sparse_grid) == 3
+    assert recognizer._grid_extrapolation_penalty(sparse_grid) > 0.0
+    assert recognizer._grid_extrapolation_penalty(strong_grid) == 0.0
 
 
 def test_pair_color_calibration_signal_reports_red_orange_counts():

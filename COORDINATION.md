@@ -57,7 +57,7 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 | Owner | Branch | PR | What | Touches | ETA |
 |---|---|---|---|---|---|
-| Codex | `codex/grid-extrapolation-guard` | #145 | Conservative default grid-extrapolation scoring/gating | `rubik_recognizer/*`, focused tests, probes | In review |
+| Claude | `claude/vertex-regressor` | [#142](https://github.com/jeffhuber/cube-two-view-debugger/pull/142) | Learned face-quad regressor on 68 hull labels (mixed result: better mean metrics, worse strict-pass rate vs RANSAC) | `tools/train_vertex_regressor.py` (new), `LearnedVertexProposer` in `tools/propose_geometry_labels.py`, new `tests/test_learned_vertex_proposer.py` | devin-audit-done; merging now |
 
 *(Codex: please populate your row when you start something.)*
 
@@ -77,11 +77,11 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 ### Codex
 
+- **#145** — Conservative default grid-extrapolation scoring/gating in production recognizer.
 - **#143** — Clean-label color evaluator recomputes runtime classifier modes. Prevents stale JSONL predictions from hiding KNN regressions.
 - **#141** — Opt-in rembg hull guard for grid ranking. Penalizes selected grids with <7/9 centers inside the U2-Net cube hull; default behavior unchanged.
 - **#135** — Discover hyphenated `white-up` photos. Sets 57/58/61/62 now seen by all tools.
 - **#134** — Downgrade skewed repair false positives. Confident wrong → retake/review.
-- **#131** — Balanced visible color assignment diagnostics.
 
 ---
 
@@ -89,6 +89,7 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 Newest first. Each entry: date, decision, one-line why.
 
+- **2026-05-18** — Learned vertex regressor (Ridge on 68 hull labels, 15-D cheap-hexagon features → 24-D face-quad coords) is a *mixed* result: better mean face IoU (0.728 vs 0.669), 3× lower sticker-center error (35.9 vs 106.4 px), +4.1pp classification accuracy — but 0% pass at face≥0.85 (vs 12% RANSAC) and lower gridsAccepted (62.5% vs 85.7%). Suggests Ridge is smoothing toward the mean and the 15-D feature is too sparse. Path forward: richer features (per-side training, mask-CNN features) and/or offset-from-hexagon targets, but a bigger labeled set (synthetic corpus v2) is likely the binding constraint at n=68. Land as a checkpoint, not yet a production proposer.
 - **2026-05-18** — Architecture direction is *rembg → optimized hexagon → rectify → classify*, with a parallel `recognizer_mask.py` path behind an env switch. Promote to production only when end-to-end mask-path evaluator shows it beats current recognizer on corpus + hard cases + has safe fallback policy. (Synthesis from Devin + Codex reviews on #137.)
 - **2026-05-18** — Mask-path next steps in order: (1) end-to-end evaluator [Claude], (2) equalize-faces experiment [Claude], (3) learned vertex regressor only if (1)+(2) don't close the gap [Claude], (4) synthetic corpus v2 as parallel investment [Claude].
 - **2026-05-18** — Codex next steps in order: (1) Sets 57/58/61/62 confident-false-legal-repair fix, (2) geometry-first ranking gate using `rembg_u2net_hull`, (3) KNN5 Phase 2 broader-scope rollout.

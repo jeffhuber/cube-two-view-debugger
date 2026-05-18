@@ -548,6 +548,111 @@ class RembgProposer:
 # ---------------- registry ----------------
 
 
+# ---------------- learned vertex regressor proposer ----------------
+
+
+class LearnedVertexProposer:
+    """Loads a trained sklearn vertex regressor (trained by
+    tools/train_vertex_regressor.py on 68+ hand-labeled hull pairs) and
+    uses it to predict precise face-quad corners from the rembg mask's
+    cheap angular-sector hexagon.
+
+    Pipeline:
+      1. rembg → mask
+      2. convex hull of mask → cheap angular-sector hexagon (6 vertices)
+      3. compute 15-D feature vector (12 normalized hexagon coords + cx + cy + area)
+      4. predict 24-D output (3 face quads × 4 corners × 2 coords, normalized)
+      5. un-normalize to image coords, return as face_quads dict
+
+    Falls back to None (skip proposer) if the model file isn't found or
+    the rembg path fails. Lazy-loads the model on first call."""
+
+    name = "learned_vertex_hybrid"
+    _model_state = None  # (model, feature_dim, target_dim) lazy-loaded
+    EXPECTED_BY_SIDE = {"A": ("U", "R", "F"), "B": ("D", "L", "B")}
+
+    @classmethod
+    def _get_model_state(cls):
+        if cls._model_state is None:
+            import pickle
+            from pathlib import Path as _P
+            model_path = _P(__file__).resolve().parent.parent / "runs" / "vertex_regressor.pkl"
+            if not model_path.exists():
+                return None
+            with open(model_path, "rb") as f:
+                cls._model_state = pickle.load(f)
+        return cls._model_state
+
+    def propose(self, target: "LabelTarget") -> Proposal:
+        if target.image is None:
+            target.load()
+        from rembg import remove
+
+        state = self._get_model_state()
+        if state is None:
+            return Proposal(notes={"reason": "no_trained_model"})
+
+        rgba = remove(target.image, session=_get_rembg_session("u2net"))
+        alpha = np.array(rgba.split()[-1], dtype=np.uint8)
+        mask = alpha > 128
+        if not mask.any():
+            return Proposal(notes={"reason": "rembg_empty_mask"})
+        hull = _hull_from_mask(mask)
+        if len(hull) < 6:
+            return Proposal(notes={"reason": "hull_too_small"})
+        hexagon = _fit_hexagon_to_hull(hull)
+        if hexagon is None:
+            return Proposal(notes={"reason": "hexagon_fit_failed"})
+
+        # Feature extraction (same as training: 15-D normalized)
+        canonical = canonical_corner_order(list(hexagon))
+        w, h = target.image.size
+        coords = np.array(canonical, dtype=np.float64)
+        coords[:, 0] /= w
+        coords[:, 1] /= h
+        cx, cy = coords[:, 0].mean(), coords[:, 1].mean()
+        n = len(coords)
+        area = 0.5 * abs(sum(
+            coords[i, 0] * coords[(i + 1) % n, 1] - coords[(i + 1) % n, 0] * coords[i, 1]
+            for i in range(n)
+        ))
+        X = np.concatenate([coords.flatten(), [cx, cy, area]]).reshape(1, -1)
+
+        # Predict 24-D target (3 face quads × 4 corners × 2 coords)
+        y_pred = state["model"].predict(X)[0]
+
+        # Determine side via the EXPECTED_BY_SIDE check (proposers use target.gt_face_quads
+        # as a side hint — same convention as RembgProposer)
+        side = "A" if "U" in target.gt_face_quads else "B"
+        expected = self.EXPECTED_BY_SIDE[side]
+
+        # Un-normalize and reshape into 3 face quads
+        face_quads: Dict[str, List[Tuple[float, float]]] = {}
+        idx = 0
+        for face in expected:
+            quad = []
+            for _ in range(4):
+                x = float(y_pred[idx]) * w
+                y = float(y_pred[idx + 1]) * h
+                quad.append((x, y))
+                idx += 2
+            face_quads[face] = quad
+
+        # Cube hull: convex hull of all 12 corner points
+        all_pts = [pt for q in face_quads.values() for pt in q]
+        cube_hull = list(_hull_from_mask(mask))  # fall back to rembg hull (more precise)
+
+        return Proposal(
+            cube_hull=cube_hull,
+            face_quads=face_quads,
+            notes={
+                "model": state.get("model_name"),
+                "trainingSamples": state.get("training_samples"),
+                "predictionFromCheapHexagon": True,
+            },
+        )
+
+
 def _build_registry():
     proposers = {
         RecognizerGridsProposer.name: RecognizerGridsProposer(),
@@ -568,6 +673,9 @@ def _build_registry():
         for mode in ("hull", "hybrid"):
             p = RembgProposer(model_name="birefnet-general", mode=mode)
             proposers[p.name] = p
+        # Learned vertex regressor (lazy-loads runs/vertex_regressor.pkl;
+        # silently returns empty proposal if model file is absent).
+        proposers[LearnedVertexProposer.name] = LearnedVertexProposer()
     except ImportError:
         pass
     return proposers

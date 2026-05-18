@@ -130,7 +130,7 @@ def discover_additional_tasks(corpus_set_ids: Iterable[str]) -> List[PairTask]:
             by_set[set_id] = (version, timestamp, path)
 
     # Find image A/B per setId via filename pattern (require both to exist)
-    img_pattern = re.compile(r"Set (\d+) - ([AB]) - white up[^.]*\.(?:JPG|jpg|jpeg|PNG|png)")
+    img_pattern = re.compile(r"Set (\d+) - ([AB]) - white[- ]up[^.]*\.(?:JPG|jpg|jpeg|PNG|png)")
     images_by_set: Dict[str, Dict[str, Path]] = defaultdict(dict)
     for path in DOWNLOADS.iterdir():
         m = img_pattern.match(path.name)

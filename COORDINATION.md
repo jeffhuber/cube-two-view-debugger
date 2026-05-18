@@ -58,7 +58,6 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 | Owner | Branch | PR | What | Touches | ETA |
 |---|---|---|---|---|---|
 | Claude | `claude/mask-pipeline-eval` | TBD | End-to-end mask-path evaluator (Devin's missing piece) | `tools/evaluate_mask_pipeline.py` (new), no others | Open after sweep results in |
-| Claude | `claude/coordination-doc` | (this PR) | This file | `COORDINATION.md` (new) | Now |
 
 *(Codex: please populate your row when you start something.)*
 
@@ -108,7 +107,7 @@ Before opening any PR or requesting Devin audit:
 - [ ] Full `pytest` green locally. New tests for new behavior.
 - [ ] If touching anything in **Shared** above: mention in the PR description.
 - [ ] If the PR's results depend on a long-running sweep: post the full `runs/*_summary.txt` as a PR comment so reviewers don't need to re-run.
-- [ ] For Claude: tools-only, no `rubik_recognizer/*` edits. For Codex: production-only, no `tools/sample_stickers_from_hull.py` / `tools/propose_geometry_labels.py` / `tools/evaluate_*.py` edits (Claude's lane).
+- [ ] For Claude: tools-only, no `rubik_recognizer/*` edits. For Codex: production-only, no edits to Claude-owned auto-geometry / rectify / mask-path tooling listed above unless coordinated.
 - [ ] Update **In Flight** in this doc when opening the PR.
 - [ ] Update **Recently Shipped** when the PR merges.
 

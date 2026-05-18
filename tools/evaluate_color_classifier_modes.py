@@ -33,12 +33,10 @@ MODE_ORDER = (
     "knn5_lab_full",
     "knn5_lab_full_adaptive",
 )
+ADAPTIVE_CACHED_MODES = {"canonical_adaptive", "knn5_lab_adaptive", "knn5_lab_full_adaptive"}
 
 
 def _mode_prediction(row: Dict[str, Any], mode: str) -> str:
-    modes = row.get("classifierModes")
-    if isinstance(modes, dict) and isinstance(modes.get(mode), str):
-        return modes[mode]
     rgb = tuple(row["rgb"])
     if mode == "canonical":
         return classify_rgb_with_mode(rgb, CLASSIFIER_CANONICAL).color
@@ -46,6 +44,9 @@ def _mode_prediction(row: Dict[str, Any], mode: str) -> str:
         return classify_rgb_with_mode(rgb, CLASSIFIER_KNN5_LAB).color
     if mode == "knn5_lab_full":
         return classify_rgb_with_mode(rgb, CLASSIFIER_KNN5_LAB_FULL).color
+    modes = row.get("classifierModes")
+    if mode in ADAPTIVE_CACHED_MODES and isinstance(modes, dict) and isinstance(modes.get(mode), str):
+        return modes[mode]
     if mode == "canonical_adaptive" and isinstance(row.get("calibratedClassifier"), str):
         return row["calibratedClassifier"]
     if mode == "canonical" and isinstance(row.get("defaultClassifier"), str):

@@ -76,6 +76,10 @@ actually use:
 
 Report both aggregate accuracy and per-set deltas. Treat RF-200 from the
 bake-off as an upper-bound benchmark, not the first runtime implementation.
+Canonical, `knn5_lab`, and `knn5_lab_full` are recomputed from the current
+runtime code so regenerated KNN constants cannot accidentally reuse stale JSONL
+predictions. The `*_adaptive` modes use the extracted cached predictions because
+their per-image palettes are not reconstructable from each flat JSONL row.
 
 ## 5. Regenerate KNN5 runtime constants
 

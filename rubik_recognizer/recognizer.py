@@ -156,6 +156,7 @@ MAX_REPAIR_RANKING_PENALTY = 0.18
 DIRECT_CLEAN_CONFIDENCE_THRESHOLD = 0.78
 REPAIRED_HIGH_CONFIDENCE_THRESHOLD = 0.60
 REPAIRED_HIGH_MAX_RANKING_PENALTY = 0.16
+REPAIR_PRE_COUNT_SKEW_DELTA = 2
 REPAIR_RETAKE_CONFIDENCE_THRESHOLD = 0.50
 REPAIR_RETAKE_MIN_CANDIDATES = 50_000
 REPAIR_SKIP_DIRECT_CANDIDATE_THRESHOLD = REPAIR_RETAKE_MIN_CANDIDATES
@@ -676,6 +677,11 @@ def _recognition_category_payload(result: RecognitionResult) -> Dict[str, str]:
             "category": "reject_retake",
             "reason": "repair_path_floor_confidence_or_too_few_candidates",
         }
+    if _repair_pre_count_skew_suspected(selected):
+        return {
+            "category": "needs_manual_review",
+            "reason": "repair_path_pre_repair_color_count_skew",
+        }
     if (
         result.confidence >= REPAIRED_HIGH_CONFIDENCE_THRESHOLD
         and penalty < REPAIRED_HIGH_MAX_RANKING_PENALTY
@@ -688,6 +694,19 @@ def _recognition_category_payload(result: RecognitionResult) -> Dict[str, str]:
         "category": "needs_manual_review",
         "reason": "repair_path_low_confidence_or_high_conflict",
     }
+
+
+def _repair_pre_count_skew_suspected(selected: Dict[str, Any]) -> bool:
+    counts = selected.get("preRepairFaceCounts")
+    if not isinstance(counts, dict):
+        return False
+    deltas = []
+    for face in FACE_ORDER:
+        try:
+            deltas.append(int(counts.get(face, 0)) - 9)
+        except (TypeError, ValueError):
+            return False
+    return max(deltas) >= REPAIR_PRE_COUNT_SKEW_DELTA and min(deltas) <= -REPAIR_PRE_COUNT_SKEW_DELTA
 
 
 def _weak_selected_grid_count(signals: Dict[str, Any]) -> int:

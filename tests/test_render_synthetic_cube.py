@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import sys
+import builtins
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -125,6 +126,21 @@ def test_render_solved_produces_image_and_metadata():
     for face, stickers in res.sticker_positions.items():
         assert len(stickers) == 3
         assert all(len(row) == 3 for row in stickers)
+
+
+def test_render_uses_convex_hull_fallback_without_scipy(monkeypatch):
+    real_import = builtins.__import__
+
+    def fake_import(name, *args, **kwargs):
+        if name.startswith("scipy"):
+            raise ImportError("blocked scipy for fallback test")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", fake_import)
+
+    res = render_view(SOLVED, "A", image_size=(400, 533))
+
+    assert len(res.cube_hull) >= 4
 
 
 def test_render_pair_produces_distinct_a_and_b():

@@ -304,8 +304,9 @@ def render_view(
             sticker_positions[face].append(row_centers)
 
     # Cube hull = convex hull of all visible face corners
-    from scipy.spatial import ConvexHull
     try:
+        from scipy.spatial import ConvexHull
+
         pts = np.array(cube_hull_pts)
         hull_indices = ConvexHull(pts).vertices
         cube_hull = [tuple(pts[i]) for i in hull_indices]

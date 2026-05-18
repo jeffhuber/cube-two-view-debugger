@@ -371,6 +371,10 @@ authorized.
 - Running tests, builds, typechecks (`pytest`, `npm test`,
   `npm run build`, `tsc --noEmit`)
 - Reading files, JSON outputs, photos (with EXIF protocol)
+- Opening, creating, and editing routine development files inside the
+  active repo/worktree without confirmation, including `.py`, `.md`,
+  `.txt`, `.html`, `.css`, `.js`, `.ts`, `.json`, and test/fixture
+  files. Use normal read tools and `apply_patch` for manual edits.
 - Querying APIs (`curl http://localhost:8080/api/diag`)
 - Inspecting saved-run outputs in `runs/`
 - Restarting the local dev server when it's stale (per the
@@ -404,6 +408,18 @@ authorized.
   eval pipeline, etc.)
 - Anything irreversible that you can't undo with `git reset` or a
   follow-up PR
+
+### Sandbox prompts are not content prompts
+
+Do not ask the user for permission just because the next step opens,
+creates, or edits a normal development file (`.py`, `.md`, `.txt`,
+`.html`, `.json`, tests, fixtures, docs) inside the active repo.
+If a command needs escalation because it writes Git metadata
+(`.git/index.lock`), touches a path outside the allowed roots, uses
+network access, or performs a destructive operation, treat that as a
+tool/sandbox permission issue only. Prefer a non-escalated path
+(`apply_patch`, focused file reads, explicit path staging) when it
+fits; otherwise request the narrow escalation and continue.
 
 ### The trigger
 

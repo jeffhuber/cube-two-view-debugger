@@ -57,6 +57,7 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 | Owner | Branch | PR | What | Touches | ETA |
 |---|---|---|---|---|---|
+| Codex | `codex/color-eval-recompute` | pending | Recompute runtime color modes in clean-label evaluator | `tools/evaluate_color_classifier_modes.py`, focused test | Opening PR |
 | Claude | `claude/mask-pipeline-eval` | #139 | End-to-end mask-path evaluator (Devin's missing piece) | `tools/evaluate_mask_pipeline.py` (new), no others | In review |
 
 *(Codex: please populate your row when you start something.)*

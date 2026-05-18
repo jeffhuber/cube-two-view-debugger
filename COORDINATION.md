@@ -57,7 +57,7 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 | Owner | Branch | PR | What | Touches | ETA |
 |---|---|---|---|---|---|
-| Codex | `codex/grid-extrapolation-guard` | pending | Conservative default grid-extrapolation scoring/gating | `rubik_recognizer/*`, focused tests, probes | In progress |
+| Codex | `codex/grid-extrapolation-guard` | #145 | Conservative default grid-extrapolation scoring/gating | `rubik_recognizer/*`, focused tests, probes | In review |
 
 *(Codex: please populate your row when you start something.)*
 

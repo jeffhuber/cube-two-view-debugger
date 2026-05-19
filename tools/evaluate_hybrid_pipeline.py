@@ -62,6 +62,8 @@ from tools.extract_color_samples import (  # noqa: E402
 from tools.inspect_cube_isolation import point_in_polygon  # noqa: E402
 from tools.propose_geometry_labels import (  # noqa: E402
     _face_quad_from_grid_centers,
+    _face_quads_from_hexagon,
+    _fit_hexagon_to_hull,
     _get_rembg_session,
     _hull_from_mask,
 )
@@ -156,12 +158,401 @@ def _grid_inside_hull_count(grid, hull: List[Tuple[float, float]]) -> int:
 
 SLOT_SRC_EXPECTED_BY_SIDE = {"A": frozenset({"U", "R", "F"}), "B": frozenset({"D", "L", "B"})}
 
+# Fit-error threshold for the trust-fit-or-derive hybrid (proposal A).
+# When a chosen grid's fit_error exceeds this, treat analyze_image's
+# 3x3 as spatially incoherent (e.g. spans multiple physical faces) and
+# replace its extrapolated face quad with one derived geometrically
+# from the rembg hexagon hull via _face_quads_from_hexagon. Calibrated
+# against the Set 17 A diagnostic where U=0.34, R=2.01, B=6.50 — so
+# threshold around 3-5 cleanly separates the spatially-coherent grids
+# from the multi-face spans.
+FIT_ERROR_FALLBACK_THRESHOLD = 4.0
+
+
+def _rembg_hexagon(processing_image: Image.Image) -> Optional[List[Tuple[float, float]]]:
+    """rembg → hull → 6-vertex hexagon (CW from top). Returns None on failure."""
+    try:
+        from rembg import remove
+    except ImportError:
+        return None
+    try:
+        rgba = remove(processing_image, session=_get_rembg_session("u2net"))
+    except Exception:
+        return None
+    alpha = np.array(rgba.split()[-1], dtype=np.uint8)
+    mask = alpha > 128
+    if not mask.any():
+        return None
+    hull = _hull_from_mask(mask)
+    if len(hull) < 6:
+        return None
+    hexagon = _fit_hexagon_to_hull(hull)
+    if hexagon is None or len(hexagon) != 6:
+        return None
+    return [(float(x), float(y)) for x, y in hexagon]
+
+
+def _template_face_quads_from_image(
+    processing_image: Image.Image,
+) -> Optional[Dict[str, List[Tuple[float, float]]]]:
+    """Rembg hull → 6-vertex hexagon → 3 anonymous face quads
+    (top/right/left) via the Geometry Labeler's template formula.
+    Returns None if rembg/hexagon fitting fails."""
+    hexagon = _rembg_hexagon(processing_image)
+    if hexagon is None:
+        return None
+    return _face_quads_from_hexagon(hexagon)
+
+
+def _clip_to_hull(point: Tuple[float, float],
+                  hull: List[Tuple[float, float]]) -> Tuple[float, float]:
+    """If `point` is outside the cube hull (rembg silhouette polygon),
+    project to the nearest hull EDGE point. If inside, return as-is.
+
+    Why: even "trusted" face quads from analyze_image have extrapolated
+    corners that can extend 30-60 px past the actual face boundary
+    (see Set 17 A R.S at (426, 1012) — well below the cube). When
+    those corners propagate into topology-derived neighbors via shared
+    vertices, the bad corner pulls the neighbor's quad outside the
+    cube too, dropping sample positions onto the table/background.
+    """
+    if not hull or len(hull) < 3:
+        return point
+    if point_in_polygon(point, hull):
+        return point
+    # Project to nearest point on hull edge (segment-by-segment).
+    best_d2 = float("inf")
+    best_pt = point
+    px, py = point
+    for i in range(len(hull)):
+        ax, ay = hull[i]
+        bx, by = hull[(i + 1) % len(hull)]
+        # Closest point on segment AB to P
+        dx, dy = bx - ax, by - ay
+        seg_len_sq = dx * dx + dy * dy
+        if seg_len_sq < 1e-9:
+            t = 0.0
+        else:
+            t = max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / seg_len_sq))
+        proj_x = ax + t * dx
+        proj_y = ay + t * dy
+        d2 = (px - proj_x) ** 2 + (py - proj_y) ** 2
+        if d2 < best_d2:
+            best_d2 = d2
+            best_pt = (proj_x, proj_y)
+    return best_pt
+
+
+def _hull_vertex_in_direction(
+    hull: List[Tuple[float, float]],
+    center: Tuple[float, float],
+    angle_radians: float,
+    angle_tolerance_radians: float = 0.5,  # ~28°
+) -> Optional[Tuple[float, float]]:
+    """Find the hull vertex farthest from `center` in the direction
+    `angle_radians` (in standard image coords: 0=east, π/2=south,
+    -π/2=north). Returns None if no hull vertex within tolerance.
+
+    Used for unique-to-face vertices (h0=top, h2=right-mid, h4=left-mid)
+    when the 6-vertex hexagon fit is degenerate. The full hull (51+
+    vertices on a typical cube) gives more precise placement than the
+    angular-sector hexagon, which can collapse adjacent vertices.
+    """
+    if not hull:
+        return None
+    import math as _math
+    best_dist = -1.0
+    best_pt = None
+    for hp in hull:
+        dx = hp[0] - center[0]
+        dy = hp[1] - center[1]
+        if dx == 0 and dy == 0:
+            continue
+        angle = _math.atan2(dy, dx)
+        # Angular difference, wrapped to [0, π]
+        diff = abs(angle - angle_radians)
+        if diff > _math.pi:
+            diff = 2 * _math.pi - diff
+        if diff > angle_tolerance_radians:
+            continue
+        dist = _math.hypot(dx, dy)
+        if dist > best_dist:
+            best_dist = dist
+            best_pt = hp
+    return best_pt
+
+
+def _cardinal_corners(quad: List[Tuple[float, float]]) -> Dict[str, Tuple[float, float]]:
+    """Identify a 4-corner face quad's corners by cardinal position
+    (N=min-y, E=max-x, S=max-y, W=min-x). This works for parallelograms
+    aligned with image axes (iso-projected cube faces are approximately
+    so) and is invariant to canonical_corner_order's start-index
+    ambiguity.
+
+    Why this matters: `canonical_corner_order` sorts CW from the
+    smallest-CW-from-N angle. Which corner ends up at index 0 depends
+    on the quad's specific geometry — for U on Set 17 A, index 0 was
+    the EAST corner (h1); for U on a different photo it could be the
+    NORTH corner (h0). Treating index 0 as "always h0" gives wrong
+    shared-corner identification across the cube's faces.
+    """
+    by_y = sorted(quad, key=lambda p: p[1])  # ascending y → north first
+    by_x = sorted(quad, key=lambda p: p[0])  # ascending x → west first
+    return {
+        "N": by_y[0],   # smallest y
+        "S": by_y[-1],  # largest y
+        "W": by_x[0],   # smallest x
+        "E": by_x[-1],  # largest x
+    }
+
+
+def _derive_face_quad_topology_aware(
+    slot_position: str,
+    trusted_quads_by_position: Dict[str, List[Tuple[float, float]]],
+    hexagon: List[Tuple[float, float]],
+    cube_hull: Optional[List[Tuple[float, float]]] = None,
+) -> List[Tuple[float, float]]:
+    """Derive a face quad's 4 corners using the cube-face TOPOLOGY:
+
+      * The 3 visible faces of a cube in iso-projection share specific
+        vertices. Every pair of adjacent faces shares an EDGE, and all
+        3 faces meet at a single cube-center vertex in image space.
+      * When 1-2 neighbor faces are accurately fitted (their quads
+        come from a low-fit-error analyze_image grid), the SHARED
+        corners of the untrusted face are already known with the
+        precision of those trusted quads — no need to approximate
+        them from the rembg hexagon.
+      * Only corners that are unique to the untrusted face (not shared
+        with any trusted neighbor) need to come from the hexagon.
+
+    Hexagon convention (6 vertices CW from top, indices 0-5):
+      h0=top, h1=upper-right, h2=right-middle, h3=bottom,
+      h4=left-middle, h5=upper-left.
+
+    Each face's 4 corners in canonical CW-from-N order:
+      top   (U/D): [h0, h1, center, h5]
+      right (R/L): [h1, h2, h3, center]
+      left  (F/B): [h5, center, h3, h4]
+
+    Shared vertices:
+      h1 = top ∩ right
+      h3 = right ∩ left
+      h5 = top ∩ left
+      center = top ∩ right ∩ left (the cube center vertex)
+
+    Best-case (e.g. Set 17 A, derive 'left' with both top and right
+    trusted): 3 of 4 corners come from precision sources (top quad
+    contributes h5 + center; right quad contributes h3 + center
+    consistency check); only h4 from hexagon approximation.
+
+    Args:
+      slot_position: "top", "right", or "left"
+      trusted_quads_by_position: dict with subset of those keys
+      hexagon: 6 hexagon vertices CW from top
+    """
+    h0, h1, h2, h3, h4, h5 = hexagon
+
+    # Cardinal-position corner extraction. For each trusted quad, get the
+    # 4 corners keyed by cardinal direction (N/E/S/W). The mapping
+    # from cardinal direction to hexagon-named vertex is fixed by the
+    # cube-face topology and independent of canonical_corner_order
+    # ordering ambiguity:
+    #
+    #   top   (U): N=h0, E=h1, S=center, W=h5
+    #   right (R): N=h1, E=h2, S=h3,    W=center
+    #   left  (F): N=h5, E=center, S=h3, W=h4
+    #
+    # So shared vertices:
+    #   h1 = top.E = right.N
+    #   h3 = right.S = left.S
+    #   h5 = top.W = left.N
+    #   center = top.S = right.W = left.E
+    cardinals_by_position = {
+        pos: _cardinal_corners(quad)
+        for pos, quad in trusted_quads_by_position.items()
+    }
+
+    def from_neighbor(position: str, direction: str) -> Optional[Tuple[float, float]]:
+        c = cardinals_by_position.get(position)
+        corner = c.get(direction) if c else None
+        if corner is None:
+            return None
+        # Clip to cube hull: extrapolated corners from
+        # _face_quad_from_grid_centers can extend past the cube outline
+        # (e.g., Set 17 A's R.S at (426, 1012) — well below the cube
+        # hull's bottom). Clipping bounds the error to the hull boundary.
+        if cube_hull is not None:
+            return _clip_to_hull(corner, cube_hull)
+        return corner
+
+    def avg_points(*pts: Optional[Tuple[float, float]]) -> Optional[Tuple[float, float]]:
+        valid = [p for p in pts if p is not None]
+        if not valid:
+            return None
+        return (sum(p[0] for p in valid) / len(valid),
+                sum(p[1] for p in valid) / len(valid))
+
+    # Cube center: shared by all 3 faces. Best estimate is consensus from
+    # trusted neighbors' shared-center corners. Fall back to hexagon
+    # centroid only if no trusted neighbors.
+    center_from_top = from_neighbor("top", "S")
+    center_from_right = from_neighbor("right", "W")
+    center_from_left = from_neighbor("left", "E")
+    center = avg_points(center_from_top, center_from_right, center_from_left)
+    if center is None:
+        center = (sum(p[0] for p in hexagon) / 6.0,
+                  sum(p[1] for p in hexagon) / 6.0)
+
+    # Shared hexagon vertices via cardinal-position lookup
+    h1_shared = from_neighbor("top", "E") or from_neighbor("right", "N")
+    h3_shared = from_neighbor("right", "S") or from_neighbor("left", "S")
+    h5_shared = from_neighbor("top", "W") or from_neighbor("left", "N")
+
+    # Cube faces in iso projection are PARALLELOGRAMS, so their diagonals
+    # bisect each other: for corners [A, B, C, D] in order around the
+    # perimeter, A + C = B + D. When 3 corners are known precisely from
+    # trusted neighbors, the 4th can be derived EXACTLY via parallelogram
+    # geometry instead of from the rembg hexagon approximation. This
+    # matters especially when the hexagon is degenerate (collapsed/missing
+    # vertices), which happens on yawed cubes — Set 17 A's `h2` (would-be
+    # right-middle vertex) ended up at the bottom of the image because the
+    # angular-sector hexagon fitter couldn't find a clear right-side vertex.
+
+    def parallelogram_4th(a, b, c):
+        """Given 3 corners of a parallelogram in perimeter order, return
+        the 4th. Uses A+C = B+D → D = A + C - B (when a/b/c are the 3
+        consecutive corners and D is the 4th to close the loop)."""
+        if a is None or b is None or c is None:
+            return None
+        return (a[0] - b[0] + c[0], a[1] - b[1] + c[1])
+
+    # Compose the 4-corner quad in CANONICAL CW-from-N order so the
+    # rectify step gets a consistent corner sequence. The canonical
+    # order for each slot position is:
+    #   top   (CW from N): [h0, h1, center, h5]
+    #   right (CW from N): [h1, h2, h3, center]
+    #   left  (CW from N): [h5, center, h3, h4]
+    # but the calling code feeds the result through canonical_corner_order
+    # anyway, so any order that returns the correct 4 corners is fine.
+    # Unique-to-face vertex derivation. Priority order:
+    #   1. Parallelogram (when 3 other corners trusted) — geometrically exact
+    #      for orthographic iso, approximate for real photos with perspective
+    #   2. Full-hull angular lookup (precise hull point in expected direction)
+    #   3. 6-vertex hexagon (often degenerate on yawed cubes — last resort)
+    import math as _math
+    # Angle from cube center to each unique vertex (image coords:
+    # 0=east, π/2=south, -π/2=north). Based on iso projection geometry.
+    UNIQUE_VERTEX_ANGLES = {
+        "h0_top": -_math.pi / 2,         # straight up (north)
+        "h2_right_mid": _math.pi / 6,    # east-southeast (~30° down from east)
+        "h4_left_mid": 5 * _math.pi / 6, # west-southeast (~30° down from west)
+    }
+
+    def unique_vertex(parallelogram_value, hexagon_value, angle_key):
+        """Pick best estimate for a unique-to-face vertex: parallelogram
+        derivation > full-hull lookup > degenerate hexagon fallback."""
+        if parallelogram_value is not None:
+            # Clip to hull (parallelogram can also overshoot)
+            if cube_hull is not None:
+                return _clip_to_hull(parallelogram_value, cube_hull)
+            return parallelogram_value
+        if cube_hull is not None and center is not None:
+            hull_pt = _hull_vertex_in_direction(
+                cube_hull, center, UNIQUE_VERTEX_ANGLES[angle_key],
+            )
+            if hull_pt is not None:
+                return hull_pt
+        return hexagon_value
+
+    if slot_position == "top":
+        # corners: [h0, h1, center, h5]
+        ch1 = h1_shared or h1
+        ch5 = h5_shared or h5
+        para_h0 = None
+        if h1_shared is not None and h5_shared is not None and center is not None:
+            para_h0 = parallelogram_4th(ch1, center, ch5)
+        ch0 = unique_vertex(para_h0, h0, "h0_top")
+        return [ch0, ch1, center, ch5]
+    elif slot_position == "right":
+        # corners: [h1, h2, h3, center]
+        ch1 = h1_shared or h1
+        ch3 = h3_shared or h3
+        para_h2 = None
+        if h1_shared is not None and h3_shared is not None and center is not None:
+            para_h2 = parallelogram_4th(ch1, center, ch3)
+        ch2 = unique_vertex(para_h2, h2, "h2_right_mid")
+        return [ch1, ch2, ch3, center]
+    elif slot_position == "left":
+        # corners: [h5, center, h3, h4]
+        ch5 = h5_shared or h5
+        ch3 = h3_shared or h3
+        para_h4 = None
+        if h5_shared is not None and h3_shared is not None and center is not None:
+            para_h4 = parallelogram_4th(ch5, center, ch3)
+        ch4 = unique_vertex(para_h4, h4, "h4_left_mid")
+        return [ch5, center, ch3, ch4]
+    else:
+        raise ValueError(f"unknown slot_position: {slot_position!r}")
+
+
+def _slot_to_template_position(
+    slot_label: str,
+    quads_by_slot: Dict[str, List[Tuple[float, float]]],
+    side: str,
+) -> Optional[str]:
+    """Map a slot (U/R/F or D/L/B) to the template's positional key
+    (top/left/right) given the OTHER slots' current quads. The anchor
+    slot (U or D) always maps to 'top'. For side-face slots: use the
+    centroid x of each currently-assigned slot to determine left vs
+    right. If the target slot is unassigned, infer its position from
+    the centroid of the OTHER side-face slot (it gets the OTHER
+    position).
+
+    Why centroid x: the cube's iso projection puts the 'left' face
+    geometrically on image-left and 'right' face on image-right.
+    Even when yaw rotates which color is on which side, the
+    LEFT/RIGHT image positions stay constant — so quads are matched
+    to template positions by their CURRENT image-x location."""
+    anchor = "U" if side == "A" else "D"
+    if slot_label == anchor:
+        return "top"
+
+    side_face_labels = ("R", "F") if side == "A" else ("L", "B")
+    other_slot = next(s for s in side_face_labels if s != slot_label)
+
+    # Compute centroid x of both side-face slots if assigned
+    def centroid_x(slot: str) -> Optional[float]:
+        q = quads_by_slot.get(slot)
+        if q is None or len(q) != 4:
+            return None
+        return sum(p[0] for p in q) / 4.0
+
+    self_cx = centroid_x(slot_label)
+    other_cx = centroid_x(other_slot)
+
+    if self_cx is not None and other_cx is not None:
+        # Both assigned → simple comparison
+        return "left" if self_cx < other_cx else "right"
+    if self_cx is not None:
+        # Only this slot assigned; infer from image-center heuristic
+        # (this case is rare — if the other slot wasn't even assigned
+        # we'd have <3 faces total)
+        return "left"  # default guess; rarely matters in practice
+    if other_cx is not None:
+        # This slot UNassigned; infer position as opposite of other slot
+        # Determine other's position first, give us the opposite
+        # Heuristic: other's centroid relative to image midline
+        return "right"  # default; refined by caller if needed
+    return None
+
 
 def _proposer_face_quads(
     image_path: Path,
     side: str,
     hull_guard: bool = True,
     slot_src_filter: bool = False,
+    fit_error_fallback: bool = False,
+    fit_error_threshold: float = FIT_ERROR_FALLBACK_THRESHOLD,
     processing_image: Optional[Image.Image] = None,
 ) -> Tuple[Dict[str, List[Tuple[float, float]]], Dict]:
     """Run analyze_image on raw bytes, pick best FaceGrid per center_face,
@@ -342,6 +733,106 @@ def _proposer_face_quads(
             "rekeyedFrom": face,
         }
 
+    # Fit-error fallback (topology-aware): for any slot whose
+    # underlying grid has fit_error > threshold, replace its face quad
+    # with one derived from the cube-face TOPOLOGY using:
+    #   * Shared corners from trusted neighbor faces (precision-preserving)
+    #   * Only corners unique to this face come from the rembg hexagon
+    #
+    # The geometric topology: cube faces share specific corners (cube
+    # center vertex + 1 hexagon vertex per adjacent face). When 2 of 3
+    # face quads are trusted, only 1 of the bad face's 4 corners needs
+    # to come from the hexagon approximation — the other 3 come from
+    # precise trusted-quad corners.
+    fallback_actions: List[Dict] = []
+    if fit_error_fallback and processing_image is not None:
+        hexagon = _rembg_hexagon(processing_image)
+        # Also fetch the full rembg cube hull (51+ vertices) for clip-to-hull
+        # and for full-hull angular lookup of unique-to-face vertices when
+        # the 6-vertex hexagon is degenerate (collapsed/missing vertices on
+        # yawed cubes — see Set 17 A diagnosis).
+        try:
+            from rembg import remove
+            rgba = remove(processing_image, session=_get_rembg_session("u2net"))
+            mask_arr = np.array(rgba.split()[-1], dtype=np.uint8) > 128
+            full_cube_hull = _hull_from_mask(mask_arr) if mask_arr.any() else None
+        except Exception:
+            full_cube_hull = None
+        if hexagon is not None:
+            # Determine slot positions (top/left/right) by centroid x
+            # of currently-assigned quads. Anchor slot always = top.
+            slot_positions: Dict[str, str] = {anchor_label: "top"}
+            non_anchor_slots = [s for s in face_quads if s != anchor_label]
+            if len(non_anchor_slots) == 2:
+                a, b = non_anchor_slots
+                cx_a = sum(p[0] for p in face_quads[a]) / 4.0
+                cx_b = sum(p[0] for p in face_quads[b]) / 4.0
+                if cx_a < cx_b:
+                    slot_positions[a] = "left"
+                    slot_positions[b] = "right"
+                else:
+                    slot_positions[a] = "right"
+                    slot_positions[b] = "left"
+            elif len(non_anchor_slots) == 1:
+                # Only 1 side-face slot assigned; use image-midline heuristic
+                slot = non_anchor_slots[0]
+                cx = sum(p[0] for p in face_quads[slot]) / 4.0
+                img_mid = processing_image.width / 2.0
+                slot_positions[slot] = "left" if cx < img_mid else "right"
+
+            # Identify trusted slots: assigned, position-mapped, fit_error ok
+            trusted_quads_by_position: Dict[str, List[Tuple[float, float]]] = {}
+            for slot, position in slot_positions.items():
+                if slot not in face_quads:
+                    continue
+                meta = selected_metrics.get(slot, {})
+                fit_err = meta.get("fitError")
+                if fit_err is not None and fit_err <= fit_error_threshold:
+                    trusted_quads_by_position[position] = face_quads[slot]
+
+            # For each untrusted slot (fit_err > threshold), derive its
+            # quad from the trusted neighbors + hexagon
+            for slot_label in list(face_quads.keys()):
+                meta = selected_metrics.get(slot_label, {})
+                fit_err = meta.get("fitError")
+                if fit_err is None or fit_err <= fit_error_threshold:
+                    continue
+                slot_position = slot_positions.get(slot_label)
+                if slot_position is None:
+                    continue
+                derived = _derive_face_quad_topology_aware(
+                    slot_position, trusted_quads_by_position, hexagon,
+                    cube_hull=full_cube_hull,
+                )
+                if derived is None or any(p is None for p in derived):
+                    continue
+                derived = [(float(x), float(y)) for (x, y) in derived]
+                fallback_actions.append({
+                    "slot": slot_label,
+                    "originalSourceCenterFace": meta.get("sourceCenterFace"),
+                    "originalFitError": fit_err,
+                    "fallbackPosition": slot_position,
+                    "trustedNeighborsAvailable": sorted(trusted_quads_by_position.keys()),
+                    "cornersFromTrustedNeighbors": sum(
+                        1 for p_name in {
+                            "top": ["h1_via_right", "center", "h5_via_left"],
+                            "right": ["h1_via_top", "h3_via_left", "center"],
+                            "left": ["h5_via_top", "h3_via_right", "center"],
+                        }[slot_position]
+                        if (p_name.endswith("_via_top") and "top" in trusted_quads_by_position)
+                        or (p_name.endswith("_via_right") and "right" in trusted_quads_by_position)
+                        or (p_name.endswith("_via_left") and "left" in trusted_quads_by_position)
+                        or (p_name == "center" and trusted_quads_by_position)
+                    ),
+                    "thresholdUsed": fit_error_threshold,
+                })
+                face_quads[slot_label] = derived
+                selected_metrics[slot_label] = {
+                    **meta,
+                    "replacedByTopologyFallback": True,
+                    "fallbackPosition": slot_position,
+                }
+
     return face_quads, {
         "stickerCount": len(analysis.stickers),
         "gridCount": len(analysis.grids),
@@ -354,6 +845,9 @@ def _proposer_face_quads(
         "slotSrcFilterEnabled": slot_src_filter,
         "gridsRejectedBySlotSrc": grids_rejected_by_slot_src,
         "gridsPromotedFromDeferred": promoted_from_deferred,
+        "fitErrorFallbackEnabled": fit_error_fallback,
+        "fitErrorFallbackThreshold": fit_error_threshold if fit_error_fallback else None,
+        "fitErrorFallbackActions": fallback_actions,
         "warnings": list(analysis.warnings),
     }
 
@@ -376,6 +870,8 @@ def evaluate_pair(
     set_id: str, image_a: Path, image_b: Path, gt_state: str,
     hull_guard: bool = True,
     slot_src_filter: bool = False,
+    fit_error_fallback: bool = False,
+    fit_error_threshold: float = FIT_ERROR_FALLBACK_THRESHOLD,
 ) -> Dict:
     """One pair: analyze_image-quads → rectify → classify → joint face-ID
     → assemble 54-state → compare to GT."""
@@ -395,6 +891,8 @@ def evaluate_pair(
                 image_path, side,
                 hull_guard=hull_guard,
                 slot_src_filter=slot_src_filter,
+                fit_error_fallback=fit_error_fallback,
+                fit_error_threshold=fit_error_threshold,
                 processing_image=img,
             )
         except Exception as e:
@@ -549,6 +1047,23 @@ def main() -> int:
              "A/B comparison against the pre-guard baseline.",
     )
     ap.add_argument(
+        "--fit-error-fallback", action="store_true",
+        help="Trust-fit-or-derive hybrid (proposal A): for any slot whose "
+             "underlying analyze_image grid has fit_error > threshold, "
+             "replace the extrapolated face quad with one derived "
+             "geometrically from the rembg hexagon hull (via the Geometry "
+             "Labeler's template formula). Targets the catastrophic-grid "
+             "failure mode on cubes where 1-2 of 3 faces fit cleanly but the "
+             "third doesn't.",
+    )
+    ap.add_argument(
+        "--fit-error-threshold", type=float, default=FIT_ERROR_FALLBACK_THRESHOLD,
+        help=f"Fit-error threshold for --fit-error-fallback (default: "
+             f"{FIT_ERROR_FALLBACK_THRESHOLD}). Calibrated from Set 17 A "
+             f"diagnostic where good grids had fit_error ≤ 2 and the "
+             f"catastrophic one had 6.5.",
+    )
+    ap.add_argument(
         "--slot-src-filter", action="store_true",
         help="Reject any grid whose analyze_image center_face is "
              "outside the side's canonical expected set ({U,R,F} on A, "
@@ -566,10 +1081,14 @@ def main() -> int:
 
     hull_guard = not args.no_hull_guard
     slot_src_filter = args.slot_src_filter
+    fit_error_fallback = args.fit_error_fallback
+    fit_error_threshold = args.fit_error_threshold
     classifier_mode = os.environ.get("CUBE_RECOGNIZER_CLASSIFIER", "canonical")
     print(f"evaluating hybrid pipeline on {len(pairs)} pairs "
           f"(classifier={classifier_mode}, hull_guard={hull_guard}, "
-          f"slot_src_filter={slot_src_filter})",
+          f"slot_src_filter={slot_src_filter}, "
+          f"fit_error_fallback={fit_error_fallback}"
+          f"{f' threshold={fit_error_threshold}' if fit_error_fallback else ''})",
           file=sys.stderr)
     print("", file=sys.stderr)
 
@@ -580,6 +1099,8 @@ def main() -> int:
                 set_id, image_a, image_b, gt,
                 hull_guard=hull_guard,
                 slot_src_filter=slot_src_filter,
+                fit_error_fallback=fit_error_fallback,
+                fit_error_threshold=fit_error_threshold,
             )
         except Exception as e:
             row = {"setId": set_id, "error": f"{type(e).__name__}: {e}"}

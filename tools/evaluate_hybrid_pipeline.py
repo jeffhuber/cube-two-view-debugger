@@ -879,7 +879,16 @@ def _proposer_face_quads(
                 # Two checks:
                 #   (1) min_edge >= MIN_EDGE_PX. A real face quad in
                 #       a 1150-max image has edges 100-300 px;
-                #       collapsed quads have min_edge < 10 px.
+                #       collapsed quads have min_edge < 10 px. The
+                #       threshold is set ABOVE the degenerate floor to
+                #       also catch BORDERLINE-narrow derivations that
+                #       slip past the basic degeneracy check but still
+                #       produce off-cube rectifications. Calibrated
+                #       from a 198-quad corpus survey: working faces
+                #       have min_edge p5=135, p25=273, median=322;
+                #       the 100 px floor leaves a buffer below p5
+                #       while catching all observed borderline cases
+                #       (e.g. Set 22 A's U slot at min_edge=53 px).
                 #   (2) >= POST_DERIVATION_INSIDE_MIN of 9 sampling
                 #       centroids inside the rembg cube hull. Catches
                 #       the off-cube derivations even when the quad
@@ -898,7 +907,7 @@ def _proposer_face_quads(
                     )
                     for i in range(n)
                 )
-                MIN_EDGE_PX = 30.0  # below this is degenerate
+                MIN_EDGE_PX = 100.0  # see survey calibration in comment above
                 POST_DERIVATION_INSIDE_MIN = 5
 
                 kept_derivation = True

@@ -11,6 +11,7 @@ from tools.devin_audit_labeler import (
 from tools.devin_audit_bridge import (
     NEEDS_LABEL,
     build_payload,
+    build_session_prompt,
     devin_already_reviewed_sha,
     resolve_audit_request,
     scheduled_pull_requests,
@@ -191,6 +192,26 @@ def test_payload_contains_sha_dedupe_key_and_review_instructions():
     assert "<!-- DEVIN_AUDIT_STATE: devin-audit-done -->" in payload["instructions"]
     assert "<!-- DEVIN_AUDIT_STATE: devin-audit-blocked -->" in payload["instructions"]
     assert "<!-- DEVIN_AUDIT_STATE: needs-devin-audit -->" in payload["instructions"]
+
+
+def test_session_prompt_contains_target_pr_and_payload():
+    pr = make_pr(labels=[NEEDS_LABEL], sha="def456", number=42)
+    request, _reason = resolve_audit_request(
+        event_name="pull_request_target",
+        action="labeled",
+        actor="codex",
+        event={"label": {"name": NEEDS_LABEL}, "pull_request": pr},
+        fetch_pull_request=fetcher(pr),
+    )
+
+    payload = build_payload("jeffhuber/cube-two-view-debugger", request)
+    prompt = build_session_prompt(payload)
+
+    assert "@github_pr_audit_label_review" in prompt
+    assert "Target PR: jeffhuber/cube-two-view-debugger#42" in prompt
+    assert "PR URL: https://github.com/jeffhuber/cube-two-view-debugger/pull/42" in prompt
+    assert "Head SHA: def456" in prompt
+    assert '"dedupe_key": "jeffhuber/cube-two-view-debugger#42@def456"' in prompt
 
 
 def test_devin_already_reviewed_sha_detects_same_sha_in_devin_comment():
@@ -404,6 +425,125 @@ def test_run_force_comment_posts_even_when_devin_already_reviewed_current_sha(
     assert devin_audit_bridge.run() == 0
     assert len(calls) == 1
     assert calls[0][2]["dedupe_key"] == "jeffhuber/cube-two-view-debugger#17@abc123"
+
+
+def test_run_prefers_repo_scoped_session_when_api_token_is_configured(
+    tmp_path, monkeypatch
+):
+    event_path = tmp_path / "event.json"
+    event_path.write_text(
+        json.dumps(
+            {
+                "label": {"name": NEEDS_LABEL},
+                "pull_request": make_pr(labels=[NEEDS_LABEL], sha="abc123"),
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("GITHUB_EVENT_PATH", str(event_path))
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "pull_request_target")
+    monkeypatch.setenv("GITHUB_EVENT_ACTION", "labeled")
+    monkeypatch.setenv("GITHUB_REPOSITORY", "jeffhuber/cube-two-view-debugger")
+    monkeypatch.setenv("GITHUB_ACTOR", "codex")
+    monkeypatch.setenv("GITHUB_TOKEN", "token")
+    monkeypatch.setenv("DEVIN_WEBHOOK_URL", "https://devin.example/webhook")
+    monkeypatch.setenv("DEVIN_WEBHOOK_SECRET", "secret")
+    monkeypatch.setenv("DEVIN_API_TOKEN", "api-token")
+    monkeypatch.setenv("DEVIN_ORG_ID", "org-123")
+
+    calls = []
+
+    def fake_paginated(_path, _token):
+        return []
+
+    def fake_create_session(api_token, org_id, payload):
+        calls.append((api_token, org_id, payload))
+        return 200, '{"session_id":"abc"}'
+
+    def fail_post_webhook(_url, _secret, _payload):
+        raise AssertionError("webhook should not be used when session creation succeeds")
+
+    monkeypatch.setattr(devin_audit_bridge, "github_api_paginated", fake_paginated)
+    monkeypatch.setattr(devin_audit_bridge, "create_devin_session", fake_create_session)
+    monkeypatch.setattr(devin_audit_bridge, "post_webhook", fail_post_webhook)
+
+    assert devin_audit_bridge.run() == 0
+    assert calls == [
+        (
+            "api-token",
+            "org-123",
+            {
+                "source": "github-actions-devin-audit-bridge",
+                "dedupe_key": "jeffhuber/cube-two-view-debugger#17@abc123",
+                "trigger": {
+                    "event": "pull_request_target",
+                    "action": "labeled",
+                    "actor": "codex",
+                },
+                "repository": "jeffhuber/cube-two-view-debugger",
+                "pull_request": {
+                    "number": 17,
+                    "url": "https://github.com/jeffhuber/cube-two-view-debugger/pull/17",
+                    "title": "Test PR",
+                    "state": "open",
+                    "head_sha": "abc123",
+                    "head_ref": "codex/test",
+                    "head_repo": "jeffhuber/cube-two-view-debugger",
+                    "base_ref": "main",
+                    "labels": [NEEDS_LABEL],
+                },
+                "instructions": devin_audit_bridge.DEVIN_INSTRUCTIONS,
+            },
+        )
+    ]
+
+
+def test_run_falls_back_to_webhook_when_session_creation_fails(tmp_path, monkeypatch):
+    event_path = tmp_path / "event.json"
+    event_path.write_text(
+        json.dumps(
+            {
+                "label": {"name": NEEDS_LABEL},
+                "pull_request": make_pr(labels=[NEEDS_LABEL], sha="abc123"),
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("GITHUB_EVENT_PATH", str(event_path))
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "pull_request_target")
+    monkeypatch.setenv("GITHUB_EVENT_ACTION", "labeled")
+    monkeypatch.setenv("GITHUB_REPOSITORY", "jeffhuber/cube-two-view-debugger")
+    monkeypatch.setenv("GITHUB_ACTOR", "codex")
+    monkeypatch.setenv("GITHUB_TOKEN", "token")
+    monkeypatch.setenv("DEVIN_WEBHOOK_URL", "https://devin.example/webhook")
+    monkeypatch.setenv("DEVIN_WEBHOOK_SECRET", "secret")
+    monkeypatch.setenv("DEVIN_API_TOKEN", "api-token")
+    monkeypatch.setenv("DEVIN_ORG_ID", "org-123")
+
+    webhook_calls = []
+
+    def fake_paginated(_path, _token):
+        return []
+
+    def fake_create_session(_api_token, _org_id, _payload):
+        return 403, "forbidden"
+
+    def fake_post_webhook(url, secret, payload):
+        webhook_calls.append((url, secret, payload["dedupe_key"]))
+        return 202, "accepted"
+
+    monkeypatch.setattr(devin_audit_bridge, "github_api_paginated", fake_paginated)
+    monkeypatch.setattr(devin_audit_bridge, "create_devin_session", fake_create_session)
+    monkeypatch.setattr(devin_audit_bridge, "post_webhook", fake_post_webhook)
+
+    assert devin_audit_bridge.run() == 0
+    assert webhook_calls == [
+        (
+            "https://devin.example/webhook",
+            "secret",
+            "jeffhuber/cube-two-view-debugger#17@abc123",
+        )
+    ]
 
 
 def test_labeler_classifies_pass_comment():

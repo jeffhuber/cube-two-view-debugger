@@ -57,7 +57,7 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 | Owner | Branch | PR | What | Touches | ETA |
 |---|---|---|---|---|---|
-| Codex | `codex/grid-span-diagnostics` | this PR | Add diagnostics-only grid span/source contamination scoreboard fields | `rubik_recognizer/recognizer.py`, `tools/probe_*`, tests | needs-devin-audit |
+| Codex | `codex/grid-span-guard-diagnostics` | this PR | Add diagnostics-only candidate grid-span guard tags to probes | `tools/probe_*`, tests | needs-devin-audit |
 
 *(Codex: please populate your row when you start something.)*
 
@@ -81,11 +81,11 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 ### Codex
 
+- **#165** — Grid span/source contamination scoreboard. Adds diagnostics-only physical/sample contamination fields; no recognizer behavior changes.
 - **#162** — Direct-legal tie-break scoreboard. Adds raw merged-score, variant-cost, and candidate hamming diagnostics; Set 21 still has no safe promotion signal.
 - **#161** — Direct-legal ambiguity diagnostics. Found hard Set 21 is the only exact-54 manual-review row; it has two effectively tied legal states.
 - **#159** — Calibrate direct-clean selected-grid thresholds. Promotes Set 29 to `success_clean`; Sets 12/14 and hard Set 21 remain manual-review.
 - **#155** — Require concordant extrapolation for opt-in rembg grid penalty. Prevents hull guard from overruling clean grids unless extrapolation evidence agrees.
-- **#153** — Clarify routine development-file edit protocol. Agents should not ask for content permission before normal repo `.py`/`.md` edits.
 
 ---
 
@@ -93,6 +93,7 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 Newest first. Each entry: date, decision, one-line why.
 
+- **2026-05-19** — Candidate grid-span guard remains diagnostics-only. Mining #165 probe outputs found zero-current-FP candidates (`shape spread >=29.952 + sampled cells >=15`, `nearest-grid ratio >=1.284 + unsupported cells >=5`, and high span score), but the sample is only 30 rows and this is guard/manual-review evidence, not a promotion signal.
 - **2026-05-19** — Set 21 direct-legal tie-break inspection found no safe promotion signal yet. The two legal states use the same selected side-pair geometry, the top raw merged-score gap is only 0.02 on a ~1416 score, and balanced facelet-variant cost is identical (93.8762 vs 93.8762). Keep Set 21 manual-review; surface raw-score and variant-cost margins in probes before considering any tie-break rule.
 - **2026-05-19** — Direct-legal ambiguity diagnostics are now the next production trust lever. After #159, full corpus + hard-case mining found no remaining corpus exact-54 manual-review rows; the only exact-54 manual-review row is hard Set 21, whose direct legal candidates are effectively tied (2 states, top/second confidence both 0.8332, rounded gap 0.0). Do not promote Set 21 without a new tie-breaker signal; prefer surfacing legal-candidate margin in probes first.
 - **2026-05-19** — Late KNN after canonical geometry selection is a negative production experiment. Codex tried three opt-in variants: (1) KNN as extra facelet repair/rebalance alternatives, (2) KNN-derived state variants after geometry selection, and (3) capped/cached balanced KNN-primary state variants for top merged candidates. Targeted corpus sets 12/14/24/27/28 and OOD hard sets 57/58/61/62 showed **zero score/category/candidate-count deltas** versus current main; the uncapped state-variant form was computationally unacceptable. Do not pursue this bolt-on path without a new scoring hypothesis. KNN remains useful for clean rectified samples and should be revisited when geometry is precise.

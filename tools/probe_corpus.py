@@ -27,6 +27,11 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 MIN_PYTHON = (3, 11)
 CODEX_PYTHON = Path("/Users/jhuber/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3")
+GRID_SPAN_GUARD_SHAPE_SPREAD_MIN = 29.952
+GRID_SPAN_GUARD_TOTAL_SAMPLED_MIN = 15
+GRID_SPAN_GUARD_NEAREST_RATIO_MIN = 1.284
+GRID_SPAN_GUARD_TOTAL_UNSUPPORTED_MIN = 5
+GRID_SPAN_GUARD_HIGH_SCORE_MIN = 8.235
 
 
 def _dependencies_available() -> bool:
@@ -500,7 +505,82 @@ def selected_grid_span_summary(signals: Dict[str, Any]) -> Dict[str, Any]:
             for row in rows
             if isinstance(row.get("extrapolatedCellCount"), (int, float))
         ),
+        "totalUnsupportedCells": sum(
+            int(row.get("unsupportedCellCount") or 0)
+            for row in rows
+            if isinstance(row.get("unsupportedCellCount"), (int, float))
+        ),
+        "totalBadSampleCells": sum(
+            int(row.get("badSampleCellCount") or 0)
+            for row in rows
+            if isinstance(row.get("badSampleCellCount"), (int, float))
+        ),
+        "totalCubeHullOutsideCells": sum(
+            int(row.get("cubeHullOutsideCount") or 0)
+            for row in rows
+            if isinstance(row.get("cubeHullOutsideCount"), (int, float))
+        ),
     }
+
+
+def candidate_grid_span_guard(span_summary: Dict[str, Any]) -> Dict[str, Any]:
+    """Diagnostics-only candidate guard mined from current corpus + hard probes."""
+    max_score = _numeric(span_summary.get("maxScore"))
+    max_shape_spread = _numeric(span_summary.get("maxComponentShapeSpread"))
+    max_nearest_ratio = _numeric(span_summary.get("maxNearestGridComponentRatio"))
+    total_sampled = _int_metric(span_summary.get("totalSampledCells"))
+    total_unsupported = _int_metric(span_summary.get("totalUnsupportedCells"))
+    rules = [
+        {
+            "name": "shape_spread_and_sample_load",
+            "wouldFire": max_shape_spread >= GRID_SPAN_GUARD_SHAPE_SPREAD_MIN
+            and total_sampled >= GRID_SPAN_GUARD_TOTAL_SAMPLED_MIN,
+            "metrics": {
+                "maxComponentShapeSpread": max_shape_spread,
+                "totalSampledCells": total_sampled,
+            },
+            "thresholds": {
+                "maxComponentShapeSpread": GRID_SPAN_GUARD_SHAPE_SPREAD_MIN,
+                "totalSampledCells": GRID_SPAN_GUARD_TOTAL_SAMPLED_MIN,
+            },
+        },
+        {
+            "name": "sample_distance_and_unsupported_load",
+            "wouldFire": max_nearest_ratio >= GRID_SPAN_GUARD_NEAREST_RATIO_MIN
+            and total_unsupported >= GRID_SPAN_GUARD_TOTAL_UNSUPPORTED_MIN,
+            "metrics": {
+                "maxNearestGridComponentRatio": max_nearest_ratio,
+                "totalUnsupportedCells": total_unsupported,
+            },
+            "thresholds": {
+                "maxNearestGridComponentRatio": GRID_SPAN_GUARD_NEAREST_RATIO_MIN,
+                "totalUnsupportedCells": GRID_SPAN_GUARD_TOTAL_UNSUPPORTED_MIN,
+            },
+        },
+        {
+            "name": "high_span_score",
+            "wouldFire": max_score >= GRID_SPAN_GUARD_HIGH_SCORE_MIN,
+            "metrics": {"maxScore": max_score},
+            "thresholds": {"maxScore": GRID_SPAN_GUARD_HIGH_SCORE_MIN},
+        },
+    ]
+    fired = [rule["name"] for rule in rules if rule["wouldFire"]]
+    return {
+        "schemaVersion": 1,
+        "policy": "diagnostics_only_no_behavior_change",
+        "intendedUse": "candidate_manual_review_guard_not_promotion",
+        "wouldFire": bool(fired),
+        "firedRules": fired,
+        "rules": rules,
+    }
+
+
+def _numeric(value: Any) -> float:
+    return float(value) if isinstance(value, (int, float)) else 0.0
+
+
+def _int_metric(value: Any) -> int:
+    return int(value) if isinstance(value, (int, float)) else 0
 
 
 def selected_grid_health(signals: Dict[str, Any]) -> Dict[str, Any]:
@@ -922,6 +1002,8 @@ def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
     signals = payload.get("recognitionSignals") or {}
     selected = signals.get("selectedRepairCandidate") or {}
     direct_legal = signals.get("directLegalCandidates") or {}
+    span_summary = selected_grid_span_summary(signals)
+    span_guard = candidate_grid_span_guard(span_summary)
 
     expected_matrix = split_state(canonical_state)
     recognized_matrix = split_state(recognized_state) if len(recognized_state) == 54 else None
@@ -1001,7 +1083,9 @@ def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
         "directLegalSecondVariantCost": direct_legal.get("secondVariantCost"),
         "directLegalVariantCostGap": direct_legal.get("variantCostGap"),
         "topDirectLegalCandidates": score_direct_legal_candidates(direct_legal.get("topCandidates"), canonical_state),
-        "selectedGridSpanSummary": selected_grid_span_summary(signals),
+        "selectedGridSpanSummary": span_summary,
+        "candidateGridSpanGuard": span_guard,
+        "gridSpanGuardWouldFire": span_guard["wouldFire"],
         "selectedGridQuality": signals.get("selectedGridQuality"),
         "topVisibleTripleQuality": signals.get("topVisibleTripleQuality"),
         "imageHashes": image_hashes,

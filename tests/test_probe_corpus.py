@@ -5,6 +5,7 @@ from pathlib import Path
 import tools.probe_corpus as probe_corpus
 from tools.probe_corpus import (
     _check_expected_yaw,
+    candidate_grid_span_guard,
     classify_face_failure,
     count_deviation_summary,
     environment_policy_warnings,
@@ -316,7 +317,50 @@ def test_selected_grid_span_summary_flattens_selected_grid_diagnostics():
     assert summary["maxNearestGridComponentRatio"] == 2.0
     assert summary["totalSampledCells"] == 5
     assert summary["totalExtrapolatedCells"] == 3
+    assert summary["totalUnsupportedCells"] == 1
+    assert summary["totalBadSampleCells"] == 1
+    assert summary["totalCubeHullOutsideCells"] == 2
     assert summary["rows"][1]["face"] == "R"
+
+
+def test_candidate_grid_span_guard_reports_diagnostics_only_rules():
+    guard = candidate_grid_span_guard(
+        {
+            "maxScore": 8.235,
+            "maxComponentShapeSpread": 30.0,
+            "maxNearestGridComponentRatio": 1.284,
+            "totalSampledCells": 15,
+            "totalUnsupportedCells": 5,
+        }
+    )
+
+    assert guard["policy"] == "diagnostics_only_no_behavior_change"
+    assert guard["intendedUse"] == "candidate_manual_review_guard_not_promotion"
+    assert guard["wouldFire"] is True
+    assert guard["firedRules"] == [
+        "shape_spread_and_sample_load",
+        "sample_distance_and_unsupported_load",
+        "high_span_score",
+    ]
+    assert guard["rules"][0]["metrics"] == {
+        "maxComponentShapeSpread": 30.0,
+        "totalSampledCells": 15,
+    }
+
+
+def test_candidate_grid_span_guard_stays_quiet_below_candidate_thresholds():
+    guard = candidate_grid_span_guard(
+        {
+            "maxScore": 6.0,
+            "maxComponentShapeSpread": 29.0,
+            "maxNearestGridComponentRatio": 1.2,
+            "totalSampledCells": 15,
+            "totalUnsupportedCells": 4,
+        }
+    )
+
+    assert guard["wouldFire"] is False
+    assert guard["firedRules"] == []
 
 
 def test_probe_count_deviation_summary_reports_face_count_imbalance():

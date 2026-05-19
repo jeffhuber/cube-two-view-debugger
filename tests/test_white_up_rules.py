@@ -1137,6 +1137,52 @@ def test_grid_signal_summary_reports_cell_face_and_source_counts():
     assert summary["rawCubeHullPenalty"] == 200.0
 
 
+def test_grid_signal_summary_reports_span_contamination_diagnostics():
+    def facelet(face, source="component", shape_angle=None, outside=0.0, nearest=0.0, spacing=20.0):
+        item = type("Facelet", (), {})()
+        item.source = source
+        item.rgb = (240, 240, 240)
+        item.shape_angle = shape_angle
+        item.match = type("Match", (), {"face": face, "color": "white", "confidence": 0.3})()
+        if source == "grid_sample":
+            item.grid_spacing = spacing
+            item.outside_grid_component_hull_distance = outside
+            item.nearest_grid_component_distance = nearest
+        return item
+
+    grid = type(
+        "Grid",
+        (),
+        {
+            "id": 12,
+            "center_face": "U",
+            "center_sticker": facelet("U"),
+            "matched_count": 5,
+            "fit_error": 1.0,
+            "cube_hull_inside_count": 7,
+            "cube_hull_outside_count": 2,
+            "cube_hull_source": "rembg_u2net_hull",
+            "stickers": [
+                [facelet("U", shape_angle=0), facelet("R", shape_angle=5), facelet("F", "grid_sample", outside=20, nearest=40)],
+                [facelet("D", shape_angle=10), facelet("L", shape_angle=70), facelet("B", "grid_sample")],
+                [facelet("U", shape_angle=75), facelet("R", "grid_sample"), facelet("F", "grid_sample")],
+            ],
+        },
+    )()
+
+    span = _grid_signal_summary(grid)["gridSpanContamination"]
+
+    assert span["componentShapeAngleCount"] == 5
+    assert span["componentShapeSpread"] > 25.0
+    assert span["sampledCellCount"] == 4
+    assert span["sampleCellsOutsideGridComponentHull"] == 1
+    assert span["sampleCellsFarFromGridComponents"] == 1
+    assert span["maxOutsideGridComponentHullRatio"] == 1.0
+    assert span["maxNearestGridComponentRatio"] == 2.0
+    assert span["extrapolatedCellCount"] == 1
+    assert span["score"] > 0.0
+
+
 def test_cube_hull_grid_penalty_requires_extrapolation_signal():
     def facelet(source, outside=0.0, nearest=70.0):
         return type(

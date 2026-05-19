@@ -51,6 +51,12 @@ _WORKTREE_LABEL_DIR = REPO_ROOT / "runs" / "labels"
 _PRIMARY_LABEL_DIR = Path("/Users/jhuber/cube-two-view-debugger/runs/labels")
 HULL_LABEL_DIR = _WORKTREE_LABEL_DIR if _WORKTREE_LABEL_DIR.is_dir() else _PRIMARY_LABEL_DIR
 DOWNLOADS = Path("/Users/jhuber/Downloads")
+# Post-migration corpus location (see /tmp/migrate-cube-corpus.sh). Files moved
+# out of TCC-protected ~/Downloads to here so the Claude Code bash sandbox can
+# read them; symlinks left in ~/Downloads so the corpus manifest and any tool
+# referencing DOWNLOADS-paths still works. discover_additional_tasks() prefers
+# this location because iterdir() works here even under sandbox restrictions.
+CUBE_CORPUS = Path("/Users/jhuber/cube-corpus")
 DEFAULT_OUTPUT = REPO_ROOT / "runs" / "color_samples_v0.jsonl"
 
 EXPECTED_FACES_BY_SIDE = {
@@ -103,21 +109,29 @@ def load_corpus_tasks(manifest_path: Path) -> List[PairTask]:
 
 def discover_additional_tasks(corpus_set_ids: Iterable[str]) -> List[PairTask]:
     """Find hull-labelled (set, A+B) pairs that have matching ground truth
-    files in Downloads but aren't already in the corpus manifest.
+    files but aren't already in the corpus manifest.
 
-    Returns [] when /Users/jhuber/Downloads does not exist (clean CI/VM
-    environments, contributors without the local image assets). Tooling
-    that depends on this function should degrade gracefully rather than
-    crash, per Devin PR-#127 portability review."""
-    if not DOWNLOADS.is_dir():
-        return []
-    # Some sandboxed Bash environments (Claude Code worktree sessions) leave
-    # /Users/jhuber/Downloads listable=False even though is_dir() returns
-    # True. Same shape as the CI/VM-no-Downloads case the original guard
-    # was written for — return [] rather than raising PermissionError.
-    try:
-        next(iter(DOWNLOADS.iterdir()), None)
-    except (PermissionError, OSError):
+    Looks first in ~/cube-corpus/ (post-migration home, listable under
+    sandboxed sessions), falling back to ~/Downloads/ (legacy home, still
+    listable for users with FDA). Returns [] when neither dir is listable
+    — same graceful-degradation contract as before, per Devin PR-#127
+    portability review."""
+
+    def _select_search_root() -> Optional[Path]:
+        for candidate in (CUBE_CORPUS, DOWNLOADS):
+            if not candidate.is_dir():
+                continue
+            # is_dir() can be True even when iterdir() is TCC-blocked
+            # (~/Downloads under sandboxed Claude Code sessions). Probe.
+            try:
+                next(iter(candidate.iterdir()), None)
+            except (PermissionError, OSError):
+                continue
+            return candidate
+        return None
+
+    search_root = _select_search_root()
+    if search_root is None:
         return []
 
     seen = set(corpus_set_ids)
@@ -125,7 +139,7 @@ def discover_additional_tasks(corpus_set_ids: Iterable[str]) -> List[PairTask]:
     # Build setId → ground truth file map (pick the most recent if multiple)
     gt_pattern = re.compile(r"Set (\d+)(?:\s*v(\d+))?.*cube-ground-truth-(\d+)\.json")
     by_set: Dict[str, Tuple[int, int, Path]] = {}
-    for path in DOWNLOADS.glob("Set *cube-ground-truth-*.json"):
+    for path in search_root.glob("Set *cube-ground-truth-*.json"):
         m = gt_pattern.search(path.name)
         if not m:
             continue
@@ -142,7 +156,7 @@ def discover_additional_tasks(corpus_set_ids: Iterable[str]) -> List[PairTask]:
     # (Sets 57/58/61/62 onwards) uses the hyphen.
     img_pattern = re.compile(r"Set (\d+) - ([AB]) - white[- ]up[^.]*\.(?:JPG|jpg|jpeg|PNG|png)")
     images_by_set: Dict[str, Dict[str, Path]] = defaultdict(dict)
-    for path in DOWNLOADS.iterdir():
+    for path in search_root.iterdir():
         m = img_pattern.match(path.name)
         if not m:
             continue

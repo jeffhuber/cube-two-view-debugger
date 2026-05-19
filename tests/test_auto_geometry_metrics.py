@@ -183,11 +183,17 @@ def test_fit_hexagon_to_tiny_hull_returns_none():
 def test_discover_additional_tasks_returns_empty_when_downloads_missing(monkeypatch, tmp_path):
     """Devin PR-#127 review caught this: on a clean CI/VM without the
     local Downloads asset directory, tooling crashed with FileNotFoundError
-    instead of returning empty. This regression test pins the fix."""
+    instead of returning empty. This regression test pins the fix.
+
+    Updated for the post-migration world: ~/cube-corpus/ is now the
+    primary search root (see /tmp/migrate-cube-corpus.sh) with DOWNLOADS
+    as a fallback. Both must be absent for the graceful-degradation
+    contract to apply."""
     from tools import extract_color_samples
 
     missing = tmp_path / "definitely-does-not-exist"
     monkeypatch.setattr(extract_color_samples, "DOWNLOADS", missing)
+    monkeypatch.setattr(extract_color_samples, "CUBE_CORPUS", missing)
     result = extract_color_samples.discover_additional_tasks(set())
     assert result == []
 

@@ -96,42 +96,99 @@ def _load_processing_image(image_path: Path) -> Tuple[Image.Image, np.ndarray]:
     return image, np.asarray(image)
 
 
-def _proposer_face_quads(image_path: Path) -> Tuple[Dict[str, List[Tuple[float, float]]], Dict]:
+def _proposer_face_quads(
+    image_path: Path, side: str
+) -> Tuple[Dict[str, List[Tuple[float, float]]], Dict]:
     """Run analyze_image on raw bytes, pick best FaceGrid per center_face,
-    convert 3x3 sticker centers → 4-point face quads.
+    convert 3x3 sticker centers → 4-point face quads, then RE-KEY the
+    output to match the geometry-labeler convention that
+    `identify_faces_jointly` expects (U/R/F on side A, D/L/B on side B).
 
-    Returns (face_quads_by_label, debug_info). face_quads_by_label maps
-    center_face letter (whatever analyze_image classified) → 4-corner
-    quad. The "label" face here is the recognizer's classification,
-    NOT the true face — joint face-ID downstream resolves the mapping
-    to true faces.
+    Why re-keying is necessary (Devin #152 audit caught this):
+    `identify_faces_jointly` internally hardcodes
+    `expected_a = ["R", "F"]` and `expected_b = ["L", "B"]` and treats
+    those as literal quad-dict keys. Quads whose key isn't in that set
+    are silently dropped at `_sample_multisets` (`if label not in
+    quads: continue`). Without re-keying, any side A quad that
+    analyze_image classified as L/B/D (Set 23-style yaw2 photos, or
+    orange↔red center confusion from PR #150's diagnostic) gets
+    dropped — making the eval understate the geometry that's actually
+    available.
+
+    Re-key strategy: trust analyze_image to identify the U/D anchor
+    (white/yellow centers are visually distinctive and rarely confused
+    by the canonical classifier). Take the best non-anchor grids by
+    quality and re-key them as the geometry-labeler's side-face
+    placeholders (R/F on A, L/B on B) in arbitrary order; joint
+    face-ID's 16-config yaw enumeration figures out which physical
+    face each really is.
+
+    Returns (face_quads_by_label, debug_info). The label keys after
+    re-key are a subset of {U, R, F} for side A or {D, L, B} for B.
     """
+    assert side in ("A", "B")
+    anchor_label = "U" if side == "A" else "D"
+    side_face_labels = ("R", "F") if side == "A" else ("L", "B")
+
     image_bytes = image_path.read_bytes()
     analysis = analyze_image(image_bytes)
     grids_by_face: Dict[str, list] = {}
     for grid in analysis.grids:
-        face = grid.center_face
-        grids_by_face.setdefault(face, []).append(grid)
+        grids_by_face.setdefault(grid.center_face, []).append(grid)
+
+    # Best grid per center_face (analyze_image's color classification)
+    best_per_face: List[Tuple[str, object]] = []
+    for face, candidates in grids_by_face.items():
+        best = min(candidates, key=lambda g: (-g.matched_count, g.fit_error))
+        best_per_face.append((face, best))
 
     face_quads: Dict[str, List[Tuple[float, float]]] = {}
     selected_metrics: Dict[str, Dict] = {}
-    for face, candidates in grids_by_face.items():
-        best = min(candidates, key=lambda g: (-g.matched_count, g.fit_error))
-        quad = _face_quad_from_grid_centers(best.points)
+
+    # Anchor (U on side A, D on side B): take the grid whose center_face
+    # matches the anchor letter if any exist. If none, the side degrades
+    # to <3 faces and joint face-ID handles the missing anchor.
+    anchor_grids = [(f, g) for f, g in best_per_face if f == anchor_label]
+    if anchor_grids:
+        face, grid = min(anchor_grids, key=lambda fg: (-fg[1].matched_count, fg[1].fit_error))
+        quad = _face_quad_from_grid_centers(grid.points)
+        if quad is not None:
+            face_quads[anchor_label] = [(float(x), float(y)) for (x, y) in quad]
+            selected_metrics[anchor_label] = {
+                "sourceCenterFace": face,
+                "matchedCount": grid.matched_count,
+                "fitError": round(grid.fit_error, 2),
+                "cubeHullInside": grid.cube_hull_inside_count,
+            }
+
+    # Side faces: take the best 2 non-anchor grids by quality, re-key as
+    # the placeholder side-face labels. The assignment to R vs F (or L vs B)
+    # is arbitrary because joint face-ID's yaw enumeration resolves both.
+    non_anchor = sorted(
+        [(f, g) for f, g in best_per_face if f != anchor_label],
+        key=lambda fg: (-fg[1].matched_count, fg[1].fit_error),
+    )
+    for slot_idx, (face, grid) in enumerate(non_anchor[:2]):
+        quad = _face_quad_from_grid_centers(grid.points)
         if quad is None:
             continue
-        face_quads[face] = [(float(x), float(y)) for (x, y) in quad]
-        selected_metrics[face] = {
-            "matchedCount": best.matched_count,
-            "fitError": round(best.fit_error, 2),
-            "cubeHullInside": best.cube_hull_inside_count,
+        slot_label = side_face_labels[slot_idx]
+        face_quads[slot_label] = [(float(x), float(y)) for (x, y) in quad]
+        selected_metrics[slot_label] = {
+            "sourceCenterFace": face,
+            "matchedCount": grid.matched_count,
+            "fitError": round(grid.fit_error, 2),
+            "cubeHullInside": grid.cube_hull_inside_count,
+            "rekeyedFrom": face,
         }
 
     return face_quads, {
         "stickerCount": len(analysis.stickers),
         "gridCount": len(analysis.grids),
+        "side": side,
+        "anchorFound": anchor_label in face_quads,
         "selectedPerFace": selected_metrics,
-        "facesProposed": sorted(face_quads.keys()),
+        "facesProposedAfterRekey": sorted(face_quads.keys()),
         "warnings": list(analysis.warnings),
     }
 
@@ -165,7 +222,7 @@ def evaluate_pair(set_id: str, image_a: Path, image_b: Path, gt_state: str) -> D
         except Exception as e:
             return {"setId": set_id, "error": f"load {side}: {type(e).__name__}: {e}"}
         try:
-            quads, debug = _proposer_face_quads(image_path)
+            quads, debug = _proposer_face_quads(image_path, side)
         except Exception as e:
             return {"setId": set_id, "error": f"proposer {side}: {type(e).__name__}: {e}"}
         proposer_quads[side] = quads
@@ -251,8 +308,10 @@ def evaluate_pair(set_id: str, image_a: Path, image_b: Path, gt_state: str) -> D
             if stickers_sampled else None,
         "facesRecovered": len(per_face_aligned),
         "facesExpected": 6,
-        "facesProposedA": proposer_debug["A"]["facesProposed"],
-        "facesProposedB": proposer_debug["B"]["facesProposed"],
+        "facesProposedA": proposer_debug["A"]["facesProposedAfterRekey"],
+        "facesProposedB": proposer_debug["B"]["facesProposedAfterRekey"],
+        "anchorFoundA": proposer_debug["A"]["anchorFound"],
+        "anchorFoundB": proposer_debug["B"]["anchorFound"],
         "jointStatus": joint_status,
         "jointScore": round(joint_score, 4) if joint_score is not None else None,
         "assembledState": assembled,

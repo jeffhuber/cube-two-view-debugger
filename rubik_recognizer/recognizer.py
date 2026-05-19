@@ -868,7 +868,8 @@ def _grid_signal_summary(grid: FaceGrid) -> Dict[str, Any]:
                 "cubeHullInsideCount": inside_count,
                 "cubeHullOutsideCount": getattr(grid, "cube_hull_outside_count", None),
                 "cubeHullSource": getattr(grid, "cube_hull_source", None),
-                "cubeHullPenalty": round(cube_hull_grid_penalty(inside_count), 3),
+                "cubeHullPenalty": round(_grid_cube_hull_penalty(grid), 3),
+                "rawCubeHullPenalty": round(cube_hull_grid_penalty(inside_count), 3),
             }
         )
     return summary
@@ -3173,7 +3174,12 @@ def _grid_quality_score(grid: FaceGrid) -> float:
 
 
 def _grid_cube_hull_penalty(grid: FaceGrid) -> float:
-    return cube_hull_grid_penalty(getattr(grid, "cube_hull_inside_count", None))
+    penalty = cube_hull_grid_penalty(getattr(grid, "cube_hull_inside_count", None))
+    if penalty <= 0.0:
+        return 0.0
+    if _grid_extrapolation_penalty(grid) < 5.0:
+        return 0.0
+    return penalty
 
 
 def _center_sample_is_whiteish(grid: FaceGrid) -> bool:

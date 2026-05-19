@@ -299,6 +299,30 @@ def _hull_vertex_in_direction(
     return best_pt
 
 
+def _quad_grid_centroids(quad: List[Tuple[float, float]]) -> List[Tuple[float, float]]:
+    """Bilinear-interpolate a face quad to produce the 9 sticker-cell
+    centroids at normalized (u, v) positions (1/6, 3/6, 5/6) — i.e. the
+    centers of a 3×3 grid inscribed inside the quad. Matches what
+    rectify_face does internally for sticker sampling.
+
+    Used by the post-derivation hull-guard to check whether a
+    topology-fallback-derived quad's sample points fall inside the
+    rembg cube hull. If most don't, the derivation produced an
+    off-cube quad and should be rejected in favor of the original."""
+    A, B, C, D = quad
+    pts: List[Tuple[float, float]] = []
+    for v_idx in range(3):
+        v = (2 * v_idx + 1) / 6.0
+        for u_idx in range(3):
+            u = (2 * u_idx + 1) / 6.0
+            x = ((1 - u) * (1 - v) * A[0] + u * (1 - v) * B[0]
+                 + u * v * C[0] + (1 - u) * v * D[0])
+            y = ((1 - u) * (1 - v) * A[1] + u * (1 - v) * B[1]
+                 + u * v * C[1] + (1 - u) * v * D[1])
+            pts.append((x, y))
+    return pts
+
+
 def _cardinal_corners(quad: List[Tuple[float, float]]) -> Dict[str, Tuple[float, float]]:
     """Identify a 4-corner face quad's corners by cardinal position
     (N=min-y, E=max-x, S=max-y, W=min-x). This works for parallelograms
@@ -841,6 +865,55 @@ def _proposer_face_quads(
                 if derived is None or any(p is None for p in derived):
                     continue
                 derived = [(float(x), float(y)) for (x, y) in derived]
+
+                # Post-derivation sanity guard: when the topology
+                # fallback has only 1 trusted neighbor AND the rembg
+                # hexagon is degenerate, the derived quad can collapse
+                # (corners cluster on top of each other → tiny area,
+                # min_edge near 0). Rectifying through such a
+                # degenerate quad produces garbage (a tiny sliver of
+                # the cube stretched to 300×300 looks like beige
+                # noise — see Set 47 A slot U regression in the
+                # /tmp/hybrid_overlays_pr163 review).
+                #
+                # Two checks:
+                #   (1) min_edge >= MIN_EDGE_PX. A real face quad in
+                #       a 1150-max image has edges 100-300 px;
+                #       collapsed quads have min_edge < 10 px.
+                #   (2) >= POST_DERIVATION_INSIDE_MIN of 9 sampling
+                #       centroids inside the rembg cube hull. Catches
+                #       the off-cube derivations even when the quad
+                #       isn't strictly degenerate.
+                #
+                # If either fails, KEEP the original extrapolated
+                # grid quad rather than replace it. This guarantees
+                # the fallback can only IMPROVE the geometry or leave
+                # it unchanged; never strictly worse than baseline.
+                import math as _math
+                n = len(derived)
+                derived_min_edge = min(
+                    _math.hypot(
+                        derived[i][0] - derived[(i + 1) % n][0],
+                        derived[i][1] - derived[(i + 1) % n][1],
+                    )
+                    for i in range(n)
+                )
+                MIN_EDGE_PX = 30.0  # below this is degenerate
+                POST_DERIVATION_INSIDE_MIN = 5
+
+                kept_derivation = True
+                derived_inside_count: Optional[int] = None
+                if derived_min_edge < MIN_EDGE_PX:
+                    kept_derivation = False
+                elif full_cube_hull and len(full_cube_hull) >= 3:
+                    centroids = _quad_grid_centroids(derived)
+                    derived_inside_count = sum(
+                        1 for p in centroids
+                        if point_in_polygon(p, full_cube_hull)
+                    )
+                    if derived_inside_count < POST_DERIVATION_INSIDE_MIN:
+                        kept_derivation = False
+
                 fallback_actions.append({
                     "slot": slot_label,
                     "originalSourceCenterFace": meta.get("sourceCenterFace"),
@@ -859,13 +932,24 @@ def _proposer_face_quads(
                         or (p_name == "center" and trusted_quads_by_position)
                     ),
                     "thresholdUsed": fit_error_threshold,
+                    "derivedMinEdge": round(derived_min_edge, 1),
+                    "derivedCentroidsInsideHull": derived_inside_count,
+                    "keptDerivation": kept_derivation,
                 })
-                face_quads[slot_label] = derived
-                selected_metrics[slot_label] = {
-                    **meta,
-                    "replacedByTopologyFallback": True,
-                    "fallbackPosition": slot_position,
-                }
+                if kept_derivation:
+                    face_quads[slot_label] = derived
+                    selected_metrics[slot_label] = {
+                        **meta,
+                        "replacedByTopologyFallback": True,
+                        "fallbackPosition": slot_position,
+                        "derivedCentroidsInsideHull": derived_inside_count,
+                    }
+                else:
+                    selected_metrics[slot_label] = {
+                        **meta,
+                        "topologyFallbackRejectedByHullGuard": True,
+                        "derivedCentroidsInsideHull": derived_inside_count,
+                    }
 
     return face_quads, {
         "stickerCount": len(analysis.stickers),

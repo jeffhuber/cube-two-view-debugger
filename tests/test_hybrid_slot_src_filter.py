@@ -203,3 +203,57 @@ def test_expected_sets_are_correct():
     """Pin the expected-by-side mapping so it can't drift silently."""
     assert evaluate_hybrid_pipeline.SLOT_SRC_EXPECTED_BY_SIDE["A"] == frozenset({"U", "R", "F"})
     assert evaluate_hybrid_pipeline.SLOT_SRC_EXPECTED_BY_SIDE["B"] == frozenset({"D", "L", "B"})
+
+
+def test_debug_surfaces_promoted_from_deferred_count(monkeypatch, tmp_path):
+    """Pins the debug-output contract that Codex flagged on PR #157 review:
+    when the slot/src fallback promotes deferred grids back into the pool
+    (yaw-rotated case), `gridsPromotedFromDeferred` must list them so the
+    per-pair JSON report can surface promoted/fallback counts.
+
+    Without this, the experimental flag can't be A/B-analyzed
+    productively (you can't tell whether a sweep's results reflect
+    'filter held tight' vs 'filter degenerated to fallback')."""
+    _patch_analyze(monkeypatch, [
+        _grid("U", 9, 1.0),
+        _grid("L", 9, 1.5),  # promoted via fallback
+        _grid("B", 9, 2.0),  # promoted via fallback
+    ])
+    _patch_hull_off(monkeypatch)
+
+    image_path = tmp_path / "fake.jpg"
+    image_path.write_bytes(b"unused")
+    from PIL import Image
+    fake_img = Image.new("RGB", (600, 600), (128, 128, 128))
+
+    quads, debug = evaluate_hybrid_pipeline._proposer_face_quads(
+        image_path, "A", hull_guard=False, slot_src_filter=True,
+        processing_image=fake_img,
+    )
+    promoted = debug["gridsPromotedFromDeferred"]
+    promoted_faces = {entry["centerFace"] for entry in promoted}
+    assert promoted_faces == {"L", "B"}
+    # And the truly-rejected set should be empty (everything promoted)
+    assert debug["gridsRejectedBySlotSrc"] == []
+
+
+def test_debug_promoted_empty_when_filter_off(monkeypatch, tmp_path):
+    """When the filter is off, no grids are deferred → promotion list
+    is empty regardless of what grids analyze_image returns."""
+    _patch_analyze(monkeypatch, [
+        _grid("U", 9, 1.0),
+        _grid("L", 9, 1.5),
+        _grid("B", 9, 2.0),
+    ])
+    _patch_hull_off(monkeypatch)
+
+    image_path = tmp_path / "fake.jpg"
+    image_path.write_bytes(b"unused")
+    from PIL import Image
+    fake_img = Image.new("RGB", (600, 600), (128, 128, 128))
+
+    _, debug = evaluate_hybrid_pipeline._proposer_face_quads(
+        image_path, "A", hull_guard=False, slot_src_filter=False,
+        processing_image=fake_img,
+    )
+    assert debug["gridsPromotedFromDeferred"] == []

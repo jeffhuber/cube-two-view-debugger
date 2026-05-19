@@ -264,8 +264,8 @@ def _proposer_face_quads(
     # promote the best deferred grids back into the pool until we have 3.
     # This preserves the soft-filter benefit (prefer slot==src when
     # plentiful) while gracefully handling yaw-rotated cases.
+    promoted_from_deferred: List[Dict] = []  # exposed in proposer_debug
     if slot_src_filter:
-        promoted_from_deferred: List[Dict] = []
         # Sort deferred buckets by their best grid's quality (matched desc, fit asc)
         deferred_sorted = sorted(
             deferred_by_face.items(),
@@ -353,6 +353,7 @@ def _proposer_face_quads(
         "gridsRejectedByHullGuard": grids_rejected_by_hull,
         "slotSrcFilterEnabled": slot_src_filter,
         "gridsRejectedBySlotSrc": grids_rejected_by_slot_src,
+        "gridsPromotedFromDeferred": promoted_from_deferred,
         "warnings": list(analysis.warnings),
     }
 
@@ -496,6 +497,20 @@ def evaluate_pair(
             "gridsRejected": len(proposer_debug["B"].get("gridsRejectedByHullGuard", [])),
             "gridsAccepted": proposer_debug["B"].get("gridCount", 0)
                 - len(proposer_debug["B"].get("gridsRejectedByHullGuard", [])),
+        },
+        "slotSrcFilterA": {
+            "enabled": proposer_debug["A"].get("slotSrcFilterEnabled"),
+            "gridsRejected": len(proposer_debug["A"].get("gridsRejectedBySlotSrc", [])),
+            "gridsPromotedFromDeferred": len(proposer_debug["A"].get("gridsPromotedFromDeferred", [])),
+            "rejectedDetails": proposer_debug["A"].get("gridsRejectedBySlotSrc", []),
+            "promotedDetails": proposer_debug["A"].get("gridsPromotedFromDeferred", []),
+        },
+        "slotSrcFilterB": {
+            "enabled": proposer_debug["B"].get("slotSrcFilterEnabled"),
+            "gridsRejected": len(proposer_debug["B"].get("gridsRejectedBySlotSrc", [])),
+            "gridsPromotedFromDeferred": len(proposer_debug["B"].get("gridsPromotedFromDeferred", [])),
+            "rejectedDetails": proposer_debug["B"].get("gridsRejectedBySlotSrc", []),
+            "promotedDetails": proposer_debug["B"].get("gridsPromotedFromDeferred", []),
         },
         "jointStatus": joint_status,
         "jointScore": round(joint_score, 4) if joint_score is not None else None,

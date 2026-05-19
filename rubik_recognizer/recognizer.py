@@ -525,9 +525,12 @@ class WhiteUpRecognizer:
         candidates: List[Tuple[str, float, Dict[str, Any]]] = []
         for _, merged in workset.merged_candidates:
             details = _candidate_selection_detail(merged)
-            for partial in _state_variants_from_faces(merged, facelet_options_cache=workset.facelet_options_by_key):
+            for variant_cost, partial in _state_variants_from_faces_with_costs(
+                merged,
+                facelet_options_cache=workset.facelet_options_by_key,
+            ):
                 confidence = _state_confidence(merged)
-                candidates.append((partial, confidence, details))
+                candidates.append((partial, confidence, {**details, "variantCost": variant_cost}))
         return candidates
 
     def _legal_repair_candidates(self, analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> List[Tuple[str, float]]:
@@ -787,6 +790,13 @@ def _float_signal(value: Any, default: float = 0.0) -> float:
         return default
 
 
+def _optional_float_signal(value: Any) -> Optional[float]:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def _int_signal(value: Any, default: int = 0) -> int:
     try:
         return int(value)
@@ -959,6 +969,11 @@ def _direct_legal_candidate_summary(
     if second_confidence is not None:
         summary["secondConfidence"] = round(float(second_confidence), 4)
         summary["confidenceGap"] = round(float(top_confidence - second_confidence), 4)
+    _attach_direct_legal_numeric_margin(
+        summary,
+        unique_details.get(ranked[0][0]) or {},
+        unique_details.get(ranked[1][0]) if len(ranked) > 1 else None,
+    )
     return summary
 
 
@@ -968,6 +983,21 @@ def _public_direct_legal_candidate_detail(rank: int, state: str, confidence: flo
         "state": state,
         "confidence": round(float(confidence), 4),
     }
+    for key in (
+        "rawMergedScore",
+        "scoreA",
+        "scoreB",
+        "selectionScoreA",
+        "selectionScoreB",
+        "orientationScoreA",
+        "orientationScoreB",
+        "orientationRankA",
+        "orientationRankB",
+        "variantCost",
+        "balancedColorAssignmentScorePenalty",
+    ):
+        if details.get(key) is not None:
+            public[key] = round(float(details[key]), 4)
     for key in ("sidePairA", "sidePairB", "orderedSidePairA", "orderedSidePairB"):
         if details.get(key):
             public[key] = details[key]
@@ -978,6 +1008,58 @@ def _public_direct_legal_candidate_detail(rank: int, state: str, confidence: flo
     if sides:
         public["selectedSidesByImage"] = sides
     return public
+
+
+def _attach_direct_legal_numeric_margin(
+    summary: Dict[str, Any],
+    top_details: Dict[str, Any],
+    second_details: Optional[Dict[str, Any]],
+) -> None:
+    _attach_direct_legal_metric_margin(
+        summary,
+        key="rawMergedScore",
+        top_key="topRawMergedScore",
+        second_key="secondRawMergedScore",
+        gap_key="rawMergedScoreGap",
+        top_details=top_details,
+        second_details=second_details,
+        higher_is_better=True,
+    )
+    _attach_direct_legal_metric_margin(
+        summary,
+        key="variantCost",
+        top_key="topVariantCost",
+        second_key="secondVariantCost",
+        gap_key="variantCostGap",
+        top_details=top_details,
+        second_details=second_details,
+        higher_is_better=False,
+    )
+
+
+def _attach_direct_legal_metric_margin(
+    summary: Dict[str, Any],
+    *,
+    key: str,
+    top_key: str,
+    second_key: str,
+    gap_key: str,
+    top_details: Dict[str, Any],
+    second_details: Optional[Dict[str, Any]],
+    higher_is_better: bool,
+) -> None:
+    top_value = _optional_float_signal(top_details.get(key))
+    if top_value is None:
+        return
+    summary[top_key] = round(top_value, 4)
+    if not second_details:
+        return
+    second_value = _optional_float_signal(second_details.get(key))
+    if second_value is None:
+        return
+    summary[second_key] = round(second_value, 4)
+    gap = top_value - second_value if higher_is_better else second_value - top_value
+    summary[gap_key] = round(gap, 4)
 
 
 def _repair_details_with_orientation_selection_scores(
@@ -1029,6 +1111,20 @@ def _candidate_selection_detail(merged: Dict[str, List[List[Any]]]) -> Dict[str,
         "orderedSidePairA": _ordered_side_pair_key(merged.get("_ordered_side_pair_a")),
         "orderedSidePairB": _ordered_side_pair_key(merged.get("_ordered_side_pair_b")),
     }
+    for public_key, merged_key in (
+        ("rawMergedScore", "_score"),
+        ("scoreA", "_score_a"),
+        ("scoreB", "_score_b"),
+        ("selectionScoreA", "_selection_score_a"),
+        ("selectionScoreB", "_selection_score_b"),
+        ("orientationScoreA", "_orientation_score_a"),
+        ("orientationScoreB", "_orientation_score_b"),
+        ("orientationRankA", "_orientation_rank_a"),
+        ("orientationRankB", "_orientation_rank_b"),
+    ):
+        value = merged.get(merged_key)
+        if value is not None:
+            detail[public_key] = value
     balanced_assignment = merged.get("_balanced_color_assignment")
     if isinstance(balanced_assignment, dict):
         detail["balancedColorAssignment"] = balanced_assignment
@@ -3372,13 +3468,27 @@ def _state_variants_from_faces(
     *,
     facelet_options_cache: Optional[Dict[FaceletOptionsKey, List[Tuple[str, float]]]] = None,
 ) -> List[str]:
+    return [
+        state
+        for _, state in _state_variants_from_faces_with_costs(
+            faces,
+            facelet_options_cache=facelet_options_cache,
+        )
+    ]
+
+
+def _state_variants_from_faces_with_costs(
+    faces: Dict[str, List[List[Any]]],
+    *,
+    facelet_options_cache: Optional[Dict[FaceletOptionsKey, List[Tuple[str, float]]]] = None,
+) -> List[Tuple[float, str]]:
     facelets = []
     for face in FACE_ORDER:
         matrix = faces.get(face)
         if not matrix:
             return []
         facelets.extend(matrix[r][c] for r in range(3) for c in range(3))
-    return _balanced_state_variants(facelets, facelet_options_cache=facelet_options_cache)
+    return _balanced_state_variants_with_costs(facelets, facelet_options_cache=facelet_options_cache)
 
 
 def _legal_repaired_state_from_faces(faces: Dict[str, List[List[Any]]]) -> Optional[Tuple[str, float, int]]:
@@ -3583,17 +3693,31 @@ def _balanced_state_variants(
     *,
     facelet_options_cache: Optional[Dict[FaceletOptionsKey, List[Tuple[str, float]]]] = None,
 ) -> List[str]:
+    return [
+        state
+        for _, state in _balanced_state_variants_with_costs(
+            facelets,
+            facelet_options_cache=facelet_options_cache,
+        )
+    ]
+
+
+def _balanced_state_variants_with_costs(
+    facelets: Sequence[Any],
+    *,
+    facelet_options_cache: Optional[Dict[FaceletOptionsKey, List[Tuple[str, float]]]] = None,
+) -> List[Tuple[float, str]]:
     options = [_cached_facelet_options(facelet, facelet_options_cache) for facelet in facelets]
     current = [choices[0][0] for choices in options]
     counts = Counter(current)
     current_state = "".join(current)
     if all(counts[face] == 9 for face in FACE_ORDER):
-        return [current_state]
+        return [(0.0, current_state)]
 
     surplus = {face: counts[face] - 9 for face in FACE_ORDER if counts[face] > 9}
     deficits = {face: 9 - counts[face] for face in FACE_ORDER if counts[face] < 9}
     if sum(deficits.values()) > MAX_COLOR_REPAIR_CHANGES:
-        return [current_state]
+        return [(0.0, current_state)]
 
     moves = []
     for index, choices in enumerate(options):
@@ -3635,13 +3759,13 @@ def _balanced_state_variants(
 
     backtrack(current, surplus, deficits, set(), 0.0)
     if not variants:
-        return [current_state]
+        return [(0.0, current_state)]
     variants.sort(key=lambda item: item[0])
     unique = []
     seen = set()
-    for _, state in variants:
+    for cost, state in variants:
         if state not in seen:
-            unique.append(state)
+            unique.append((cost, state))
             seen.add(state)
     return unique[:MAX_COLOR_REPAIR_VARIANTS]
 

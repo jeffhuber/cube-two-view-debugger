@@ -278,6 +278,26 @@ def side_pair_label(value: Any) -> Optional[str]:
     return "/".join(str(part) for part in value)
 
 
+def hamming(a: str, b: str) -> int:
+    if len(a) != len(b):
+        return max(len(a), len(b))
+    return sum(1 for left, right in zip(a, b) if left != right)
+
+
+def score_direct_legal_candidates(candidates: Any, expected_state: Optional[str]) -> List[Dict[str, Any]]:
+    scored = []
+    for candidate in candidates or []:
+        if not isinstance(candidate, dict):
+            continue
+        item = dict(candidate)
+        if expected_state:
+            state = str(candidate.get("state") or "")
+            item["score"] = score_match(state, expected_state)
+            item["hamming"] = hamming(state, expected_state)
+        scored.append(item)
+    return scored
+
+
 def repair_probe_for_analyses(
     analysis_a: Any,
     analysis_b: Any,
@@ -453,7 +473,13 @@ def probe_pair(
         "directLegalSecondConfidence": direct_legal.get("secondConfidence"),
         "directLegalConfidenceGap": direct_legal.get("confidenceGap"),
         "directLegalTopTieCount": direct_legal.get("topTieCount"),
-        "topDirectLegalCandidates": direct_legal.get("topCandidates"),
+        "directLegalTopRawMergedScore": direct_legal.get("topRawMergedScore"),
+        "directLegalSecondRawMergedScore": direct_legal.get("secondRawMergedScore"),
+        "directLegalRawMergedScoreGap": direct_legal.get("rawMergedScoreGap"),
+        "directLegalTopVariantCost": direct_legal.get("topVariantCost"),
+        "directLegalSecondVariantCost": direct_legal.get("secondVariantCost"),
+        "directLegalVariantCostGap": direct_legal.get("variantCostGap"),
+        "topDirectLegalCandidates": score_direct_legal_candidates(direct_legal.get("topCandidates"), canonical_state),
         "pairColorCalibration": signals.get("pairColorCalibration"),
         "backgroundStickerNoise": signals.get("backgroundStickerNoise"),
         "selectedGridQuality": signals.get("selectedGridQuality"),

@@ -154,10 +154,14 @@ def _grid_inside_hull_count(grid, hull: List[Tuple[float, float]]) -> int:
     return inside
 
 
+SLOT_SRC_EXPECTED_BY_SIDE = {"A": frozenset({"U", "R", "F"}), "B": frozenset({"D", "L", "B"})}
+
+
 def _proposer_face_quads(
     image_path: Path,
     side: str,
     hull_guard: bool = True,
+    slot_src_filter: bool = False,
     processing_image: Optional[Image.Image] = None,
 ) -> Tuple[Dict[str, List[Tuple[float, float]]], Dict]:
     """Run analyze_image on raw bytes, pick best FaceGrid per center_face,
@@ -214,8 +218,32 @@ def _proposer_face_quads(
         inside = _grid_inside_hull_count(grid, hull)
         return inside >= HULL_GUARD_INSIDE_MIN, inside
 
+    # Slot/src filter: reject any grid whose center_face is incompatible
+    # with the side's expected face set (the observation from the
+    # /tmp/hybrid_overlays/ visual review: bad rectifications correlate
+    # strongly with `slot != src` — i.e. `analyze_image` classified the
+    # grid's center as a color that shouldn't be visible on this side).
+    # Canonical-yaw cubes only show {U, R, F} on side A and {D, L, B} on
+    # side B. A grid with center_face outside that set is either:
+    #   (a) a multi-face span where analyze_image's center-color
+    #       classifier got fooled by a wrong-side sticker that
+    #       happened to land on the 3x3 center
+    #   (b) a yaw-rotated photo (rare; Set 23 was the canonical example).
+    # Hard-rejecting these costs the yaw-rotated case for the (likely)
+    # win on catastrophic-grid filtering. Opt-in via the flag.
+    grids_rejected_by_slot_src: List[Dict] = []
+    expected_for_side = SLOT_SRC_EXPECTED_BY_SIDE[side]
+
+    # First pass: partition grids into "preferred" (slot/src matches expected
+    # set on this side, when filter is enabled) and "deferred" (slot/src
+    # mismatches — would be rejected by the hard filter, but kept as a
+    # fallback pool in case the preferred set leaves a side with <3
+    # faces, which happens on yaw-rotated photos like Set 23 where the
+    # "wrong-side" grids ARE the correct ones).
     grids_by_face: Dict[str, list] = {}
+    deferred_by_face: Dict[str, list] = {}
     for grid in analysis.grids:
+        # Apply hull-guard first (independent of slot/src logic)
         ok, inside = _grid_passes_guard(grid)
         if not ok:
             grids_rejected_by_hull.append({
@@ -225,7 +253,47 @@ def _proposer_face_quads(
                 "insideCount": inside,
             })
             continue
+        # Then slot/src partition
+        if slot_src_filter and grid.center_face not in expected_for_side:
+            deferred_by_face.setdefault(grid.center_face, []).append(grid)
+            continue
         grids_by_face.setdefault(grid.center_face, []).append(grid)
+
+    # Fallback: if slot/src filter left this side with fewer than 3 distinct
+    # face buckets (i.e. we'd struggle to fill anchor + 2 side faces),
+    # promote the best deferred grids back into the pool until we have 3.
+    # This preserves the soft-filter benefit (prefer slot==src when
+    # plentiful) while gracefully handling yaw-rotated cases.
+    if slot_src_filter:
+        promoted_from_deferred: List[Dict] = []
+        # Sort deferred buckets by their best grid's quality (matched desc, fit asc)
+        deferred_sorted = sorted(
+            deferred_by_face.items(),
+            key=lambda kv: (-max(g.matched_count for g in kv[1]),
+                            min(g.fit_error for g in kv[1])),
+        )
+        for face, candidates in deferred_sorted:
+            if len(grids_by_face) >= 3:
+                break
+            best = min(candidates, key=lambda g: (-g.matched_count, g.fit_error))
+            grids_by_face.setdefault(face, []).append(best)
+            promoted_from_deferred.append({
+                "centerFace": face,
+                "matchedCount": best.matched_count,
+                "fitError": round(best.fit_error, 2),
+                "reason": "preferred_pool_<3_faces",
+            })
+        grids_rejected_by_slot_src = [
+            {
+                "centerFace": face,
+                "matchedCount": g.matched_count,
+                "fitError": round(g.fit_error, 2),
+                "expectedSet": sorted(expected_for_side),
+            }
+            for face, candidates in deferred_by_face.items()
+            for g in candidates
+            if face not in grids_by_face
+        ]
 
     # Best grid per center_face (analyze_image's color classification),
     # AFTER hull guard filtering
@@ -283,6 +351,8 @@ def _proposer_face_quads(
         "facesProposedAfterRekey": sorted(face_quads.keys()),
         "hullGuardEnabled": hull_guard and bool(hull),
         "gridsRejectedByHullGuard": grids_rejected_by_hull,
+        "slotSrcFilterEnabled": slot_src_filter,
+        "gridsRejectedBySlotSrc": grids_rejected_by_slot_src,
         "warnings": list(analysis.warnings),
     }
 
@@ -304,6 +374,7 @@ def _classify_face_aligned(face_img: Image.Image, gt_colors: List[str]):
 def evaluate_pair(
     set_id: str, image_a: Path, image_b: Path, gt_state: str,
     hull_guard: bool = True,
+    slot_src_filter: bool = False,
 ) -> Dict:
     """One pair: analyze_image-quads → rectify → classify → joint face-ID
     → assemble 54-state → compare to GT."""
@@ -322,6 +393,7 @@ def evaluate_pair(
             quads, debug = _proposer_face_quads(
                 image_path, side,
                 hull_guard=hull_guard,
+                slot_src_filter=slot_src_filter,
                 processing_image=img,
             )
         except Exception as e:
@@ -461,6 +533,15 @@ def main() -> int:
              "the cube silhouette (default: guard enabled). Useful for "
              "A/B comparison against the pre-guard baseline.",
     )
+    ap.add_argument(
+        "--slot-src-filter", action="store_true",
+        help="Reject any grid whose analyze_image center_face is "
+             "outside the side's canonical expected set ({U,R,F} on A, "
+             "{D,L,B} on B). Targets the catastrophic-grid failure mode "
+             "where analyze_image's center classifier got fooled by a "
+             "wrong-side sticker on a multi-face span. Costs the rare "
+             "yaw-rotated case (Set 23-style).",
+    )
     args = ap.parse_args()
 
     pairs = discover_pairs()
@@ -469,16 +550,22 @@ def main() -> int:
         pairs = [p for p in pairs if p[0] in wanted]
 
     hull_guard = not args.no_hull_guard
+    slot_src_filter = args.slot_src_filter
     classifier_mode = os.environ.get("CUBE_RECOGNIZER_CLASSIFIER", "canonical")
     print(f"evaluating hybrid pipeline on {len(pairs)} pairs "
-          f"(classifier={classifier_mode}, hull_guard={hull_guard})",
+          f"(classifier={classifier_mode}, hull_guard={hull_guard}, "
+          f"slot_src_filter={slot_src_filter})",
           file=sys.stderr)
     print("", file=sys.stderr)
 
     rows: List[Dict] = []
     for i, (set_id, image_a, image_b, gt) in enumerate(pairs, 1):
         try:
-            row = evaluate_pair(set_id, image_a, image_b, gt, hull_guard=hull_guard)
+            row = evaluate_pair(
+                set_id, image_a, image_b, gt,
+                hull_guard=hull_guard,
+                slot_src_filter=slot_src_filter,
+            )
         except Exception as e:
             row = {"setId": set_id, "error": f"{type(e).__name__}: {e}"}
         rows.append(row)

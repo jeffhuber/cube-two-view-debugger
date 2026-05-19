@@ -59,7 +59,12 @@ from tools.extract_color_samples import (  # noqa: E402
     load_corpus_tasks,
     parse_ground_truth,
 )
-from tools.propose_geometry_labels import _face_quad_from_grid_centers  # noqa: E402
+from tools.inspect_cube_isolation import point_in_polygon  # noqa: E402
+from tools.propose_geometry_labels import (  # noqa: E402
+    _face_quad_from_grid_centers,
+    _get_rembg_session,
+    _hull_from_mask,
+)
 from tools.rectify_faces import (  # noqa: E402
     DEFAULT_FACE_SIZE,
     extract_stickers_from_rectified,
@@ -79,6 +84,11 @@ PROCESSING_MAX = 1150
 EXPECTED_FACES_BY_SIDE = {"A": ("U", "R", "F"), "B": ("D", "L", "B")}
 OOD_SETS = {"57", "58", "61", "62"}
 
+# Hull-guard threshold (matches Codex's REMBG_GRID_INSIDE_MIN in PR #141).
+# Any analyze_image grid with fewer than this many sticker-center points
+# inside the rembg cube hull is rejected as spatially incoherent.
+HULL_GUARD_INSIDE_MIN = 7
+
 
 def _load_processing_image(image_path: Path) -> Tuple[Image.Image, np.ndarray]:
     """EXIF-correct + resize to max 1150, same as the rest of the tooling
@@ -96,8 +106,59 @@ def _load_processing_image(image_path: Path) -> Tuple[Image.Image, np.ndarray]:
     return image, np.asarray(image)
 
 
+def _rembg_cube_hull(processing_image: Image.Image) -> List[Tuple[float, float]]:
+    """Compute rembg u2net cube hull in processing-image coords. Returns
+    [] on rembg failure (e.g. mask empty). This is the same hull that
+    Codex's PR #141 uses to guard production-recognizer grid ranking.
+
+    Cached on the underlying image object's id() because each pair runs
+    this twice (proposer + verification) and rembg is the slow step."""
+    cache = _rembg_cube_hull._cache  # type: ignore[attr-defined]
+    key = id(processing_image)
+    if key in cache:
+        return cache[key]
+    try:
+        from rembg import remove
+    except ImportError:
+        cache[key] = []
+        return cache[key]
+    try:
+        rgba = remove(processing_image, session=_get_rembg_session("u2net"))
+    except Exception:
+        cache[key] = []
+        return cache[key]
+    alpha = np.array(rgba.split()[-1], dtype=np.uint8)
+    mask = alpha > 128
+    if not mask.any():
+        cache[key] = []
+        return cache[key]
+    hull = list(_hull_from_mask(mask))
+    cache[key] = hull
+    return hull
+
+
+_rembg_cube_hull._cache = {}  # type: ignore[attr-defined]
+
+
+def _grid_inside_hull_count(grid, hull: List[Tuple[float, float]]) -> int:
+    """Count how many of a FaceGrid's 9 sticker centers fall inside the
+    cube hull. Mirrors Codex's `cube_hull_inside_count` semantics from
+    rubik_recognizer/image_pipeline.py."""
+    if not hull or len(hull) < 3:
+        return 9  # no hull → don't apply guard (degrade gracefully)
+    inside = 0
+    for row in grid.points:
+        for (x, y) in row:
+            if point_in_polygon((float(x), float(y)), hull):
+                inside += 1
+    return inside
+
+
 def _proposer_face_quads(
-    image_path: Path, side: str
+    image_path: Path,
+    side: str,
+    hull_guard: bool = True,
+    processing_image: Optional[Image.Image] = None,
 ) -> Tuple[Dict[str, List[Tuple[float, float]]], Dict]:
     """Run analyze_image on raw bytes, pick best FaceGrid per center_face,
     convert 3x3 sticker centers → 4-point face quads, then RE-KEY the
@@ -132,11 +193,42 @@ def _proposer_face_quads(
 
     image_bytes = image_path.read_bytes()
     analysis = analyze_image(image_bytes)
+
+    # Hull guard: compute rembg cube hull, reject grids whose sticker
+    # centers don't sit (mostly) within it. This addresses the
+    # "catastrophic-grid" failure mode identified post-#152: analyze_image
+    # sometimes returns 3x3 grids that span multiple physical faces of
+    # the cube (or include non-sticker positions), producing valid-looking
+    # FaceGrids whose extrapolated face quads cover the wrong region.
+    # Rejecting these before rectification eliminates the bimodal
+    # "perfect-or-garbage" per-face distribution seen on the pre-guard
+    # eval (see PR description for the data).
+    hull: List[Tuple[float, float]] = []
+    grids_rejected_by_hull: List[Dict] = []
+    if hull_guard and processing_image is not None:
+        hull = _rembg_cube_hull(processing_image)
+
+    def _grid_passes_guard(grid) -> Tuple[bool, int]:
+        if not hull_guard or not hull:
+            return True, 9
+        inside = _grid_inside_hull_count(grid, hull)
+        return inside >= HULL_GUARD_INSIDE_MIN, inside
+
     grids_by_face: Dict[str, list] = {}
     for grid in analysis.grids:
+        ok, inside = _grid_passes_guard(grid)
+        if not ok:
+            grids_rejected_by_hull.append({
+                "centerFace": grid.center_face,
+                "matchedCount": grid.matched_count,
+                "fitError": round(grid.fit_error, 2),
+                "insideCount": inside,
+            })
+            continue
         grids_by_face.setdefault(grid.center_face, []).append(grid)
 
-    # Best grid per center_face (analyze_image's color classification)
+    # Best grid per center_face (analyze_image's color classification),
+    # AFTER hull guard filtering
     best_per_face: List[Tuple[str, object]] = []
     for face, candidates in grids_by_face.items():
         best = min(candidates, key=lambda g: (-g.matched_count, g.fit_error))
@@ -189,6 +281,8 @@ def _proposer_face_quads(
         "anchorFound": anchor_label in face_quads,
         "selectedPerFace": selected_metrics,
         "facesProposedAfterRekey": sorted(face_quads.keys()),
+        "hullGuardEnabled": hull_guard and bool(hull),
+        "gridsRejectedByHullGuard": grids_rejected_by_hull,
         "warnings": list(analysis.warnings),
     }
 
@@ -207,7 +301,10 @@ def _classify_face_aligned(face_img: Image.Image, gt_colors: List[str]):
     return correct, aligned, rgbs_aligned
 
 
-def evaluate_pair(set_id: str, image_a: Path, image_b: Path, gt_state: str) -> Dict:
+def evaluate_pair(
+    set_id: str, image_a: Path, image_b: Path, gt_state: str,
+    hull_guard: bool = True,
+) -> Dict:
     """One pair: analyze_image-quads → rectify → classify → joint face-ID
     → assemble 54-state → compare to GT."""
     images: Dict[str, Image.Image] = {}
@@ -222,7 +319,11 @@ def evaluate_pair(set_id: str, image_a: Path, image_b: Path, gt_state: str) -> D
         except Exception as e:
             return {"setId": set_id, "error": f"load {side}: {type(e).__name__}: {e}"}
         try:
-            quads, debug = _proposer_face_quads(image_path, side)
+            quads, debug = _proposer_face_quads(
+                image_path, side,
+                hull_guard=hull_guard,
+                processing_image=img,
+            )
         except Exception as e:
             return {"setId": set_id, "error": f"proposer {side}: {type(e).__name__}: {e}"}
         proposer_quads[side] = quads
@@ -312,6 +413,18 @@ def evaluate_pair(set_id: str, image_a: Path, image_b: Path, gt_state: str) -> D
         "facesProposedB": proposer_debug["B"]["facesProposedAfterRekey"],
         "anchorFoundA": proposer_debug["A"]["anchorFound"],
         "anchorFoundB": proposer_debug["B"]["anchorFound"],
+        "hullGuardA": {
+            "enabled": proposer_debug["A"].get("hullGuardEnabled"),
+            "gridsRejected": len(proposer_debug["A"].get("gridsRejectedByHullGuard", [])),
+            "gridsAccepted": proposer_debug["A"].get("gridCount", 0)
+                - len(proposer_debug["A"].get("gridsRejectedByHullGuard", [])),
+        },
+        "hullGuardB": {
+            "enabled": proposer_debug["B"].get("hullGuardEnabled"),
+            "gridsRejected": len(proposer_debug["B"].get("gridsRejectedByHullGuard", [])),
+            "gridsAccepted": proposer_debug["B"].get("gridCount", 0)
+                - len(proposer_debug["B"].get("gridsRejectedByHullGuard", [])),
+        },
         "jointStatus": joint_status,
         "jointScore": round(joint_score, 4) if joint_score is not None else None,
         "assembledState": assembled,
@@ -341,6 +454,13 @@ def main() -> int:
     ap.add_argument("--only-sets", nargs="*", default=None)
     ap.add_argument("--report", default=str(DEFAULT_REPORT))
     ap.add_argument("--summary", default=str(DEFAULT_SUMMARY))
+    ap.add_argument(
+        "--no-hull-guard", action="store_true",
+        help="Disable the rembg-cube-hull validation that rejects "
+             "analyze_image grids whose sticker centers fall outside "
+             "the cube silhouette (default: guard enabled). Useful for "
+             "A/B comparison against the pre-guard baseline.",
+    )
     args = ap.parse_args()
 
     pairs = discover_pairs()
@@ -348,15 +468,17 @@ def main() -> int:
         wanted = set(args.only_sets)
         pairs = [p for p in pairs if p[0] in wanted]
 
+    hull_guard = not args.no_hull_guard
     classifier_mode = os.environ.get("CUBE_RECOGNIZER_CLASSIFIER", "canonical")
     print(f"evaluating hybrid pipeline on {len(pairs)} pairs "
-          f"(classifier={classifier_mode})", file=sys.stderr)
+          f"(classifier={classifier_mode}, hull_guard={hull_guard})",
+          file=sys.stderr)
     print("", file=sys.stderr)
 
     rows: List[Dict] = []
     for i, (set_id, image_a, image_b, gt) in enumerate(pairs, 1):
         try:
-            row = evaluate_pair(set_id, image_a, image_b, gt)
+            row = evaluate_pair(set_id, image_a, image_b, gt, hull_guard=hull_guard)
         except Exception as e:
             row = {"setId": set_id, "error": f"{type(e).__name__}: {e}"}
         rows.append(row)

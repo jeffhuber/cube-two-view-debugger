@@ -57,8 +57,7 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 | Owner | Branch | PR | What | Touches | ETA |
 |---|---|---|---|---|---|
-| Claude | `claude/tools-cleanup-nits` | [#146](https://github.com/jeffhuber/cube-two-view-debugger/pull/146) | Roll up Devin's non-blocking nits from #139 + #140 (unused imports, dead `_load_image_and_quads`, drop dead `category` key) | `tools/evaluate_mask_pipeline.py`, `tools/equalize_faces.py`, `tools/evaluate_equalize_lift.py` | needs-devin-audit |
-| Claude | `claude/coordination-cleanup` | this PR | Refresh COORDINATION.md (clear shipped, add merged-into-Recently-Shipped, supersede stale next-steps) + add `schedule`/`workflow_dispatch` triggers to CLAUDE.md audit-chain section | `COORDINATION.md`, `CLAUDE.md` | needs-devin-audit |
+| - | - | - | No active PRs recorded here. | - | - |
 
 *(Codex: please populate your row when you start something.)*
 
@@ -70,11 +69,11 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 ### Claude
 
-- **#142** — Learned vertex regressor (sklearn Ridge on 68 hull labels). Mixed result: +5.9pp mean face IoU and 3× lower sticker-center error vs RANSAC, but 0% vs 12% pass at face≥0.85. Lands as a checkpoint, not yet a production proposer; data is the binding constraint.
-- **#140** — Equalize-faces experiment. Negative result; confirms color equalization alone is not enough without better geometry.
-- **#139** — End-to-end mask-pipeline evaluator. Mask path currently averages 61.5% sticker accuracy; useful evaluator, not production path yet.
-- **#137** — RANSAC/Nelder-Mead hexagon fit + sticker-center error + classification accuracy. Face IoU 0.666 mean, 12% pass at ≥0.85 — geometry plateau confirmed.
-- **#136** — Face rectification + per-sticker color extraction. Flat 300×300 face images; trivial pixel slicing for color sampling.
+- **#157** — Slot/src filter for hybrid pipeline. Real diagnostic signal, but negative deployment result; kept as experimental infrastructure.
+- **#156** — Hull-guard attempt for hybrid pipeline. Negative result; documents why cube-hull containment cannot fix multi-face rectification failures.
+- **#152** — Hybrid pipeline evaluator. Rectify-on-existing-recognizer-quads transfers poorly end-to-end; geometry, not color, is binding.
+- **#142** — Learned vertex regressor (sklearn Ridge on 68 hull labels). Mixed result: better mean IoU, still 0% pass at face≥0.85.
+- **#140** — Equalize-faces experiment. Negative result; color equalization alone is not enough without better geometry.
 
 ### Infra (Devin-authored, mirrored across both repos)
 
@@ -82,11 +81,11 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 ### Codex
 
+- **#155** — Require concordant extrapolation for opt-in rembg grid penalty. Prevents hull guard from overruling clean grids unless extrapolation evidence agrees.
+- **#153** — Clarify routine development-file edit protocol. Agents should not ask for content permission before normal repo `.py`/`.md` edits.
+- **#151** — Tighten high-confidence repair category. Requires stable pre-repair piece evidence before calling a repaired solve high-confidence.
 - **#145** — Conservative default grid-extrapolation scoring/gating in production recognizer.
 - **#143** — Clean-label color evaluator recomputes runtime classifier modes. Prevents stale JSONL predictions from hiding KNN regressions.
-- **#141** — Opt-in rembg hull guard for grid ranking. Penalizes selected grids with <7/9 centers inside the U2-Net cube hull; default behavior unchanged.
-- **#135** — Discover hyphenated `white-up` photos. Sets 57/58/61/62 now seen by all tools.
-- **#134** — Downgrade skewed repair false positives. Confident wrong → retake/review.
 
 ---
 
@@ -94,6 +93,7 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 Newest first. Each entry: date, decision, one-line why.
 
+- **2026-05-19** — Late KNN after canonical geometry selection is a negative production experiment. Codex tried three opt-in variants: (1) KNN as extra facelet repair/rebalance alternatives, (2) KNN-derived state variants after geometry selection, and (3) capped/cached balanced KNN-primary state variants for top merged candidates. Targeted corpus sets 12/14/24/27/28 and OOD hard sets 57/58/61/62 showed **zero score/category/candidate-count deltas** versus current main; the uncapped state-variant form was computationally unacceptable. Do not pursue this bolt-on path without a new scoring hypothesis. KNN remains useful for clean rectified samples and should be revisited when geometry is precise.
 - **2026-05-18 (post-#152)** — Hybrid pipeline experiment (rectify-on-existing-recognizer-quads + knn5_lab_full) **does NOT close the end-to-end gap.** Per-sticker accuracy: canonical 66.11%, knn5_lab_full 65.32% — both far below existing recognizer's 82.7%. Per-face accuracy distribution is sharply BIMODAL (46% perfect faces + 46% near-random faces, almost nothing in the 0.5-0.9 middle), confirming the failure mechanism: `analyze_image` returns some 3×3 grids whose 9 "stickers" span across multiple physical cube faces; the resulting rectification produces garbage on those faces. Hull-guard attempt (mirror of Codex #141 as a hard reject in evaluator) doesn't fix it — the cube hull encloses all 3 visible faces, so multi-face grids pass the inside-count check trivially. **Two viable forward paths**: (B1) Codex applies `knn5_lab_full` to the existing recognizer's direct sticker samples — leverages production's good grid selection, expected +1-2pp on 82.7% [Codex's Track B item 8]; (B2) Claude builds a learned face-quad regressor with richer CNN features on rembg mask + RGB crop, trained on 68 real hull labels with harsh leave-one-set-out CV [Tier 2 item 12]. Both paths can run in parallel. Synthetic corpus v2 deferred until learned-regressor-on-real-labels saturates. **Negative-result PR** (hull-guard attempt + bimodal-distribution analysis + grid-geometry diagnosis) coming; documents the experiment for future readers.
 - **2026-05-18 (end of day)** — Mask-path next-steps update: steps (1), (2), (3) all SHIPPED (#139, #140, #142). (3) — learned vertex regressor — shipped despite the original "only if (1)+(2) don't close the gap" framing because the negative result on (2) [equalize] confirmed classification is near-ceiling on rectified-from-human-quads (97.28%) and the regressor experiment itself was the right way to learn whether sklearn-on-15D could close the geometry gap. It cannot — Ridge smooths toward the mean. Only step **(4) synthetic corpus v2** remains as Claude's active mask-path investment; the binding constraint is the labeled-data budget (n=68), and synthetic v2 is the highest-leverage way to expand it. Meanwhile Codex's lane is closing the gap from the production-recognizer side (#141 hull guard, #145 grid-extrapolation guard).
 - **2026-05-18 (end of day)** — Audit chain hardened with Devin-authored watchdog (ctvd#144 / cube-snap#135). The event-driven dispatch (`pull_request_target` + `issue_comment`) had a stuck-state failure mode: PRs labeled `needs-devin-audit` could sit indefinitely if the `labeled` event failed to fire (manual labeling outside the `gh pr edit --add-label` path, workflow errors, races). The 5-min `schedule` cron + `scheduled_pull_requests()` scan converges these. `devin_already_reviewed_sha()` dedupe prevents re-pinging Devin for the same head SHA, so the watchdog doesn't become a billing problem.

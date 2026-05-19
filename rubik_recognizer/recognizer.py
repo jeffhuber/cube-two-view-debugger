@@ -79,6 +79,8 @@ MAX_LEGAL_REPAIR_MERGES_PER_PAIR = 60
 MAX_LEGAL_REPAIR_DIVERSE_MERGES_PER_PAIR = 128
 MAX_LEGAL_REPAIR_EVALUATED_MERGES = 180
 MAX_LEGAL_REPAIR_RETURNED = 8
+MAX_DIRECT_LEGAL_CANDIDATES_SIGNAL = 8
+DIRECT_LEGAL_CONFIDENCE_TIE_EPSILON = 0.00005
 # Repair-only escape hatch for Issue #31: look deeper on image A only after
 # standard repair fails and the pair shows opposing red/orange skew evidence.
 MAX_REPAIR_BACKFILL_OPTIONS_A = 2600
@@ -373,6 +375,11 @@ class WhiteUpRecognizer:
             if confidence > unique.get(state, 0.0):
                 unique[state] = confidence
                 unique_details[state] = details
+
+        recognition_signals = {
+            **recognition_signals,
+            "directLegalCandidates": _direct_legal_candidate_summary(unique, unique_details),
+        }
 
         if len(unique) == 1:
             state, confidence = next(iter(unique.items()))
@@ -912,6 +919,65 @@ def _repair_signal_summary(repair_details: Sequence[Dict[str, Any]], selected_st
         summary["selectedRepairCandidate"] = _public_repair_detail(selected)
         summary.update(_selected_faces_signal(selected, state=selected_state))
     return summary
+
+
+def _direct_legal_candidate_summary(
+    unique: Dict[str, float],
+    unique_details: Dict[str, Dict[str, Any]],
+) -> Dict[str, Any]:
+    ranked = sorted(unique.items(), key=lambda item: item[1], reverse=True)
+    if not ranked:
+        return {
+            "status": "none",
+            "stateCount": 0,
+            "topCandidates": [],
+        }
+
+    top_confidence = ranked[0][1]
+    second_confidence = ranked[1][1] if len(ranked) > 1 else None
+    top_tie_count = sum(
+        1
+        for _, confidence in ranked
+        if abs(confidence - top_confidence) <= DIRECT_LEGAL_CONFIDENCE_TIE_EPSILON
+    )
+    if len(ranked) == 1:
+        status = "unique"
+    elif top_tie_count > 1:
+        status = "tied"
+    else:
+        status = "separated"
+    summary: Dict[str, Any] = {
+        "status": status,
+        "stateCount": len(ranked),
+        "topConfidence": round(float(top_confidence), 4),
+        "topTieCount": top_tie_count,
+        "topCandidates": [
+            _public_direct_legal_candidate_detail(rank, state, confidence, unique_details.get(state) or {})
+            for rank, (state, confidence) in enumerate(ranked[:MAX_DIRECT_LEGAL_CANDIDATES_SIGNAL], start=1)
+        ],
+    }
+    if second_confidence is not None:
+        summary["secondConfidence"] = round(float(second_confidence), 4)
+        summary["confidenceGap"] = round(float(top_confidence - second_confidence), 4)
+    return summary
+
+
+def _public_direct_legal_candidate_detail(rank: int, state: str, confidence: float, details: Dict[str, Any]) -> Dict[str, Any]:
+    public = {
+        "rank": rank,
+        "state": state,
+        "confidence": round(float(confidence), 4),
+    }
+    for key in ("sidePairA", "sidePairB", "orderedSidePairA", "orderedSidePairB"):
+        if details.get(key):
+            public[key] = details[key]
+    faces = _selected_faces_by_image(details.get("sidePairA"), details.get("sidePairB"))
+    if faces:
+        public["selectedFacesByImage"] = faces
+    sides = _selected_sides_by_image(details.get("orderedSidePairA"), details.get("orderedSidePairB"))
+    if sides:
+        public["selectedSidesByImage"] = sides
+    return public
 
 
 def _repair_details_with_orientation_selection_scores(

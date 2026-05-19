@@ -17,6 +17,7 @@ from rubik_recognizer.recognizer import (
     _balanced_color_assignment_score_penalty,
     _balanced_color_assignment_summary,
     _corner_assignment,
+    _direct_legal_candidate_summary,
     _failed_checks_with_context,
     _grid_signal_summary,
     _image_b_visible_face_evidence_weak,
@@ -370,6 +371,90 @@ def test_recognize_from_analyses_skips_repair_for_low_direct_candidate_count(mon
     assert result.recognition_signals["repairCandidateCount"] == 0
     assert result.recognition_signals["topRepairCandidates"] == []
     assert calls == {"workset": 1, "direct": 1, "repair": 0}
+
+
+def test_direct_legal_candidate_summary_reports_margin_and_top_candidates():
+    top_state = "U" * 54
+    second_state = "R" * 54
+    unique = {
+        second_state: 0.8123,
+        top_state: 0.8332,
+    }
+    details = {
+        top_state: {
+            "sidePairA": "B/R",
+            "sidePairB": "F/L",
+            "orderedSidePairA": "R/B",
+            "orderedSidePairB": "F/L",
+        },
+        second_state: {
+            "sidePairA": "F/R",
+            "sidePairB": "B/L",
+            "orderedSidePairA": "F/R",
+            "orderedSidePairB": "B/L",
+        },
+    }
+
+    summary = _direct_legal_candidate_summary(unique, details)
+
+    assert summary["status"] == "separated"
+    assert summary["stateCount"] == 2
+    assert summary["topConfidence"] == 0.8332
+    assert summary["secondConfidence"] == 0.8123
+    assert summary["confidenceGap"] == 0.0209
+    assert summary["topTieCount"] == 1
+    assert summary["topCandidates"][0]["state"] == top_state
+    assert summary["topCandidates"][0]["selectedFacesByImage"] == {
+        "imageA": ["B", "R", "U"],
+        "imageB": ["D", "F", "L"],
+    }
+
+
+def test_recognize_from_analyses_attaches_direct_legal_candidate_summary(monkeypatch):
+    workset = RecognitionWorkset(options_a=[], options_b=[], merged_candidates=[])
+    top_state = "U" * 54
+    second_state = "R" * 54
+
+    monkeypatch.setattr(recognizer, "_base_recognition_signals", lambda analysis_a, analysis_b: {})
+    monkeypatch.setattr(recognizer, "_white_up_checks", lambda analysis_a, analysis_b: [])
+    monkeypatch.setattr(recognizer, "_recognition_workset", lambda analysis_a, analysis_b: workset)
+    monkeypatch.setattr(
+        WhiteUpRecognizer,
+        "_state_candidates_from_workset",
+        lambda self, candidate_workset: [
+            (
+                top_state,
+                0.83,
+                {
+                    "sidePairA": "B/R",
+                    "sidePairB": "F/L",
+                    "orderedSidePairA": "R/B",
+                    "orderedSidePairB": "F/L",
+                },
+            ),
+            (
+                second_state,
+                0.81,
+                {
+                    "sidePairA": "F/R",
+                    "sidePairB": "B/L",
+                    "orderedSidePairA": "F/R",
+                    "orderedSidePairB": "B/L",
+                },
+            ),
+        ],
+    )
+    monkeypatch.setattr(recognizer, "validate_state", lambda state: type("Validation", (), {"valid": True, "errors": []})())
+
+    result = WhiteUpRecognizer()._recognize_from_analyses(object(), object())
+
+    assert result.status == "success"
+    assert result.reason == "Recognized the highest-scoring legal white-up cube state."
+    summary = result.recognition_signals["directLegalCandidates"]
+    assert summary["status"] == "separated"
+    assert summary["stateCount"] == 2
+    assert summary["confidenceGap"] == 0.02
+    assert summary["topCandidates"][0]["state"] == top_state
 
 
 def test_recognize_from_analyses_reports_empty_backfill_attempt(monkeypatch):

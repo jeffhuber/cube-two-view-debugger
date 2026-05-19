@@ -404,6 +404,7 @@ def probe_pair(
     result = recognizer.recognize(image_a.read_bytes(), image_b.read_bytes())
     payload = result.to_api_dict(include_overlays=False)
     signals = payload.get("recognitionSignals") or {}
+    direct_legal = signals.get("directLegalCandidates") or {}
     score: Optional[int] = None
     canonical_state: Optional[str] = None
     if truth_path is not None:
@@ -446,6 +447,13 @@ def probe_pair(
         "expectedScoreOnceFixed": row.get("expectedScoreOnceFixed"),
         "targetPassed": (not failures) if has_target else None,
         "targetFailures": failures,
+        "directLegalCandidateStatus": direct_legal.get("status"),
+        "directLegalStateCount": direct_legal.get("stateCount"),
+        "directLegalTopConfidence": direct_legal.get("topConfidence"),
+        "directLegalSecondConfidence": direct_legal.get("secondConfidence"),
+        "directLegalConfidenceGap": direct_legal.get("confidenceGap"),
+        "directLegalTopTieCount": direct_legal.get("topTieCount"),
+        "topDirectLegalCandidates": direct_legal.get("topCandidates"),
         "pairColorCalibration": signals.get("pairColorCalibration"),
         "backgroundStickerNoise": signals.get("backgroundStickerNoise"),
         "selectedGridQuality": signals.get("selectedGridQuality"),

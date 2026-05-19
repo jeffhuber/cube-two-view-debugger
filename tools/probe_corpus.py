@@ -832,6 +832,7 @@ def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
     category = payload.get("recognitionCategory")
     signals = payload.get("recognitionSignals") or {}
     selected = signals.get("selectedRepairCandidate") or {}
+    direct_legal = signals.get("directLegalCandidates") or {}
 
     expected_matrix = split_state(canonical_state)
     recognized_matrix = split_state(recognized_state) if len(recognized_state) == 54 else None
@@ -898,6 +899,13 @@ def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
         "baseConfidence": selected.get("baseConfidence"),
         "repairChanges": selected.get("repairChanges"),
         "preRepairConflicts": selected.get("preRepairConflicts"),
+        "directLegalCandidateStatus": direct_legal.get("status"),
+        "directLegalStateCount": direct_legal.get("stateCount"),
+        "directLegalTopConfidence": direct_legal.get("topConfidence"),
+        "directLegalSecondConfidence": direct_legal.get("secondConfidence"),
+        "directLegalConfidenceGap": direct_legal.get("confidenceGap"),
+        "directLegalTopTieCount": direct_legal.get("topTieCount"),
+        "topDirectLegalCandidates": direct_legal.get("topCandidates"),
         "selectedGridQuality": signals.get("selectedGridQuality"),
         "topVisibleTripleQuality": signals.get("topVisibleTripleQuality"),
         "imageHashes": image_hashes,

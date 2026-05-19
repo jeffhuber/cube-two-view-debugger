@@ -57,7 +57,7 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 | Owner | Branch | PR | What | Touches | ETA |
 |---|---|---|---|---|---|
-| Codex | `codex/grid-span-guard-diagnostics` | this PR | Add diagnostics-only candidate grid-span guard tags to probes | `tools/probe_*`, tests | needs-devin-audit |
+| Codex | `codex/repair-backfill-opportunity-diagnostics` | this PR | Add diagnostics-only candidate repair-backfill opportunity tags to probes | `tools/probe_*`, tests | needs-devin-audit |
 
 *(Codex: please populate your row when you start something.)*
 
@@ -93,6 +93,7 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 Newest first. Each entry: date, decision, one-line why.
 
+- **2026-05-19** — Candidate repair-backfill opportunity remains diagnostics-only. Set 61 is a standard-repair/manual-review miss where red/orange conflict-backfill would apply but is skipped because standard repair candidates exist; Set 62 is the positive control where backfill runs and succeeds. Surface the opportunity in probes before any behavior experiment.
 - **2026-05-19** — Candidate grid-span guard remains diagnostics-only. Mining #165 probe outputs found zero-current-FP candidates (`shape spread >=29.952 + sampled cells >=15`, `nearest-grid ratio >=1.284 + unsupported cells >=5`, and high span score), but the sample is only 30 rows and this is guard/manual-review evidence, not a promotion signal.
 - **2026-05-19** — Set 21 direct-legal tie-break inspection found no safe promotion signal yet. The two legal states use the same selected side-pair geometry, the top raw merged-score gap is only 0.02 on a ~1416 score, and balanced facelet-variant cost is identical (93.8762 vs 93.8762). Keep Set 21 manual-review; surface raw-score and variant-cost margins in probes before considering any tie-break rule.
 - **2026-05-19** — Direct-legal ambiguity diagnostics are now the next production trust lever. After #159, full corpus + hard-case mining found no remaining corpus exact-54 manual-review rows; the only exact-54 manual-review row is hard Set 21, whose direct legal candidates are effectively tied (2 states, top/second confidence both 0.8332, rounded gap 0.0). Do not promote Set 21 without a new tie-breaker signal; prefer surfacing legal-candidate margin in probes first.

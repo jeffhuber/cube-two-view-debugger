@@ -94,6 +94,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from tools.audit_recognition_pair import file_sha256, parse_ground_truth, score_match  # noqa: E402
+from tools.probe_candidate_guards import candidate_repair_backfill_opportunity  # noqa: E402
 from rubik_recognizer.colors import COLOR_TO_FACE  # noqa: E402
 from rubik_recognizer.image_pipeline import analyze_image  # noqa: E402
 from rubik_recognizer.recognizer import (  # noqa: E402
@@ -101,6 +102,7 @@ from rubik_recognizer.recognizer import (  # noqa: E402
     WhiteUpRecognizer,
     _grid_quality_score,
     _oriented_face_options,
+    _repair_backfill_applies,
     recognition_diagnostics,
 )
 
@@ -1004,6 +1006,16 @@ def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
     direct_legal = signals.get("directLegalCandidates") or {}
     span_summary = selected_grid_span_summary(signals)
     span_guard = candidate_grid_span_guard(span_summary)
+    repair_backfill_gate = bool(
+        result.image_a is not None
+        and result.image_b is not None
+        and _repair_backfill_applies(result.image_a, result.image_b)
+    )
+    repair_backfill_opportunity = candidate_repair_backfill_opportunity(
+        signals,
+        payload,
+        repair_backfill_gate_would_apply=repair_backfill_gate,
+    )
 
     expected_matrix = split_state(canonical_state)
     recognized_matrix = split_state(recognized_state) if len(recognized_state) == 54 else None
@@ -1086,6 +1098,8 @@ def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
         "selectedGridSpanSummary": span_summary,
         "candidateGridSpanGuard": span_guard,
         "gridSpanGuardWouldFire": span_guard["wouldFire"],
+        "candidateRepairBackfillOpportunity": repair_backfill_opportunity,
+        "repairBackfillOpportunityWouldFire": repair_backfill_opportunity["wouldFire"],
         "selectedGridQuality": signals.get("selectedGridQuality"),
         "topVisibleTripleQuality": signals.get("topVisibleTripleQuality"),
         "imageHashes": image_hashes,

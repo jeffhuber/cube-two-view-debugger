@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 
 import tools.probe_corpus as probe_corpus
+from tools.probe_candidate_guards import candidate_repair_backfill_opportunity
 from tools.probe_corpus import (
     _check_expected_yaw,
     candidate_grid_span_guard,
@@ -31,6 +32,78 @@ def test_probe_failure_classifier_marks_input_drift_first():
     )
 
     assert mode == "image_input_drift"
+
+
+def test_candidate_repair_backfill_opportunity_flags_set_61_shape():
+    signals = {
+        "repairCandidateCount": 3,
+        "selectedRepairCandidate": {
+            "repairChanges": 10,
+            "preRepairConflicts": {"totalConflicts": 8},
+        },
+    }
+    payload = {
+        "recognitionCategory": "needs_manual_review",
+        "recognitionCategoryReason": "repair_path_unstable_pre_repair_piece_evidence",
+        "confidence": 0.5486,
+    }
+
+    guard = candidate_repair_backfill_opportunity(
+        signals,
+        payload,
+        repair_backfill_gate_would_apply=True,
+    )
+
+    assert guard["wouldFire"] is True
+    assert guard["firedRules"] == ["skipped_backfill_with_unstable_standard_repair"]
+
+
+def test_candidate_repair_backfill_opportunity_skips_when_backfill_already_ran():
+    signals = {
+        "repairBackfillAttempted": True,
+        "repairCandidateCount": 8,
+        "selectedRepairCandidate": {
+            "repairChanges": 0,
+            "preRepairConflicts": {"totalConflicts": 0},
+        },
+    }
+    payload = {
+        "recognitionCategory": "success_repaired_high_confidence",
+        "recognitionCategoryReason": "repair_path_high_confidence_low_penalty",
+        "confidence": 0.8187,
+    }
+
+    guard = candidate_repair_backfill_opportunity(
+        signals,
+        payload,
+        repair_backfill_gate_would_apply=True,
+    )
+
+    assert guard["wouldFire"] is False
+    assert guard["repairBackfillGateWouldApply"] is True
+
+
+def test_candidate_repair_backfill_opportunity_requires_backfill_gate():
+    signals = {
+        "repairCandidateCount": 3,
+        "selectedRepairCandidate": {
+            "repairChanges": 10,
+            "preRepairConflicts": {"totalConflicts": 8},
+        },
+    }
+    payload = {
+        "recognitionCategory": "needs_manual_review",
+        "recognitionCategoryReason": "repair_path_unstable_pre_repair_piece_evidence",
+        "confidence": 0.5486,
+    }
+
+    guard = candidate_repair_backfill_opportunity(
+        signals,
+        payload,
+        repair_backfill_gate_would_apply=False,
+    )
+
+    assert guard["wouldFire"] is False
 
 
 def test_probe_failure_classifier_marks_rejected_as_retake():

@@ -3,7 +3,11 @@ import sys
 from pathlib import Path
 
 import tools.probe_corpus as probe_corpus
-from tools.probe_candidate_guards import candidate_repair_backfill_opportunity
+from tools.probe_candidate_guards import (
+    candidate_grid_purity_guard,
+    candidate_repair_backfill_opportunity,
+    selected_grid_purity_summary,
+)
 from tools.probe_corpus import (
     _check_expected_yaw,
     candidate_grid_span_guard,
@@ -56,6 +60,76 @@ def test_candidate_repair_backfill_opportunity_flags_set_61_shape():
 
     assert guard["wouldFire"] is True
     assert guard["firedRules"] == ["skipped_backfill_with_unstable_standard_repair"]
+
+
+def test_candidate_grid_purity_guard_flags_set_30_shape():
+    signals = {
+        "topVisibleTripleQuality": {
+            "imageA": {
+                "componentOverlap": 6,
+                "sidePair": "B/L",
+                "grids": {
+                    "B": {"gridId": 22, "cellFaceCounts": {"B": 2, "L": 5, "U": 1, "D": 1}},
+                    "L": {"gridId": 5, "cellFaceCounts": {"L": 2, "F": 3, "U": 2, "D": 1, "R": 1}},
+                    "U": {"gridId": 12, "cellFaceCounts": {"U": 1, "B": 4, "L": 2, "F": 1, "R": 1}},
+                },
+            },
+            "imageB": {
+                "componentOverlap": 1,
+                "sidePair": "F/L",
+                "grids": {
+                    "D": {"gridId": 13, "cellFaceCounts": {"D": 2, "B": 4, "U": 2, "R": 1}},
+                    "F": {"gridId": 5, "cellFaceCounts": {"F": 3, "R": 3, "B": 1, "D": 1, "L": 1}},
+                    "L": {"gridId": 20, "cellFaceCounts": {"L": 2, "B": 2, "D": 2, "R": 1, "U": 2}},
+                },
+            },
+        }
+    }
+
+    summary = selected_grid_purity_summary(signals)
+    guard = candidate_grid_purity_guard(summary)
+
+    assert summary["maxTopVisibleComponentOverlap"] == 6
+    assert summary["topVisibleLowSelfFaceCells"] == 5
+    assert summary["maxTopVisibleDominantWrongMargin"] == 3
+    assert guard["wouldFire"] is True
+    assert guard["firedRules"] == ["top_visible_overlap_and_low_self_purity"]
+
+
+def test_candidate_grid_purity_guard_requires_high_top_visible_overlap():
+    summary = {
+        "maxTopVisibleComponentOverlap": 3,
+        "topVisibleLowSelfFaceCells": 5,
+        "maxTopVisibleDominantWrongMargin": 3,
+    }
+
+    guard = candidate_grid_purity_guard(summary)
+
+    assert guard["wouldFire"] is False
+
+
+def test_candidate_grid_purity_guard_requires_low_self_purity():
+    summary = {
+        "maxTopVisibleComponentOverlap": 6,
+        "topVisibleLowSelfFaceCells": 4,
+        "maxTopVisibleDominantWrongMargin": 3,
+    }
+
+    guard = candidate_grid_purity_guard(summary)
+
+    assert guard["wouldFire"] is False
+
+
+def test_candidate_grid_purity_guard_requires_wrong_dominant_margin():
+    summary = {
+        "maxTopVisibleComponentOverlap": 6,
+        "topVisibleLowSelfFaceCells": 5,
+        "maxTopVisibleDominantWrongMargin": 2,
+    }
+
+    guard = candidate_grid_purity_guard(summary)
+
+    assert guard["wouldFire"] is False
 
 
 def test_candidate_repair_backfill_opportunity_flags_metric_only_instability():

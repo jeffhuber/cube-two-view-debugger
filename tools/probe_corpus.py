@@ -94,7 +94,11 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from tools.audit_recognition_pair import file_sha256, parse_ground_truth, score_match  # noqa: E402
-from tools.probe_candidate_guards import candidate_repair_backfill_opportunity  # noqa: E402
+from tools.probe_candidate_guards import (  # noqa: E402
+    candidate_grid_purity_guard,
+    candidate_repair_backfill_opportunity,
+    selected_grid_purity_summary,
+)
 from rubik_recognizer.colors import COLOR_TO_FACE  # noqa: E402
 from rubik_recognizer.image_pipeline import analyze_image  # noqa: E402
 from rubik_recognizer.recognizer import (  # noqa: E402
@@ -1006,6 +1010,8 @@ def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
     direct_legal = signals.get("directLegalCandidates") or {}
     span_summary = selected_grid_span_summary(signals)
     span_guard = candidate_grid_span_guard(span_summary)
+    purity_summary = selected_grid_purity_summary(signals)
+    purity_guard = candidate_grid_purity_guard(purity_summary)
     repair_backfill_gate = bool(
         result.image_a is not None
         and result.image_b is not None
@@ -1098,6 +1104,9 @@ def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
         "selectedGridSpanSummary": span_summary,
         "candidateGridSpanGuard": span_guard,
         "gridSpanGuardWouldFire": span_guard["wouldFire"],
+        "selectedGridPuritySummary": purity_summary,
+        "candidateGridPurityGuard": purity_guard,
+        "gridPurityGuardWouldFire": purity_guard["wouldFire"],
         "candidateRepairBackfillOpportunity": repair_backfill_opportunity,
         "repairBackfillOpportunityWouldFire": repair_backfill_opportunity["wouldFire"],
         "selectedGridQuality": signals.get("selectedGridQuality"),

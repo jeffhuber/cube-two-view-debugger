@@ -593,6 +593,10 @@ chosen winner. `baseConfidence` is the pre-penalty repair confidence, and
 deviation, orientation rank, and heavier repair paths. `preRepairConflicts`
 contains stable integer keys for missing, duplicate-color, invalid, and duplicate-cubie corner/edge
 counts plus `validCorners`, `validEdges`, and `totalConflicts`; absent conflicts are reported as `0`.
+When red/orange conflict-backfill is considered, `repairBackfillAttempted`,
+`repairBackfillEvaluatedMerges`, `repairBackfillUsed`, and `repairBackfillProbeReason` report
+whether that alternate merge set was probed, why it was probed, and whether the selected repair
+winner came from it.
 `recognitionSignals.topVisibleBalancedColorAssignment` is a diagnostic for the top selected A/B
 visible triples: it asks how cheaply the 54 visible cells could be reassigned to exactly nine of
 each cube color. High cost, high required changes, or `too_imbalanced` status is treated as

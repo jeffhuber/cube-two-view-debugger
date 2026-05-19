@@ -564,9 +564,133 @@ def test_recognize_from_analyses_uses_conflict_backfill_repair_source(monkeypatc
     assert result.recognition_signals["repairBackfillAttempted"] is True
     assert result.recognition_signals["repairBackfillEvaluatedMerges"] == 1
     assert result.recognition_signals["repairBackfillUsed"] is True
+    assert result.recognition_signals["repairBackfillProbeReason"] == "no_standard_repair"
     assert result.recognition_signals["selectedRepairCandidate"]["repairSource"] == "conflict_backfill"
     assert result.recognition_signals["topRepairCandidates"][0]["repairSource"] == "conflict_backfill"
     assert calls == {"standard_repair": 1, "backfill": 1, "backfill_repair": 1}
+
+
+def test_recognize_from_analyses_tries_backfill_for_unstable_standard_repair(monkeypatch):
+    solved = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
+    workset = RecognitionWorkset(options_a=[], options_b=[], merged_candidates=[])
+    backfill_merge = (123.0, {"_score": 123.0})
+    calls = {"standard_repair": 0, "backfill": 0, "backfill_repair": 0}
+
+    def fake_standard_repair(self, candidate_workset, *, release_merged_candidates=False):
+        calls["standard_repair"] += 1
+        assert candidate_workset is workset
+        assert release_merged_candidates is True
+        return [
+            {
+                "state": solved,
+                "confidence": 0.5486,
+                "repairRankingPenalty": recognizer.MAX_REPAIR_RANKING_PENALTY,
+                "repairChanges": 10,
+                "preRepairFaceCounts": {face: 9 for face in "URFDLB"},
+                "preRepairConflicts": {"totalConflicts": 8, "validCorners": 5},
+                "repairSource": "standard",
+            }
+        ]
+
+    def fake_backfill(analysis_a, candidate_workset):
+        calls["backfill"] += 1
+        assert candidate_workset is workset
+        return [backfill_merge]
+
+    def fake_backfill_repair(self, candidate_workset, repair_merges, *, repair_source="standard"):
+        calls["backfill_repair"] += 1
+        assert candidate_workset is workset
+        assert repair_merges == [backfill_merge]
+        assert repair_source == "conflict_backfill"
+        return [
+            {
+                "state": solved,
+                "confidence": 0.631,
+                "repairRankingPenalty": 0.08,
+                "repairChanges": 4,
+                "preRepairFaceCounts": {face: 9 for face in "URFDLB"},
+                "preRepairConflicts": {"totalConflicts": 2, "validCorners": 8},
+                "repairSource": repair_source,
+            }
+        ]
+
+    monkeypatch.setattr(recognizer, "_base_recognition_signals", lambda analysis_a, analysis_b: {})
+    monkeypatch.setattr(recognizer, "_white_up_checks", lambda analysis_a, analysis_b: [])
+    monkeypatch.setattr(recognizer, "_recognition_workset", lambda analysis_a, analysis_b: workset)
+    monkeypatch.setattr(WhiteUpRecognizer, "_state_candidates_from_workset", lambda self, candidate_workset: [])
+    monkeypatch.setattr(WhiteUpRecognizer, "_legal_repair_candidate_details_from_workset", fake_standard_repair)
+    monkeypatch.setattr(WhiteUpRecognizer, "_legal_repair_candidate_details_from_merges", fake_backfill_repair)
+    monkeypatch.setattr(recognizer, "_repair_backfill_applies", lambda analysis_a, analysis_b: True)
+    monkeypatch.setattr(recognizer, "_repair_backfill_merged_face_candidates", fake_backfill)
+    monkeypatch.setattr(recognizer, "REPAIR_SKIP_DIRECT_CANDIDATE_THRESHOLD", 0)
+
+    result = WhiteUpRecognizer()._recognize_from_analyses(object(), object())
+
+    assert result.status == "success"
+    assert result.state == solved
+    assert result.confidence == 0.631
+    assert result.recognition_signals["repairBackfillAttempted"] is True
+    assert result.recognition_signals["repairBackfillEvaluatedMerges"] == 1
+    assert result.recognition_signals["repairBackfillUsed"] is True
+    assert result.recognition_signals["repairBackfillProbeReason"] == "unstable_standard_repair"
+    assert result.recognition_signals["selectedRepairCandidate"]["repairSource"] == "conflict_backfill"
+    monkeypatch.setattr(recognizer, "REPAIR_RETAKE_MIN_CANDIDATES", 0)
+    category = _recognition_category_payload(result)
+    assert category["category"] == "needs_manual_review"
+    assert category["reason"] == "repair_backfill_from_unstable_standard_repair"
+    assert calls == {"standard_repair": 1, "backfill": 1, "backfill_repair": 1}
+
+
+def test_recognize_from_analyses_keeps_backfill_skipped_for_pre_count_skew(monkeypatch):
+    solved = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
+    workset = RecognitionWorkset(options_a=[], options_b=[], merged_candidates=[])
+    calls = {"standard_repair": 0, "backfill": 0, "backfill_repair": 0}
+
+    def fake_standard_repair(self, candidate_workset, *, release_merged_candidates=False):
+        calls["standard_repair"] += 1
+        return [
+            {
+                "state": solved,
+                "confidence": 0.5486,
+                "repairRankingPenalty": recognizer.MAX_REPAIR_RANKING_PENALTY,
+                "repairChanges": 10,
+                "preRepairFaceCounts": {
+                    "U": 9,
+                    "R": 7,
+                    "F": 8,
+                    "D": 9,
+                    "L": 10,
+                    "B": 11,
+                },
+                "preRepairConflicts": {"totalConflicts": 8, "validCorners": 5},
+                "repairSource": "standard",
+            }
+        ]
+
+    def fake_backfill(analysis_a, candidate_workset):
+        calls["backfill"] += 1
+        return []
+
+    def fake_backfill_repair(self, candidate_workset, repair_merges, *, repair_source="standard"):
+        calls["backfill_repair"] += 1
+        return []
+
+    monkeypatch.setattr(recognizer, "_base_recognition_signals", lambda analysis_a, analysis_b: {})
+    monkeypatch.setattr(recognizer, "_white_up_checks", lambda analysis_a, analysis_b: [])
+    monkeypatch.setattr(recognizer, "_recognition_workset", lambda analysis_a, analysis_b: workset)
+    monkeypatch.setattr(WhiteUpRecognizer, "_state_candidates_from_workset", lambda self, candidate_workset: [])
+    monkeypatch.setattr(WhiteUpRecognizer, "_legal_repair_candidate_details_from_workset", fake_standard_repair)
+    monkeypatch.setattr(WhiteUpRecognizer, "_legal_repair_candidate_details_from_merges", fake_backfill_repair)
+    monkeypatch.setattr(recognizer, "_repair_backfill_applies", lambda analysis_a, analysis_b: True)
+    monkeypatch.setattr(recognizer, "_repair_backfill_merged_face_candidates", fake_backfill)
+    monkeypatch.setattr(recognizer, "REPAIR_SKIP_DIRECT_CANDIDATE_THRESHOLD", 0)
+
+    result = WhiteUpRecognizer()._recognize_from_analyses(object(), object())
+
+    assert result.status == "success"
+    assert result.recognition_signals["selectedRepairCandidate"]["repairSource"] == "standard"
+    assert "repairBackfillAttempted" not in result.recognition_signals
+    assert calls == {"standard_repair": 1, "backfill": 0, "backfill_repair": 0}
 
 
 def test_repair_orientation_rerank_targets_low_confidence_rank_capped_repairs():
@@ -2336,6 +2460,68 @@ def test_recognition_category_grid_purity_guard_demotes_high_confidence_repair_t
 
     assert category["category"] == "needs_manual_review"
     assert category["reason"] == "grid_purity_guard"
+
+
+def test_recognition_category_keeps_unstable_standard_backfill_manual_review():
+    signals = {
+        "repairPathUsed": True,
+        "repairCandidateCount": 100_000,
+        "repairBackfillAttempted": True,
+        "repairBackfillEvaluatedMerges": 24,
+        "repairBackfillUsed": True,
+        "repairBackfillProbeReason": "unstable_standard_repair",
+        "selectedRepairCandidate": {
+            "confidence": 0.631,
+            "repairRankingPenalty": 0.08,
+            "repairSource": "conflict_backfill",
+            "preRepairFaceCounts": {face: 9 for face in "URFDLB"},
+            "preRepairConflicts": {"totalConflicts": 2, "validCorners": 8},
+        },
+    }
+    result = RecognitionResult(
+        status="success",
+        state="U" * 54,
+        confidence=0.631,
+        reason="Recognized the highest-scoring legal cube state after cubie-level color repair.",
+        candidates=100_000,
+        recognition_signals=signals,
+    )
+
+    category = _recognition_category_payload(result)
+
+    assert category["category"] == "needs_manual_review"
+    assert category["reason"] == "repair_backfill_from_unstable_standard_repair"
+
+
+def test_recognition_category_allows_no_standard_backfill_high_confidence_repair():
+    signals = {
+        "repairPathUsed": True,
+        "repairCandidateCount": 100_000,
+        "repairBackfillAttempted": True,
+        "repairBackfillEvaluatedMerges": 40,
+        "repairBackfillUsed": True,
+        "repairBackfillProbeReason": "no_standard_repair",
+        "selectedRepairCandidate": {
+            "confidence": 0.631,
+            "repairRankingPenalty": 0.08,
+            "repairSource": "conflict_backfill",
+            "preRepairFaceCounts": {face: 9 for face in "URFDLB"},
+            "preRepairConflicts": {"totalConflicts": 2, "validCorners": 8},
+        },
+    }
+    result = RecognitionResult(
+        status="success",
+        state="U" * 54,
+        confidence=0.631,
+        reason="Recognized the highest-scoring legal cube state after cubie-level color repair.",
+        candidates=100_000,
+        recognition_signals=signals,
+    )
+
+    category = _recognition_category_payload(result)
+
+    assert category["category"] == "success_repaired_high_confidence"
+    assert category["reason"] == "repair_path_high_confidence_low_penalty"
 
 
 def test_recognition_category_marks_moderate_repair_as_high_confidence():

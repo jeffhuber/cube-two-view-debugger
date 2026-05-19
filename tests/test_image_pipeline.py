@@ -126,6 +126,28 @@ def test_combo_score_penalizes_grids_outside_inferred_cube_hull():
     assert clean_score - penalized_score == cube_hull_grid_penalty(0)
 
 
+def test_combo_score_keeps_single_trimmed_hull_row_as_late_ranking_signal():
+    def candidate(index):
+        return {
+            "matched": [index * 10 + offset for offset in range(9)],
+            "matched_count": 9,
+            "error": 1.0,
+            "shape_spread": 5.0,
+            "center_face": ("U", "R", "F")[index % 3],
+            "centers": [[(10.0 + c * 5.0, 10.0 + r * 5.0) for c in range(3)] for r in range(3)],
+        }
+
+    inside_a = candidate(0)
+    inside_b = candidate(1)
+    trimmed = candidate(2)
+    trimmed["cube_hull_inside_count"] = 6
+
+    clean_score = _combo_score([inside_a, inside_b, candidate(2)], overlap=0)
+    trimmed_score = _combo_score([inside_a, inside_b, trimmed], overlap=0)
+
+    assert clean_score == trimmed_score
+
+
 def test_tiny_white_components_are_removed_when_colored_stickers_anchor_scale():
     def sticker(index, color, area):
         face = {"white": "U", "red": "R", "orange": "L", "yellow": "D", "green": "F", "blue": "B"}[color]

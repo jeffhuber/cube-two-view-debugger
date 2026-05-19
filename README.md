@@ -451,11 +451,13 @@ CUBE_RECOGNIZER_REMBG_GRID_GUARD=1 \
   --include-grid-cells --include-option-coverage
 ```
 
-When enabled and `rembg` is available, `analyze_image(...)` derives a U2-Net cube hull and penalizes
-grid candidates with fewer than 7 of 9 sampled centers inside that hull. The switch is off by default
-because it adds a model-backed dependency/cost and is intended as a measured grid-ranking guard.
-If rembg is unavailable or returns an implausible mask, the recognizer skips the guard and records a
-warning rather than changing normal recognition behavior.
+When enabled and `rembg` is available, `analyze_image(...)` derives a U2-Net cube hull and annotates
+grid candidates by how many sampled centers sit inside that hull. The recognizer only applies the
+ranking penalty when the hull signal agrees with normal grid-extrapolation evidence; a single row or
+column trimmed by the segmentation mask remains diagnostic instead of automatically downgrading a
+valid face grid. The switch is off by default because it adds a model-backed dependency/cost and is
+intended as a measured grid-ranking guard. If rembg is unavailable or returns an implausible mask, the
+recognizer skips the guard and records a warning rather than changing normal recognition behavior.
 
 ## How Recognition Works
 

@@ -1030,7 +1030,54 @@ def test_grid_signal_summary_reports_cell_face_and_source_counts():
     assert summary["cubeHullInsideCount"] == 6
     assert summary["cubeHullOutsideCount"] == 3
     assert summary["cubeHullSource"] == "rembg_u2net_hull"
-    assert summary["cubeHullPenalty"] == 200.0
+    assert summary["cubeHullPenalty"] == 0.0
+    assert summary["rawCubeHullPenalty"] == 200.0
+
+
+def test_cube_hull_grid_penalty_requires_extrapolation_signal():
+    def facelet(source, outside=0.0, nearest=70.0):
+        return type(
+            "Facelet",
+            (),
+            {
+                "source": source,
+                "rgb": (230, 230, 230),
+                "shape_angle": None,
+                "match": type("Match", (), {"face": "U", "color": "white", "confidence": 0.82})(),
+                "grid_spacing": 70.0,
+                "outside_component_hull_distance": outside,
+                "nearest_component_distance": nearest,
+                "outside_grid_component_hull_distance": outside,
+                "nearest_grid_component_distance": nearest,
+            },
+        )()
+
+    def grid(stickers):
+        return type(
+            "Grid",
+            (),
+            {
+                "cube_hull_inside_count": 6,
+                "matched_count": 6,
+                "stickers": stickers,
+            },
+        )()
+
+    clean = grid([[facelet("component") for _ in range(3)] for _ in range(3)])
+    extrapolated = grid(
+        [
+            [facelet("component"), facelet("component"), facelet("component")],
+            [facelet("component"), facelet("component"), facelet("component")],
+            [
+                facelet("grid_sample", outside=105.0, nearest=170.0),
+                facelet("grid_sample", outside=105.0, nearest=170.0),
+                facelet("grid_sample", outside=105.0, nearest=170.0),
+            ],
+        ]
+    )
+
+    assert recognizer._grid_cube_hull_penalty(clean) == 0.0
+    assert recognizer._grid_cube_hull_penalty(extrapolated) == 200.0
 
 
 def test_unsupported_grid_sample_score_measures_white_extrapolation():

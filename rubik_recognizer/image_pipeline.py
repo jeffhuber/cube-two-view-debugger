@@ -632,7 +632,14 @@ def cube_hull_grid_penalty(inside_count: object) -> float:
 
 
 def _cube_hull_candidate_penalty(candidate: Dict) -> float:
-    return cube_hull_grid_penalty(_optional_int(candidate.get("cube_hull_inside_count")))
+    inside = _optional_int(candidate.get("cube_hull_inside_count"))
+    # The rembg hull is excellent at rejecting severe off-cube grids, but its
+    # boundary can trim one row/column of a real face. Keep early grid-combo
+    # selection conservative; later recognizer scoring can combine the hull
+    # signal with sampled-cell extrapolation evidence.
+    if inside is None or inside >= REMBG_GRID_INSIDE_MIN - 1:
+        return 0.0
+    return cube_hull_grid_penalty(inside)
 
 
 def _select_grid_combo(candidates: List[Dict]) -> List[Dict]:

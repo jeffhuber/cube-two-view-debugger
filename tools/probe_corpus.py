@@ -287,6 +287,19 @@ def hamming(a: str, b: str) -> int:
     return sum(1 for left, right in zip(a, b) if left != right)
 
 
+def score_direct_legal_candidates(candidates: Any, expected_state: str) -> List[Dict[str, Any]]:
+    scored = []
+    for candidate in candidates or []:
+        if not isinstance(candidate, dict):
+            continue
+        state = str(candidate.get("state") or "")
+        item = dict(candidate)
+        item["score"] = score_match(state, expected_state)
+        item["hamming"] = hamming(state, expected_state)
+        scored.append(item)
+    return scored
+
+
 def split_state(state: str) -> Dict[str, List[List[str]]]:
     matrices: Dict[str, List[List[str]]] = {}
     for face_index, face in enumerate(FACE_ORDER):
@@ -905,7 +918,13 @@ def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
         "directLegalSecondConfidence": direct_legal.get("secondConfidence"),
         "directLegalConfidenceGap": direct_legal.get("confidenceGap"),
         "directLegalTopTieCount": direct_legal.get("topTieCount"),
-        "topDirectLegalCandidates": direct_legal.get("topCandidates"),
+        "directLegalTopRawMergedScore": direct_legal.get("topRawMergedScore"),
+        "directLegalSecondRawMergedScore": direct_legal.get("secondRawMergedScore"),
+        "directLegalRawMergedScoreGap": direct_legal.get("rawMergedScoreGap"),
+        "directLegalTopVariantCost": direct_legal.get("topVariantCost"),
+        "directLegalSecondVariantCost": direct_legal.get("secondVariantCost"),
+        "directLegalVariantCostGap": direct_legal.get("variantCostGap"),
+        "topDirectLegalCandidates": score_direct_legal_candidates(direct_legal.get("topCandidates"), canonical_state),
         "selectedGridQuality": signals.get("selectedGridQuality"),
         "topVisibleTripleQuality": signals.get("topVisibleTripleQuality"),
         "imageHashes": image_hashes,

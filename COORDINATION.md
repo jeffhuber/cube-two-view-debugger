@@ -57,7 +57,7 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 | Owner | Branch | PR | What | Touches | ETA |
 |---|---|---|---|---|---|
-| Codex | `codex/direct-legal-ambiguity-diagnostics` | this PR | Add direct-legal ambiguity margin diagnostics and mine exact-but-manual cases | `rubik_recognizer/recognizer.py`, `tools/probe_*`, tests | needs-devin-audit |
+| Codex | `codex/direct-legal-tiebreak-diagnostics` | this PR | Add raw-score/variant-cost direct-legal tie-break diagnostics | `rubik_recognizer/recognizer.py`, `tools/probe_*`, tests | needs-devin-audit |
 
 *(Codex: please populate your row when you start something.)*
 
@@ -81,11 +81,11 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 ### Codex
 
+- **#161** — Direct-legal ambiguity diagnostics. Found hard Set 21 is the only exact-54 manual-review row; it has two effectively tied legal states.
 - **#159** — Calibrate direct-clean selected-grid thresholds. Promotes Set 29 to `success_clean`; Sets 12/14 and hard Set 21 remain manual-review.
 - **#155** — Require concordant extrapolation for opt-in rembg grid penalty. Prevents hull guard from overruling clean grids unless extrapolation evidence agrees.
 - **#153** — Clarify routine development-file edit protocol. Agents should not ask for content permission before normal repo `.py`/`.md` edits.
 - **#151** — Tighten high-confidence repair category. Requires stable pre-repair piece evidence before calling a repaired solve high-confidence.
-- **#145** — Conservative default grid-extrapolation scoring/gating in production recognizer.
 
 ---
 
@@ -93,6 +93,7 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 Newest first. Each entry: date, decision, one-line why.
 
+- **2026-05-19** — Set 21 direct-legal tie-break inspection found no safe promotion signal yet. The two legal states use the same selected side-pair geometry, the top raw merged-score gap is only 0.02 on a ~1416 score, and balanced facelet-variant cost is identical (93.8762 vs 93.8762). Keep Set 21 manual-review; surface raw-score and variant-cost margins in probes before considering any tie-break rule.
 - **2026-05-19** — Direct-legal ambiguity diagnostics are now the next production trust lever. After #159, full corpus + hard-case mining found no remaining corpus exact-54 manual-review rows; the only exact-54 manual-review row is hard Set 21, whose direct legal candidates are effectively tied (2 states, top/second confidence both 0.8332, rounded gap 0.0). Do not promote Set 21 without a new tie-breaker signal; prefer surfacing legal-candidate margin in probes first.
 - **2026-05-19** — Late KNN after canonical geometry selection is a negative production experiment. Codex tried three opt-in variants: (1) KNN as extra facelet repair/rebalance alternatives, (2) KNN-derived state variants after geometry selection, and (3) capped/cached balanced KNN-primary state variants for top merged candidates. Targeted corpus sets 12/14/24/27/28 and OOD hard sets 57/58/61/62 showed **zero score/category/candidate-count deltas** versus current main; the uncapped state-variant form was computationally unacceptable. Do not pursue this bolt-on path without a new scoring hypothesis. KNN remains useful for clean rectified samples and should be revisited when geometry is precise.
 - **2026-05-18 (post-#152)** — Hybrid pipeline experiment (rectify-on-existing-recognizer-quads + knn5_lab_full) **does NOT close the end-to-end gap.** Per-sticker accuracy: canonical 66.11%, knn5_lab_full 65.32% — both far below existing recognizer's 82.7%. Per-face accuracy distribution is sharply BIMODAL (46% perfect faces + 46% near-random faces, almost nothing in the 0.5-0.9 middle), confirming the failure mechanism: `analyze_image` returns some 3×3 grids whose 9 "stickers" span across multiple physical cube faces; the resulting rectification produces garbage on those faces. Hull-guard attempt (mirror of Codex #141 as a hard reject in evaluator) doesn't fix it — the cube hull encloses all 3 visible faces, so multi-face grids pass the inside-count check trivially. **Two viable forward paths**: (B1) Codex applies `knn5_lab_full` to the existing recognizer's direct sticker samples — leverages production's good grid selection, expected +1-2pp on 82.7% [Codex's Track B item 8]; (B2) Claude builds a learned face-quad regressor with richer CNN features on rembg mask + RGB crop, trained on 68 real hull labels with harsh leave-one-set-out CV [Tier 2 item 12]. Both paths can run in parallel. Synthetic corpus v2 deferred until learned-regressor-on-real-labels saturates. **Negative-result PR** (hull-guard attempt + bimodal-distribution analysis + grid-geometry diagnosis) coming; documents the experiment for future readers.

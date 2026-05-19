@@ -386,12 +386,16 @@ def test_direct_legal_candidate_summary_reports_margin_and_top_candidates():
             "sidePairB": "F/L",
             "orderedSidePairA": "R/B",
             "orderedSidePairB": "F/L",
+            "rawMergedScore": 1416.029713,
+            "variantCost": 93.876222,
         },
         second_state: {
             "sidePairA": "F/R",
             "sidePairB": "B/L",
             "orderedSidePairA": "F/R",
             "orderedSidePairB": "B/L",
+            "rawMergedScore": 1416.009713,
+            "variantCost": 93.876222,
         },
     }
 
@@ -403,7 +407,15 @@ def test_direct_legal_candidate_summary_reports_margin_and_top_candidates():
     assert summary["secondConfidence"] == 0.8123
     assert summary["confidenceGap"] == 0.0209
     assert summary["topTieCount"] == 1
+    assert summary["topRawMergedScore"] == 1416.0297
+    assert summary["secondRawMergedScore"] == 1416.0097
+    assert summary["rawMergedScoreGap"] == 0.02
+    assert summary["topVariantCost"] == 93.8762
+    assert summary["secondVariantCost"] == 93.8762
+    assert summary["variantCostGap"] == 0.0
     assert summary["topCandidates"][0]["state"] == top_state
+    assert summary["topCandidates"][0]["rawMergedScore"] == 1416.0297
+    assert summary["topCandidates"][0]["variantCost"] == 93.8762
     assert summary["topCandidates"][0]["selectedFacesByImage"] == {
         "imageA": ["B", "R", "U"],
         "imageB": ["D", "F", "L"],
@@ -430,6 +442,8 @@ def test_recognize_from_analyses_attaches_direct_legal_candidate_summary(monkeyp
                     "sidePairB": "F/L",
                     "orderedSidePairA": "R/B",
                     "orderedSidePairB": "F/L",
+                    "rawMergedScore": 1400.0,
+                    "variantCost": 12.5,
                 },
             ),
             (
@@ -440,6 +454,8 @@ def test_recognize_from_analyses_attaches_direct_legal_candidate_summary(monkeyp
                     "sidePairB": "B/L",
                     "orderedSidePairA": "F/R",
                     "orderedSidePairB": "B/L",
+                    "rawMergedScore": 1390.0,
+                    "variantCost": 14.0,
                 },
             ),
         ],
@@ -454,6 +470,8 @@ def test_recognize_from_analyses_attaches_direct_legal_candidate_summary(monkeyp
     assert summary["status"] == "separated"
     assert summary["stateCount"] == 2
     assert summary["confidenceGap"] == 0.02
+    assert summary["rawMergedScoreGap"] == 10.0
+    assert summary["variantCostGap"] == 1.5
     assert summary["topCandidates"][0]["state"] == top_state
 
 

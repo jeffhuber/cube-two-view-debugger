@@ -12,6 +12,7 @@ from tools.probe_corpus import (
     load_manifest,
     load_manifest_document,
     runtime_summary,
+    score_direct_legal_candidates,
     smallest_rank_gaps,
     timing_summary,
     write_json,
@@ -253,6 +254,23 @@ def test_probe_count_deviation_summary_reports_face_count_imbalance():
         "mostCommonCountFrequency": 12,
         "deviationsFromNine": {"U": 10, "F": -1, "D": -3, "L": -2, "B": -4},
     }
+
+
+def test_score_direct_legal_candidates_adds_score_and_hamming():
+    expected = "U" * 54
+
+    scored = score_direct_legal_candidates(
+        [
+            {"state": "U" * 54, "confidence": 0.8},
+            {"state": "R" + "U" * 53, "confidence": 0.7},
+        ],
+        expected,
+    )
+
+    assert scored == [
+        {"state": "U" * 54, "confidence": 0.8, "score": 54, "hamming": 0},
+        {"state": "R" + "U" * 53, "confidence": 0.7, "score": 53, "hamming": 1},
+    ]
 
 
 def test_probe_timing_summary_reports_total_and_slowest_rows():

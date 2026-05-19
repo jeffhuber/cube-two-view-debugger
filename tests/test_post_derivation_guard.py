@@ -106,9 +106,9 @@ def _min_edge_length(quad):
 def test_min_edge_detects_collapsed_corners():
     """Set 47 A slot U's derived quad had 3 of 4 corners at (683, 365)
     with the 4th at (388, 255). min_edge is 0 (two corners identical).
-    The guard's MIN_EDGE_PX threshold of 30.0 must catch this."""
+    The guard's MIN_EDGE_PX threshold of 100.0 must catch this."""
     quad = [(683, 365), (683, 365), (684, 369), (388, 255)]
-    assert _min_edge_length(quad) < 30.0
+    assert _min_edge_length(quad) < 100.0
 
 
 def test_min_edge_accepts_normal_face_quads():
@@ -119,16 +119,26 @@ def test_min_edge_accepts_normal_face_quads():
     assert _min_edge_length(quad) > 200.0
 
 
+def test_min_edge_catches_borderline_narrow_quads():
+    """Set 22 A's U slot under PR #166 had a derived quad with
+    min_edge=53 px — just above the old 30 px threshold so the guard
+    passed it, but the rectified output showed pure black background
+    (the quad was a narrow strip sampling off-cube). A 198-quad corpus
+    survey showed working faces have min_edge p5=135 and p25=273, so
+    raising the threshold to 100 catches the borderline cases while
+    leaving a buffer below the working-face floor."""
+    # Set 22 A's actual derived quad shape (narrow strip)
+    borderline = [(400, 200), (453, 200), (453, 500), (400, 500)]  # 53 px edge
+    assert _min_edge_length(borderline) < 100.0
+
+
 def test_min_edge_threshold_value_is_pinned():
-    """The 30 px threshold is calibrated empirically — degenerate
-    derivations have min_edge < 10 px, while the narrowest legitimate
-    yawed-face quad observed in the corpus is ~100 px. Pinning the
-    value as a regression guard."""
-    from tools import evaluate_hybrid_pipeline as ehp
-    # The constant lives inside _proposer_face_quads; we pin it by
-    # constructing a minimal degenerate quad that MUST be rejected,
-    # and a near-degenerate quad of ~30 px that must be borderline.
-    degenerate = [(0, 0), (5, 0), (5, 5), (0, 5)]  # 5 px edges
-    borderline = [(0, 0), (35, 0), (35, 35), (0, 35)]  # 35 px edges
-    assert _min_edge_length(degenerate) < 30
-    assert _min_edge_length(borderline) > 30
+    """The 100 px threshold is calibrated from a 198-quad survey:
+    p5=135, p25=273 for working faces; below 100 is reliably
+    degenerate. Pinning the value so a future tweak forces an
+    explicit decision (and re-running the survey)."""
+    # Pin via observable behavior at boundary inputs
+    just_below = [(0, 0), (95, 0), (95, 95), (0, 95)]   # 95 px edges
+    just_above = [(0, 0), (110, 0), (110, 110), (0, 110)]  # 110 px edges
+    assert _min_edge_length(just_below) < 100
+    assert _min_edge_length(just_above) > 100

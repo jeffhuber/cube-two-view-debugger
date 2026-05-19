@@ -13,6 +13,7 @@ from tools.probe_corpus import (
     load_manifest_document,
     runtime_summary,
     score_direct_legal_candidates,
+    selected_grid_span_summary,
     smallest_rank_gaps,
     timing_summary,
     write_json,
@@ -237,6 +238,85 @@ def test_probe_grid_weak_reasons_marks_set_44_style_down_anchor():
     )
 
     assert reasons == ["matchedCount_below_6", "quality_below_80", "grid_sample_heavy"]
+
+
+def test_probe_grid_weak_reasons_marks_grid_span_contamination():
+    reasons = grid_weak_reasons(
+        {
+            "matchedCount": 8,
+            "fitError": 0.2,
+            "quality": 91.0,
+            "gridSamples": 1,
+            "badSamples": 0,
+            "suspectSamples": 0.0,
+            "gridSpanContamination": {
+                "score": 8.25,
+                "componentShapeSpread": 36.0,
+                "extrapolatedCellCount": 3,
+                "sampleCellsOutsideGridComponentHull": 3,
+            },
+        }
+    )
+
+    assert reasons == [
+        "grid_span_contamination_score_ge_8",
+        "component_shape_spread_ge_32",
+        "extrapolated_cells_ge_3",
+        "sample_cells_outside_grid_component_hull_ge_3",
+    ]
+
+
+def test_selected_grid_span_summary_flattens_selected_grid_diagnostics():
+    summary = selected_grid_span_summary(
+        {
+            "selectedGridQuality": {
+                "imageA": {
+                    "U": {
+                        "gridId": 1,
+                        "gridSpanContamination": {
+                            "score": 4.5,
+                            "componentShapeSpread": 12.0,
+                            "componentShapeAngleCount": 6,
+                            "sampledCellCount": 2,
+                            "extrapolatedCellCount": 1,
+                            "unsupportedCellCount": 1,
+                            "badSampleCellCount": 0,
+                            "cubeHullOutsideCount": 0,
+                            "maxOutsideGridComponentHullRatio": 0.8,
+                            "maxNearestGridComponentRatio": 1.2,
+                            "sampleCellsOutsideGridComponentHull": 1,
+                            "sampleCellsFarFromGridComponents": 0,
+                        },
+                    },
+                    "R": {
+                        "gridId": 2,
+                        "gridSpanContamination": {
+                            "score": 9.0,
+                            "componentShapeSpread": 34.0,
+                            "componentShapeAngleCount": 7,
+                            "sampledCellCount": 3,
+                            "extrapolatedCellCount": 2,
+                            "unsupportedCellCount": 0,
+                            "badSampleCellCount": 1,
+                            "cubeHullOutsideCount": 2,
+                            "maxOutsideGridComponentHullRatio": 1.1,
+                            "maxNearestGridComponentRatio": 2.0,
+                            "sampleCellsOutsideGridComponentHull": 2,
+                            "sampleCellsFarFromGridComponents": 1,
+                        },
+                    },
+                }
+            }
+        }
+    )
+
+    assert summary["maxScore"] == 9.0
+    assert summary["maxComponentShapeSpread"] == 34.0
+    assert summary["maxOutsideGridComponentHullRatio"] == 1.1
+    assert summary["maxNearestGridComponentRatio"] == 2.0
+    assert summary["totalSampledCells"] == 5
+    assert summary["totalExtrapolatedCells"] == 3
+    assert summary["rows"][1]["face"] == "R"
 
 
 def test_probe_count_deviation_summary_reports_face_count_imbalance():

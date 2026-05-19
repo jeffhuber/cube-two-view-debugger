@@ -77,6 +77,68 @@ def linked_issue(row: Dict[str, Any]) -> Any:
     return row.get("linkedIssue", row.get("issue"))
 
 
+def selected_grid_span_summary(signals: Dict[str, Any]) -> Dict[str, Any]:
+    rows = []
+    for image_key, grids in (signals.get("selectedGridQuality") or {}).items():
+        if not isinstance(grids, dict):
+            continue
+        for face, grid in grids.items():
+            if not isinstance(grid, dict):
+                continue
+            span = grid.get("gridSpanContamination") if isinstance(grid.get("gridSpanContamination"), dict) else {}
+            row = {
+                "image": image_key,
+                "face": face,
+                "gridId": grid.get("gridId"),
+                "score": span.get("score"),
+                "componentShapeSpread": span.get("componentShapeSpread"),
+                "componentShapeAngleCount": span.get("componentShapeAngleCount"),
+                "sampledCellCount": span.get("sampledCellCount"),
+                "extrapolatedCellCount": span.get("extrapolatedCellCount"),
+                "unsupportedCellCount": span.get("unsupportedCellCount"),
+                "badSampleCellCount": span.get("badSampleCellCount"),
+                "cubeHullOutsideCount": span.get("cubeHullOutsideCount"),
+                "maxOutsideGridComponentHullRatio": span.get("maxOutsideGridComponentHullRatio"),
+                "maxNearestGridComponentRatio": span.get("maxNearestGridComponentRatio"),
+                "sampleCellsOutsideGridComponentHull": span.get("sampleCellsOutsideGridComponentHull"),
+                "sampleCellsFarFromGridComponents": span.get("sampleCellsFarFromGridComponents"),
+            }
+            rows.append(row)
+    scores = [float(row["score"]) for row in rows if isinstance(row.get("score"), (int, float))]
+    shape_spreads = [
+        float(row["componentShapeSpread"])
+        for row in rows
+        if isinstance(row.get("componentShapeSpread"), (int, float))
+    ]
+    outside_ratios = [
+        float(row["maxOutsideGridComponentHullRatio"])
+        for row in rows
+        if isinstance(row.get("maxOutsideGridComponentHullRatio"), (int, float))
+    ]
+    nearest_ratios = [
+        float(row["maxNearestGridComponentRatio"])
+        for row in rows
+        if isinstance(row.get("maxNearestGridComponentRatio"), (int, float))
+    ]
+    return {
+        "rows": rows,
+        "maxScore": round(max(scores, default=0.0), 3),
+        "maxComponentShapeSpread": round(max(shape_spreads, default=0.0), 3),
+        "maxOutsideGridComponentHullRatio": round(max(outside_ratios, default=0.0), 3),
+        "maxNearestGridComponentRatio": round(max(nearest_ratios, default=0.0), 3),
+        "totalSampledCells": sum(
+            int(row.get("sampledCellCount") or 0)
+            for row in rows
+            if isinstance(row.get("sampledCellCount"), (int, float))
+        ),
+        "totalExtrapolatedCells": sum(
+            int(row.get("extrapolatedCellCount") or 0)
+            for row in rows
+            if isinstance(row.get("extrapolatedCellCount"), (int, float))
+        ),
+    }
+
+
 def target_failures(row: Dict[str, Any], payload: Dict[str, Any], *, input_drift: bool) -> List[str]:
     failures: List[str] = []
     failed_checks = set(payload.get("failedChecks") or [])
@@ -482,6 +544,7 @@ def probe_pair(
         "topDirectLegalCandidates": score_direct_legal_candidates(direct_legal.get("topCandidates"), canonical_state),
         "pairColorCalibration": signals.get("pairColorCalibration"),
         "backgroundStickerNoise": signals.get("backgroundStickerNoise"),
+        "selectedGridSpanSummary": selected_grid_span_summary(signals),
         "selectedGridQuality": signals.get("selectedGridQuality"),
         "topVisibleTripleQuality": signals.get("topVisibleTripleQuality"),
         # Repair audit trail. Surfaces both the standard repair path and the

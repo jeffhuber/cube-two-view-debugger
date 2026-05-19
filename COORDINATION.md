@@ -57,7 +57,7 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 | Owner | Branch | PR | What | Touches | ETA |
 |---|---|---|---|---|---|
-| Codex | `codex/direct-legal-tiebreak-diagnostics` | this PR | Add raw-score/variant-cost direct-legal tie-break diagnostics | `rubik_recognizer/recognizer.py`, `tools/probe_*`, tests | needs-devin-audit |
+| Codex | `codex/grid-span-diagnostics` | this PR | Add diagnostics-only grid span/source contamination scoreboard fields | `rubik_recognizer/recognizer.py`, `tools/probe_*`, tests | needs-devin-audit |
 
 *(Codex: please populate your row when you start something.)*
 
@@ -69,11 +69,11 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 ### Claude
 
+- **#163** — Full-hull lookup for shared vertices + sweep-state cache fix. Tooling evaluator gains +4.0pp and beats WhiteUpRecognizer in that lane.
 - **#157** — Slot/src filter for hybrid pipeline. Real diagnostic signal, but negative deployment result; kept as experimental infrastructure.
 - **#156** — Hull-guard attempt for hybrid pipeline. Negative result; documents why cube-hull containment cannot fix multi-face rectification failures.
 - **#152** — Hybrid pipeline evaluator. Rectify-on-existing-recognizer-quads transfers poorly end-to-end; geometry, not color, is binding.
 - **#142** — Learned vertex regressor (sklearn Ridge on 68 hull labels). Mixed result: better mean IoU, still 0% pass at face≥0.85.
-- **#140** — Equalize-faces experiment. Negative result; color equalization alone is not enough without better geometry.
 
 ### Infra (Devin-authored, mirrored across both repos)
 
@@ -81,11 +81,11 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 ### Codex
 
+- **#162** — Direct-legal tie-break scoreboard. Adds raw merged-score, variant-cost, and candidate hamming diagnostics; Set 21 still has no safe promotion signal.
 - **#161** — Direct-legal ambiguity diagnostics. Found hard Set 21 is the only exact-54 manual-review row; it has two effectively tied legal states.
 - **#159** — Calibrate direct-clean selected-grid thresholds. Promotes Set 29 to `success_clean`; Sets 12/14 and hard Set 21 remain manual-review.
 - **#155** — Require concordant extrapolation for opt-in rembg grid penalty. Prevents hull guard from overruling clean grids unless extrapolation evidence agrees.
 - **#153** — Clarify routine development-file edit protocol. Agents should not ask for content permission before normal repo `.py`/`.md` edits.
-- **#151** — Tighten high-confidence repair category. Requires stable pre-repair piece evidence before calling a repaired solve high-confidence.
 
 ---
 

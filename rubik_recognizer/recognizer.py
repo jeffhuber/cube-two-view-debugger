@@ -6,7 +6,7 @@ import os
 from collections import Counter
 from dataclasses import dataclass, field
 from itertools import product
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 from .colors import COLOR_TO_FACE, build_adaptive_palette, classify_rgb, rgb_to_hsv
 from .geometry import TRANSFORMS, closest_edge, possible_transforms
@@ -865,6 +865,7 @@ def _top_visible_triple_quality(analysis: ImageAnalysis, anchor: str) -> Optiona
         "sidePair": _side_pair_key(face for face in subset if face in SIDE_NEIGHBORS),
         "componentOverlap": _triple_overlap_count(tuple(subset.values())),
         "grids": {face: _grid_signal_summary(grid) for face, grid in sorted(subset.items())},
+        "gridSpanContamination": _grid_span_contamination_collection_summary(subset.values()),
     }
 
 
@@ -885,6 +886,9 @@ def _grid_signal_summary(grid: FaceGrid) -> Dict[str, Any]:
         "gridExtrapolationPenalty": round(_grid_extrapolation_penalty(grid), 3),
         "cellFaceCounts": _grid_cell_face_counts(grid),
         "cellSourceCounts": _grid_cell_source_counts(grid),
+        "componentShapeAngleCount": len(_grid_shape_angles(grid)),
+        "componentShapeSpread": round(_grid_shape_spread(grid), 3),
+        "gridSpanContamination": _grid_span_contamination_summary(grid),
     }
     if getattr(grid, "cube_hull_inside_count", None) is not None:
         inside_count = getattr(grid, "cube_hull_inside_count", None)
@@ -898,6 +902,102 @@ def _grid_signal_summary(grid: FaceGrid) -> Dict[str, Any]:
             }
         )
     return summary
+
+
+def _grid_span_contamination_collection_summary(grids: Iterable[FaceGrid]) -> Dict[str, Any]:
+    diagnostics = [_grid_span_contamination_summary(grid) for grid in grids]
+    if not diagnostics:
+        return {
+            "maxScore": 0.0,
+            "maxComponentShapeSpread": 0.0,
+            "totalSampledCells": 0,
+            "totalExtrapolatedCells": 0,
+            "totalUnsupportedCells": 0,
+        }
+    return {
+        "maxScore": round(max(float(item.get("score") or 0.0) for item in diagnostics), 3),
+        "maxComponentShapeSpread": round(max(float(item.get("componentShapeSpread") or 0.0) for item in diagnostics), 3),
+        "maxOutsideGridComponentHullRatio": round(
+            max(float(item.get("maxOutsideGridComponentHullRatio") or 0.0) for item in diagnostics),
+            3,
+        ),
+        "maxNearestGridComponentRatio": round(
+            max(float(item.get("maxNearestGridComponentRatio") or 0.0) for item in diagnostics),
+            3,
+        ),
+        "totalSampledCells": sum(int(item.get("sampledCellCount") or 0) for item in diagnostics),
+        "totalExtrapolatedCells": sum(int(item.get("extrapolatedCellCount") or 0) for item in diagnostics),
+        "totalUnsupportedCells": sum(int(item.get("unsupportedCellCount") or 0) for item in diagnostics),
+        "totalBadSampleCells": sum(int(item.get("badSampleCellCount") or 0) for item in diagnostics),
+        "totalCubeHullOutsideCells": sum(int(item.get("cubeHullOutsideCount") or 0) for item in diagnostics),
+    }
+
+
+def _grid_span_contamination_summary(grid: FaceGrid) -> Dict[str, Any]:
+    sample_geometry = _grid_sample_geometry_summary(grid)
+    angle_count = len(_grid_shape_angles(grid))
+    shape_spread = _grid_shape_spread(grid)
+    shape_spread_risk = max(0.0, shape_spread - 22.0) / 6.0 if angle_count >= 4 else 0.0
+    hull_outside = _int_signal(getattr(grid, "cube_hull_outside_count", 0), default=0)
+    hull_outside_risk = max(0.0, float(hull_outside - 1)) * 1.25
+    score = (
+        shape_spread_risk
+        + _grid_extrapolated_sample_score(grid)
+        + _grid_unsupported_sample_score(grid) * 0.5
+        + _grid_bad_sample_count(grid) * 1.25
+        + hull_outside_risk
+    )
+    return {
+        "score": round(score, 3),
+        "componentShapeAngleCount": angle_count,
+        "componentShapeSpread": round(shape_spread, 3),
+        "componentShapeSpreadRisk": round(shape_spread_risk, 3),
+        "sampledCellCount": _grid_sample_count(grid),
+        "badSampleCellCount": _grid_bad_sample_count(grid),
+        "extrapolatedCellCount": _grid_extrapolated_sample_count(grid),
+        "extrapolatedSampleScore": round(_grid_extrapolated_sample_score(grid), 3),
+        "unsupportedCellCount": _grid_unsupported_sample_count(grid),
+        "unsupportedSampleScore": round(_grid_unsupported_sample_score(grid), 3),
+        "cubeHullOutsideCount": hull_outside,
+        "cubeHullOutsideRisk": round(hull_outside_risk, 3),
+        **sample_geometry,
+    }
+
+
+def _grid_sample_geometry_summary(grid: FaceGrid) -> Dict[str, Any]:
+    outside_ratios = []
+    nearest_ratios = []
+    for row in getattr(grid, "stickers", []):
+        for sticker in row:
+            if getattr(sticker, "source", "") != "grid_sample":
+                continue
+            spacing = float(getattr(sticker, "grid_spacing", 0.0) or 0.0)
+            if spacing <= 1e-6:
+                continue
+            outside_distance = float(
+                getattr(
+                    sticker,
+                    "outside_grid_component_hull_distance",
+                    getattr(sticker, "outside_component_hull_distance", 0.0),
+                )
+                or 0.0
+            )
+            nearest_distance = float(
+                getattr(
+                    sticker,
+                    "nearest_grid_component_distance",
+                    getattr(sticker, "nearest_component_distance", 0.0),
+                )
+                or 0.0
+            )
+            outside_ratios.append(outside_distance / spacing)
+            nearest_ratios.append(nearest_distance / spacing)
+    return {
+        "maxOutsideGridComponentHullRatio": round(max(outside_ratios, default=0.0), 3),
+        "maxNearestGridComponentRatio": round(max(nearest_ratios, default=0.0), 3),
+        "sampleCellsOutsideGridComponentHull": sum(1 for ratio in outside_ratios if ratio > 0.75),
+        "sampleCellsFarFromGridComponents": sum(1 for ratio in nearest_ratios if ratio > 1.75),
+    }
 
 
 def _grid_cell_face_counts(grid: FaceGrid) -> Dict[str, int]:

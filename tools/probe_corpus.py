@@ -425,7 +425,82 @@ def grid_weak_reasons(grid: Dict[str, Any]) -> List[str]:
         reasons.append("bad_samples_present")
     if isinstance(suspect_samples, (int, float)) and suspect_samples > 2.5:
         reasons.append("suspect_samples_present")
+    span = grid.get("gridSpanContamination") if isinstance(grid.get("gridSpanContamination"), dict) else {}
+    span_score = span.get("score")
+    shape_spread = span.get("componentShapeSpread")
+    extrapolated_cells = span.get("extrapolatedCellCount")
+    outside_cells = span.get("sampleCellsOutsideGridComponentHull")
+    if isinstance(span_score, (int, float)) and span_score >= 8.0:
+        reasons.append("grid_span_contamination_score_ge_8")
+    if isinstance(shape_spread, (int, float)) and shape_spread >= 32.0:
+        reasons.append("component_shape_spread_ge_32")
+    if isinstance(extrapolated_cells, (int, float)) and extrapolated_cells >= 3:
+        reasons.append("extrapolated_cells_ge_3")
+    if isinstance(outside_cells, (int, float)) and outside_cells >= 3:
+        reasons.append("sample_cells_outside_grid_component_hull_ge_3")
     return reasons
+
+
+def selected_grid_span_summary(signals: Dict[str, Any]) -> Dict[str, Any]:
+    rows = []
+    for image_key, grids in (signals.get("selectedGridQuality") or {}).items():
+        if not isinstance(grids, dict):
+            continue
+        for face, grid in grids.items():
+            if not isinstance(grid, dict):
+                continue
+            span = grid.get("gridSpanContamination") if isinstance(grid.get("gridSpanContamination"), dict) else {}
+            row = {
+                "image": image_key,
+                "face": face,
+                "gridId": grid.get("gridId"),
+                "score": span.get("score"),
+                "componentShapeSpread": span.get("componentShapeSpread"),
+                "componentShapeAngleCount": span.get("componentShapeAngleCount"),
+                "sampledCellCount": span.get("sampledCellCount"),
+                "extrapolatedCellCount": span.get("extrapolatedCellCount"),
+                "unsupportedCellCount": span.get("unsupportedCellCount"),
+                "badSampleCellCount": span.get("badSampleCellCount"),
+                "cubeHullOutsideCount": span.get("cubeHullOutsideCount"),
+                "maxOutsideGridComponentHullRatio": span.get("maxOutsideGridComponentHullRatio"),
+                "maxNearestGridComponentRatio": span.get("maxNearestGridComponentRatio"),
+                "sampleCellsOutsideGridComponentHull": span.get("sampleCellsOutsideGridComponentHull"),
+                "sampleCellsFarFromGridComponents": span.get("sampleCellsFarFromGridComponents"),
+            }
+            rows.append(row)
+    scores = [float(row["score"]) for row in rows if isinstance(row.get("score"), (int, float))]
+    shape_spreads = [
+        float(row["componentShapeSpread"])
+        for row in rows
+        if isinstance(row.get("componentShapeSpread"), (int, float))
+    ]
+    outside_ratios = [
+        float(row["maxOutsideGridComponentHullRatio"])
+        for row in rows
+        if isinstance(row.get("maxOutsideGridComponentHullRatio"), (int, float))
+    ]
+    nearest_ratios = [
+        float(row["maxNearestGridComponentRatio"])
+        for row in rows
+        if isinstance(row.get("maxNearestGridComponentRatio"), (int, float))
+    ]
+    return {
+        "rows": rows,
+        "maxScore": round(max(scores, default=0.0), 3),
+        "maxComponentShapeSpread": round(max(shape_spreads, default=0.0), 3),
+        "maxOutsideGridComponentHullRatio": round(max(outside_ratios, default=0.0), 3),
+        "maxNearestGridComponentRatio": round(max(nearest_ratios, default=0.0), 3),
+        "totalSampledCells": sum(
+            int(row.get("sampledCellCount") or 0)
+            for row in rows
+            if isinstance(row.get("sampledCellCount"), (int, float))
+        ),
+        "totalExtrapolatedCells": sum(
+            int(row.get("extrapolatedCellCount") or 0)
+            for row in rows
+            if isinstance(row.get("extrapolatedCellCount"), (int, float))
+        ),
+    }
 
 
 def selected_grid_health(signals: Dict[str, Any]) -> Dict[str, Any]:
@@ -448,6 +523,7 @@ def selected_grid_health(signals: Dict[str, Any]) -> Dict[str, Any]:
                 "gridSamples": grid.get("gridSamples"),
                 "badSamples": grid.get("badSamples"),
                 "suspectSamples": grid.get("suspectSamples"),
+                "gridSpanContamination": grid.get("gridSpanContamination"),
                 "weakReasons": reasons,
             }
             rows.append(row)
@@ -925,6 +1001,7 @@ def probe_pair(row: Dict[str, Any], manifest_path: Path) -> Dict[str, Any]:
         "directLegalSecondVariantCost": direct_legal.get("secondVariantCost"),
         "directLegalVariantCostGap": direct_legal.get("variantCostGap"),
         "topDirectLegalCandidates": score_direct_legal_candidates(direct_legal.get("topCandidates"), canonical_state),
+        "selectedGridSpanSummary": selected_grid_span_summary(signals),
         "selectedGridQuality": signals.get("selectedGridQuality"),
         "topVisibleTripleQuality": signals.get("topVisibleTripleQuality"),
         "imageHashes": image_hashes,

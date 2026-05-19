@@ -142,10 +142,10 @@
       "imageA_sha256_expected": "e220898663ece10ac97450db45c4d9c26747e33e1167d5c4469f342fa11d16dd",
       "imageB_sha256_expected": "204a969df6f25ba7d0c587351a0f941e8913f80dfcc434716f9edc257686f667",
       "groundTruth_sha256_expected": "8599e55f07a79b3684c462b995cb24f922ae9d5984d4d5f4c393bf2be140f50b",
-      "expectedCategory": "needs_manual_review",
+      "expectedCategory": "success_clean",
       "expectedScoreFloor": 54,
       "currentScoreObserved": 54,
-      "notes": "Exact direct/manual-review case on the local hashed images."
+      "notes": "Exact direct case on the local hashed images. Promoted to success_clean after selected-grid quality calibration accepted marginal but supported direct unique legal states."
     },
     {
       "setId": "31",

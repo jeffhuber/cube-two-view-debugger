@@ -82,6 +82,30 @@ def test_candidate_repair_backfill_opportunity_flags_metric_only_instability():
     assert guard["firedRules"] == ["skipped_backfill_with_unstable_standard_repair"]
 
 
+def test_candidate_repair_backfill_opportunity_flags_conflict_only_instability():
+    signals = {
+        "repairCandidateCount": 2,
+        "selectedRepairCandidate": {
+            "repairChanges": 7,
+            "preRepairConflicts": {"totalConflicts": 8},
+        },
+    }
+    payload = {
+        "recognitionCategory": "needs_manual_review",
+        "recognitionCategoryReason": "some_future_manual_reason",
+        "confidence": 0.61,
+    }
+
+    guard = candidate_repair_backfill_opportunity(
+        signals,
+        payload,
+        repair_backfill_gate_would_apply=True,
+    )
+
+    assert guard["wouldFire"] is True
+    assert guard["firedRules"] == ["skipped_backfill_with_unstable_standard_repair"]
+
+
 def test_candidate_repair_backfill_opportunity_skips_when_backfill_already_ran():
     signals = {
         "repairBackfillAttempted": True,

@@ -160,6 +160,8 @@ MAX_WEAK_IMAGE_B_SIDE_GRID_QUALITY = 70.0
 # comparable instead of being rejected by one binary threshold.
 MAX_REPAIR_RANKING_PENALTY = 0.18
 DIRECT_CLEAN_CONFIDENCE_THRESHOLD = 0.78
+DIRECT_CLEAN_MAX_SELECTED_GRID_FIT_ERROR = 16.0
+DIRECT_CLEAN_MIN_SELECTED_GRID_QUALITY = 60.0
 REPAIRED_HIGH_CONFIDENCE_THRESHOLD = 0.60
 REPAIRED_HIGH_MAX_RANKING_PENALTY = 0.16
 REPAIRED_HIGH_MAX_PRE_REPAIR_CONFLICTS = 5
@@ -760,7 +762,13 @@ def _weak_selected_grid_count(signals: Dict[str, Any]) -> int:
             quality = _float_signal(grid.get("quality"), default=100.0)
             bad_samples = _int_signal(grid.get("badSamples"))
             suspect_samples = _float_signal(grid.get("suspectSamples"))
-            if matched_count < 5 or fit_error > 12.0 or quality < 75.0 or bad_samples > 3 or suspect_samples > 4.0:
+            if (
+                matched_count < 5
+                or fit_error > DIRECT_CLEAN_MAX_SELECTED_GRID_FIT_ERROR
+                or quality < DIRECT_CLEAN_MIN_SELECTED_GRID_QUALITY
+                or bad_samples > 3
+                or suspect_samples > 4.0
+            ):
                 count += 1
     return count
 

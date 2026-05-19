@@ -2010,6 +2010,36 @@ def test_recognition_category_demotes_weak_selected_visible_grid():
     assert category["category"] == "needs_manual_review"
 
 
+def test_recognition_category_accepts_marginal_but_supported_selected_grids():
+    signals = {
+        "repairPathUsed": False,
+        "selectedFacesByImage": {"imageA": ["F", "R", "U"], "imageB": ["B", "D", "L"]},
+        "selectedGridQuality": {
+            "imageA": {
+                "U": {"matchedCount": 7, "fitError": 0.768, "quality": 116.0, "badSamples": 0, "suspectSamples": 0.0},
+                "F": {"matchedCount": 7, "fitError": 1.415, "quality": 115.661, "badSamples": 0, "suspectSamples": 0.0},
+                "R": {"matchedCount": 6, "fitError": 2.16, "quality": 69.544, "badSamples": 0, "suspectSamples": 1.4},
+            },
+            "imageB": {
+                "B": {"matchedCount": 8, "fitError": 1.167, "quality": 135.915, "badSamples": 0, "suspectSamples": 0.0},
+                "D": {"matchedCount": 9, "fitError": 0.953, "quality": 156.349, "badSamples": 0, "suspectSamples": 0.0},
+                "L": {"matchedCount": 5, "fitError": 6.455, "quality": 61.641, "badSamples": 0, "suspectSamples": 0.0},
+            },
+        },
+    }
+    result = RecognitionResult(
+        status="success",
+        state="U" * 54,
+        confidence=0.8124,
+        reason="Recognized a unique legal white-up cube state.",
+        recognition_signals=signals,
+    )
+
+    category = _recognition_category_payload(result)
+
+    assert category["category"] == "success_clean"
+
+
 def test_recognition_category_filters_by_dynamic_yaw():
     signals = {
         "repairPathUsed": False,

@@ -164,6 +164,10 @@ MAX_REPAIR_RANKING_PENALTY = 0.18
 DIRECT_CLEAN_CONFIDENCE_THRESHOLD = 0.78
 DIRECT_CLEAN_MAX_SELECTED_GRID_FIT_ERROR = 16.0
 DIRECT_CLEAN_MIN_SELECTED_GRID_QUALITY = 60.0
+GRID_PURITY_GUARD_TOP_COMPONENT_OVERLAP_MIN = 6
+GRID_PURITY_GUARD_TOP_LOW_SELF_FACE_CELLS_MAX = 2
+GRID_PURITY_GUARD_TOP_LOW_SELF_FACE_GRID_COUNT_MIN = 5
+GRID_PURITY_GUARD_TOP_WRONG_DOMINANT_MARGIN_MIN = 3
 REPAIRED_HIGH_CONFIDENCE_THRESHOLD = 0.60
 REPAIRED_HIGH_MAX_RANKING_PENALTY = 0.16
 REPAIRED_HIGH_MAX_PRE_REPAIR_CONFLICTS = 5
@@ -672,6 +676,11 @@ def _recognition_category_payload(result: RecognitionResult) -> Dict[str, str]:
         }
 
     if not repair_used:
+        if _grid_purity_guard_would_fire(signals):
+            return {
+                "category": "needs_manual_review",
+                "reason": "grid_purity_guard",
+            }
         if (
             "unique legal" in result.reason
             and result.confidence >= DIRECT_CLEAN_CONFIDENCE_THRESHOLD
@@ -706,6 +715,11 @@ def _recognition_category_payload(result: RecognitionResult) -> Dict[str, str]:
         return {
             "category": "needs_manual_review",
             "reason": "repair_path_unstable_pre_repair_piece_evidence",
+        }
+    if _grid_purity_guard_would_fire(signals):
+        return {
+            "category": "needs_manual_review",
+            "reason": "grid_purity_guard",
         }
     if (
         result.confidence >= REPAIRED_HIGH_CONFIDENCE_THRESHOLD
@@ -747,6 +761,48 @@ def _repair_pre_piece_evidence_unstable(selected: Dict[str, Any]) -> bool:
         total_conflicts > REPAIRED_HIGH_MAX_PRE_REPAIR_CONFLICTS
         or valid_corners < REPAIRED_HIGH_MIN_VALID_PRE_REPAIR_CORNERS
     )
+
+
+def _grid_purity_guard_would_fire(signals: Dict[str, Any]) -> bool:
+    top_visible = signals.get("topVisibleTripleQuality")
+    if not isinstance(top_visible, dict):
+        return False
+
+    max_overlap = 0
+    low_self_count = 0
+    max_wrong_margin = 0
+    for item in top_visible.values():
+        if not isinstance(item, dict):
+            continue
+        max_overlap = max(max_overlap, _int_signal(item.get("componentOverlap")))
+        grids = item.get("grids")
+        if not isinstance(grids, dict):
+            continue
+        for face, grid in grids.items():
+            if not isinstance(grid, dict):
+                continue
+            counts = grid.get("cellFaceCounts")
+            if not isinstance(counts, dict):
+                continue
+            self_cells = _int_signal(counts.get(face))
+            dominant_face, dominant_cells = _dominant_face_cell_count(counts)
+            if self_cells <= GRID_PURITY_GUARD_TOP_LOW_SELF_FACE_CELLS_MAX:
+                low_self_count += 1
+            if dominant_face is not None and dominant_face != face:
+                max_wrong_margin = max(max_wrong_margin, dominant_cells - self_cells)
+
+    return (
+        max_overlap >= GRID_PURITY_GUARD_TOP_COMPONENT_OVERLAP_MIN
+        and low_self_count >= GRID_PURITY_GUARD_TOP_LOW_SELF_FACE_GRID_COUNT_MIN
+        and max_wrong_margin >= GRID_PURITY_GUARD_TOP_WRONG_DOMINANT_MARGIN_MIN
+    )
+
+
+def _dominant_face_cell_count(face_counts: Dict[str, Any]) -> Tuple[Optional[str], int]:
+    if not face_counts:
+        return None, 0
+    face, count = max(face_counts.items(), key=lambda item: _int_signal(item[1]))
+    return str(face), _int_signal(count)
 
 
 def _weak_selected_grid_count(signals: Dict[str, Any]) -> int:

@@ -57,7 +57,7 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 | Owner | Branch | PR | What | Touches | ETA |
 |---|---|---|---|---|---|
-| Codex | `codex/grid-purity-guard-diagnostics` | this PR | Add diagnostics-only candidate grid-purity guard tags to probes | `tools/probe_*`, tests | needs-devin-audit |
+| Codex | `codex/grid-purity-manual-review-guard` | #173 | Add conservative grid-purity manual-review guard behavior | `rubik_recognizer/*`, tests, docs | needs-devin-audit |
 
 *(Codex: please populate your row when you start something.)*
 
@@ -81,11 +81,11 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 ### Codex
 
+- **#170** — Grid purity guard diagnostics. Adds diagnostics-only selected-grid purity/top-visible overlap tags; no recognizer behavior changes.
 - **#169** — Repair backfill opportunity diagnostics. Adds diagnostics-only tags for Set 61-style skipped conflict-backfill opportunities; no recognizer behavior changes.
 - **#165** — Grid span/source contamination scoreboard. Adds diagnostics-only physical/sample contamination fields; no recognizer behavior changes.
 - **#162** — Direct-legal tie-break scoreboard. Adds raw merged-score, variant-cost, and candidate hamming diagnostics; Set 21 still has no safe promotion signal.
 - **#161** — Direct-legal ambiguity diagnostics. Found hard Set 21 is the only exact-54 manual-review row; it has two effectively tied legal states.
-- **#159** — Calibrate direct-clean selected-grid thresholds. Promotes Set 29 to `success_clean`; Sets 12/14 and hard Set 21 remain manual-review.
 
 ---
 
@@ -93,6 +93,7 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 Newest first. Each entry: date, decision, one-line why.
 
+- **2026-05-19** — Grid-purity production behavior is manual-review only. Combined mining found no success-row false positives: the current grid-purity tag only hits hard Set 30, so the safe behavior experiment is to demote otherwise clean/high-confidence outcomes to manual review, never promote or reject.
 - **2026-05-19** — Candidate grid-purity guard remains diagnostics-only. Set 30 has the distinct current signature of high top-visible component overlap plus low expected-face purity across the top-visible triple; surface it as manual-review evidence before considering any guard behavior.
 - **2026-05-19** — Candidate repair-backfill opportunity remains diagnostics-only. Set 61 is a standard-repair/manual-review miss where red/orange conflict-backfill would apply but is skipped because standard repair candidates exist; Set 62 is the positive control where backfill runs and succeeds. Surface the opportunity in probes before any behavior experiment.
 - **2026-05-19** — Candidate grid-span guard remains diagnostics-only. Mining #165 probe outputs found zero-current-FP candidates (`shape spread >=29.952 + sampled cells >=15`, `nearest-grid ratio >=1.284 + unsupported cells >=5`, and high span score), but the sample is only 30 rows and this is guard/manual-review evidence, not a promotion signal.

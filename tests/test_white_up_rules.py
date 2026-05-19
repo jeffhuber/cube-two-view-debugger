@@ -2078,6 +2078,29 @@ def test_recognition_category_marks_rejected_as_retake():
     assert category["reason"] == "recognizer_rejected"
 
 
+def _set_30_style_top_visible_triple_quality(component_overlap=6):
+    return {
+        "imageA": {
+            "componentOverlap": component_overlap,
+            "sidePair": "B/L",
+            "grids": {
+                "B": {"gridId": 22, "cellFaceCounts": {"B": 2, "L": 5, "U": 1, "D": 1}},
+                "L": {"gridId": 5, "cellFaceCounts": {"L": 2, "F": 3, "U": 2, "D": 1, "R": 1}},
+                "U": {"gridId": 12, "cellFaceCounts": {"U": 1, "B": 4, "L": 2, "F": 1, "R": 1}},
+            },
+        },
+        "imageB": {
+            "componentOverlap": 1,
+            "sidePair": "F/L",
+            "grids": {
+                "D": {"gridId": 13, "cellFaceCounts": {"D": 2, "B": 4, "U": 2, "R": 1}},
+                "F": {"gridId": 5, "cellFaceCounts": {"F": 3, "R": 3, "B": 1, "D": 1, "L": 1}},
+                "L": {"gridId": 20, "cellFaceCounts": {"L": 2, "B": 2, "D": 2, "R": 1, "U": 2}},
+            },
+        },
+    }
+
+
 def test_recognition_category_marks_direct_unique_as_clean():
     fixture_dir = Path(__file__).parent / "fixtures"
     payload = json.loads((fixture_dir / "recognition_signals_direct.json").read_text())
@@ -2245,6 +2268,41 @@ def test_recognition_category_counts_all_grids_when_selected_faces_missing():
     assert category["category"] == "needs_manual_review"
 
 
+def test_recognition_category_grid_purity_guard_demotes_direct_unique_to_manual_review():
+    result = RecognitionResult(
+        status="success",
+        state="U" * 54,
+        confidence=0.847,
+        reason="Recognized a unique legal white-up cube state.",
+        recognition_signals={
+            "repairPathUsed": False,
+            "topVisibleTripleQuality": _set_30_style_top_visible_triple_quality(),
+        },
+    )
+
+    category = _recognition_category_payload(result)
+
+    assert category["category"] == "needs_manual_review"
+    assert category["reason"] == "grid_purity_guard"
+
+
+def test_recognition_category_grid_purity_guard_requires_high_component_overlap():
+    result = RecognitionResult(
+        status="success",
+        state="U" * 54,
+        confidence=0.847,
+        reason="Recognized a unique legal white-up cube state.",
+        recognition_signals={
+            "repairPathUsed": False,
+            "topVisibleTripleQuality": _set_30_style_top_visible_triple_quality(component_overlap=5),
+        },
+    )
+
+    category = _recognition_category_payload(result)
+
+    assert category["category"] == "success_clean"
+
+
 def test_recognition_category_marks_low_penalty_repair_as_high_confidence():
     fixture_dir = Path(__file__).parent / "fixtures"
     payload = json.loads((fixture_dir / "recognition_signals_repair.json").read_text())
@@ -2259,6 +2317,25 @@ def test_recognition_category_marks_low_penalty_repair_as_high_confidence():
     category = _recognition_category_payload(result)
 
     assert category["category"] == "success_repaired_high_confidence"
+
+
+def test_recognition_category_grid_purity_guard_demotes_high_confidence_repair_to_manual_review():
+    fixture_dir = Path(__file__).parent / "fixtures"
+    payload = json.loads((fixture_dir / "recognition_signals_repair.json").read_text())
+    signals = json.loads(json.dumps(payload["recognitionSignals"]))
+    signals["topVisibleTripleQuality"] = _set_30_style_top_visible_triple_quality()
+    result = RecognitionResult(
+        status=payload["status"],
+        state=payload["state"],
+        confidence=payload["confidence"],
+        reason=payload["reason"],
+        recognition_signals=signals,
+    )
+
+    category = _recognition_category_payload(result)
+
+    assert category["category"] == "needs_manual_review"
+    assert category["reason"] == "grid_purity_guard"
 
 
 def test_recognition_category_marks_moderate_repair_as_high_confidence():

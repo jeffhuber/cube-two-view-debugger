@@ -40,9 +40,15 @@ def selected_grid_purity_summary(signals: Dict[str, Any]) -> Dict[str, Any]:
         "schemaVersion": 1,
         "selectedRows": selected_rows,
         "topVisibleRows": top_visible_rows,
-        "selectedLowSelfFaceCells": _count_low_self(selected_rows, threshold=2),
+        "selectedLowSelfFaceCells": _count_low_self(
+            selected_rows,
+            threshold=GRID_PURITY_TOP_LOW_SELF_FACE_CELLS_MAX,
+        ),
         "selectedVeryLowSelfFaceCells": _count_low_self(selected_rows, threshold=1),
-        "topVisibleLowSelfFaceCells": _count_low_self(top_visible_rows, threshold=2),
+        "topVisibleLowSelfFaceCells": _count_low_self(
+            top_visible_rows,
+            threshold=GRID_PURITY_TOP_LOW_SELF_FACE_CELLS_MAX,
+        ),
         "topVisibleVeryLowSelfFaceCells": _count_low_self(top_visible_rows, threshold=1),
         "maxSelectedDominantWrongMargin": _max_metric(selected_rows, "dominantWrongMargin"),
         "maxTopVisibleDominantWrongMargin": _max_metric(top_visible_rows, "dominantWrongMargin"),
@@ -68,7 +74,7 @@ def candidate_grid_purity_guard(purity_summary: Dict[str, Any]) -> Dict[str, Any
             },
             "thresholds": {
                 "maxTopVisibleComponentOverlap": GRID_PURITY_TOP_COMPONENT_OVERLAP_MIN,
-                "topVisibleLowSelfFaceCells": GRID_PURITY_TOP_LOW_SELF_FACE_GRID_COUNT_MIN,
+                "topVisibleLowSelfFaceGridCountMin": GRID_PURITY_TOP_LOW_SELF_FACE_GRID_COUNT_MIN,
                 "lowSelfFaceCellsMax": GRID_PURITY_TOP_LOW_SELF_FACE_CELLS_MAX,
                 "maxTopVisibleDominantWrongMargin": GRID_PURITY_TOP_WRONG_DOMINANT_MARGIN_MIN,
             },

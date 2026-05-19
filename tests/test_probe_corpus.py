@@ -120,6 +120,18 @@ def test_candidate_grid_purity_guard_requires_low_self_purity():
     assert guard["wouldFire"] is False
 
 
+def test_candidate_grid_purity_guard_requires_wrong_dominant_margin():
+    summary = {
+        "maxTopVisibleComponentOverlap": 6,
+        "topVisibleLowSelfFaceCells": 5,
+        "maxTopVisibleDominantWrongMargin": 2,
+    }
+
+    guard = candidate_grid_purity_guard(summary)
+
+    assert guard["wouldFire"] is False
+
+
 def test_candidate_repair_backfill_opportunity_flags_metric_only_instability():
     signals = {
         "repairCandidateCount": 2,

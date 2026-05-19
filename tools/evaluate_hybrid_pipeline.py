@@ -108,15 +108,32 @@ def _load_processing_image(image_path: Path) -> Tuple[Image.Image, np.ndarray]:
     return image, np.asarray(image)
 
 
+def _image_content_key(processing_image: Image.Image) -> bytes:
+    """Stable cache key from image content. Uses size + a downsampled
+    32x32 RGB fingerprint (3072 bytes) — far cheaper than a full
+    pixel hash and sufficient to distinguish corpus images.
+
+    Why not id(): id() of a Python object is reused after garbage
+    collection. In a sweep that processes 33 pairs, image objects
+    get freed between iterations and their id()s reassigned to new
+    images — leading to FALSE cache hits with stale hulls. This
+    caused a 14-sticker regression on Set 17 in the aggregate sweep
+    (vs identical single-pair runs giving 27/27 stickers correct).
+    """
+    thumb = processing_image.resize((32, 32), Image.Resampling.LANCZOS)
+    return f"{processing_image.size}|".encode() + thumb.tobytes()
+
+
 def _rembg_cube_hull(processing_image: Image.Image) -> List[Tuple[float, float]]:
     """Compute rembg u2net cube hull in processing-image coords. Returns
     [] on rembg failure (e.g. mask empty). This is the same hull that
     Codex's PR #141 uses to guard production-recognizer grid ranking.
 
-    Cached on the underlying image object's id() because each pair runs
-    this twice (proposer + verification) and rembg is the slow step."""
+    Cached on a content-derived key (image size + 32x32 thumbnail bytes)
+    because each pair runs this twice (proposer + verification) and
+    rembg is the slow step (~1s/image)."""
     cache = _rembg_cube_hull._cache  # type: ignore[attr-defined]
-    key = id(processing_image)
+    key = _image_content_key(processing_image)
     if key in cache:
         return cache[key]
     try:
@@ -440,13 +457,36 @@ def _derive_face_quad_topology_aware(
     #   2. Full-hull angular lookup (precise hull point in expected direction)
     #   3. 6-vertex hexagon (often degenerate on yawed cubes — last resort)
     import math as _math
-    # Angle from cube center to each unique vertex (image coords:
+    # Angle from cube center to each hexagon vertex (image coords:
     # 0=east, π/2=south, -π/2=north). Based on iso projection geometry.
-    UNIQUE_VERTEX_ANGLES = {
-        "h0_top": -_math.pi / 2,         # straight up (north)
-        "h2_right_mid": _math.pi / 6,    # east-southeast (~30° down from east)
-        "h4_left_mid": 5 * _math.pi / 6, # west-southeast (~30° down from west)
+    HEX_VERTEX_ANGLES = {
+        "h0_top":        -_math.pi / 2,      # straight up (north)
+        "h1_upper_right": -_math.pi / 3,     # NE (~60° above east)
+        "h2_right_mid":   _math.pi / 6,      # ESE (~30° below east)
+        "h3_bottom":      _math.pi / 2,      # straight down (south)
+        "h4_left_mid":    5 * _math.pi / 6,  # WSW (~30° below west)
+        "h5_upper_left":  -2 * _math.pi / 3, # NW (~60° above west)
     }
+
+    def hull_or_hexagon(hexagon_value, angle_key):
+        """For a vertex with NO trusted-neighbor source: prefer full-hull
+        angular lookup over the (often degenerate) hexagon vertex. The
+        6-vertex hexagon collapses on yawed cubes (63% of corpus per
+        /tmp/rembg_outlines/summary.txt); the full 49+ vertex hull
+        always has a clean extreme point in each angular sector.
+
+        Pattern from Set 47 A: with only R trusted, U needed h5 and F
+        needed h4+h5. h5 falling back to the degenerate hexagon vertex
+        (collapsed onto h4) crashed both quads. Full-hull lookup with
+        angle=−2π/3 finds the actual upper-left cube corner regardless
+        of hexagon degeneracy."""
+        if cube_hull is not None and center is not None:
+            hull_pt = _hull_vertex_in_direction(
+                cube_hull, center, HEX_VERTEX_ANGLES[angle_key],
+            )
+            if hull_pt is not None:
+                return hull_pt
+        return hexagon_value
 
     def unique_vertex(parallelogram_value, hexagon_value, angle_key):
         """Pick best estimate for a unique-to-face vertex: parallelogram
@@ -456,18 +496,12 @@ def _derive_face_quad_topology_aware(
             if cube_hull is not None:
                 return _clip_to_hull(parallelogram_value, cube_hull)
             return parallelogram_value
-        if cube_hull is not None and center is not None:
-            hull_pt = _hull_vertex_in_direction(
-                cube_hull, center, UNIQUE_VERTEX_ANGLES[angle_key],
-            )
-            if hull_pt is not None:
-                return hull_pt
-        return hexagon_value
+        return hull_or_hexagon(hexagon_value, angle_key)
 
     if slot_position == "top":
         # corners: [h0, h1, center, h5]
-        ch1 = h1_shared or h1
-        ch5 = h5_shared or h5
+        ch1 = h1_shared if h1_shared is not None else hull_or_hexagon(h1, "h1_upper_right")
+        ch5 = h5_shared if h5_shared is not None else hull_or_hexagon(h5, "h5_upper_left")
         para_h0 = None
         if h1_shared is not None and h5_shared is not None and center is not None:
             para_h0 = parallelogram_4th(ch1, center, ch5)
@@ -475,8 +509,8 @@ def _derive_face_quad_topology_aware(
         return [ch0, ch1, center, ch5]
     elif slot_position == "right":
         # corners: [h1, h2, h3, center]
-        ch1 = h1_shared or h1
-        ch3 = h3_shared or h3
+        ch1 = h1_shared if h1_shared is not None else hull_or_hexagon(h1, "h1_upper_right")
+        ch3 = h3_shared if h3_shared is not None else hull_or_hexagon(h3, "h3_bottom")
         para_h2 = None
         if h1_shared is not None and h3_shared is not None and center is not None:
             para_h2 = parallelogram_4th(ch1, center, ch3)
@@ -484,8 +518,8 @@ def _derive_face_quad_topology_aware(
         return [ch1, ch2, ch3, center]
     elif slot_position == "left":
         # corners: [h5, center, h3, h4]
-        ch5 = h5_shared or h5
-        ch3 = h3_shared or h3
+        ch5 = h5_shared if h5_shared is not None else hull_or_hexagon(h5, "h5_upper_left")
+        ch3 = h3_shared if h3_shared is not None else hull_or_hexagon(h3, "h3_bottom")
         para_h4 = None
         if h5_shared is not None and h3_shared is not None and center is not None:
             para_h4 = parallelogram_4th(ch5, center, ch3)

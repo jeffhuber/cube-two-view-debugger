@@ -30,6 +30,7 @@ from tools.global_cube_model_v0 import (  # noqa: E402
     FitResult,
     ProjectedCubeModel,
     fit_projected_cube_model,
+    fit_projected_cube_model_v01,
     serialize_model,
 )
 from tools.interior_bezel_detection import (  # noqa: E402
@@ -45,6 +46,7 @@ DEFAULT_SUMMARY = ROOT / "tests" / "fixtures" / "global_cube_model_v0_summary.js
 DEFAULT_REPORT = ROOT / "tools" / "GLOBAL_CUBE_MODEL_V0_REPORT.md"
 DEFAULT_SET_IDS = ("45", "17", "30", "31", "44", "47", "57", "58", "61")
 EASY_CORPUS_SET_IDS = ("15", "23", "26", "29", "32", "36", "37", "42")
+FIT_VERSION_CHOICES = ("v0", "v0.1")
 REQUIRED_OPTIONAL_DEPENDENCIES = ("rembg", "scipy", "onnxruntime")
 
 EXPLICIT_LOCAL_PAIRS: Dict[str, Dict[str, Any]] = {
@@ -75,10 +77,17 @@ def generate_global_cube_model_v0_artifacts(
     corpus_manifest_path: Path = DEFAULT_CORPUS_MANIFEST,
     edge_steps: int = 32,
     profile: str = "custom",
+    fit_version: str = "v0",
+    side_filter: Optional[Sequence[Tuple[str, str]]] = None,
 ) -> Dict[str, Any]:
     pairs = load_pairs(hard_manifest_path, corpus_manifest_path)
     rows: List[Dict[str, Any]] = []
     output_dir.mkdir(parents=True, exist_ok=True)
+    normalized_side_filter = (
+        {(str(set_id), side.upper()) for set_id, side in side_filter}
+        if side_filter is not None
+        else None
+    )
 
     for set_id in [str(value) for value in set_ids]:
         pair = pairs.get(set_id)
@@ -92,6 +101,8 @@ def generate_global_cube_model_v0_artifacts(
             })
             continue
         for side, image_key in (("A", "imageAPath"), ("B", "imageBPath")):
+            if normalized_side_filter is not None and (set_id, side) not in normalized_side_filter:
+                continue
             image_path = Path(pair[image_key])
             row = {
                 "setId": set_id,
@@ -115,8 +126,13 @@ def generate_global_cube_model_v0_artifacts(
                 image, image_rgb = _load_processing_image(image_path)
                 mask = _compute_rembg_mask(image)
                 detection = detect_interior_bezel_lines(image_rgb, mask)
-                fit = fit_projected_cube_model(detection, mask, edge_steps=edge_steps)
-                overlay_path = output_dir / f"set_{set_id}_{side}_global_model_v0.png"
+                fit = fit_projected_cube_model_for_version(
+                    detection,
+                    mask,
+                    edge_steps=edge_steps,
+                    fit_version=fit_version,
+                )
+                overlay_path = output_dir / overlay_filename(set_id, side, fit_version)
                 if fit.model is not None:
                     render_overlay(image, mask, detection, fit, overlay_path)
                 status = fit.status
@@ -150,11 +166,36 @@ def generate_global_cube_model_v0_artifacts(
             "edgeSteps": edge_steps,
             "outputDir": str(output_dir),
             "profile": profile,
+            "fitVersion": fit_version,
+            "sideFilter": (
+                [f"{set_id}:{side}" for set_id, side in sorted(normalized_side_filter)]
+                if normalized_side_filter is not None
+                else None
+            ),
         },
         "summary": summarize_rows(rows),
         "rows": rows,
     }
     return document
+
+
+def fit_projected_cube_model_for_version(
+    detection: InteriorBezelDetection,
+    mask: np.ndarray,
+    *,
+    edge_steps: int,
+    fit_version: str,
+) -> FitResult:
+    if fit_version == "v0":
+        return fit_projected_cube_model(detection, mask, edge_steps=edge_steps)
+    if fit_version == "v0.1":
+        return fit_projected_cube_model_v01(detection, mask, edge_steps=edge_steps)
+    raise ValueError(f"unsupported fit_version: {fit_version}")
+
+
+def overlay_filename(set_id: str, side: str, fit_version: str) -> str:
+    suffix = "v0" if fit_version == "v0" else fit_version.replace(".", "")
+    return f"set_{set_id}_{side}_global_model_{suffix}.png"
 
 
 def render_overlay(
@@ -189,8 +230,19 @@ def render_overlay(
 
 def render_report(document: Dict[str, Any]) -> str:
     summary = document["summary"]
+    config = document.get("config") or {}
+    fit_version = str(config.get("fitVersion") or "v0")
+    title_version = fit_version.upper()
+    fit_shape_note = (
+        "This V0 fit is intentionally coarse: axes come from the interior-bezel "
+        "detector and only axis signs plus one shared edge length are searched."
+        if fit_version == "v0"
+        else "This V0.1 fit keeps the same coarse model but adds bounded center "
+        "refinement around the detector center before choosing the best "
+        "threshold-passing candidate."
+    )
     lines = [
-        "# Global Cube Model V0 Diagnostics",
+        f"# Global Cube Model {title_version} Diagnostics",
         "",
         "Diagnostics-only first-principles scaffold. This does not alter recognition behavior.",
         "",
@@ -198,6 +250,7 @@ def render_report(document: Dict[str, Any]) -> str:
         "",
         "## Summary",
         "",
+        f"- Fit version: {fit_version}",
         f"- Requested pairs: {summary['requestedPairCount']}",
         f"- Image rows: {summary['imageRowCount']}",
         f"- Fitted rows: {summary['fittedRowCount']}",
@@ -233,7 +286,7 @@ def render_report(document: Dict[str, Any]) -> str:
         "",
         "## Interpretation",
         "",
-        "- This V0 fit is intentionally coarse: axes come from the interior-bezel detector and only axis signs plus one shared edge length are searched.",
+        f"- {fit_shape_note}",
         "- Easy-corpus rows are clean success cases from `tests/fixtures/corpus_manifest.json`; the model should become boringly consistent there before harder backgrounds are used as success targets.",
         "- Weak rows outside the easy tier should be read as retake/segmentation candidates when the silhouette or background is confusing.",
         "- A weak easy-corpus row is more serious: it points at center/axis initialization, edge-length search, silhouette agreement, or the model shape itself.",
@@ -327,6 +380,21 @@ def compact_detection(detection: InteriorBezelDetection) -> Dict[str, Any]:
     }
 
 
+def parse_side_filter(tokens: Optional[Sequence[str]]) -> Optional[Tuple[Tuple[str, str], ...]]:
+    if tokens is None:
+        return None
+    parsed: List[Tuple[str, str]] = []
+    for token in tokens:
+        if ":" not in token:
+            raise ValueError(f"side filter must use SET:SIDE form, got {token!r}")
+        set_id, side = token.split(":", 1)
+        side = side.upper()
+        if side not in {"A", "B"} or not set_id:
+            raise ValueError(f"side filter must use SET:A or SET:B form, got {token!r}")
+        parsed.append((set_id, side))
+    return tuple(parsed)
+
+
 def _compute_rembg_mask(image: Image.Image) -> np.ndarray:
     from rembg import new_session, remove  # type: ignore
 
@@ -382,8 +450,9 @@ def _draw_text_panel(draw: ImageDraw.ImageDraw, fit: FitResult) -> None:
     if model is None:
         return
     components = model.score_components
+    fit_version = fit.diagnostics.get("fitVersion", "v0")
     lines = [
-        f"global_cube_model_v0: {fit.status}",
+        f"global_cube_model_{fit_version}: {fit.status}",
         f"score={model.score:.3f} iou={components['silhouetteIoU']:.3f}",
         f"inside={components['insideRatio']:.3f} coverage={components['maskCoverage']:.3f}",
     ]
@@ -416,6 +485,18 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--hard-manifest", type=Path, default=DEFAULT_HARD_MANIFEST)
     parser.add_argument("--corpus-manifest", type=Path, default=DEFAULT_CORPUS_MANIFEST)
     parser.add_argument("--edge-steps", type=int, default=32)
+    parser.add_argument(
+        "--fit-version",
+        choices=FIT_VERSION_CHOICES,
+        default="v0",
+        help="Projected cube fitter version to run.",
+    )
+    parser.add_argument(
+        "--only-sides",
+        nargs="+",
+        default=None,
+        help="Optional SET:SIDE filters, for example 15:A 26:B.",
+    )
     args = parser.parse_args(argv)
 
     missing = missing_required_optional_dependencies()
@@ -441,6 +522,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     else:
         set_ids = list(DEFAULT_SET_IDS)
 
+    try:
+        side_filter = parse_side_filter(args.only_sides)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+
     document = generate_global_cube_model_v0_artifacts(
         set_ids=set_ids,
         output_dir=args.out_dir,
@@ -448,6 +535,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         corpus_manifest_path=args.corpus_manifest,
         edge_steps=args.edge_steps,
         profile=profile,
+        fit_version=args.fit_version,
+        side_filter=side_filter,
     )
     if document["summary"]["fittedRowCount"] <= 0:
         print(

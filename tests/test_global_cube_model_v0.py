@@ -6,6 +6,7 @@ import numpy as np
 
 from tools.global_cube_model_v0 import (
     fit_projected_cube_model,
+    fit_projected_cube_model_v01,
     model_mask,
     serialize_model,
     subdivide_face_quad,
@@ -15,6 +16,8 @@ from tools.render_global_cube_model_v0_overlays import (
     EASY_CORPUS_SET_IDS,
     diagnostic_disposition,
     evaluation_tier,
+    parse_side_filter,
+    overlay_filename,
     render_report,
     summarize_rows,
 )
@@ -71,6 +74,38 @@ def test_fit_projected_cube_model_abstains_on_missing_axes():
     assert result.status == "missing_axes"
 
 
+def test_fit_projected_cube_model_v01_reports_center_refinement_diagnostics():
+    mask = np.zeros((220, 220), dtype=bool)
+    mask[30:205, 30:205] = True
+    detection = InteriorBezelDetection(
+        cube_center=(70.0, 70.0),
+        boundary_angles=[0.0, math.pi / 2.0, math.pi / 4.0],
+        boundary_lines=[
+            ((70.0, 70.0), (170.0, 70.0)),
+            ((70.0, 70.0), (70.0, 170.0)),
+            ((70.0, 70.0), (150.0, 150.0)),
+        ],
+        line_qualities=[0.8, 0.7, 0.6],
+        signal_quality=0.7,
+    )
+
+    result = fit_projected_cube_model_v01(
+        detection,
+        mask,
+        edge_steps=4,
+        center_offsets=((0.0, 0.0), (24.0, 24.0)),
+    )
+
+    assert result.model is not None
+    assert result.status in {"ok", "low_iou", "low_inside_ratio", "low_cell_inside"}
+    assert result.diagnostics["fitVersion"] == "v0.1-center-refine"
+    assert result.diagnostics["selectionPolicy"] == "prefer_ok_then_score"
+    assert result.diagnostics["centerOffsetsTested"] == 2
+    assert result.diagnostics["evaluatedCandidates"] == 64
+    assert result.diagnostics["baseCenter"] == [70.0, 70.0]
+    assert len(result.diagnostics["chosenCenterOffset"]) == 2
+
+
 def test_report_summary_keeps_empty_artifacts_visible():
     rows = [
         {
@@ -113,6 +148,7 @@ def test_report_summary_keeps_empty_artifacts_visible():
     assert summary["retakeCandidateRowCount"] == 0
     report = render_report({"summary": summary, "rows": rows})
     assert "Global Cube Model V0 Diagnostics" in report
+    assert "Fit version: v0" in report
     assert "`image_missing`" in report
     assert "Easy-corpus weak rows" in report
     assert "`model_iteration_needed`" in report
@@ -142,3 +178,10 @@ def test_diagnostic_disposition_splits_easy_failures_from_stress_failures():
         == "geometry_retake_or_segmentation_candidate"
     )
     assert diagnostic_disposition("local_example", "image_missing") == "input_or_dependency_error"
+
+
+def test_side_filter_and_versioned_overlay_filename_helpers():
+    assert parse_side_filter(["15:a", "26:B"]) == (("15", "A"), ("26", "B"))
+    assert parse_side_filter(None) is None
+    assert overlay_filename("15", "A", "v0") == "set_15_A_global_model_v0.png"
+    assert overlay_filename("15", "A", "v0.1") == "set_15_A_global_model_v01.png"

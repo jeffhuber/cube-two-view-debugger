@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "name": "interior_bezel_visual_feedback",
+  "description": "Human visual review of tools/interior_bezel_detection.py output on the 18 worst-pair detector overlays (PR #176 taxonomy). Reviewer: project owner. Date: 2026-05-19. Captured via the gallery.html in-browser annotator (per-pair checkboxes + notes).",
+  "source": "gallery.html localStorage export, downloaded 2026-05-19 22:21 ET",
+  "pairs": [
+    {
+      "setId": "17",
+      "side": "A",
+      "center_correct": false,
+      "angles_correct": false,
+      "overall_pass": false,
+      "notes": "Cube_center is close (below target). Lines are close, but off due to missed cube_center."
+    },
+    {
+      "setId": "17",
+      "side": "B",
+      "center_correct": false,
+      "angles_correct": false,
+      "overall_pass": false,
+      "notes": "Cube_center is close (below target). Lines are close, but off due to missed cube_center."
+    },
+    {
+      "setId": "21",
+      "side": "A",
+      "center_correct": true,
+      "angles_correct": false,
+      "overall_pass": false,
+      "notes": "Very close. The magenta and yellow lines are good, but the cyan line is a little off. The cube_center is very close to correct, but off by maybe 10s of pixels."
+    },
+    {
+      "setId": "21",
+      "side": "B",
+      "center_correct": true,
+      "angles_correct": false,
+      "overall_pass": false,
+      "notes": "Cube_center is very close (10s of pixels left). Mangenta & yellow lines are close, but cyan line misses badly."
+    },
+    {
+      "setId": "30",
+      "side": "A",
+      "center_correct": true,
+      "angles_correct": true,
+      "overall_pass": true,
+      "notes": "Cube center is very close (maybe off a few 10s of pixels), but should be good enough. All 3 angles are good and trace face boundaries. The potential issue on this image is that the hull outline is getting ~confused by the wood table edge at the upper left & upper right of the top face, so the hull edges there aren't straight lines like they should be. So rembg could be more aggressive on isolating the cube (from the wood background/base)."
+    },
+    {
+      "setId": "30",
+      "side": "B",
+      "center_correct": true,
+      "angles_correct": true,
+      "overall_pass": true,
+      "notes": "Cube center is very close (maybe off a few 10s of pixels), but should be good enough. All 3 angles are good and trace face boundaries. The potential issue on this image is that the hull outline is getting ~confused by the wood table edge at the upper left & upper right of the top face, so the hull edges there aren't straight lines like they should be. So rembg could be more aggressive on isolating the cube (from the wood background/base)."
+    },
+    {
+      "setId": "31",
+      "side": "A",
+      "center_correct": false,
+      "angles_correct": false,
+      "overall_pass": false,
+      "notes": "Cube_center is close (just left of target). Yellow & Magenta lines are ~good; cyan line is off."
+    },
+    {
+      "setId": "31",
+      "side": "B",
+      "center_correct": true,
+      "angles_correct": true,
+      "overall_pass": true,
+      "notes": "Cube_center is very close (10s of pixels off). Magenta line is a little low, but very close."
+    },
+    {
+      "setId": "44",
+      "side": "A",
+      "center_correct": false,
+      "angles_correct": false,
+      "overall_pass": false,
+      "notes": "Very close. The cyan line is off a little, btu the magenta and yellow lines are good. The cube center is within ~100 pixels of correct, but misses the corner apex."
+    },
+    {
+      "setId": "44",
+      "side": "B",
+      "center_correct": false,
+      "angles_correct": false,
+      "overall_pass": true,
+      "notes": "Looks like a good rembg cube outline, but the cube center is off (right of target). The magenta line traces the face, but the yellow and cyan lines are off since the cube_center was off (by ~100 pixels at yellow/cyan intersection)."
+    },
+    {
+      "setId": "47",
+      "side": "A",
+      "center_correct": false,
+      "angles_correct": false,
+      "overall_pass": false,
+      "notes": "Cube_center is close (above of target). Lines are close, but off due to missed cube_center."
+    },
+    {
+      "setId": "47",
+      "side": "B",
+      "center_correct": false,
+      "angles_correct": false,
+      "overall_pass": false,
+      "notes": "Cube_center is off (right of target). Magenta line is closest, others are off."
+    },
+    {
+      "setId": "57",
+      "side": "A",
+      "center_correct": true,
+      "angles_correct": true,
+      "overall_pass": true,
+      "notes": ""
+    },
+    {
+      "setId": "57",
+      "side": "B",
+      "center_correct": false,
+      "angles_correct": false,
+      "overall_pass": false,
+      "notes": "Cube_center is above target. All lines bad."
+    },
+    {
+      "setId": "58",
+      "side": "A",
+      "center_correct": false,
+      "angles_correct": false,
+      "overall_pass": false,
+      "notes": "Cube_center is close (slightly left of target). Yellow & magenta lines are close, but cyan line misses badly."
+    },
+    {
+      "setId": "58",
+      "side": "B",
+      "center_correct": false,
+      "angles_correct": false,
+      "overall_pass": false,
+      "notes": "Cube_center is off (left of target). Magenta line is good, others are off."
+    },
+    {
+      "setId": "61",
+      "side": "A",
+      "center_correct": true,
+      "angles_correct": true,
+      "overall_pass": false,
+      "notes": "Cube_center is close (slightly right of target). Cyan & mangenta lines are close, but yellow line misses badly."
+    },
+    {
+      "setId": "61",
+      "side": "B",
+      "center_correct": true,
+      "angles_correct": false,
+      "overall_pass": false,
+      "notes": "Cube_center is very close (10s of pixels off). Mangenta line is close, but cyan & yellow lines misse badly."
+    }
+  ],
+  "aggregate": {
+    "total": 18,
+    "center_correct": 8,
+    "angles_correct": 5,
+    "overall_pass": 5
+  }
+}

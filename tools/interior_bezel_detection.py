@@ -603,11 +603,30 @@ def line_crosses_quad(
     return any(s == 1 for s in signs) and any(s == -1 for s in signs)
 
 
+# Default thresholds for the `crosses_high_quality_bezel` derived flag.
+# Picked from this branch's 18-pair human-review walkthroughs (#177 fixture):
+#   * line_q >= 0.40 selects the magenta-vertical bezel that's correct
+#     on 13/18 pairs (and excludes the yellow-dimmest line that's
+#     essentially noise on 10/18 pairs)
+#   * cell-centroid distance <= 30 px is a conservative "actually
+#     crosses the cell's center, not just clipping a corner"
+# These are NOT validated as zero-FP thresholds — they exist to give
+# the broader-corpus mining a concrete starting point. The raw
+# per-line `quality`, `distance_from_centroid_px`, and `crosses_cell`
+# fields are preserved alongside so downstream consumers can re-tune
+# without re-running the detector.
+DEFAULT_LINE_QUALITY_THRESHOLD = 0.40
+DEFAULT_DISTANCE_THRESHOLD_PX = 30.0
+
+
 def cell_line_diagnostics(
     detection: InteriorBezelDetection,
     cell_quad: Sequence[Point],
     *,
     min_line_quality: float = 0.0,
+    high_quality_threshold: float = DEFAULT_LINE_QUALITY_THRESHOLD,
+    max_distance_px: float = DEFAULT_DISTANCE_THRESHOLD_PX,
+    detector_version: str = "iterative-v1",
 ) -> dict:
     """Compute per-line diagnostics for a single cell quad against the
     detected bezel lines. Intended for downstream slot/cell-level joins
@@ -617,19 +636,35 @@ def cell_line_diagnostics(
       detection: an InteriorBezelDetection (image-level result)
       cell_quad: 4-vertex sequence of (x, y) image-space points
         describing the cell's quadrilateral in image coords
-      min_line_quality: when computing the aggregate "any_crossing"
+      min_line_quality: when computing the aggregate `any_crossing_high_quality`
         flag, ignore lines whose per-line quality is below this
         threshold (default 0.0 = consider all detected lines)
+      high_quality_threshold: line-quality threshold for the derived
+        `crosses_high_quality_bezel` flag (default 0.40, see
+        DEFAULT_LINE_QUALITY_THRESHOLD).
+      max_distance_px: maximum distance from cell centroid to a line
+        for that line to count as "crossing through the cell" (used by
+        the derived `crosses_high_quality_bezel` flag — independent of
+        the geometric `crosses_cell` boolean which only checks straddle).
+      detector_version: tag stamped on the output so future detector
+        iterations can be distinguished in cross-tab mining without
+        re-running upstream.
 
     Returns dict with keys:
+      detector_version: str (passed through; for cross-tab join keys)
       cell_centroid: (cx, cy)
       cell_center_to_cube_center_px: float (proxy for "is this cell
         near the cube-center vertex?")
       per_line: list of {angle_deg, quality, distance_from_centroid_px,
-        crosses_cell}
-      any_crossing: bool (any line crosses the cell?)
+        crosses_cell} — RAW per-line fields preserved
+      any_crossing: bool (any detected line straddles the cell?)
       any_crossing_high_quality: bool (any line with quality >=
-        `min_line_quality` crosses the cell?)
+        `min_line_quality` straddles the cell?)
+      crosses_high_quality_bezel: bool (derived flag — any line with
+        quality >= `high_quality_threshold` AND distance from cell
+        centroid <= `max_distance_px` crosses through the cell)
+      thresholds: {"line_quality": ..., "distance_px": ...} (echoed
+        back so the join row records WHICH threshold produced the flag)
       min_distance_from_centroid_px: float (closest line to cell centroid)
     """
     # Centroid of the quad
@@ -665,16 +700,32 @@ def cell_line_diagnostics(
         pl["crosses_cell"] and pl["quality"] >= min_line_quality
         for pl in per_line
     )
+    # Derived flag: line quality >= threshold AND distance to cell
+    # centroid <= threshold AND geometric crosses_cell. Strictest of
+    # the three signals — meant as a starting point for broader-corpus
+    # zero-FP mining, NOT a validated production threshold.
+    crosses_hq = any(
+        pl["crosses_cell"]
+        and pl["quality"] >= high_quality_threshold
+        and pl["distance_from_centroid_px"] <= max_distance_px
+        for pl in per_line
+    )
     min_dist = min(
         (pl["distance_from_centroid_px"] for pl in per_line),
         default=float("inf"),
     )
 
     return {
+        "detector_version": detector_version,
         "cell_centroid": [round(cx, 1), round(cy, 1)],
         "cell_center_to_cube_center_px": round(cc_dist, 1),
         "per_line": per_line,
         "any_crossing": any_crossing,
         "any_crossing_high_quality": any_crossing_high_quality,
+        "crosses_high_quality_bezel": crosses_hq,
+        "thresholds": {
+            "line_quality": high_quality_threshold,
+            "distance_px": max_distance_px,
+        },
         "min_distance_from_centroid_px": min_dist,
     }

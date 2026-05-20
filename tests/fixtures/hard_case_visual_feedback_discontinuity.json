@@ -1,0 +1,1200 @@
+{
+  "labelsSource": {
+    "description": "Human visual review of hybrid overlay quads and rectified slot images.",
+    "sheet": "Sheet1",
+    "workbook": "overlay tool visual feedback  (1).xlsx"
+  },
+  "policy": "diagnostics_only_no_behavior_change",
+  "probeConfig": {
+    "fitErrorFallback": false,
+    "hullGuard": false
+  },
+  "rows": [
+    {
+      "failureModes": [],
+      "humanBad": false,
+      "humanRectifiedSourceFace": "U",
+      "image": "imageA",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 1,
+        "cellsAboveInternalStdThreshold": 6,
+        "maxAdjacentMeanDelta": 275.375,
+        "maxHalfDelta": 45.885,
+        "maxInternalStd": 116.202,
+        "meanHalfDelta": 20.221,
+        "meanInternalStd": 52.348,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 6.79,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "good",
+      "rectifiedQuality": "good",
+      "selectedSourceFace": "U",
+      "selectedSourcePosition": null,
+      "setId": "17",
+      "side": "A",
+      "slot": "U"
+    },
+    {
+      "failureModes": [],
+      "humanBad": false,
+      "humanRectifiedSourceFace": "R",
+      "image": "imageA",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 0,
+        "cellsAboveInternalStdThreshold": 0,
+        "maxAdjacentMeanDelta": 121.008,
+        "maxHalfDelta": 22.454,
+        "maxInternalStd": 23.234,
+        "meanHalfDelta": 11.712,
+        "meanInternalStd": 16.923,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 1.163,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "good",
+      "rectifiedQuality": "good",
+      "selectedSourceFace": "R",
+      "selectedSourcePosition": null,
+      "setId": "17",
+      "side": "A",
+      "slot": "R"
+    },
+    {
+      "failureModes": [
+        "bad_quad",
+        "bad_rectified",
+        "wrong_source_face"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "B",
+      "image": "imageA",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 4,
+        "cellsAboveInternalStdThreshold": 5,
+        "maxAdjacentMeanDelta": 294.713,
+        "maxHalfDelta": 88.183,
+        "maxInternalStd": 89.367,
+        "meanHalfDelta": 32.711,
+        "meanInternalStd": 51.014,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 7.663,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "bad",
+      "rectifiedQuality": "bad",
+      "selectedSourceFace": "B",
+      "selectedSourcePosition": null,
+      "setId": "17",
+      "side": "A",
+      "slot": "F"
+    },
+    {
+      "failureModes": [
+        "bad_quad",
+        "bad_rectified"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "D",
+      "image": "imageB",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 4,
+        "cellsAboveInternalStdThreshold": 6,
+        "maxAdjacentMeanDelta": 312.914,
+        "maxHalfDelta": 258.635,
+        "maxInternalStd": 151.465,
+        "meanHalfDelta": 67.974,
+        "meanInternalStd": 72.01,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 13.575,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "bad",
+      "rectifiedQuality": "bad",
+      "selectedSourceFace": "D",
+      "selectedSourcePosition": null,
+      "setId": "17",
+      "side": "B",
+      "slot": "D"
+    },
+    {
+      "failureModes": [
+        "bad_quad",
+        "bad_rectified",
+        "wrong_source_face"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "B",
+      "image": "imageB",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 5,
+        "cellsAboveInternalStdThreshold": 8,
+        "maxAdjacentMeanDelta": 308.965,
+        "maxHalfDelta": 272.981,
+        "maxInternalStd": 176.228,
+        "meanHalfDelta": 82.413,
+        "meanInternalStd": 96.201,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 15.651,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "bad",
+      "rectifiedQuality": "bad",
+      "selectedSourceFace": "B",
+      "selectedSourcePosition": null,
+      "setId": "17",
+      "side": "B",
+      "slot": "L"
+    },
+    {
+      "failureModes": [
+        "bad_quad",
+        "bad_rectified"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "B",
+      "image": "imageB",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 7,
+        "cellsAboveInternalStdThreshold": 9,
+        "maxAdjacentMeanDelta": 217.176,
+        "maxHalfDelta": 257.243,
+        "maxInternalStd": 168.128,
+        "meanHalfDelta": 113.785,
+        "meanInternalStd": 125.874,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 16.12,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "bad",
+      "rectifiedQuality": "bad",
+      "selectedSourceFace": "U",
+      "selectedSourcePosition": null,
+      "setId": "17",
+      "side": "B",
+      "slot": "B"
+    },
+    {
+      "failureModes": [
+        "bad_rectified",
+        "rectification_bad_despite_good_quad"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "U",
+      "image": "imageA",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 5,
+        "cellsAboveInternalStdThreshold": 6,
+        "maxAdjacentMeanDelta": 223.226,
+        "maxHalfDelta": 169.208,
+        "maxInternalStd": 127.774,
+        "meanHalfDelta": 62.754,
+        "meanInternalStd": 65.261,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 11.261,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "good",
+      "rectifiedQuality": "bad",
+      "selectedSourceFace": "U",
+      "selectedSourcePosition": null,
+      "setId": "21",
+      "side": "A",
+      "slot": "U"
+    },
+    {
+      "failureModes": [
+        "bad_quad",
+        "wrong_source_face",
+        "rectification_survives_bad_quad"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "B",
+      "image": "imageA",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 0,
+        "cellsAboveInternalStdThreshold": 1,
+        "maxAdjacentMeanDelta": 168.056,
+        "maxHalfDelta": 20.565,
+        "maxInternalStd": 47.524,
+        "meanHalfDelta": 13.06,
+        "meanInternalStd": 16.973,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 2.165,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "bad",
+      "rectifiedQuality": "good",
+      "selectedSourceFace": "B",
+      "selectedSourcePosition": null,
+      "setId": "21",
+      "side": "A",
+      "slot": "R"
+    },
+    {
+      "failureModes": [
+        "bad_quad",
+        "bad_rectified",
+        "wrong_source_face"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "D",
+      "image": "imageA",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 2,
+        "cellsAboveInternalStdThreshold": 3,
+        "maxAdjacentMeanDelta": 124.949,
+        "maxHalfDelta": 187.482,
+        "maxInternalStd": 106.544,
+        "meanHalfDelta": 45.023,
+        "meanInternalStd": 40.856,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 8.96,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "bad",
+      "rectifiedQuality": "bad",
+      "selectedSourceFace": "D",
+      "selectedSourcePosition": null,
+      "setId": "21",
+      "side": "A",
+      "slot": "F"
+    },
+    {
+      "failureModes": [
+        "bad_quad",
+        "rectification_survives_bad_quad"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "D",
+      "image": "imageB",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 0,
+        "cellsAboveInternalStdThreshold": 3,
+        "maxAdjacentMeanDelta": 171.354,
+        "maxHalfDelta": 38.437,
+        "maxInternalStd": 60.159,
+        "meanHalfDelta": 15.347,
+        "meanInternalStd": 33.269,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 3.623,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "bad",
+      "rectifiedQuality": "good",
+      "selectedSourceFace": "D",
+      "selectedSourcePosition": null,
+      "setId": "21",
+      "side": "B",
+      "slot": "D"
+    },
+    {
+      "failureModes": [
+        "bad_quad",
+        "bad_rectified",
+        "wrong_source_face"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "F",
+      "image": "imageB",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 5,
+        "cellsAboveInternalStdThreshold": 8,
+        "maxAdjacentMeanDelta": 102.847,
+        "maxHalfDelta": 110.022,
+        "maxInternalStd": 82.732,
+        "meanHalfDelta": 52.169,
+        "meanInternalStd": 57.564,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 9.359,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "bad",
+      "rectifiedQuality": "bad",
+      "selectedSourceFace": "F",
+      "selectedSourcePosition": null,
+      "setId": "21",
+      "side": "B",
+      "slot": "L"
+    },
+    {
+      "failureModes": [
+        "bad_rectified",
+        "wrong_source_face",
+        "rectification_bad_despite_good_quad"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "R",
+      "image": "imageB",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 6,
+        "cellsAboveInternalStdThreshold": 9,
+        "maxAdjacentMeanDelta": 139.057,
+        "maxHalfDelta": 165.697,
+        "maxInternalStd": 91.109,
+        "meanHalfDelta": 78.617,
+        "meanInternalStd": 64.884,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 11.535,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "good",
+      "rectifiedQuality": "bad",
+      "selectedSourceFace": "R",
+      "selectedSourcePosition": null,
+      "setId": "21",
+      "side": "B",
+      "slot": "B"
+    },
+    {
+      "failureModes": [
+        "bad_rectified",
+        "rectification_bad_despite_good_quad"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "U",
+      "image": "imageA",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 5,
+        "cellsAboveInternalStdThreshold": 9,
+        "maxAdjacentMeanDelta": 257.176,
+        "maxHalfDelta": 152.065,
+        "maxInternalStd": 136.085,
+        "meanHalfDelta": 68.641,
+        "meanInternalStd": 81.86,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 12.167,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "good",
+      "rectifiedQuality": "bad",
+      "selectedSourceFace": "U",
+      "selectedSourcePosition": null,
+      "setId": "47",
+      "side": "A",
+      "slot": "U"
+    },
+    {
+      "failureModes": [
+        "bad_quad",
+        "wrong_source_face",
+        "rectification_survives_bad_quad"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "F",
+      "image": "imageA",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 0,
+        "cellsAboveInternalStdThreshold": 5,
+        "maxAdjacentMeanDelta": 230.827,
+        "maxHalfDelta": 30.74,
+        "maxInternalStd": 124.123,
+        "meanHalfDelta": 17.54,
+        "meanInternalStd": 45.545,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 5.979,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "bad",
+      "rectifiedQuality": "good",
+      "selectedSourceFace": "F",
+      "selectedSourcePosition": null,
+      "setId": "47",
+      "side": "A",
+      "slot": "R"
+    },
+    {
+      "failureModes": [
+        "bad_quad",
+        "bad_rectified",
+        "wrong_source_face"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "L",
+      "image": "imageA",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 7,
+        "cellsAboveInternalStdThreshold": 9,
+        "maxAdjacentMeanDelta": 216.114,
+        "maxHalfDelta": 278.419,
+        "maxInternalStd": 154.994,
+        "meanHalfDelta": 122.264,
+        "meanInternalStd": 93.064,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 16.215,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "bad",
+      "rectifiedQuality": "bad",
+      "selectedSourceFace": "L",
+      "selectedSourcePosition": null,
+      "setId": "47",
+      "side": "A",
+      "slot": "F"
+    },
+    {
+      "failureModes": [
+        "bad_quad",
+        "rectification_survives_bad_quad"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "D",
+      "image": "imageB",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 0,
+        "cellsAboveInternalStdThreshold": 5,
+        "maxAdjacentMeanDelta": 294.675,
+        "maxHalfDelta": 39.216,
+        "maxInternalStd": 78.1,
+        "meanHalfDelta": 22.206,
+        "meanInternalStd": 44.825,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 4.853,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "bad",
+      "rectifiedQuality": "good",
+      "selectedSourceFace": "D",
+      "selectedSourcePosition": null,
+      "setId": "47",
+      "side": "B",
+      "slot": "D"
+    },
+    {
+      "failureModes": [
+        "bad_quad",
+        "bad_rectified",
+        "wrong_source_face"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "B",
+      "image": "imageB",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 6,
+        "cellsAboveInternalStdThreshold": 9,
+        "maxAdjacentMeanDelta": 197.425,
+        "maxHalfDelta": 142.313,
+        "maxInternalStd": 176.473,
+        "meanHalfDelta": 62.759,
+        "meanInternalStd": 93.037,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 13.455,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "bad",
+      "rectifiedQuality": "bad",
+      "selectedSourceFace": "B",
+      "selectedSourcePosition": null,
+      "setId": "47",
+      "side": "B",
+      "slot": "L"
+    },
+    {
+      "failureModes": [
+        "bad_rectified",
+        "wrong_source_face",
+        "rectification_bad_despite_good_quad"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "U",
+      "image": "imageB",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 7,
+        "cellsAboveInternalStdThreshold": 9,
+        "maxAdjacentMeanDelta": 256.967,
+        "maxHalfDelta": 261.036,
+        "maxInternalStd": 160.96,
+        "meanHalfDelta": 98.397,
+        "meanInternalStd": 105.309,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 16.0,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "good",
+      "rectifiedQuality": "bad",
+      "selectedSourceFace": "U",
+      "selectedSourcePosition": null,
+      "setId": "47",
+      "side": "B",
+      "slot": "B"
+    },
+    {
+      "failureModes": [
+        "bad_quad",
+        "bad_rectified"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "U",
+      "image": "imageA",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 4,
+        "cellsAboveInternalStdThreshold": 7,
+        "maxAdjacentMeanDelta": 273.9,
+        "maxHalfDelta": 156.272,
+        "maxInternalStd": 132.417,
+        "meanHalfDelta": 53.954,
+        "meanInternalStd": 77.383,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 11.106,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "bad",
+      "rectifiedQuality": "bad",
+      "selectedSourceFace": "U",
+      "selectedSourcePosition": null,
+      "setId": "49",
+      "side": "A",
+      "slot": "U"
+    },
+    {
+      "failureModes": [
+        "bad_quad",
+        "bad_rectified",
+        "wrong_source_face"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "B",
+      "image": "imageA",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 5,
+        "cellsAboveInternalStdThreshold": 6,
+        "maxAdjacentMeanDelta": 190.203,
+        "maxHalfDelta": 147.638,
+        "maxInternalStd": 100.542,
+        "meanHalfDelta": 59.79,
+        "meanInternalStd": 53.928,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 10.003,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "bad",
+      "rectifiedQuality": "bad",
+      "selectedSourceFace": "B",
+      "selectedSourcePosition": null,
+      "setId": "49",
+      "side": "A",
+      "slot": "R"
+    },
+    {
+      "failureModes": [
+        "bad_quad",
+        "bad_rectified"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "F",
+      "image": "imageA",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 4,
+        "cellsAboveInternalStdThreshold": 9,
+        "maxAdjacentMeanDelta": 128.386,
+        "maxHalfDelta": 88.738,
+        "maxInternalStd": 145.264,
+        "meanHalfDelta": 43.702,
+        "meanInternalStd": 71.183,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 10.672,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "bad",
+      "rectifiedQuality": "bad",
+      "selectedSourceFace": "F",
+      "selectedSourcePosition": null,
+      "setId": "49",
+      "side": "A",
+      "slot": "F"
+    },
+    {
+      "failureModes": [
+        "bad_quad",
+        "rectification_survives_bad_quad"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "D",
+      "image": "imageB",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 0,
+        "cellsAboveInternalStdThreshold": 6,
+        "maxAdjacentMeanDelta": 297.167,
+        "maxHalfDelta": 34.084,
+        "maxInternalStd": 69.547,
+        "meanHalfDelta": 21.963,
+        "meanInternalStd": 46.27,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 4.844,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "bad",
+      "rectifiedQuality": "good",
+      "selectedSourceFace": "D",
+      "selectedSourcePosition": null,
+      "setId": "49",
+      "side": "B",
+      "slot": "D"
+    },
+    {
+      "failureModes": [
+        "bad_quad",
+        "bad_rectified",
+        "wrong_source_face"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "F",
+      "image": "imageB",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 7,
+        "cellsAboveInternalStdThreshold": 8,
+        "maxAdjacentMeanDelta": 256.634,
+        "maxHalfDelta": 178.157,
+        "maxInternalStd": 146.537,
+        "meanHalfDelta": 84.498,
+        "meanInternalStd": 85.513,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 13.396,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "bad",
+      "rectifiedQuality": "bad",
+      "selectedSourceFace": "F",
+      "selectedSourcePosition": null,
+      "setId": "49",
+      "side": "B",
+      "slot": "L"
+    },
+    {
+      "failureModes": [
+        "bad_rectified",
+        "rectification_bad_despite_good_quad"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "B",
+      "image": "imageB",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 6,
+        "cellsAboveInternalStdThreshold": 7,
+        "maxAdjacentMeanDelta": 162.694,
+        "maxHalfDelta": 268.36,
+        "maxInternalStd": 177.987,
+        "meanHalfDelta": 100.461,
+        "meanInternalStd": 82.363,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 15.599,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "good",
+      "rectifiedQuality": "bad",
+      "selectedSourceFace": "B",
+      "selectedSourcePosition": null,
+      "setId": "49",
+      "side": "B",
+      "slot": "B"
+    },
+    {
+      "failureModes": [
+        "bad_rectified",
+        "rectification_bad_despite_good_quad"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "U",
+      "image": "imageA",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 8,
+        "cellsAboveInternalStdThreshold": 8,
+        "maxAdjacentMeanDelta": 153.363,
+        "maxHalfDelta": 192.925,
+        "maxInternalStd": 136.271,
+        "meanHalfDelta": 106.117,
+        "meanInternalStd": 91.165,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 13.781,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "good",
+      "rectifiedQuality": "bad",
+      "selectedSourceFace": "U",
+      "selectedSourcePosition": null,
+      "setId": "61",
+      "side": "A",
+      "slot": "U"
+    },
+    {
+      "failureModes": [
+        "bad_quad",
+        "wrong_source_face",
+        "rectification_survives_bad_quad"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "F",
+      "image": "imageA",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 0,
+        "cellsAboveInternalStdThreshold": 2,
+        "maxAdjacentMeanDelta": 243.54,
+        "maxHalfDelta": 29.198,
+        "maxInternalStd": 50.441,
+        "meanHalfDelta": 14.889,
+        "meanInternalStd": 22.938,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 2.79,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "bad",
+      "rectifiedQuality": "good",
+      "selectedSourceFace": "F",
+      "selectedSourcePosition": null,
+      "setId": "61",
+      "side": "A",
+      "slot": "R"
+    },
+    {
+      "failureModes": [
+        "bad_quad",
+        "bad_rectified",
+        "wrong_source_face"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "B",
+      "image": "imageA",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 5,
+        "cellsAboveInternalStdThreshold": 6,
+        "maxAdjacentMeanDelta": 180.532,
+        "maxHalfDelta": 177.867,
+        "maxInternalStd": 113.384,
+        "meanHalfDelta": 55.592,
+        "meanInternalStd": 59.559,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 11.042,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "bad",
+      "rectifiedQuality": "bad",
+      "selectedSourceFace": "B",
+      "selectedSourcePosition": null,
+      "setId": "61",
+      "side": "A",
+      "slot": "F"
+    },
+    {
+      "failureModes": [
+        "bad_quad",
+        "bad_rectified"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "D",
+      "image": "imageB",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 4,
+        "cellsAboveInternalStdThreshold": 6,
+        "maxAdjacentMeanDelta": 125.406,
+        "maxHalfDelta": 131.237,
+        "maxInternalStd": 112.984,
+        "meanHalfDelta": 61.329,
+        "meanInternalStd": 67.325,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 9.644,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "bad",
+      "rectifiedQuality": "bad",
+      "selectedSourceFace": "D",
+      "selectedSourcePosition": null,
+      "setId": "61",
+      "side": "B",
+      "slot": "D"
+    },
+    {
+      "failureModes": [
+        "bad_quad",
+        "bad_rectified",
+        "wrong_source_face"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "U",
+      "image": "imageB",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 8,
+        "cellsAboveInternalStdThreshold": 9,
+        "maxAdjacentMeanDelta": 173.635,
+        "maxHalfDelta": 276.204,
+        "maxInternalStd": 152.513,
+        "meanHalfDelta": 126.326,
+        "meanInternalStd": 98.381,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 16.445,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "bad",
+      "rectifiedQuality": "bad",
+      "selectedSourceFace": "U",
+      "selectedSourcePosition": null,
+      "setId": "61",
+      "side": "B",
+      "slot": "L"
+    },
+    {
+      "failureModes": [
+        "bad_quad",
+        "bad_rectified",
+        "wrong_source_face"
+      ],
+      "humanBad": true,
+      "humanRectifiedSourceFace": "L",
+      "image": "imageB",
+      "metrics": {
+        "cellCount": 9,
+        "cellsAboveHalfDeltaThreshold": 8,
+        "cellsAboveInternalStdThreshold": 9,
+        "maxAdjacentMeanDelta": 120.427,
+        "maxHalfDelta": 199.699,
+        "maxInternalStd": 155.165,
+        "meanHalfDelta": 96.421,
+        "meanInternalStd": 95.55,
+        "policy": "diagnostics_only_no_behavior_change",
+        "schemaVersion": 1,
+        "score": 14.821,
+        "thresholds": {
+          "highHalfDelta": 45.0,
+          "highInternalStd": 35.0
+        }
+      },
+      "quadQuality": "bad",
+      "rectifiedQuality": "bad",
+      "selectedSourceFace": "L",
+      "selectedSourcePosition": null,
+      "setId": "61",
+      "side": "B",
+      "slot": "B"
+    }
+  ],
+  "schemaVersion": 1,
+  "summary": {
+    "humanBadRowCount": 28,
+    "humanGoodRowCount": 2,
+    "meanScoreHumanBad": 10.812,
+    "meanScoreHumanGood": 3.977,
+    "rowCount": 30,
+    "scoredRowCount": 30,
+    "topRows": [
+      {
+        "failureModes": [
+          "bad_quad",
+          "bad_rectified",
+          "wrong_source_face"
+        ],
+        "humanBad": true,
+        "maxHalfDelta": 276.204,
+        "maxInternalStd": 152.513,
+        "score": 16.445,
+        "selectedSourceFace": "U",
+        "setId": "61",
+        "side": "B",
+        "slot": "L"
+      },
+      {
+        "failureModes": [
+          "bad_quad",
+          "bad_rectified",
+          "wrong_source_face"
+        ],
+        "humanBad": true,
+        "maxHalfDelta": 278.419,
+        "maxInternalStd": 154.994,
+        "score": 16.215,
+        "selectedSourceFace": "L",
+        "setId": "47",
+        "side": "A",
+        "slot": "F"
+      },
+      {
+        "failureModes": [
+          "bad_quad",
+          "bad_rectified"
+        ],
+        "humanBad": true,
+        "maxHalfDelta": 257.243,
+        "maxInternalStd": 168.128,
+        "score": 16.12,
+        "selectedSourceFace": "U",
+        "setId": "17",
+        "side": "B",
+        "slot": "B"
+      },
+      {
+        "failureModes": [
+          "bad_rectified",
+          "wrong_source_face",
+          "rectification_bad_despite_good_quad"
+        ],
+        "humanBad": true,
+        "maxHalfDelta": 261.036,
+        "maxInternalStd": 160.96,
+        "score": 16.0,
+        "selectedSourceFace": "U",
+        "setId": "47",
+        "side": "B",
+        "slot": "B"
+      },
+      {
+        "failureModes": [
+          "bad_quad",
+          "bad_rectified",
+          "wrong_source_face"
+        ],
+        "humanBad": true,
+        "maxHalfDelta": 272.981,
+        "maxInternalStd": 176.228,
+        "score": 15.651,
+        "selectedSourceFace": "B",
+        "setId": "17",
+        "side": "B",
+        "slot": "L"
+      },
+      {
+        "failureModes": [
+          "bad_rectified",
+          "rectification_bad_despite_good_quad"
+        ],
+        "humanBad": true,
+        "maxHalfDelta": 268.36,
+        "maxInternalStd": 177.987,
+        "score": 15.599,
+        "selectedSourceFace": "B",
+        "setId": "49",
+        "side": "B",
+        "slot": "B"
+      },
+      {
+        "failureModes": [
+          "bad_quad",
+          "bad_rectified",
+          "wrong_source_face"
+        ],
+        "humanBad": true,
+        "maxHalfDelta": 199.699,
+        "maxInternalStd": 155.165,
+        "score": 14.821,
+        "selectedSourceFace": "L",
+        "setId": "61",
+        "side": "B",
+        "slot": "B"
+      },
+      {
+        "failureModes": [
+          "bad_rectified",
+          "rectification_bad_despite_good_quad"
+        ],
+        "humanBad": true,
+        "maxHalfDelta": 192.925,
+        "maxInternalStd": 136.271,
+        "score": 13.781,
+        "selectedSourceFace": "U",
+        "setId": "61",
+        "side": "A",
+        "slot": "U"
+      },
+      {
+        "failureModes": [
+          "bad_quad",
+          "bad_rectified"
+        ],
+        "humanBad": true,
+        "maxHalfDelta": 258.635,
+        "maxInternalStd": 151.465,
+        "score": 13.575,
+        "selectedSourceFace": "D",
+        "setId": "17",
+        "side": "B",
+        "slot": "D"
+      },
+      {
+        "failureModes": [
+          "bad_quad",
+          "bad_rectified",
+          "wrong_source_face"
+        ],
+        "humanBad": true,
+        "maxHalfDelta": 142.313,
+        "maxInternalStd": 176.473,
+        "score": 13.455,
+        "selectedSourceFace": "B",
+        "setId": "47",
+        "side": "B",
+        "slot": "L"
+      },
+      {
+        "failureModes": [
+          "bad_quad",
+          "bad_rectified",
+          "wrong_source_face"
+        ],
+        "humanBad": true,
+        "maxHalfDelta": 178.157,
+        "maxInternalStd": 146.537,
+        "score": 13.396,
+        "selectedSourceFace": "F",
+        "setId": "49",
+        "side": "B",
+        "slot": "L"
+      },
+      {
+        "failureModes": [
+          "bad_rectified",
+          "rectification_bad_despite_good_quad"
+        ],
+        "humanBad": true,
+        "maxHalfDelta": 152.065,
+        "maxInternalStd": 136.085,
+        "score": 12.167,
+        "selectedSourceFace": "U",
+        "setId": "47",
+        "side": "A",
+        "slot": "U"
+      }
+    ]
+  }
+}

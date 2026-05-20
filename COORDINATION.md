@@ -57,7 +57,7 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 | Owner | Branch | PR | What | Touches | ETA |
 |---|---|---|---|---|---|
-| Codex | `codex/repair-backfill-manual-review-experiment` | #174 | Try conflict-backfill for Set 61-style unstable standard repairs | `rubik_recognizer/*`, tests, docs | needs-devin-audit |
+| Codex | `codex/overlay-feedback-discontinuity-diagnostics` | #175 | Ingest human overlay feedback + probe cell-discontinuity diagnostics | `tools/*`, fixtures, tests, docs | draft |
 
 *(Codex: please populate your row when you start something.)*
 
@@ -81,11 +81,11 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 ### Codex
 
+- **#174** — Repair-backfill behavior experiment. Probes unstable standard repairs only as a manual-review path; Set 61 improves 33/54 -> 34/54 and stays manual.
 - **#173** — Grid purity manual-review guard. Promotes no states; routes Set 30-style top-visible grid impurity to manual review only.
 - **#170** — Grid purity guard diagnostics. Adds diagnostics-only selected-grid purity/top-visible overlap tags; no recognizer behavior changes.
 - **#169** — Repair backfill opportunity diagnostics. Adds diagnostics-only tags for Set 61-style skipped conflict-backfill opportunities; no recognizer behavior changes.
 - **#165** — Grid span/source contamination scoreboard. Adds diagnostics-only physical/sample contamination fields; no recognizer behavior changes.
-- **#162** — Direct-legal tie-break scoreboard. Adds raw merged-score, variant-cost, and candidate hamming diagnostics; Set 21 still has no safe promotion signal.
 
 ---
 
@@ -93,6 +93,8 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 Newest first. Each entry: date, decision, one-line why.
 
+- **2026-05-19** — Human overlay feedback is now structured supervision for hybrid geometry. The first 5 reviewed sets have 28/30 bad slots, led by B:L and A:F wrong-source/bad-quad failures; use this to guide diagnostics, not production behavior.
+- **2026-05-19** — Cell-discontinuity scoring remains diagnostics-only. On the 30 human-reviewed overlay slots, human-bad rows have much higher mean score than the 2 human-good rows, but the sample is too small/skewed to become a guard.
 - **2026-05-19** — Repair backfill behavior may probe unstable standard repairs only under the Set 61 diagnostic shape. Full corpus stayed contract-clean and hard cases stayed target-clean; Set 61 moved 33/54 -> 34/54 and remains manual-review, so this is not a promotion path.
 - **2026-05-19** — Grid-purity production behavior is manual-review only. Combined mining found no success-row false positives: the current grid-purity tag only hits hard Set 30, so the safe behavior experiment is to demote otherwise clean/high-confidence outcomes to manual review, never promote or reject.
 - **2026-05-19** — Candidate grid-purity guard remains diagnostics-only. Set 30 has the distinct current signature of high top-visible component overlap plus low expected-face purity across the top-visible triple; surface it as manual-review evidence before considering any guard behavior.

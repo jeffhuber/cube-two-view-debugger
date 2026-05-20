@@ -1,0 +1,590 @@
+{
+  "schemaVersion": 1,
+  "sets": [
+    {
+      "badSlotCount": 4,
+      "setId": "17",
+      "slots": [
+        {
+          "failureModes": [
+            "ok"
+          ],
+          "image": "imageA",
+          "outline": "red",
+          "quadQuality": "good",
+          "rawRectifiedLabel": "src = U; good",
+          "rectifiedQuality": "good",
+          "rectifiedSourceFace": "U",
+          "side": "A",
+          "slot": "U"
+        },
+        {
+          "failureModes": [
+            "ok"
+          ],
+          "image": "imageA",
+          "outline": "green",
+          "quadQuality": "good",
+          "rawRectifiedLabel": "src = R; good",
+          "rectifiedQuality": "good",
+          "rectifiedSourceFace": "R",
+          "side": "A",
+          "slot": "R"
+        },
+        {
+          "failureModes": [
+            "bad_quad",
+            "bad_rectified",
+            "wrong_source_face"
+          ],
+          "image": "imageA",
+          "outline": "blue",
+          "quadQuality": "bad",
+          "rawRectifiedLabel": "src = B; bad",
+          "rectifiedQuality": "bad",
+          "rectifiedSourceFace": "B",
+          "side": "A",
+          "slot": "F"
+        },
+        {
+          "failureModes": [
+            "bad_quad",
+            "bad_rectified"
+          ],
+          "image": "imageB",
+          "outline": "purple",
+          "quadQuality": "bad",
+          "rawRectifiedLabel": "src = D; bad",
+          "rectifiedQuality": "bad",
+          "rectifiedSourceFace": "D",
+          "side": "B",
+          "slot": "D"
+        },
+        {
+          "failureModes": [
+            "bad_quad",
+            "bad_rectified",
+            "wrong_source_face"
+          ],
+          "image": "imageB",
+          "outline": "orange",
+          "quadQuality": "bad",
+          "rawRectifiedLabel": "srd = B; bad",
+          "rectifiedQuality": "bad",
+          "rectifiedSourceFace": "B",
+          "side": "B",
+          "slot": "L"
+        },
+        {
+          "failureModes": [
+            "bad_quad",
+            "bad_rectified"
+          ],
+          "image": "imageB",
+          "outline": "yellow",
+          "quadQuality": "bad",
+          "rawRectifiedLabel": "src = B; bad",
+          "rectifiedQuality": "bad",
+          "rectifiedSourceFace": "B",
+          "side": "B",
+          "slot": "B"
+        }
+      ]
+    },
+    {
+      "badSlotCount": 6,
+      "setId": "21",
+      "slots": [
+        {
+          "failureModes": [
+            "bad_rectified",
+            "rectification_bad_despite_good_quad"
+          ],
+          "image": "imageA",
+          "outline": "red",
+          "quadQuality": "good",
+          "rawRectifiedLabel": "src = U; bad",
+          "rectifiedQuality": "bad",
+          "rectifiedSourceFace": "U",
+          "side": "A",
+          "slot": "U"
+        },
+        {
+          "failureModes": [
+            "bad_quad",
+            "wrong_source_face",
+            "rectification_survives_bad_quad"
+          ],
+          "image": "imageA",
+          "outline": "green",
+          "quadQuality": "bad",
+          "rawRectifiedLabel": "src = B; good",
+          "rectifiedQuality": "good",
+          "rectifiedSourceFace": "B",
+          "side": "A",
+          "slot": "R"
+        },
+        {
+          "failureModes": [
+            "bad_quad",
+            "bad_rectified",
+            "wrong_source_face"
+          ],
+          "image": "imageA",
+          "outline": "blue",
+          "quadQuality": "bad",
+          "rawRectifiedLabel": "src = D; bad",
+          "rectifiedQuality": "bad",
+          "rectifiedSourceFace": "D",
+          "side": "A",
+          "slot": "F"
+        },
+        {
+          "failureModes": [
+            "bad_quad",
+            "rectification_survives_bad_quad"
+          ],
+          "image": "imageB",
+          "outline": "purple",
+          "quadQuality": "bad",
+          "rawRectifiedLabel": "src = D; good",
+          "rectifiedQuality": "good",
+          "rectifiedSourceFace": "D",
+          "side": "B",
+          "slot": "D"
+        },
+        {
+          "failureModes": [
+            "bad_quad",
+            "bad_rectified",
+            "wrong_source_face"
+          ],
+          "image": "imageB",
+          "outline": "orange",
+          "quadQuality": "bad",
+          "rawRectifiedLabel": "src = F; bad",
+          "rectifiedQuality": "bad",
+          "rectifiedSourceFace": "F",
+          "side": "B",
+          "slot": "L"
+        },
+        {
+          "failureModes": [
+            "bad_rectified",
+            "wrong_source_face",
+            "rectification_bad_despite_good_quad"
+          ],
+          "image": "imageB",
+          "outline": "yellow",
+          "quadQuality": "good",
+          "rawRectifiedLabel": "src = R; bad",
+          "rectifiedQuality": "bad",
+          "rectifiedSourceFace": "R",
+          "side": "B",
+          "slot": "B"
+        }
+      ]
+    },
+    {
+      "badSlotCount": 6,
+      "setId": "47",
+      "slots": [
+        {
+          "failureModes": [
+            "bad_rectified",
+            "rectification_bad_despite_good_quad"
+          ],
+          "image": "imageA",
+          "outline": "red",
+          "quadQuality": "good",
+          "rawRectifiedLabel": "src = U; bad",
+          "rectifiedQuality": "bad",
+          "rectifiedSourceFace": "U",
+          "side": "A",
+          "slot": "U"
+        },
+        {
+          "failureModes": [
+            "bad_quad",
+            "wrong_source_face",
+            "rectification_survives_bad_quad"
+          ],
+          "image": "imageA",
+          "outline": "green",
+          "quadQuality": "bad",
+          "rawRectifiedLabel": "src = F; good",
+          "rectifiedQuality": "good",
+          "rectifiedSourceFace": "F",
+          "side": "A",
+          "slot": "R"
+        },
+        {
+          "failureModes": [
+            "bad_quad",
+            "bad_rectified",
+            "wrong_source_face"
+          ],
+          "image": "imageA",
+          "outline": "blue",
+          "quadQuality": "bad",
+          "rawRectifiedLabel": "src = L; bad",
+          "rectifiedQuality": "bad",
+          "rectifiedSourceFace": "L",
+          "side": "A",
+          "slot": "F"
+        },
+        {
+          "failureModes": [
+            "bad_quad",
+            "rectification_survives_bad_quad"
+          ],
+          "image": "imageB",
+          "outline": "purple",
+          "quadQuality": "bad",
+          "rawRectifiedLabel": "src = D; good",
+          "rectifiedQuality": "good",
+          "rectifiedSourceFace": "D",
+          "side": "B",
+          "slot": "D"
+        },
+        {
+          "failureModes": [
+            "bad_quad",
+            "bad_rectified",
+            "wrong_source_face"
+          ],
+          "image": "imageB",
+          "outline": "orange",
+          "quadQuality": "bad",
+          "rawRectifiedLabel": "src = B; bad",
+          "rectifiedQuality": "bad",
+          "rectifiedSourceFace": "B",
+          "side": "B",
+          "slot": "L"
+        },
+        {
+          "failureModes": [
+            "bad_rectified",
+            "wrong_source_face",
+            "rectification_bad_despite_good_quad"
+          ],
+          "image": "imageB",
+          "outline": "yellow",
+          "quadQuality": "good",
+          "rawRectifiedLabel": "src = U; bad",
+          "rectifiedQuality": "bad",
+          "rectifiedSourceFace": "U",
+          "side": "B",
+          "slot": "B"
+        }
+      ]
+    },
+    {
+      "badSlotCount": 6,
+      "setId": "49",
+      "slots": [
+        {
+          "failureModes": [
+            "bad_quad",
+            "bad_rectified"
+          ],
+          "image": "imageA",
+          "outline": "red",
+          "quadQuality": "bad",
+          "rawRectifiedLabel": "src = U;' bad",
+          "rectifiedQuality": "bad",
+          "rectifiedSourceFace": "U",
+          "side": "A",
+          "slot": "U"
+        },
+        {
+          "failureModes": [
+            "bad_quad",
+            "bad_rectified",
+            "wrong_source_face"
+          ],
+          "image": "imageA",
+          "outline": "green",
+          "quadQuality": "bad",
+          "rawRectifiedLabel": "src = B; bad",
+          "rectifiedQuality": "bad",
+          "rectifiedSourceFace": "B",
+          "side": "A",
+          "slot": "R"
+        },
+        {
+          "failureModes": [
+            "bad_quad",
+            "bad_rectified"
+          ],
+          "image": "imageA",
+          "outline": "blue",
+          "quadQuality": "bad",
+          "rawRectifiedLabel": "src = F; bad",
+          "rectifiedQuality": "bad",
+          "rectifiedSourceFace": "F",
+          "side": "A",
+          "slot": "F"
+        },
+        {
+          "failureModes": [
+            "bad_quad",
+            "rectification_survives_bad_quad"
+          ],
+          "image": "imageB",
+          "outline": "purple",
+          "quadQuality": "bad",
+          "rawRectifiedLabel": "src = D; good",
+          "rectifiedQuality": "good",
+          "rectifiedSourceFace": "D",
+          "side": "B",
+          "slot": "D"
+        },
+        {
+          "failureModes": [
+            "bad_quad",
+            "bad_rectified",
+            "wrong_source_face"
+          ],
+          "image": "imageB",
+          "outline": "orange",
+          "quadQuality": "bad",
+          "rawRectifiedLabel": "src = F; bad",
+          "rectifiedQuality": "bad",
+          "rectifiedSourceFace": "F",
+          "side": "B",
+          "slot": "L"
+        },
+        {
+          "failureModes": [
+            "bad_rectified",
+            "rectification_bad_despite_good_quad"
+          ],
+          "image": "imageB",
+          "outline": "yellow",
+          "quadQuality": "good",
+          "rawRectifiedLabel": "src = B; bad",
+          "rectifiedQuality": "bad",
+          "rectifiedSourceFace": "B",
+          "side": "B",
+          "slot": "B"
+        }
+      ]
+    },
+    {
+      "badSlotCount": 6,
+      "setId": "61",
+      "slots": [
+        {
+          "failureModes": [
+            "bad_rectified",
+            "rectification_bad_despite_good_quad"
+          ],
+          "image": "imageA",
+          "outline": "red",
+          "quadQuality": "good",
+          "rawRectifiedLabel": "src = U; bad",
+          "rectifiedQuality": "bad",
+          "rectifiedSourceFace": "U",
+          "side": "A",
+          "slot": "U"
+        },
+        {
+          "failureModes": [
+            "bad_quad",
+            "wrong_source_face",
+            "rectification_survives_bad_quad"
+          ],
+          "image": "imageA",
+          "outline": "green",
+          "quadQuality": "bad",
+          "rawRectifiedLabel": "src = F; good",
+          "rectifiedQuality": "good",
+          "rectifiedSourceFace": "F",
+          "side": "A",
+          "slot": "R"
+        },
+        {
+          "failureModes": [
+            "bad_quad",
+            "bad_rectified",
+            "wrong_source_face"
+          ],
+          "image": "imageA",
+          "outline": "blue",
+          "quadQuality": "bad",
+          "rawRectifiedLabel": "src = B; bad",
+          "rectifiedQuality": "bad",
+          "rectifiedSourceFace": "B",
+          "side": "A",
+          "slot": "F"
+        },
+        {
+          "failureModes": [
+            "bad_quad",
+            "bad_rectified"
+          ],
+          "image": "imageB",
+          "outline": "purple",
+          "quadQuality": "bad",
+          "rawRectifiedLabel": "src = D; bad",
+          "rectifiedQuality": "bad",
+          "rectifiedSourceFace": "D",
+          "side": "B",
+          "slot": "D"
+        },
+        {
+          "failureModes": [
+            "bad_quad",
+            "bad_rectified",
+            "wrong_source_face"
+          ],
+          "image": "imageB",
+          "outline": "orange",
+          "quadQuality": "bad",
+          "rawRectifiedLabel": "src = U; bad",
+          "rectifiedQuality": "bad",
+          "rectifiedSourceFace": "U",
+          "side": "B",
+          "slot": "L"
+        },
+        {
+          "failureModes": [
+            "bad_quad",
+            "bad_rectified",
+            "wrong_source_face"
+          ],
+          "image": "imageB",
+          "outline": "yellow",
+          "quadQuality": "bad",
+          "rawRectifiedLabel": "src = L; bad",
+          "rectifiedQuality": "bad",
+          "rectifiedSourceFace": "L",
+          "side": "B",
+          "slot": "B"
+        }
+      ]
+    }
+  ],
+  "slotLayout": {
+    "imageA": [
+      {
+        "outline": "red",
+        "slot": "U"
+      },
+      {
+        "outline": "green",
+        "slot": "R"
+      },
+      {
+        "outline": "blue",
+        "slot": "F"
+      }
+    ],
+    "imageB": [
+      {
+        "outline": "purple",
+        "slot": "D"
+      },
+      {
+        "outline": "orange",
+        "slot": "L"
+      },
+      {
+        "outline": "yellow",
+        "slot": "B"
+      }
+    ]
+  },
+  "source": {
+    "description": "Human visual review of hybrid overlay quads and rectified slot images.",
+    "sheet": "Sheet1",
+    "workbook": "overlay tool visual feedback  (1).xlsx"
+  },
+  "summary": {
+    "badSlotCount": 28,
+    "failureModeCounts": {
+      "bad_quad": 22,
+      "bad_rectified": 22,
+      "rectification_bad_despite_good_quad": 6,
+      "rectification_survives_bad_quad": 6,
+      "wrong_source_face": 16
+    },
+    "failureModesByImage": {
+      "imageA": {
+        "bad_quad": 10,
+        "bad_rectified": 10,
+        "rectification_bad_despite_good_quad": 3,
+        "rectification_survives_bad_quad": 3,
+        "wrong_source_face": 8
+      },
+      "imageB": {
+        "bad_quad": 12,
+        "bad_rectified": 12,
+        "rectification_bad_despite_good_quad": 3,
+        "rectification_survives_bad_quad": 3,
+        "wrong_source_face": 8
+      }
+    },
+    "rankedSlots": [
+      {
+        "badSignalCount": 15,
+        "failureModes": {
+          "bad_quad": 5,
+          "bad_rectified": 5,
+          "wrong_source_face": 5
+        },
+        "slot": "B:L"
+      },
+      {
+        "badSignalCount": 14,
+        "failureModes": {
+          "bad_quad": 5,
+          "bad_rectified": 5,
+          "wrong_source_face": 4
+        },
+        "slot": "A:F"
+      },
+      {
+        "badSignalCount": 13,
+        "failureModes": {
+          "bad_quad": 2,
+          "bad_rectified": 5,
+          "rectification_bad_despite_good_quad": 3,
+          "wrong_source_face": 3
+        },
+        "slot": "B:B"
+      },
+      {
+        "badSignalCount": 12,
+        "failureModes": {
+          "bad_quad": 4,
+          "bad_rectified": 1,
+          "rectification_survives_bad_quad": 3,
+          "wrong_source_face": 4
+        },
+        "slot": "A:R"
+      },
+      {
+        "badSignalCount": 10,
+        "failureModes": {
+          "bad_quad": 5,
+          "bad_rectified": 2,
+          "rectification_survives_bad_quad": 3
+        },
+        "slot": "B:D"
+      },
+      {
+        "badSignalCount": 8,
+        "failureModes": {
+          "bad_quad": 1,
+          "bad_rectified": 4,
+          "rectification_bad_despite_good_quad": 3
+        },
+        "slot": "A:U"
+      }
+    ],
+    "setCount": 5,
+    "slotCount": 30
+  }
+}

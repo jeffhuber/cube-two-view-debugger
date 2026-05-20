@@ -173,6 +173,9 @@ REPAIRED_HIGH_MAX_RANKING_PENALTY = 0.16
 REPAIRED_HIGH_MAX_PRE_REPAIR_CONFLICTS = 5
 REPAIRED_HIGH_MIN_VALID_PRE_REPAIR_CORNERS = 8
 REPAIR_PRE_COUNT_SKEW_DELTA = 2
+REPAIR_BACKFILL_STANDARD_UNSTABLE_CONFIDENCE_MAX = 0.65
+REPAIR_BACKFILL_STANDARD_UNSTABLE_REPAIR_CHANGES_MIN = 8
+REPAIR_BACKFILL_STANDARD_UNSTABLE_CONFLICTS_MIN = 8
 REPAIR_RETAKE_CONFIDENCE_THRESHOLD = 0.50
 REPAIR_RETAKE_MIN_CANDIDATES = 50_000
 REPAIR_SKIP_DIRECT_CANDIDATE_THRESHOLD = REPAIR_RETAKE_MIN_CANDIDATES
@@ -448,15 +451,22 @@ class WhiteUpRecognizer:
         repair_details = self._legal_repair_candidate_details_from_workset(workset, release_merged_candidates=True)
         repair_backfill_attempted = False
         repair_backfill_evaluated = 0
-        if not repair_details and _repair_backfill_applies(analysis_a, analysis_b):
+        repair_backfill_probe_reason = None
+        if _repair_backfill_applies(analysis_a, analysis_b):
+            if not repair_details:
+                repair_backfill_probe_reason = "no_standard_repair"
+            elif _repair_backfill_should_probe_standard_result(repair_details):
+                repair_backfill_probe_reason = "unstable_standard_repair"
+        if repair_backfill_probe_reason:
             repair_backfill_attempted = True
             repair_backfill_merges = _repair_backfill_merged_face_candidates(analysis_a, workset)
             repair_backfill_evaluated = len(repair_backfill_merges)
-            repair_details = self._legal_repair_candidate_details_from_merges(
+            repair_backfill_details = self._legal_repair_candidate_details_from_merges(
                 workset,
                 repair_backfill_merges,
                 repair_source="conflict_backfill",
             )
+            repair_details = _merge_repair_detail_sources(repair_details, repair_backfill_details)
         repair_details = _repair_details_with_orientation_selection_scores(repair_details)
         repair_candidates = [
             (
@@ -468,9 +478,13 @@ class WhiteUpRecognizer:
         ]
         repair_summary = _repair_signal_summary(repair_details)
         if repair_backfill_attempted:
-            repair_summary["repairBackfillAttempted"] = True
-            repair_summary["repairBackfillEvaluatedMerges"] = repair_backfill_evaluated
-            repair_summary["repairBackfillUsed"] = bool(repair_details)
+            repair_summary.update(
+                _repair_backfill_signal_fields(
+                    repair_backfill_evaluated,
+                    repair_details,
+                    probe_reason=repair_backfill_probe_reason,
+                )
+            )
         recognition_signals.update(repair_summary)
         if repair_candidates:
             candidates.extend(repair_candidates)
@@ -482,26 +496,46 @@ class WhiteUpRecognizer:
                         repaired_unique[state] = (confidence, selection_score)
             if len(repaired_unique) == 1:
                 state, (confidence, _) = next(iter(repaired_unique.items()))
+                selected_repair_summary = _repair_signal_summary(repair_details, selected_state=state)
+                if repair_backfill_attempted:
+                    selected_repair_summary.update(
+                        _repair_backfill_signal_fields(
+                            repair_backfill_evaluated,
+                            repair_details,
+                            selected_state=state,
+                            probe_reason=repair_backfill_probe_reason,
+                        )
+                    )
                 return RecognitionResult(
                     status="success",
                     state=state,
                     confidence=confidence,
                     reason="Recognized a legal white-up cube state after cubie-level color repair.",
                     candidates=len(candidates),
-                    recognition_signals={**recognition_signals, **_repair_signal_summary(repair_details, selected_state=state)},
+                    recognition_signals={**recognition_signals, **selected_repair_summary},
                 )
             if len(repaired_unique) > 1:
                 ranked_repaired = sorted(repaired_unique.items(), key=lambda item: item[1][1], reverse=True)
                 if ranked_repaired[0][1][1] > ranked_repaired[1][1][1]:
                     state = ranked_repaired[0][0]
                     confidence = ranked_repaired[0][1][0]
+                    selected_repair_summary = _repair_signal_summary(repair_details, selected_state=state)
+                    if repair_backfill_attempted:
+                        selected_repair_summary.update(
+                            _repair_backfill_signal_fields(
+                                repair_backfill_evaluated,
+                                repair_details,
+                                selected_state=state,
+                                probe_reason=repair_backfill_probe_reason,
+                            )
+                        )
                     return RecognitionResult(
                         status="success",
                         state=state,
                         confidence=confidence,
                         reason="Recognized the highest-scoring legal cube state after cubie-level color repair.",
                         candidates=len(candidates),
-                        recognition_signals={**recognition_signals, **_repair_signal_summary(repair_details, selected_state=state)},
+                        recognition_signals={**recognition_signals, **selected_repair_summary},
                     )
 
         failed_checks = _validation_failed_checks(
@@ -715,6 +749,11 @@ def _recognition_category_payload(result: RecognitionResult) -> Dict[str, str]:
         return {
             "category": "needs_manual_review",
             "reason": "repair_path_unstable_pre_repair_piece_evidence",
+        }
+    if signals.get("repairBackfillProbeReason") == "unstable_standard_repair":
+        return {
+            "category": "needs_manual_review",
+            "reason": "repair_backfill_from_unstable_standard_repair",
         }
     if _grid_purity_guard_would_fire(signals):
         return {
@@ -1085,6 +1124,68 @@ def _repair_signal_summary(repair_details: Sequence[Dict[str, Any]], selected_st
         summary["selectedRepairCandidate"] = _public_repair_detail(selected)
         summary.update(_selected_faces_signal(selected, state=selected_state))
     return summary
+
+
+def _repair_backfill_signal_fields(
+    repair_backfill_evaluated: int,
+    repair_details: Sequence[Dict[str, Any]],
+    *,
+    selected_state: Optional[str] = None,
+    probe_reason: Optional[str] = None,
+) -> Dict[str, Any]:
+    selected = (
+        next((item for item in repair_details if item.get("state") == selected_state), None)
+        if selected_state
+        else None
+    )
+    fields = {
+        "repairBackfillAttempted": True,
+        "repairBackfillEvaluatedMerges": repair_backfill_evaluated,
+        "repairBackfillUsed": bool(selected and selected.get("repairSource") == "conflict_backfill"),
+    }
+    if probe_reason:
+        fields["repairBackfillProbeReason"] = probe_reason
+    return fields
+
+
+def _repair_backfill_should_probe_standard_result(repair_details: Sequence[Dict[str, Any]]) -> bool:
+    if not repair_details:
+        return False
+    selected = repair_details[0]
+    if selected.get("repairSource") not in (None, "standard"):
+        return False
+    confidence = _float_signal(selected.get("confidence"))
+    if confidence <= REPAIR_RETAKE_CONFIDENCE_THRESHOLD:
+        return False
+    if confidence > REPAIR_BACKFILL_STANDARD_UNSTABLE_CONFIDENCE_MAX:
+        return False
+    if _repair_pre_count_skew_suspected(selected):
+        return False
+    if not _repair_pre_piece_evidence_unstable(selected):
+        return False
+    conflicts = selected.get("preRepairConflicts") if isinstance(selected.get("preRepairConflicts"), dict) else {}
+    repair_changes = _int_signal(selected.get("repairChanges"))
+    total_conflicts = _int_signal(conflicts.get("totalConflicts"))
+    return (
+        repair_changes >= REPAIR_BACKFILL_STANDARD_UNSTABLE_REPAIR_CHANGES_MIN
+        or total_conflicts >= REPAIR_BACKFILL_STANDARD_UNSTABLE_CONFLICTS_MIN
+    )
+
+
+def _merge_repair_detail_sources(
+    standard_details: Sequence[Dict[str, Any]],
+    backfill_details: Sequence[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    by_state: Dict[str, Dict[str, Any]] = {}
+    for detail in (*standard_details, *backfill_details):
+        state = detail.get("state")
+        if not isinstance(state, str):
+            continue
+        current = by_state.get(state)
+        if current is None or _float_signal(detail.get("confidence")) > _float_signal(current.get("confidence")):
+            by_state[state] = dict(detail)
+    ranked = sorted(by_state.values(), key=lambda item: _float_signal(item.get("confidence")), reverse=True)
+    return ranked[:MAX_LEGAL_REPAIR_RETURNED]
 
 
 def _direct_legal_candidate_summary(

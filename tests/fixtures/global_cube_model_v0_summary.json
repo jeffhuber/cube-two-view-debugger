@@ -2,6 +2,7 @@
   "config": {
     "edgeSteps": 32,
     "outputDir": "/tmp/global_cube_model_v0_overlays",
+    "profile": "v0-hard-mix",
     "setIds": [
       "45",
       "17",
@@ -18,6 +19,7 @@
   "probe": "global_cube_model_v0",
   "rows": [
     {
+      "currentScoreObserved": null,
       "detection": {
         "boundaryAnglesDeg": [
           0.0,
@@ -36,6 +38,10 @@
         ],
         "signalQuality": 0.0562
       },
+      "diagnosticDisposition": "geometry_retake_or_segmentation_candidate",
+      "evaluationTier": "local_example",
+      "expectedCategory": null,
+      "expectedScoreFloor": null,
       "fitDiagnostics": {
         "detectorLineQualities": [
           0.1273,
@@ -167,12 +173,14 @@
         ]
       },
       "overlayPath": "/tmp/global_cube_model_v0_overlays/set_45_A_global_model_v0.png",
+      "profile": "v0-hard-mix",
       "setId": "45",
       "side": "A",
       "source": "explicit-local",
       "status": "low_iou"
     },
     {
+      "currentScoreObserved": null,
       "detection": {
         "boundaryAnglesDeg": [
           20.0,
@@ -191,6 +199,10 @@
         ],
         "signalQuality": 0.0537
       },
+      "diagnosticDisposition": "model_ok",
+      "evaluationTier": "local_example",
+      "expectedCategory": null,
+      "expectedScoreFloor": null,
       "fitDiagnostics": {
         "detectorLineQualities": [
           0.1634,
@@ -320,12 +332,14 @@
         "warnings": []
       },
       "overlayPath": "/tmp/global_cube_model_v0_overlays/set_45_B_global_model_v0.png",
+      "profile": "v0-hard-mix",
       "setId": "45",
       "side": "B",
       "source": "explicit-local",
       "status": "ok"
     },
     {
+      "currentScoreObserved": null,
       "detection": {
         "boundaryAnglesDeg": [
           38.0,
@@ -344,6 +358,10 @@
         ],
         "signalQuality": 0.0969
       },
+      "diagnosticDisposition": "model_ok",
+      "evaluationTier": "hard_case_stress",
+      "expectedCategory": null,
+      "expectedScoreFloor": null,
       "fitDiagnostics": {
         "detectorLineQualities": [
           0.1293,
@@ -473,12 +491,14 @@
         "warnings": []
       },
       "overlayPath": "/tmp/global_cube_model_v0_overlays/set_17_A_global_model_v0.png",
+      "profile": "v0-hard-mix",
       "setId": "17",
       "side": "A",
       "source": "hard-case",
       "status": "ok"
     },
     {
+      "currentScoreObserved": null,
       "detection": {
         "boundaryAnglesDeg": [
           86.0,
@@ -497,6 +517,10 @@
         ],
         "signalQuality": 0.1341
       },
+      "diagnosticDisposition": "model_ok",
+      "evaluationTier": "hard_case_stress",
+      "expectedCategory": null,
+      "expectedScoreFloor": null,
       "fitDiagnostics": {
         "detectorLineQualities": [
           0.4538,
@@ -626,12 +650,14 @@
         "warnings": []
       },
       "overlayPath": "/tmp/global_cube_model_v0_overlays/set_17_B_global_model_v0.png",
+      "profile": "v0-hard-mix",
       "setId": "17",
       "side": "B",
       "source": "hard-case",
       "status": "ok"
     },
     {
+      "currentScoreObserved": null,
       "detection": {
         "boundaryAnglesDeg": [
           150.0,
@@ -650,6 +676,10 @@
         ],
         "signalQuality": 0.4446
       },
+      "diagnosticDisposition": "model_ok",
+      "evaluationTier": "hard_case_stress",
+      "expectedCategory": null,
+      "expectedScoreFloor": null,
       "fitDiagnostics": {
         "detectorLineQualities": [
           1.0,
@@ -779,12 +809,14 @@
         "warnings": []
       },
       "overlayPath": "/tmp/global_cube_model_v0_overlays/set_30_A_global_model_v0.png",
+      "profile": "v0-hard-mix",
       "setId": "30",
       "side": "A",
       "source": "hard-case",
       "status": "ok"
     },
     {
+      "currentScoreObserved": null,
       "detection": {
         "boundaryAnglesDeg": [
           148.0,
@@ -803,6 +835,10 @@
         ],
         "signalQuality": 0.2285
       },
+      "diagnosticDisposition": "geometry_retake_or_segmentation_candidate",
+      "evaluationTier": "hard_case_stress",
+      "expectedCategory": null,
+      "expectedScoreFloor": null,
       "fitDiagnostics": {
         "detectorLineQualities": [
           1.0,
@@ -934,12 +970,14 @@
         ]
       },
       "overlayPath": "/tmp/global_cube_model_v0_overlays/set_30_B_global_model_v0.png",
+      "profile": "v0-hard-mix",
       "setId": "30",
       "side": "B",
       "source": "hard-case",
       "status": "low_cell_inside"
     },
     {
+      "currentScoreObserved": 16,
       "detection": {
         "boundaryAnglesDeg": [
           88.0,
@@ -958,6 +996,10 @@
         ],
         "signalQuality": 0.1106
       },
+      "diagnosticDisposition": "model_ok",
+      "evaluationTier": "corpus_stress",
+      "expectedCategory": "reject_retake",
+      "expectedScoreFloor": null,
       "fitDiagnostics": {
         "detectorLineQualities": [
           1.0,
@@ -1087,12 +1129,14 @@
         "warnings": []
       },
       "overlayPath": "/tmp/global_cube_model_v0_overlays/set_31_A_global_model_v0.png",
+      "profile": "v0-hard-mix",
       "setId": "31",
       "side": "A",
       "source": "corpus",
       "status": "ok"
     },
     {
+      "currentScoreObserved": 16,
       "detection": {
         "boundaryAnglesDeg": [
           144.0,
@@ -1111,6 +1155,10 @@
         ],
         "signalQuality": 0.6856
       },
+      "diagnosticDisposition": "model_ok",
+      "evaluationTier": "corpus_stress",
+      "expectedCategory": "reject_retake",
+      "expectedScoreFloor": null,
       "fitDiagnostics": {
         "detectorLineQualities": [
           1.0,
@@ -1240,12 +1288,14 @@
         "warnings": []
       },
       "overlayPath": "/tmp/global_cube_model_v0_overlays/set_31_B_global_model_v0.png",
+      "profile": "v0-hard-mix",
       "setId": "31",
       "side": "B",
       "source": "corpus",
       "status": "ok"
     },
     {
+      "currentScoreObserved": null,
       "detection": {
         "boundaryAnglesDeg": [
           88.0,
@@ -1264,6 +1314,10 @@
         ],
         "signalQuality": 0.2589
       },
+      "diagnosticDisposition": "model_ok",
+      "evaluationTier": "hard_case_stress",
+      "expectedCategory": null,
+      "expectedScoreFloor": null,
       "fitDiagnostics": {
         "detectorLineQualities": [
           1.0,
@@ -1393,12 +1447,14 @@
         "warnings": []
       },
       "overlayPath": "/tmp/global_cube_model_v0_overlays/set_44_A_global_model_v0.png",
+      "profile": "v0-hard-mix",
       "setId": "44",
       "side": "A",
       "source": "hard-case",
       "status": "ok"
     },
     {
+      "currentScoreObserved": null,
       "detection": {
         "boundaryAnglesDeg": [
           154.0,
@@ -1417,6 +1473,10 @@
         ],
         "signalQuality": 0.2795
       },
+      "diagnosticDisposition": "model_ok",
+      "evaluationTier": "hard_case_stress",
+      "expectedCategory": null,
+      "expectedScoreFloor": null,
       "fitDiagnostics": {
         "detectorLineQualities": [
           1.0,
@@ -1546,12 +1606,14 @@
         "warnings": []
       },
       "overlayPath": "/tmp/global_cube_model_v0_overlays/set_44_B_global_model_v0.png",
+      "profile": "v0-hard-mix",
       "setId": "44",
       "side": "B",
       "source": "hard-case",
       "status": "ok"
     },
     {
+      "currentScoreObserved": null,
       "detection": {
         "boundaryAnglesDeg": [
           92.0,
@@ -1570,6 +1632,10 @@
         ],
         "signalQuality": 0.1387
       },
+      "diagnosticDisposition": "model_ok",
+      "evaluationTier": "hard_case_stress",
+      "expectedCategory": null,
+      "expectedScoreFloor": null,
       "fitDiagnostics": {
         "detectorLineQualities": [
           0.4364,
@@ -1699,12 +1765,14 @@
         "warnings": []
       },
       "overlayPath": "/tmp/global_cube_model_v0_overlays/set_47_A_global_model_v0.png",
+      "profile": "v0-hard-mix",
       "setId": "47",
       "side": "A",
       "source": "hard-case",
       "status": "ok"
     },
     {
+      "currentScoreObserved": null,
       "detection": {
         "boundaryAnglesDeg": [
           152.0,
@@ -1723,6 +1791,10 @@
         ],
         "signalQuality": 0.1598
       },
+      "diagnosticDisposition": "model_ok",
+      "evaluationTier": "hard_case_stress",
+      "expectedCategory": null,
+      "expectedScoreFloor": null,
       "fitDiagnostics": {
         "detectorLineQualities": [
           0.6066,
@@ -1852,12 +1924,14 @@
         "warnings": []
       },
       "overlayPath": "/tmp/global_cube_model_v0_overlays/set_47_B_global_model_v0.png",
+      "profile": "v0-hard-mix",
       "setId": "47",
       "side": "B",
       "source": "hard-case",
       "status": "ok"
     },
     {
+      "currentScoreObserved": null,
       "detection": {
         "boundaryAnglesDeg": [
           26.0,
@@ -1876,6 +1950,10 @@
         ],
         "signalQuality": 0.4133
       },
+      "diagnosticDisposition": "model_ok",
+      "evaluationTier": "hard_case_stress",
+      "expectedCategory": null,
+      "expectedScoreFloor": null,
       "fitDiagnostics": {
         "detectorLineQualities": [
           0.4439,
@@ -2005,12 +2083,14 @@
         "warnings": []
       },
       "overlayPath": "/tmp/global_cube_model_v0_overlays/set_57_A_global_model_v0.png",
+      "profile": "v0-hard-mix",
       "setId": "57",
       "side": "A",
       "source": "hard-case",
       "status": "ok"
     },
     {
+      "currentScoreObserved": null,
       "detection": {
         "boundaryAnglesDeg": [
           150.0,
@@ -2029,6 +2109,10 @@
         ],
         "signalQuality": 0.0849
       },
+      "diagnosticDisposition": "geometry_retake_or_segmentation_candidate",
+      "evaluationTier": "hard_case_stress",
+      "expectedCategory": null,
+      "expectedScoreFloor": null,
       "fitDiagnostics": {
         "detectorLineQualities": [
           0.5615,
@@ -2160,12 +2244,14 @@
         ]
       },
       "overlayPath": "/tmp/global_cube_model_v0_overlays/set_57_B_global_model_v0.png",
+      "profile": "v0-hard-mix",
       "setId": "57",
       "side": "B",
       "source": "hard-case",
       "status": "low_iou"
     },
     {
+      "currentScoreObserved": null,
       "detection": {
         "boundaryAnglesDeg": [
           28.0,
@@ -2184,6 +2270,10 @@
         ],
         "signalQuality": 0.2514
       },
+      "diagnosticDisposition": "model_ok",
+      "evaluationTier": "hard_case_stress",
+      "expectedCategory": null,
+      "expectedScoreFloor": null,
       "fitDiagnostics": {
         "detectorLineQualities": [
           1.0,
@@ -2313,12 +2403,14 @@
         "warnings": []
       },
       "overlayPath": "/tmp/global_cube_model_v0_overlays/set_58_A_global_model_v0.png",
+      "profile": "v0-hard-mix",
       "setId": "58",
       "side": "A",
       "source": "hard-case",
       "status": "ok"
     },
     {
+      "currentScoreObserved": null,
       "detection": {
         "boundaryAnglesDeg": [
           30.0,
@@ -2337,6 +2429,10 @@
         ],
         "signalQuality": 0.1242
       },
+      "diagnosticDisposition": "model_ok",
+      "evaluationTier": "hard_case_stress",
+      "expectedCategory": null,
+      "expectedScoreFloor": null,
       "fitDiagnostics": {
         "detectorLineQualities": [
           1.0,
@@ -2466,12 +2562,14 @@
         "warnings": []
       },
       "overlayPath": "/tmp/global_cube_model_v0_overlays/set_58_B_global_model_v0.png",
+      "profile": "v0-hard-mix",
       "setId": "58",
       "side": "B",
       "source": "hard-case",
       "status": "ok"
     },
     {
+      "currentScoreObserved": null,
       "detection": {
         "boundaryAnglesDeg": [
           26.0,
@@ -2490,6 +2588,10 @@
         ],
         "signalQuality": 0.0
       },
+      "diagnosticDisposition": "model_ok",
+      "evaluationTier": "hard_case_stress",
+      "expectedCategory": null,
+      "expectedScoreFloor": null,
       "fitDiagnostics": {
         "detectorLineQualities": [
           0.8796,
@@ -2619,12 +2721,14 @@
         "warnings": []
       },
       "overlayPath": "/tmp/global_cube_model_v0_overlays/set_61_A_global_model_v0.png",
+      "profile": "v0-hard-mix",
       "setId": "61",
       "side": "A",
       "source": "hard-case",
       "status": "ok"
     },
     {
+      "currentScoreObserved": null,
       "detection": {
         "boundaryAnglesDeg": [
           92.0,
@@ -2643,6 +2747,10 @@
         ],
         "signalQuality": 0.3957
       },
+      "diagnosticDisposition": "geometry_retake_or_segmentation_candidate",
+      "evaluationTier": "hard_case_stress",
+      "expectedCategory": null,
+      "expectedScoreFloor": null,
       "fitDiagnostics": {
         "detectorLineQualities": [
           1.0,
@@ -2774,6 +2882,7 @@
         ]
       },
       "overlayPath": "/tmp/global_cube_model_v0_overlays/set_61_B_global_model_v0.png",
+      "profile": "v0-hard-mix",
       "setId": "61",
       "side": "B",
       "source": "hard-case",
@@ -2782,13 +2891,18 @@
   ],
   "schemaVersion": 1,
   "summary": {
+    "easyImageRowCount": 0,
+    "easyOkRowCount": 0,
+    "easyWeakRowCount": 0,
     "errorRowCount": 0,
     "fittedRowCount": 18,
     "imageRowCount": 18,
     "lowCellInsideRowCount": 2,
     "lowInsideRowCount": 0,
     "lowIouRowCount": 2,
+    "modelIterationNeededRowCount": 0,
     "okRowCount": 14,
-    "requestedPairCount": 9
+    "requestedPairCount": 9,
+    "retakeCandidateRowCount": 4
   }
 }

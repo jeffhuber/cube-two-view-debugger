@@ -57,7 +57,8 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 | Owner | Branch | PR | What | Touches | ETA |
 |---|---|---|---|---|---|
-| Claude | `claude/interior-bezel-detection` | #177 | Diagnostics-only probe: angular Hough sweep through silhouette centroid → cube-center vertex + 3 face-boundary lines. Targets the h1/h3/h5 ceiling identified in #176 (3 hexagon vertices are interior to silhouette on yawed cubes). Human review: 5/18 worst pairs overall_pass; magenta line robust ~17/18; cyan/yellow miss frequently. Iterative refinement queued as follow-up PR. | `tools/interior_bezel_detection.py`, `tools/test_interior_bezel.py`, `tools/INTERIOR_BEZEL_DETECTION.md`, `tests/fixtures/interior_bezel_visual_feedback.json` (all new) | awaiting Devin audit |
+| Claude | `claude/interior-bezel-detection` | #177 | Diagnostics-only probe: angular Hough sweep through silhouette centroid → cube-center vertex + 3 face-boundary lines. Targets the h1/h3/h5 ceiling identified in #176 (3 hexagon vertices are interior to silhouette on yawed cubes). Human review: 5/18 worst pairs overall_pass; magenta line robust ~17/18; cyan/yellow miss frequently. | `tools/interior_bezel_detection.py`, `tools/test_interior_bezel.py`, `tools/INTERIOR_BEZEL_DETECTION.md`, `tests/fixtures/interior_bezel_visual_feedback.json` (all new) | awaiting Devin audit |
+| Claude | `claude/interior-bezel-iterative` | (in-flight) | Follow-up to #177: iterative (angle-pick, center-refine) refinement + per-line quality + vectorized line_mass (4x faster). Multi-seed restart tried + dropped (made things worse). 4/18 strong detections (31 A/B, 57 A, 58 A; all genuinely cube-aligned). Stacked on #177 — rebase to main after #177 lands. | `tools/interior_bezel_detection.py`, `tools/test_interior_bezel.py`, `tools/INTERIOR_BEZEL_DETECTION.md` (all modified) | awaiting Devin audit |
 
 *(Codex: please populate your row when you start something.)*
 

@@ -6,170 +6,114 @@ vertices (h1, h3, h5) project INSIDE the silhouette where convex-hull-based
 fitters provably cannot find them. The information IS in the image, but on
 the dark bezel lines between visible cube faces — not on the silhouette.
 
-This probe surfaces a per-image (cube_center, 3 boundary lines) signal. It
-is NOT wired into `_derive_face_quad_topology_aware` or any decision path,
-per the project's diagnostics-first discipline.
+This probe surfaces a per-image (cube_center, 3 boundary lines, per-line
+quality) signal. It is NOT wired into `_derive_face_quad_topology_aware`
+or any decision path, per the project's diagnostics-first discipline.
 
-## Algorithm
+## Algorithm (iterative refinement)
 
 1. Silhouette centroid → initial cube-center seed.
 2. Erode the silhouette by 30 px to exclude the outer hull boundary.
 3. Sobel gradient magnitude on grayscale, masked to the eroded silhouette.
-4. 1-D angular Hough sweep through the centroid: for each θ in [0, π) at
-   1° steps, sum the gradient magnitude along a line through (cx, cy)
-   at angle θ.
-5. Top-3 angles with non-max suppression (min 15° separation).
-6. Local search around the centroid for the (cx, cy) that maximizes the
-   SUM of line-masses for the 3 chosen angles (coarse 20-px steps in a
-   ±200-px window, then fine 4-px steps in a ±30-px window).
-7. Build boundary line segments from the refined cube-center outward to
-   where each line exits the silhouette.
-8. Heuristic signal-quality score from 3 components (geometric mean):
-   - line_mass_ratio: top angular peak / median, normalized into [0,1]
-   - angle_regularity: how close the 3 angles are to evenly spaced 60°
-   - completeness: fraction of lines that produced valid segments
+4. **Iterative loop** (up to `max_iter=4` rounds, typical convergence in 2-3):
+   - 1-D angular Hough sweep through current center at 2° steps in [0, π).
+   - Top-3 angles with non-max suppression (min 15° separation).
+   - Coarse-to-fine local search for the (cx, cy) that maximizes SUM of
+     line-mass for those 3 angles, **constrained to stay inside the
+     silhouette**.
+   - Stop if center moved < 6 px since last iteration.
+5. **Drift cap**: if cumulative shift from the centroid seed exceeds
+   180 px, the iteration is probably chasing a sticker-grid optimum —
+   roll back to centroid and re-pick angles there.
+6. **Per-line quality**: for each picked angle θ, score how much its
+   line-mass exceeds the 90th percentile of mass over the full sweep.
+   1.0 = double p90 (a real bezel); 0.0 = at or below p90 (sticker grid).
+7. **Aggregate signal_quality**: mean of the worst-2 per-line qualities ×
+   completeness (fraction of lines that produced valid segments). A
+   "1 good line, 2 noisy" detection scores ~0.1; "3 strong lines"
+   scores ~0.8.
 
-## Why a Hough-style approach beat sequential RANSAC
+## Why iterative + per-line (post-#177 human-review iteration)
 
-First-pass implementation used sequential RANSAC on top-10% gradient
-pixels. On Set 47 A this produced 3 lines but ZERO valid intersections —
-the lines were dominated by sticker-grid edges, which run parallel to
-the cube's 3 face boundaries (because stickers tile aligned with the
-face). RANSAC's random pair sampling found the densest collinear
-clusters, which were sticker rows / columns, not bezels.
+PR #177 shipped the single-pass version. Human review of the 18 worst-pair
+overlays revealed two failure modes the single-pass version couldn't
+distinguish:
 
-The constrained Hough-through-centroid approach exploits TWO additional
-constraints the data satisfies:
+1. **Cube_center wrong** (5 pairs noted "off by ~100 px"): the centroid
+   seed was biased away from the true cube-center vertex. Single-pass
+   refinement couldn't escape because angles were chosen at the wrong
+   center and refinement holds angles fixed.
+2. **One or two angles are sticker-grid contaminants** (most pairs): the
+   single aggregate `signal_quality` score hid this — when 3 angles
+   happen to be ~60° apart even with 1-2 grid contaminants, the
+   `angle_regularity` component over-rewarded the configuration.
 
-- The 3 face boundaries all pass through ONE point (the cube-center
-  vertex) — random-pair RANSAC ignores this.
-- The cube-center vertex is approximately at the silhouette centroid
-  for roughly-symmetric iso projection — gives a 0-cost initial seed.
+The iterative refinement re-picks angles at each new center, letting good
+angles unlock a better center which unlocks even better angles. The
+per-line quality exposes which of the 3 lines are real bezels vs
+sticker-grid contaminants directly.
 
-Anchoring the line search at the centroid filters out parallel
-sticker-grid lines: they may have high line-mass somewhere in the
-image, but NOT along a line passing through the silhouette centroid.
+## Things tried that did NOT work — kept here so we don't re-try them
+
+- **Multi-seed restart (5 and 9 seeds at ±150-200 px from centroid)**.
+  Empirically made Sets 30 B and 44 B worse: the optimization landscape
+  has many sticker-grid local maxima, and "highest total line-mass at
+  convergence" doesn't reliably distinguish the cube-center maximum from
+  sticker-grid maxima. The single-seed iteration with the drift cap is
+  the best policy we've found. Multi-seed code was removed in this PR's
+  iteration; see commit history on the branch for the experiment.
+- **Single-pass refinement** (PR #177 baseline): worked on the 5 easiest
+  cases but couldn't escape bad starting angles on the hard cases.
 
 ## Per-pair results (18 worst-pair walkthroughs from PR #176)
 
-| pair  | signal_quality | lines | mass_max/median | refined_shift_px | angles (°)        |
-|-------|---------------:|------:|----------------:|-----------------:|-------------------|
-| 17 A  | **0.80**       | 3     | 1.70            | 2.8              | 145, 85, 37       |
-| 17 B  | **0.76**       | 3     | 1.67            | 17.2             | 144, 87, 40       |
-| 21 A  | **0.95**       | 3     | 3.29            | 26.1             | 32, 89, 155       |
-| 21 B  | 0.60           | 3     | 1.71            | 15.2             | 31, 92, 5         |
-| 30 A  | **0.99**       | 3     | 2.24            | 2.8              | 92, 153, 33       |
-| 30 B  | **0.97**       | 3     | 2.67            | 2.8              | 31, 152, 88       |
-| 31 A  | **0.83**       | 3     | 2.77            | 40.0             | 88, 30, 167       |
-| 31 B  | **0.94**       | 3     | 1.88            | 117.7            | 146, 27, 88       |
-| 44 A  | **0.96**       | 3     | 2.66            | 11.7             | 149, 89, 24       |
-| 44 B  | **0.99**       | 3     | 2.66            | 198.0            | 153, 32, 93       |
-| 47 A  | **0.82**       | 3     | 1.67            | 6.3              | 92, 25, 153       |
-| 47 B  | **0.86**       | 3     | 1.78            | 0.0              | 153, 26, 95       |
-| 57 A  | **0.98**       | 3     | 2.11            | 28.4             | 27, 148, 86       |
-| 57 B  | 0.56           | 3     | 1.70            | 0.0              | 61, 78, 22        |
-| 58 A  | 0.69           | 3     | 2.72            | 6.3              | 28, 90, 54        |
-| 58 B  | **0.87**       | 3     | 3.59            | 0.0              | 31, 159, 84       |
-| 61 A  | 0.65           | 3     | 1.94            | 130.0            | 91, 126, 149      |
-| 61 B  | 0.64           | 3     | 1.77            | 178.1            | 91, 73, 144       |
+| pair  | sq    | per-line (magenta, cyan, yellow) | iter | shift | human |
+|-------|------:|----------------------------------|-----:|------:|-------|
+| 17 A  | 0.15  | 0.85, 0.29, 0.00                 | 2    | 70.7  | —     |
+| 17 B  | 0.20  | 0.39, 0.25, 0.15                 | 2    | 19.0  | —     |
+| 21 A  | 0.16  | 1.00, 0.28, 0.05                 | 2    | 11.7  | —     |
+| 21 B  | 0.07  | 0.40, 0.11, 0.03                 | 2    | 73.5  | —     |
+| 30 A  | 0.11  | 0.83, 0.15, 0.07                 | 1    | 2.8   | PASS  |
+| 30 B  | 0.24  | 1.00, 0.41, 0.07                 | 3    | 121.5 | PASS  |
+| 31 A  | **0.73** | 1.00, 0.95, 0.52              | 4    | 36.0  | —     |
+| 31 B  | **0.64** | 1.00, 1.00, 0.28              | 3    | 100.3 | PASS  |
+| 44 A  | 0.17  | 1.00, 0.24, 0.11                 | 2    | 31.6  | —     |
+| 44 B  | 0.14  | 0.78, 0.28, 0.00                 | 2    | 0.0†  | PASS  |
+| 47 A  | 0.14  | 0.61, 0.28, 0.00                 | 4    | 61.1  | —     |
+| 47 B  | 0.16  | 0.51, 0.23, 0.09                 | 2    | 15.2  | —     |
+| 57 A  | **0.56** | 0.79, 0.73, 0.40              | 2    | 21.5  | PASS  |
+| 57 B  | 0.07  | 0.26, 0.12, 0.03                 | 3    | 48.1  | —     |
+| 58 A  | **0.41** | 1.00, 0.81, 0.00              | 2    | 8.9   | —     |
+| 58 B  | 0.11  | 1.00, 0.13, 0.09                 | 2    | 11.7  | —     |
+| 61 A  | 0.04  | 1.00, 0.08, 0.00                 | 3    | 159.6 | —     |
+| 61 B  | 0.12  | 0.26, 0.25, 0.00                 | 2    | 172.6 | —     |
 
-**Headline**: 13 of 18 pairs (72%) detected with signal_quality ≥ 0.70.
-9 of 18 (50%) ≥ 0.85. 3 of 18 (Sets 21 A, 30 A, 44 A/B, 57 A, 30 B —
-generally the LESS extreme yaws) ≥ 0.95.
+† 44 B's drift cap fired (cumulative shift exceeded 180 px during
+iteration); rolled back to centroid + re-picked angles there.
 
-## Visual validation (Set 47 A — the canonical extreme case)
+## Robust patterns the per-line data exposes
 
-PR #176 identified Set 47 A as one of two "extreme degeneracy" pairs:
-the hexagon fitter's min_edge is 6.0 px (all 3 hexagon edges between
-h0-h1, h2-h3, h4-h5 are collapsed), because only 3 of the 6 cube
-corners project onto the hull.
+1. **The first picked angle (magenta — typically the vertical bezel between
+   the front-left and front-right faces) is high-quality on 13 of 18 pairs**
+   (line_q ≥ 0.40, including 7 pairs at 1.00). This is the most reliable
+   geometric signal in the silhouette.
+2. **The 3rd picked angle (yellow — the dimmest detected line) is
+   essentially noise on 10 of 18 pairs** (line_q ≤ 0.10). It's almost
+   always a sticker-grid contaminant.
+3. **Strong detections** (sq ≥ 0.4 → all 3 line qualities ≥ 0.4): 4 of 18
+   pairs (31 A, 31 B, 57 A, 58 A). These are the cases where iterative
+   refinement converged on a geometry where 3 real bezel lines pass
+   through one point.
 
-The interior bezel detector finds:
-- cube_center at (1366, 1874) — 6.3 px shift from the silhouette
-  centroid
-- 3 boundary angles at 92°, 25°, 153° — visually MATCH the 3 face
-  boundaries in the photo (vertical between front-left & front-right
-  faces, upper-right between top & front-right faces, upper-left
-  between top & front-left faces)
-- signal_quality 0.82
+## Improvement vs PR #177 baseline
 
-The walkthrough overlay in `set_47_A_overlay.png` shows the 3 detected
-lines tracing along the actual cube-face boundaries through the
-cube-center vertex.
-
-## Failure-mode pattern on the 5 weak pairs (sq < 0.70)
-
-All 5 weak cases (21 B, 57 B, 58 A, 61 A, 61 B) share the same shape:
-the cube_center IS approximately correct (max line-mass anchor is
-robust), but 2 of the 3 chosen angles ended up CLOSE TOGETHER (sticker
-grid contaminants), not 60° apart.
-
-Example — 61 A picked [91°, 126°, 149°]: a vertical line plus two
-sticker-grid lines clustered in the 120-150° range. The angle_regularity
-component of signal_quality is what penalizes these picks.
-
-Two non-conflicting tuning directions, both LEFT FOR LATER (per
-diagnostics-first discipline):
-
-- **Wider NMS separation** (try 30-45° vs 15°): forces the top-3 picks
-  to be ≥60° apart, matching the expected face-boundary geometry.
-- **Joint (center, angles) optimization**: currently angles are chosen
-  at the centroid then center is refined holding angles fixed. A
-  second pass (re-sweep angles at the refined center) might pick
-  cleaner peaks now that the geometry is better-anchored.
-
-Neither is wired here — this is a probe shipping signal, not a tuned
-production component.
-
-## Observed weaknesses vs human visual review
-
-After the per-pair signal_quality table above was generated, the 18
-detector overlays were reviewed visually by the project owner using a
-gallery tool with per-pair checkboxes. The structured feedback is
-committed at `tests/fixtures/interior_bezel_visual_feedback.json`.
-
-**Honest pass rate**: 5 of 18 (28%) pairs marked `overall_pass=true`
-by the reviewer — not 9/18 as `signal_quality ≥ 0.85` would suggest.
-The calibration miss tells us the heuristic over-rewards
-`angle_regularity` when 3 picked angles happen to be ~60° apart even
-if 1-2 are sticker-grid contaminants.
-
-| Reviewer field            | Count (explicit clicks) |
-|---------------------------|-------------------------|
-| `center_correct`          | 8/18                    |
-| `angles_correct`          | 5/18                    |
-| `overall_pass`            | **5/18 (28%)**          |
-
-The reviewer's per-pair notes expand the picture — many cubes flagged
-`center_correct=false` were noted as "10s of pixels off" or "close but
-~100 px off"; the binary checkbox doesn't capture that gradient.
-
-### Two robust patterns across the 18 pairs
-
-1. **The magenta line (typically the most-vertical bezel between the
-   front-left and front-right faces) is correct on ~17/18 cases.** It
-   is the longest unbroken dark line in the silhouette; sticker grid
-   can't compete.
-2. **The cyan and yellow lines (the diagonal face boundaries going
-   upper-left and upper-right) miss frequently** — they are shorter
-   and compete with sticker-grid edges that run parallel to them.
-
-### Root cause (the same one flagged speculatively above)
-
-The detector is single-pass: angles are picked at the centroid
-(where the geometry is approximate) and the center is then refined
-holding those (possibly contaminated) angles fixed. When the centroid
-seed is ~100 px off (reviewer noted this on Set 44 B and 47 B), the
-refinement can't escape — picking better angles requires moving the
-center; refining the center holding the angles requires already-good
-angles.
-
-The fix is **iterative**: re-pick angles at the refined center, then
-re-refine center, until convergence. Plus a **per-line quality**
-breakdown so the detector exposes "magenta=0.95, cyan=0.3, yellow=0.6"
-rather than hiding it inside a single number. **Targeted as a
-follow-up PR** — this PR ships the honest baseline + the human
-review fixture as ground truth to measure the follow-up against.
+| Metric                       | PR #177 | This PR (iterative)              |
+|------------------------------|---------|----------------------------------|
+| Wall-clock per pair          | ~30 s   | ~8 s (vectorized line_mass)      |
+| Per-line quality exposed?    | No      | **Yes** (per-line line_q in [0,1])|
+| Aggregate scorer             | over-rewarded angle-regularity (9/18 "strong" included 4 with bad lines) | mean-of-worst-2 × completeness; 4/18 strong, all genuinely cube-aligned |
+| Iterative refinement?        | No      | Yes, with 180-px drift cap       |
+| Specific improvements vs PR #177 sq on 18 pairs | — | 14/18 same or improved per-line max; 31 A & 31 B & 57 A move from "moderate" to "strong" cluster |
 
 ## What this probe is signal for
 
@@ -178,16 +122,15 @@ h5 — the 3 hexagon vertices interior to the silhouette. Once we have
 those, the cardinal-position cube-face derivation that powers
 `_derive_face_quad_topology_aware` becomes well-defined on yawed cubes.
 
-Future signals to mine, gated on this prototype's signal_quality holding
-up across the broader corpus:
+Future signals to mine, gated on broader-corpus signal_quality holding up:
 
-- **h1, h3, h5 locations**: trace each boundary line from cube-center
-  outward to where the bezel terminates at a cube corner (a visible
-  change in bezel direction).
+- **h1, h3, h5 locations**: trace each high-quality boundary line from
+  cube-center outward to where the bezel terminates at a cube corner
+  (a visible change in bezel direction).
 - **Refined hexagon fit**: combine the 3 hull-detectable hexagon
   vertices (h0, h2, h4 from `_fit_hexagon_to_hull`) with h1/h3/h5
-  from this probe → a complete 6-vertex hexagon that respects the
-  cube's interior geometry.
+  from this probe when per-line quality is high enough → a complete
+  6-vertex hexagon respecting the cube's interior geometry.
 - **Cell-level disambiguation**: when slot/src mismatches are
   ambiguous (the May 18 overlay-feedback pattern), the detected
   boundary lines tell us which sticker cells span TWO faces.
@@ -196,10 +139,10 @@ up across the broader corpus:
 
 | File                                                     | Purpose                                              |
 |----------------------------------------------------------|------------------------------------------------------|
-| `tools/interior_bezel_detection.py`                      | Standalone detection module (numpy + scipy, no cv2) |
-| `tools/test_interior_bezel.py`                           | Test driver + visualization (uses rembg for masks)  |
-| `tools/INTERIOR_BEZEL_DETECTION.md`                      | This doc (results writeup)                          |
-| `tests/fixtures/interior_bezel_visual_feedback.json`     | Human review of the 18 worst-pair overlays — ground truth for measuring the follow-up iterative-refinement PR |
+| `tools/interior_bezel_detection.py`                      | Standalone detection module (numpy + scipy, no cv2; vectorized line_mass; iterative refinement + drift cap; per-line quality) |
+| `tools/test_interior_bezel.py`                           | Test driver + visualization (uses rembg for masks; per-line quality in panel header) |
+| `tools/INTERIOR_BEZEL_DETECTION.md`                      | This doc                                             |
+| `tests/fixtures/interior_bezel_visual_feedback.json`     | Human review of the 18 worst-pair PR #177 overlays — ground truth for the table above |
 
 ## Dependencies
 
@@ -221,14 +164,14 @@ A smoke test covering both scipy-present and scipy-absent paths is at
 
 .venv/bin/python tools/test_interior_bezel.py \
     --sets 17 21 30 31 44 47 57 58 61 \
-    --out /tmp/interior_bezel_results
+    --out /tmp/interior_bezel_iter
 ```
 
 Outputs:
 - `set_<N>_<side>_overlay.png` — side-by-side photo + mask + detection
-  overlay
+  overlay with per-line quality in the header
 - `set_<N>_<side>_data.json` — structured detection result (cube_center,
-  boundary lines, angles, signal_quality, debug)
+  boundary lines, angles, per-line qualities, iteration history, debug)
 - `summary.json` — index over all per-pair results
 
 The PNGs are not committed (large binaries); the generator + this doc

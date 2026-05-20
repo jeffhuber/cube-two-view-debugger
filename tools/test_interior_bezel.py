@@ -169,7 +169,12 @@ def _draw_visualization(
     except Exception:
         font = ImageFont.load_default()
     n_lines = len(detection.boundary_lines)
-    header = f"{title}  signal_quality={detection.signal_quality:.2f}  lines={n_lines}"
+    lq_str = " ".join(f"{q:.2f}" for q in detection.line_qualities) or "—"
+    n_iter = detection.debug.get("iter_count", "?")
+    header = (
+        f"{title}  sq={detection.signal_quality:.2f}  "
+        f"per-line=[{lq_str}]  lines={n_lines}  iter={n_iter}"
+    )
     draw.rectangle((0, 0, nw, 28), fill=(0, 0, 0, 180))
     draw.text((6, 4), header, fill=(255, 255, 255), font=font)
 
@@ -188,11 +193,16 @@ def _draw_visualization(
 
 
 def _serialize_detection(d: InteriorBezelDetection) -> dict:
+    import math as _math
     return {
         "cube_center": list(d.cube_center) if d.cube_center else None,
         "boundary_lines": [
             [[round(p[0], 1), round(p[1], 1)] for p in seg] for seg in d.boundary_lines
         ],
+        "boundary_angles_deg": [
+            round(_math.degrees(a), 2) for a in d.boundary_angles
+        ],
+        "line_qualities": [round(q, 3) for q in d.line_qualities],
         "signal_quality": round(d.signal_quality, 3),
         "debug": d.debug,
     }
@@ -249,11 +259,13 @@ def main() -> None:
                 **_serialize_detection(detection),
             }
             summary.append(row)
+            lq = ",".join(f"{q:.2f}" for q in detection.line_qualities)
             print(
-                f"[set {set_id} {side}]   signal_quality={detection.signal_quality:.2f}  "
-                f"cube_center={detection.cube_center}  "
-                f"boundary_lines={len(detection.boundary_lines)}  "
-                f"debug={detection.debug}",
+                f"[set {set_id} {side}]   sq={detection.signal_quality:.2f}  "
+                f"per-line=[{lq}]  iter={detection.debug.get('iter_count', '?')}  "
+                f"converged={detection.debug.get('converged', '?')}  "
+                f"final_shift={detection.debug.get('centroid_to_final_shift_px', '?')}  "
+                f"lines={len(detection.boundary_lines)}",
                 file=sys.stderr,
             )
 

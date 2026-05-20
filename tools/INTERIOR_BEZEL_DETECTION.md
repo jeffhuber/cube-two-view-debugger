@@ -115,6 +115,82 @@ iteration); rolled back to centroid + re-picked angles there.
 | Iterative refinement?        | No      | Yes, with 180-px drift cap       |
 | Specific improvements vs PR #177 sq on 18 pairs | — | 14/18 same or improved per-line max; 31 A & 31 B & 57 A move from "moderate" to "strong" cluster |
 
+## Joining with #175's overlay-feedback / cell-discontinuity rows
+
+Per Codex's review feedback on this PR, the detection JSON is shaped to
+support downstream slot/cell-level joins against
+`tests/fixtures/hard_case_visual_feedback.json` (#175) and the
+cell-discontinuity probe output. The output keeps **per-line quality**,
+**center error proxy**, **line distances**, and **"would-cross-cell"
+flags** as separate fields so two-signal-agreement comparisons (e.g.,
+"discontinuity hits ∩ high-quality bezel crossing") can be built without
+collapsing into a single hidden score.
+
+The per-pair JSON (e.g., `set_31_A_data.json`) emits:
+
+```json
+{
+  "setId": "31", "side": "A",
+  "cube_center": [1375.9, 1997.1],
+  "boundary_angles_deg": [88.0, 144.0, 32.0],
+  "line_equations": [
+    [-0.9994, 0.0349, 1305.4],
+    [-0.5878, -0.8090, 2424.5],
+    [-0.5299, 0.8480, -964.5]
+  ],
+  "line_qualities": [1.00, 0.95, 0.52],
+  "signal_quality": 0.73,
+  "detector_version": "iterative-v1",
+  ...
+}
+```
+
+Each `[a, b, c]` is in `ax + by + c = 0` form. Point-to-line distance is
+`abs(a*x + b*y + c) / hypot(a, b)`.
+
+For computing per-cell diagnostics from a cell quad (4 image-space
+vertices), use the helper in this module:
+
+```python
+from tools.interior_bezel_detection import (
+    InteriorBezelDetection, cell_line_diagnostics,
+)
+
+# detection: InteriorBezelDetection (or hydrate from per-pair JSON)
+# cell_quad: list of 4 (x, y) tuples for one sticker/cell
+
+diag = cell_line_diagnostics(detection, cell_quad, min_line_quality=0.4)
+# diag["any_crossing"]              — any bezel line crosses this cell?
+# diag["any_crossing_high_quality"] — same, but only counting lines >= min_quality
+# diag["min_distance_from_centroid_px"]  — closest line to cell center
+# diag["per_line"]                  — array of {angle, quality, distance, crosses}
+# diag["cell_center_to_cube_center_px"]  — proxy for "is this cell at the
+#                                          cube-center vertex?"
+```
+
+### Recommended two-signal mining recipe (Codex-side)
+
+For each (setId, side, slot, cell) in `hard_case_visual_feedback.json`:
+
+1. Load the bezel detection for that (setId, side).
+2. Load the corresponding cell quad from the proposer / recognizer output.
+3. Call `cell_line_diagnostics(detection, cell_quad, min_line_quality=0.4)`.
+4. Compare:
+   - `any_crossing_high_quality` (bezel signal) vs
+   - the cell-discontinuity probe's flag for the same cell
+   - vs the human label's `failureModes` field
+
+Cross-tab axes for the mining table:
+- **bezel-only hits** (bezel flag = True, discontinuity = False)
+- **discontinuity-only hits**
+- **both-hit** (the candidate production guard)
+- **both-miss on human-bad cells** (both signals failed on a known bad cell)
+- **both-hit on human-good cells** (zero-FP candidates)
+
+The likely useful production guard, if any survives the mining: "both
+signals agree" or "high-quality bezel crossing + discontinuity
+corroboration." Either-alone is NOT in scope for behavior wiring.
+
 ## What this probe is signal for
 
 The (cube_center, 3 angles) pair is the prerequisite for finding h1, h3,

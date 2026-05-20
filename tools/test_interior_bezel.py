@@ -202,8 +202,17 @@ def _serialize_detection(d: InteriorBezelDetection) -> dict:
         "boundary_angles_deg": [
             round(_math.degrees(a), 2) for a in d.boundary_angles
         ],
+        # Line equations in ax + by + c = 0 form, one per boundary
+        # angle, for downstream slot/cell-level geometric joins.
+        # Pair with `tools/interior_bezel_detection.cell_line_diagnostics`
+        # to compute per-cell distance + crossing flags.
+        "line_equations": [
+            [round(eq[0], 6), round(eq[1], 6), round(eq[2], 4)]
+            for eq in d.line_equations
+        ],
         "line_qualities": [round(q, 3) for q in d.line_qualities],
         "signal_quality": round(d.signal_quality, 3),
+        "detector_version": "iterative-v1",
         "debug": d.debug,
     }
 

@@ -94,6 +94,11 @@ class InteriorBezelDetection:
     boundary_lines: List[Line] = field(default_factory=list)
     # 0-3 angles in radians, one per boundary line
     boundary_angles: List[float] = field(default_factory=list)
+    # 0-3 line equations as (a, b, c) tuples such that ax + by + c = 0
+    # (same order as boundary_angles). Pre-computed for downstream
+    # geometric joins — point-to-line distance is
+    # `abs(a*x + b*y + c) / hypot(a, b)`.
+    line_equations: List[Tuple[float, float, float]] = field(default_factory=list)
     # 0-3 per-line quality scores in [0, 1], same order as boundary_angles
     line_qualities: List[float] = field(default_factory=list)
     # Heuristic overall confidence 0.0-1.0
@@ -543,11 +548,133 @@ def detect_interior_bezel_lines(
         "aggregator": "mean_of_bottom_2 * completeness",
     }
 
+    # Line equations: for a line through (cx, cy) at angle θ, the unit
+    # NORMAL is (-sin θ, cos θ) and the line is `-sin(θ)*x + cos(θ)*y +
+    # (sin(θ)*cx - cos(θ)*cy) = 0`.
+    line_equations: List[Tuple[float, float, float]] = []
+    for theta in angles:
+        a = -math.sin(theta)
+        b = math.cos(theta)
+        c = -(a * cx + b * cy)
+        line_equations.append((float(a), float(b), float(c)))
+
     return InteriorBezelDetection(
         cube_center=(float(cx), float(cy)),
         boundary_lines=boundary_lines,
         boundary_angles=[float(a) for a in angles],
+        line_equations=line_equations,
         line_qualities=line_qualities,
         signal_quality=float(signal_quality),
         debug=debug,
     )
+
+
+# ----------------- helpers for downstream slot/cell-level joins -----------------
+
+
+def point_to_line_distance(
+    point: Point, line_eq: Tuple[float, float, float]
+) -> float:
+    """Distance from a point to a line in ax + by + c = 0 form."""
+    a, b, c = line_eq
+    denom = math.hypot(a, b)
+    if denom < 1e-9:
+        return float("inf")
+    return abs(a * point[0] + b * point[1] + c) / denom
+
+
+def line_crosses_quad(
+    quad_pts: Sequence[Point], line_eq: Tuple[float, float, float]
+) -> bool:
+    """True iff the infinite line `ax + by + c = 0` passes through the
+    interior of the convex polygon `quad_pts` (4 vertices in CW or CCW
+    order). Detected by checking that quad vertices straddle the line —
+    i.e., not all on one side."""
+    a, b, c = line_eq
+    signs = []
+    for x, y in quad_pts:
+        v = a * x + b * y + c
+        if v > 1e-6:
+            signs.append(1)
+        elif v < -1e-6:
+            signs.append(-1)
+        else:
+            signs.append(0)
+    return any(s == 1 for s in signs) and any(s == -1 for s in signs)
+
+
+def cell_line_diagnostics(
+    detection: InteriorBezelDetection,
+    cell_quad: Sequence[Point],
+    *,
+    min_line_quality: float = 0.0,
+) -> dict:
+    """Compute per-line diagnostics for a single cell quad against the
+    detected bezel lines. Intended for downstream slot/cell-level joins
+    against #175's overlay_feedback per-slot rows.
+
+    Args:
+      detection: an InteriorBezelDetection (image-level result)
+      cell_quad: 4-vertex sequence of (x, y) image-space points
+        describing the cell's quadrilateral in image coords
+      min_line_quality: when computing the aggregate "any_crossing"
+        flag, ignore lines whose per-line quality is below this
+        threshold (default 0.0 = consider all detected lines)
+
+    Returns dict with keys:
+      cell_centroid: (cx, cy)
+      cell_center_to_cube_center_px: float (proxy for "is this cell
+        near the cube-center vertex?")
+      per_line: list of {angle_deg, quality, distance_from_centroid_px,
+        crosses_cell}
+      any_crossing: bool (any line crosses the cell?)
+      any_crossing_high_quality: bool (any line with quality >=
+        `min_line_quality` crosses the cell?)
+      min_distance_from_centroid_px: float (closest line to cell centroid)
+    """
+    # Centroid of the quad
+    cx = sum(p[0] for p in cell_quad) / len(cell_quad)
+    cy = sum(p[1] for p in cell_quad) / len(cell_quad)
+    cell_centroid: Point = (cx, cy)
+
+    if detection.cube_center is not None:
+        cc_dist = math.hypot(
+            cx - detection.cube_center[0], cy - detection.cube_center[1]
+        )
+    else:
+        cc_dist = float("inf")
+
+    per_line = []
+    for i, (eq, q, theta) in enumerate(zip(
+        detection.line_equations,
+        detection.line_qualities,
+        detection.boundary_angles,
+    )):
+        per_line.append({
+            "line_index": i,
+            "angle_deg": round(math.degrees(theta), 2),
+            "quality": round(float(q), 3),
+            "distance_from_centroid_px": round(
+                point_to_line_distance(cell_centroid, eq), 1
+            ),
+            "crosses_cell": bool(line_crosses_quad(cell_quad, eq)),
+        })
+
+    any_crossing = any(pl["crosses_cell"] for pl in per_line)
+    any_crossing_high_quality = any(
+        pl["crosses_cell"] and pl["quality"] >= min_line_quality
+        for pl in per_line
+    )
+    min_dist = min(
+        (pl["distance_from_centroid_px"] for pl in per_line),
+        default=float("inf"),
+    )
+
+    return {
+        "cell_centroid": [round(cx, 1), round(cy, 1)],
+        "cell_center_to_cube_center_px": round(cc_dist, 1),
+        "per_line": per_line,
+        "any_crossing": any_crossing,
+        "any_crossing_high_quality": any_crossing_high_quality,
+        "min_distance_from_centroid_px": min_dist,
+    }

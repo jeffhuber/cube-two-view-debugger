@@ -57,8 +57,7 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 | Owner | Branch | PR | What | Touches | ETA |
 |---|---|---|---|---|---|
-| Claude | `claude/interior-bezel-detection` | #177 | Diagnostics-only probe: angular Hough sweep through silhouette centroid → cube-center vertex + 3 face-boundary lines. Targets the h1/h3/h5 ceiling identified in #176 (3 hexagon vertices are interior to silhouette on yawed cubes). Human review: 5/18 worst pairs overall_pass; magenta line robust ~17/18; cyan/yellow miss frequently. | `tools/interior_bezel_detection.py`, `tools/test_interior_bezel.py`, `tools/INTERIOR_BEZEL_DETECTION.md`, `tests/fixtures/interior_bezel_visual_feedback.json` (all new) | awaiting Devin audit |
-| Claude | `claude/interior-bezel-iterative` | (in-flight) | Follow-up to #177: iterative (angle-pick, center-refine) refinement + per-line quality + vectorized line_mass (4x faster). Multi-seed restart tried + dropped (made things worse). 4/18 strong detections (31 A/B, 57 A, 58 A; all genuinely cube-aligned). Stacked on #177 — rebase to main after #177 lands. | `tools/interior_bezel_detection.py`, `tools/test_interior_bezel.py`, `tools/INTERIOR_BEZEL_DETECTION.md` (all modified) | awaiting Devin audit |
+| Codex | `codex/bezel-discontinuity-mining` | #179 | Diagnostics-only slot/cell join of #175 cell-discontinuity with #178 interior-bezel per-line crossings on the human-reviewed hybrid overlay quads. | `tools/probe_bezel_discontinuity_join.py`, `tools/BEZEL_DISCONTINUITY_JOIN_REPORT.md`, `tests/fixtures/hard_case_visual_feedback_bezel_join.json`, `tests/test_bezel_discontinuity_join.py` | ready for audit |
 
 *(Codex: please populate your row when you start something.)*
 
@@ -70,12 +69,11 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 ### Claude
 
+- **#178** — Iterative interior-bezel refinement + per-line quality + slot/cell join helper. Exposes `crosses_high_quality_bezel`; still diagnostics-only.
+- **#177** — Interior bezel-line detection probe + human-review fixture. Single-pass detector showed 5/18 honest pass rate and motivated per-line quality.
 - **#176** — Hex-fitter failure taxonomy + walkthrough generator (diagnostics-only). 12/18 worst-pair hexagons are degenerate (min_edge < 20 px); structural finding that h1/h3/h5 are interior to silhouette on yawed cubes — bounds what hull-based fitters can achieve.
 - **#163** — Full-hull lookup for shared vertices + sweep-state cache fix. Tooling evaluator gains +4.0pp and beats WhiteUpRecognizer in that lane.
 - **#157** — Slot/src filter for hybrid pipeline. Real diagnostic signal, but negative deployment result; kept as experimental infrastructure.
-- **#156** — Hull-guard attempt for hybrid pipeline. Negative result; documents why cube-hull containment cannot fix multi-face rectification failures.
-- **#152** — Hybrid pipeline evaluator. Rectify-on-existing-recognizer-quads transfers poorly end-to-end; geometry, not color, is binding.
-- **#142** — Learned vertex regressor (sklearn Ridge on 68 hull labels). Mixed result: better mean IoU, still 0% pass at face≥0.85.
 
 ### Infra (Devin-authored, mirrored across both repos)
 
@@ -95,6 +93,7 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 Newest first. Each entry: date, decision, one-line why.
 
+- **2026-05-20** — Bezel+discontinuity cell join remains diagnostics-only. On #175's 270 human-reviewed overlay cells, default `line_q>=0.40 && distance<=30px && discontinuity` hit 32 human-bad cells and 0 human-good cells, but 54 human-bad cells were both-miss and labels are slot-level; use as guard evidence, not behavior.
 - **2026-05-19** — Human overlay feedback is now structured supervision for hybrid geometry. The first 5 reviewed sets have 28/30 bad slots, led by B:L and A:F wrong-source/bad-quad failures; use this to guide diagnostics, not production behavior.
 - **2026-05-19** — Cell-discontinuity scoring remains diagnostics-only. On the 30 human-reviewed overlay slots, human-bad rows have much higher mean score than the 2 human-good rows, but the sample is too small/skewed to become a guard.
 - **2026-05-19** — Repair backfill behavior may probe unstable standard repairs only under the Set 61 diagnostic shape. Full corpus stayed contract-clean and hard cases stayed target-clean; Set 61 moved 33/54 -> 34/54 and remains manual-review, so this is not a promotion path.

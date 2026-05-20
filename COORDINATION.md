@@ -57,10 +57,10 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 | Owner | Branch | PR | What | Touches | ETA |
 |---|---|---|---|---|---|
-| Claude | `claude/interior-bezel-detection` | #177 | Diagnostics-only probe: angular Hough sweep through silhouette centroid → cube-center vertex + 3 face-boundary lines. Targets the h1/h3/h5 ceiling identified in #176 (3 hexagon vertices are interior to silhouette on yawed cubes). Human review: 5/18 worst pairs overall_pass; magenta line robust ~17/18; cyan/yellow miss frequently. | `tools/interior_bezel_detection.py`, `tools/test_interior_bezel.py`, `tools/INTERIOR_BEZEL_DETECTION.md`, `tests/fixtures/interior_bezel_visual_feedback.json` (all new) | awaiting Devin audit |
-| Claude | `claude/interior-bezel-iterative` | (in-flight) | Follow-up to #177: iterative (angle-pick, center-refine) refinement + per-line quality + vectorized line_mass (4x faster). Multi-seed restart tried + dropped (made things worse). 4/18 strong detections (31 A/B, 57 A, 58 A; all genuinely cube-aligned). Stacked on #177 — rebase to main after #177 lands. | `tools/interior_bezel_detection.py`, `tools/test_interior_bezel.py`, `tools/INTERIOR_BEZEL_DETECTION.md` (all modified) | awaiting Devin audit |
+| Claude | `claude/h-vertex-tracing` | #180 | Tier 1 follow-up: trace h1/h3/h5 candidates by walking outward from cube_center along high-quality bezel lines. Diagnostics-only. **Repositioned post-pivot: this work feeds the global cube model as initialization data; no longer the primary geometry path.** | `tools/interior_bezel_detection.py`, `tools/test_interior_bezel.py`, `tools/INTERIOR_BEZEL_DETECTION.md`, `tests/test_interior_bezel_detection.py` | awaiting Devin audit |
+| Claude | _(planned)_ `claude/global-cube-model` | (not yet open) | **New direction (see Decision Log 2026-05-20).** Standalone tool that fits a single 7-8 DOF cube projection model per photo, initialized from cube_center + bezel angles (#178) + h-vertex candidates (#180) + Visvalingam hull simplification. Outputs 27 sticker quads per photo. Diagnostics-only first PR — produces overlays + a fit-quality report, no wiring. Validates against the 18-pair corpus before any recognition wiring. | new `tools/global_cube_model.py`, new `tools/GLOBAL_CUBE_MODEL.md`, new `tools/test_global_cube_model.py` | starting now |
 
-*(Codex: please populate your row when you start something.)*
+*(Codex: please populate your row when you start something. After #180 merges, Codex's slot/cell mining on `cell_line_diagnostics` is still useful — it becomes one of the cross-checks on the global model's per-cell coherence.)*
 
 ---
 
@@ -70,12 +70,11 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 ### Claude
 
+- **#178** — Iterative refinement + per-line quality + slot/cell join shape (diagnostics-only). 4x perf via vectorized `_line_mass`; 4/18 strong detections (31 A/B, 57 A, 58 A all genuinely cube-aligned); `crosses_high_quality_bezel` derived flag with explicit thresholds + `cell_line_diagnostics` helper for Codex's downstream mining.
+- **#177** — Interior bezel-line detection probe (diagnostics-only). Angular Hough sweep through silhouette centroid finds cube_center + 3 face-boundary lines. Targets the h1/h3/h5 ceiling from #176. Ships human-review fixture + scipy-optional pattern.
 - **#176** — Hex-fitter failure taxonomy + walkthrough generator (diagnostics-only). 12/18 worst-pair hexagons are degenerate (min_edge < 20 px); structural finding that h1/h3/h5 are interior to silhouette on yawed cubes — bounds what hull-based fitters can achieve.
 - **#163** — Full-hull lookup for shared vertices + sweep-state cache fix. Tooling evaluator gains +4.0pp and beats WhiteUpRecognizer in that lane.
 - **#157** — Slot/src filter for hybrid pipeline. Real diagnostic signal, but negative deployment result; kept as experimental infrastructure.
-- **#156** — Hull-guard attempt for hybrid pipeline. Negative result; documents why cube-hull containment cannot fix multi-face rectification failures.
-- **#152** — Hybrid pipeline evaluator. Rectify-on-existing-recognizer-quads transfers poorly end-to-end; geometry, not color, is binding.
-- **#142** — Learned vertex regressor (sklearn Ridge on 68 hull labels). Mixed result: better mean IoU, still 0% pass at face≥0.85.
 
 ### Infra (Devin-authored, mirrored across both repos)
 
@@ -95,6 +94,7 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 Newest first. Each entry: date, decision, one-line why.
 
+- **2026-05-20** — **Architectural pivot: global cube model + guided capture is the new path to 99%.** Three independent first-principles designs (Claude, Codex, Devin) converged on the same architecture for the cube-snap recognizer: (a) live-pose-gated guided capture, (b) one **global cube projection model** per photo whose 27 sticker quads are coherent by construction (replaces per-sticker segmentation / hexagon fitter), (c) probabilistic color reads anchored on center stickers (per-photo calibration), (d) legal-state search over color probabilities rather than heuristic repair, (e) three outcomes — confident solve / manual confirmation / retake — with refusal when uniqueness fails. The current bezel-detection work (#177, #178, #180) repositions as **initialization data + cross-checks for the global model**, NOT as the primary geometry path; the structural failure mode of "per-sticker / per-grid local detection then reconcile" is exactly what the global model prevents by parameterization (per Codex: "every sampled sticker must come from the same valid projected cube model"). **What this changes:** pause `_fit_hexagon_to_hull` improvements; pause Tier 3a sticker-grid suppression (was repair on a now-demoted path); pivot to a standalone global-cube-model fitter that takes #178/#180's outputs as initial estimates and produces a fitted projected cube + 27 sticker quads + per-fit confidence. Validation: must produce 6 correct face quads / 54 projected cells (or explicit refuse) on a target fraction of the 18-pair corpus before any recognition wiring. **What it keeps:** Codex's slot/cell mining on `cell_line_diagnostics` becomes a cross-check on the global model's face boundaries (two-signal agreement); human review of geometry overlays (planned ground-truth labels) becomes the validation set instead of threshold tuning. **Next step:** Claude opens a `claude/global-cube-model` worktree and a diagnostics-only PR.
 - **2026-05-19** — Human overlay feedback is now structured supervision for hybrid geometry. The first 5 reviewed sets have 28/30 bad slots, led by B:L and A:F wrong-source/bad-quad failures; use this to guide diagnostics, not production behavior.
 - **2026-05-19** — Cell-discontinuity scoring remains diagnostics-only. On the 30 human-reviewed overlay slots, human-bad rows have much higher mean score than the 2 human-good rows, but the sample is too small/skewed to become a guard.
 - **2026-05-19** — Repair backfill behavior may probe unstable standard repairs only under the Set 61 diagnostic shape. Full corpus stayed contract-clean and hard cases stayed target-clean; Set 61 moved 33/54 -> 34/54 and remains manual-review, so this is not a promotion path.

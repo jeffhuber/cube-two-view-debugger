@@ -38,7 +38,7 @@ from PIL import Image, ImageDraw
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from rembg import remove  # noqa: E402
+# Repo imports are cheap (no optional deps).
 from tools.evaluate_hybrid_pipeline import _load_processing_image  # noqa: E402
 from tools.extract_color_samples import (  # noqa: E402
     discover_additional_tasks,
@@ -49,6 +49,19 @@ from tools.propose_geometry_labels import (  # noqa: E402
     _get_rembg_session,
     _hull_from_mask,
 )
+
+# `rembg` (and its torch backend) is heavy. Import inside the function
+# that needs it so `--help` works in a clean venv without the optional
+# research-tooling dependency installed.
+def _import_rembg_remove():
+    try:
+        from rembg import remove  # type: ignore
+        return remove
+    except ImportError as e:
+        raise ImportError(
+            "This script requires the optional 'rembg' dependency. "
+            "Install with: .venv/bin/pip install rembg"
+        ) from e
 
 
 CORPUS_MANIFEST = REPO_ROOT / "tests/fixtures/corpus_manifest.json"
@@ -90,6 +103,7 @@ def _hexagon_min_edge(hexagon: List[Tuple[float, float]]) -> float:
 def _compute_walkthrough_data(image_path: Path) -> Dict[str, Any]:
     """Run the full algorithm and capture all intermediate data needed
     for both visualization and structured analysis."""
+    remove = _import_rembg_remove()
     image, _ = _load_processing_image(image_path)
     w, h = image.size
 
@@ -202,6 +216,7 @@ def render_walkthrough(image_path: Path, data: Dict[str, Any],
     def offset_y(p):
         return (p[0], p[1] + PANEL_HEADER_HEIGHT)
 
+    remove = _import_rembg_remove()
     rgba = remove(image, session=_get_rembg_session("u2net"))
     alpha = np.array(rgba.split()[-1], dtype=np.uint8)
     mask = alpha > 128

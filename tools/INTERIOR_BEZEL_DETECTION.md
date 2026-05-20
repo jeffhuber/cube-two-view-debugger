@@ -121,6 +121,56 @@ diagnostics-first discipline):
 Neither is wired here — this is a probe shipping signal, not a tuned
 production component.
 
+## Observed weaknesses vs human visual review
+
+After the per-pair signal_quality table above was generated, the 18
+detector overlays were reviewed visually by the project owner using a
+gallery tool with per-pair checkboxes. The structured feedback is
+committed at `tests/fixtures/interior_bezel_visual_feedback.json`.
+
+**Honest pass rate**: 5 of 18 (28%) pairs marked `overall_pass=true`
+by the reviewer — not 9/18 as `signal_quality ≥ 0.85` would suggest.
+The calibration miss tells us the heuristic over-rewards
+`angle_regularity` when 3 picked angles happen to be ~60° apart even
+if 1-2 are sticker-grid contaminants.
+
+| Reviewer field            | Count (explicit clicks) |
+|---------------------------|-------------------------|
+| `center_correct`          | 8/18                    |
+| `angles_correct`          | 5/18                    |
+| `overall_pass`            | **5/18 (28%)**          |
+
+The reviewer's per-pair notes expand the picture — many cubes flagged
+`center_correct=false` were noted as "10s of pixels off" or "close but
+~100 px off"; the binary checkbox doesn't capture that gradient.
+
+### Two robust patterns across the 18 pairs
+
+1. **The magenta line (typically the most-vertical bezel between the
+   front-left and front-right faces) is correct on ~17/18 cases.** It
+   is the longest unbroken dark line in the silhouette; sticker grid
+   can't compete.
+2. **The cyan and yellow lines (the diagonal face boundaries going
+   upper-left and upper-right) miss frequently** — they are shorter
+   and compete with sticker-grid edges that run parallel to them.
+
+### Root cause (the same one flagged speculatively above)
+
+The detector is single-pass: angles are picked at the centroid
+(where the geometry is approximate) and the center is then refined
+holding those (possibly contaminated) angles fixed. When the centroid
+seed is ~100 px off (reviewer noted this on Set 44 B and 47 B), the
+refinement can't escape — picking better angles requires moving the
+center; refining the center holding the angles requires already-good
+angles.
+
+The fix is **iterative**: re-pick angles at the refined center, then
+re-refine center, until convergence. Plus a **per-line quality**
+breakdown so the detector exposes "magenta=0.95, cyan=0.3, yellow=0.6"
+rather than hiding it inside a single number. **Targeted as a
+follow-up PR** — this PR ships the honest baseline + the human
+review fixture as ground truth to measure the follow-up against.
+
 ## What this probe is signal for
 
 The (cube_center, 3 angles) pair is the prerequisite for finding h1, h3,
@@ -144,11 +194,12 @@ up across the broader corpus:
 
 ## Files
 
-| File                                    | Purpose                                              |
-|-----------------------------------------|------------------------------------------------------|
-| `tools/interior_bezel_detection.py`     | Standalone detection module (numpy + scipy, no cv2) |
-| `tools/test_interior_bezel.py`          | Test driver + visualization (uses rembg for masks)  |
-| `tools/INTERIOR_BEZEL_DETECTION.md`     | This doc (results writeup)                          |
+| File                                                     | Purpose                                              |
+|----------------------------------------------------------|------------------------------------------------------|
+| `tools/interior_bezel_detection.py`                      | Standalone detection module (numpy + scipy, no cv2) |
+| `tools/test_interior_bezel.py`                           | Test driver + visualization (uses rembg for masks)  |
+| `tools/INTERIOR_BEZEL_DETECTION.md`                      | This doc (results writeup)                          |
+| `tests/fixtures/interior_bezel_visual_feedback.json`     | Human review of the 18 worst-pair overlays — ground truth for measuring the follow-up iterative-refinement PR |
 
 ## Reproducing this artifact
 

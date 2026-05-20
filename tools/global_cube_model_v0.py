@@ -33,6 +33,29 @@ Quad = List[Point]
 
 
 FACE_PAIRS: Tuple[Tuple[int, int], ...] = ((0, 1), (1, 2), (2, 0))
+CENTER_REFINEMENT_OFFSETS_PX: Tuple[Tuple[float, float], ...] = (
+    (0.0, 0.0),
+    (-24.0, -24.0),
+    (-24.0, 0.0),
+    (-24.0, 24.0),
+    (0.0, -24.0),
+    (0.0, 24.0),
+    (24.0, -24.0),
+    (24.0, 0.0),
+    (24.0, 24.0),
+    (-48.0, 0.0),
+    (0.0, -48.0),
+    (0.0, 48.0),
+    (48.0, 0.0),
+    (-24.0, -48.0),
+    (-24.0, 48.0),
+    (24.0, -48.0),
+    (24.0, 48.0),
+    (-48.0, -24.0),
+    (-48.0, 24.0),
+    (48.0, -24.0),
+    (48.0, 24.0),
+)
 
 
 @dataclass(frozen=True)
@@ -140,13 +163,7 @@ def fit_projected_cube_model(
 
     if best is None:
         return FitResult(None, "no_candidates", {"evaluatedCandidates": evaluated})
-    status = "ok"
-    if best.score_components.get("insideRatio", 0.0) < 0.70:
-        status = "low_inside_ratio"
-    elif best.score_components.get("silhouetteIoU", 0.0) < 0.55:
-        status = "low_iou"
-    elif best.score_components.get("cellInsideRatio", 0.0) < 0.90:
-        status = "low_cell_inside"
+    status = _status_from_components(best.score_components)
     return FitResult(
         best,
         status,
@@ -158,6 +175,103 @@ def fit_projected_cube_model(
             "detectorLineQualities": [round(float(q), 4) for q in detection.line_qualities],
         },
     )
+
+
+def fit_projected_cube_model_v01(
+    detection: InteriorBezelDetection,
+    silhouette_mask: np.ndarray,
+    *,
+    edge_steps: int = 32,
+    center_offsets: Sequence[Tuple[float, float]] = CENTER_REFINEMENT_OFFSETS_PX,
+) -> FitResult:
+    """Fit a diagnostics-only V0.1 projected cube model.
+
+    V0.1 keeps the same model shape as V0: one image-space cube center,
+    three projected axes, and one shared edge length. The only added degree
+    of freedom is a small, bounded center-refinement grid around the detector's
+    initial center. Selection prefers an ``ok`` candidate when the diagnostics
+    thresholds can be satisfied; otherwise it falls back to the highest-score
+    candidate and reports the remaining weak geometry status.
+    """
+    if silhouette_mask.ndim != 2:
+        return FitResult(None, "invalid_mask", {"error": "silhouette_mask must be 2-D"})
+    if detection.cube_center is None:
+        return FitResult(None, "missing_center", {"error": "interior bezel detector has no cube_center"})
+    if len(detection.boundary_angles) < 3:
+        return FitResult(None, "missing_axes", {"error": "need 3 detected boundary angles"})
+    if int(silhouette_mask.sum()) <= 0:
+        return FitResult(None, "empty_mask", {"error": "silhouette mask is empty"})
+    if not center_offsets:
+        return FitResult(None, "missing_center_offsets", {"error": "center_offsets must not be empty"})
+
+    base_center = (float(detection.cube_center[0]), float(detection.cube_center[1]))
+    base_units = [_unit_from_angle(angle) for angle in detection.boundary_angles[:3]]
+    edge_min, edge_max = _edge_search_range(base_center, silhouette_mask)
+    if edge_max <= edge_min:
+        return FitResult(None, "invalid_search_range", {"edgeMin": edge_min, "edgeMax": edge_max})
+
+    best_any: Optional[ProjectedCubeModel] = None
+    best_any_status = "no_candidates"
+    best_ok: Optional[ProjectedCubeModel] = None
+    evaluated = 0
+    ok_candidate_count = 0
+    normalized_offsets = tuple((float(dx), float(dy)) for dx, dy in center_offsets)
+
+    for dx, dy in normalized_offsets:
+        center = (base_center[0] + dx, base_center[1] + dy)
+        for signs in itertools.product((-1, 1), repeat=3):
+            signed_units = [
+                (sign * unit[0], sign * unit[1])
+                for sign, unit in zip(signs, base_units)
+            ]
+            for edge_length in np.linspace(edge_min, edge_max, edge_steps):
+                axes = tuple(
+                    (float(edge_length * unit[0]), float(edge_length * unit[1]))
+                    for unit in signed_units
+                )
+                model = _model_from_axes(
+                    center,
+                    axes,
+                    float(edge_length),
+                    tuple(int(sign) for sign in signs),
+                    silhouette_mask,
+                    detection,
+                )
+                status = _status_from_components(model.score_components)
+                evaluated += 1
+                if best_any is None or model.score > best_any.score:
+                    best_any = model
+                    best_any_status = status
+                if status == "ok":
+                    ok_candidate_count += 1
+                    if best_ok is None or model.score > best_ok.score:
+                        best_ok = model
+
+    if best_any is None:
+        return FitResult(None, "no_candidates", {"evaluatedCandidates": evaluated})
+
+    selected = best_ok if best_ok is not None else best_any
+    status = "ok" if best_ok is not None else best_any_status
+    chosen_offset = (
+        selected.cube_center[0] - base_center[0],
+        selected.cube_center[1] - base_center[1],
+    )
+    diagnostics: Dict[str, Any] = {
+        "fitVersion": "v0.1-center-refine",
+        "selectionPolicy": "prefer_ok_then_score",
+        "evaluatedCandidates": evaluated,
+        "centerOffsetsTested": len(normalized_offsets),
+        "okCandidateCount": ok_candidate_count,
+        "baseCenter": _round_point(base_center),
+        "chosenCenterOffset": _round_point(chosen_offset),
+        "edgeMin": round(edge_min, 2),
+        "edgeMax": round(edge_max, 2),
+        "detectorSignalQuality": round(float(detection.signal_quality), 4),
+        "detectorLineQualities": [round(float(q), 4) for q in detection.line_qualities],
+    }
+    if best_ok is None:
+        diagnostics["fallbackReason"] = "no_ok_candidate"
+    return FitResult(selected, status, diagnostics)
 
 
 def subdivide_face_quad(face_quad: Sequence[Point]) -> List[Dict[str, Any]]:
@@ -324,6 +438,16 @@ def _score_components(
         "detectorSignalQuality": float(detection.signal_quality),
         "outsideImagePenalty": float(outside_penalty),
     }
+
+
+def _status_from_components(components: Dict[str, float]) -> str:
+    if components.get("insideRatio", 0.0) < 0.70:
+        return "low_inside_ratio"
+    if components.get("silhouetteIoU", 0.0) < 0.55:
+        return "low_iou"
+    if components.get("cellInsideRatio", 0.0) < 0.90:
+        return "low_cell_inside"
+    return "ok"
 
 
 def _edge_search_range(center: Point, silhouette_mask: np.ndarray) -> Tuple[float, float]:

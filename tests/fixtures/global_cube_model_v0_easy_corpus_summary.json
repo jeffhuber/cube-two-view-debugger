@@ -1,0 +1,2592 @@
+{
+  "config": {
+    "edgeSteps": 32,
+    "outputDir": "/tmp/global_cube_model_v0_easy_corpus_overlays",
+    "profile": "easy-corpus",
+    "setIds": [
+      "15",
+      "23",
+      "26",
+      "29",
+      "32",
+      "36",
+      "37",
+      "42"
+    ]
+  },
+  "description": "Diagnostics-only projected cube model scaffold. One cube center, three projected axes, one shared edge length; all visible face/cell quads are generated from that model.",
+  "probe": "global_cube_model_v0",
+  "rows": [
+    {
+      "currentScoreObserved": 54,
+      "detection": {
+        "boundaryAnglesDeg": [
+          146.0,
+          90.0,
+          36.0
+        ],
+        "cubeCenter": [
+          410.4,
+          711.4
+        ],
+        "error": null,
+        "lineQualities": [
+          1.0,
+          0.3348,
+          0.2902
+        ],
+        "signalQuality": 0.3125
+      },
+      "diagnosticDisposition": "model_iteration_needed",
+      "evaluationTier": "easy_corpus",
+      "expectedCategory": "success_clean",
+      "expectedScoreFloor": 54,
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          1.0,
+          0.3348,
+          0.2902
+        ],
+        "detectorSignalQuality": 0.3125,
+        "edgeMax": 381.64,
+        "edgeMin": 65.8,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 15 - A - white up IMG_6707.JPG",
+      "model": {
+        "axes": [
+          [
+            189.7,
+            -127.95
+          ],
+          [
+            0.0,
+            228.81
+          ],
+          [
+            -185.11,
+            -134.49
+          ]
+        ],
+        "cubeCenter": [
+          410.42,
+          711.41
+        ],
+        "edgeLength": 228.814,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                410.42,
+                711.41
+              ],
+              [
+                600.11,
+                583.46
+              ],
+              [
+                600.11,
+                812.27
+              ],
+              [
+                410.42,
+                940.22
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                410.42,
+                711.41
+              ],
+              [
+                410.42,
+                940.22
+              ],
+              [
+                225.3,
+                805.73
+              ],
+              [
+                225.3,
+                576.92
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                410.42,
+                711.41
+              ],
+              [
+                225.3,
+                576.92
+              ],
+              [
+                415.0,
+                448.97
+              ],
+              [
+                600.11,
+                583.46
+              ]
+            ]
+          }
+        ],
+        "score": 1.7091,
+        "scoreComponents": {
+          "cellInsideRatio": 0.963,
+          "detectorSignalQuality": 0.3125,
+          "insideRatio": 0.9454,
+          "maskCoverage": 0.4662,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.454
+        },
+        "signChoice": [
+          -1,
+          1,
+          -1
+        ],
+        "warnings": [
+          "low_silhouette_iou"
+        ]
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_easy_corpus_overlays/set_15_A_global_model_v0.png",
+      "profile": "easy-corpus",
+      "setId": "15",
+      "side": "A",
+      "source": "corpus",
+      "status": "low_iou"
+    },
+    {
+      "currentScoreObserved": 54,
+      "detection": {
+        "boundaryAnglesDeg": [
+          32.0,
+          146.0,
+          94.0
+        ],
+        "cubeCenter": [
+          436.4,
+          555.1
+        ],
+        "error": null,
+        "lineQualities": [
+          0.7773,
+          0.2416,
+          0.0
+        ],
+        "signalQuality": 0.1208
+      },
+      "diagnosticDisposition": "model_ok",
+      "evaluationTier": "easy_corpus",
+      "expectedCategory": "success_clean",
+      "expectedScoreFloor": 54,
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          0.7773,
+          0.2416,
+          0.0
+        ],
+        "detectorSignalQuality": 0.1208,
+        "edgeMax": 386.86,
+        "edgeMin": 66.7,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 15 - B - white up IMG_6708.JPG",
+      "model": {
+        "axes": [
+          [
+            266.77,
+            166.69
+          ],
+          [
+            -260.79,
+            175.9
+          ],
+          [
+            21.94,
+            -313.8
+          ]
+        ],
+        "cubeCenter": [
+          436.42,
+          555.14
+        ],
+        "edgeLength": 314.566,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                436.42,
+                555.14
+              ],
+              [
+                703.19,
+                721.83
+              ],
+              [
+                442.4,
+                897.74
+              ],
+              [
+                175.64,
+                731.04
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                436.42,
+                555.14
+              ],
+              [
+                175.64,
+                731.04
+              ],
+              [
+                197.58,
+                417.24
+              ],
+              [
+                458.37,
+                241.34
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                436.42,
+                555.14
+              ],
+              [
+                458.37,
+                241.34
+              ],
+              [
+                725.13,
+                408.03
+              ],
+              [
+                703.19,
+                721.83
+              ]
+            ]
+          }
+        ],
+        "score": 2.2,
+        "scoreComponents": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.1208,
+          "insideRatio": 0.9661,
+          "maskCoverage": 0.8706,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.8448
+        },
+        "signChoice": [
+          1,
+          1,
+          -1
+        ],
+        "warnings": []
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_easy_corpus_overlays/set_15_B_global_model_v0.png",
+      "profile": "easy-corpus",
+      "setId": "15",
+      "side": "B",
+      "source": "corpus",
+      "status": "ok"
+    },
+    {
+      "currentScoreObserved": 54,
+      "detection": {
+        "boundaryAnglesDeg": [
+          28.0,
+          144.0,
+          104.0
+        ],
+        "cubeCenter": [
+          406.9,
+          529.4
+        ],
+        "error": null,
+        "lineQualities": [
+          0.3803,
+          0.2036,
+          0.0012
+        ],
+        "signalQuality": 0.1024
+      },
+      "diagnosticDisposition": "model_ok",
+      "evaluationTier": "easy_corpus",
+      "expectedCategory": "success_clean",
+      "expectedScoreFloor": 54,
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          0.3803,
+          0.2036,
+          0.0012
+        ],
+        "detectorSignalQuality": 0.1024,
+        "edgeMax": 368.3,
+        "edgeMin": 63.5,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 23 - A - white up.JPG",
+      "model": {
+        "axes": [
+          [
+            255.74,
+            135.98
+          ],
+          [
+            -234.33,
+            170.25
+          ],
+          [
+            70.07,
+            -281.04
+          ]
+        ],
+        "cubeCenter": [
+          406.86,
+          529.44
+        ],
+        "edgeLength": 289.642,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                406.86,
+                529.44
+              ],
+              [
+                662.6,
+                665.42
+              ],
+              [
+                428.27,
+                835.67
+              ],
+              [
+                172.53,
+                699.69
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                406.86,
+                529.44
+              ],
+              [
+                172.53,
+                699.69
+              ],
+              [
+                242.6,
+                418.65
+              ],
+              [
+                476.93,
+                248.4
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                406.86,
+                529.44
+              ],
+              [
+                476.93,
+                248.4
+              ],
+              [
+                732.67,
+                384.38
+              ],
+              [
+                662.6,
+                665.42
+              ]
+            ]
+          }
+        ],
+        "score": 2.0759,
+        "scoreComponents": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.1024,
+          "insideRatio": 0.9605,
+          "maskCoverage": 0.7761,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.7521
+        },
+        "signChoice": [
+          1,
+          1,
+          -1
+        ],
+        "warnings": []
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_easy_corpus_overlays/set_23_A_global_model_v0.png",
+      "profile": "easy-corpus",
+      "setId": "23",
+      "side": "A",
+      "source": "corpus",
+      "status": "ok"
+    },
+    {
+      "currentScoreObserved": 54,
+      "detection": {
+        "boundaryAnglesDeg": [
+          32.0,
+          146.0,
+          94.0
+        ],
+        "cubeCenter": [
+          424.4,
+          593.7
+        ],
+        "error": null,
+        "lineQualities": [
+          0.8882,
+          0.3645,
+          0.1038
+        ],
+        "signalQuality": 0.2341
+      },
+      "diagnosticDisposition": "model_ok",
+      "evaluationTier": "easy_corpus",
+      "expectedCategory": "success_clean",
+      "expectedScoreFloor": 54,
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          0.8882,
+          0.3645,
+          0.1038
+        ],
+        "detectorSignalQuality": 0.2341,
+        "edgeMax": 381.06,
+        "edgeMin": 65.7,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 23 - B - white up.JPG",
+      "model": {
+        "axes": [
+          [
+            -262.77,
+            -164.2
+          ],
+          [
+            256.88,
+            -173.27
+          ],
+          [
+            -21.61,
+            309.09
+          ]
+        ],
+        "cubeCenter": [
+          424.4,
+          593.71
+        ],
+        "edgeLength": 309.85,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                424.4,
+                593.71
+              ],
+              [
+                161.63,
+                429.52
+              ],
+              [
+                418.51,
+                256.25
+              ],
+              [
+                681.27,
+                420.45
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                424.4,
+                593.71
+              ],
+              [
+                681.27,
+                420.45
+              ],
+              [
+                659.66,
+                729.54
+              ],
+              [
+                402.78,
+                902.81
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                424.4,
+                593.71
+              ],
+              [
+                402.78,
+                902.81
+              ],
+              [
+                140.02,
+                738.61
+              ],
+              [
+                161.63,
+                429.52
+              ]
+            ]
+          }
+        ],
+        "score": 2.1995,
+        "scoreComponents": {
+          "cellInsideRatio": 0.963,
+          "detectorSignalQuality": 0.2341,
+          "insideRatio": 0.9495,
+          "maskCoverage": 0.8872,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.8473
+        },
+        "signChoice": [
+          -1,
+          -1,
+          1
+        ],
+        "warnings": []
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_easy_corpus_overlays/set_23_B_global_model_v0.png",
+      "profile": "easy-corpus",
+      "setId": "23",
+      "side": "B",
+      "source": "corpus",
+      "status": "ok"
+    },
+    {
+      "currentScoreObserved": 54,
+      "detection": {
+        "boundaryAnglesDeg": [
+          152.0,
+          28.0,
+          112.0
+        ],
+        "cubeCenter": [
+          426.4,
+          423.7
+        ],
+        "error": null,
+        "lineQualities": [
+          1.0,
+          1.0,
+          0.0565
+        ],
+        "signalQuality": 0.5282
+      },
+      "diagnosticDisposition": "model_iteration_needed",
+      "evaluationTier": "easy_corpus",
+      "expectedCategory": "success_clean",
+      "expectedScoreFloor": 54,
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          1.0,
+          1.0,
+          0.0565
+        ],
+        "detectorSignalQuality": 0.5282,
+        "edgeMax": 365.4,
+        "edgeMin": 63.0,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 26 - A - white up IMG_6773.JPG",
+      "model": {
+        "axes": [
+          [
+            -236.5,
+            125.75
+          ],
+          [
+            236.5,
+            125.75
+          ],
+          [
+            -100.34,
+            248.35
+          ]
+        ],
+        "cubeCenter": [
+          426.37,
+          423.7
+        ],
+        "edgeLength": 267.852,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                426.37,
+                423.7
+              ],
+              [
+                189.87,
+                549.45
+              ],
+              [
+                426.37,
+                675.2
+              ],
+              [
+                662.87,
+                549.45
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                426.37,
+                423.7
+              ],
+              [
+                662.87,
+                549.45
+              ],
+              [
+                562.53,
+                797.8
+              ],
+              [
+                326.03,
+                672.05
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                426.37,
+                423.7
+              ],
+              [
+                326.03,
+                672.05
+              ],
+              [
+                89.53,
+                797.8
+              ],
+              [
+                189.87,
+                549.45
+              ]
+            ]
+          }
+        ],
+        "score": 1.6432,
+        "scoreComponents": {
+          "cellInsideRatio": 0.9259,
+          "detectorSignalQuality": 0.5282,
+          "insideRatio": 0.8994,
+          "maskCoverage": 0.4345,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.4144
+        },
+        "signChoice": [
+          1,
+          1,
+          1
+        ],
+        "warnings": [
+          "low_silhouette_iou"
+        ]
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_easy_corpus_overlays/set_26_A_global_model_v0.png",
+      "profile": "easy-corpus",
+      "setId": "26",
+      "side": "A",
+      "source": "corpus",
+      "status": "low_iou"
+    },
+    {
+      "currentScoreObserved": 54,
+      "detection": {
+        "boundaryAnglesDeg": [
+          152.0,
+          110.0,
+          2.0
+        ],
+        "cubeCenter": [
+          333.5,
+          477.9
+        ],
+        "error": null,
+        "lineQualities": [
+          1.0,
+          0.0943,
+          0.0
+        ],
+        "signalQuality": 0.0472
+      },
+      "diagnosticDisposition": "model_iteration_needed",
+      "evaluationTier": "easy_corpus",
+      "expectedCategory": "success_clean",
+      "expectedScoreFloor": 54,
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          1.0,
+          0.0943,
+          0.0
+        ],
+        "detectorSignalQuality": 0.0472,
+        "edgeMax": 378.16,
+        "edgeMin": 65.2,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 26 - B - white up IMG_6774.JPG",
+      "model": {
+        "axes": [
+          [
+            324.98,
+            -172.8
+          ],
+          [
+            -125.89,
+            345.87
+          ],
+          [
+            367.84,
+            12.85
+          ]
+        ],
+        "cubeCenter": [
+          333.49,
+          477.86
+        ],
+        "edgeLength": 368.065,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                333.49,
+                477.86
+              ],
+              [
+                658.47,
+                305.06
+              ],
+              [
+                532.58,
+                650.93
+              ],
+              [
+                207.6,
+                823.73
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                333.49,
+                477.86
+              ],
+              [
+                207.6,
+                823.73
+              ],
+              [
+                575.44,
+                836.57
+              ],
+              [
+                701.33,
+                490.71
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                333.49,
+                477.86
+              ],
+              [
+                701.33,
+                490.71
+              ],
+              [
+                1026.31,
+                317.91
+              ],
+              [
+                658.47,
+                305.06
+              ]
+            ]
+          }
+        ],
+        "score": 1.6078,
+        "scoreComponents": {
+          "cellInsideRatio": 0.8519,
+          "detectorSignalQuality": 0.0472,
+          "insideRatio": 0.842,
+          "maskCoverage": 0.5949,
+          "outsideImagePenalty": 0.0769,
+          "silhouetteIoU": 0.5351
+        },
+        "signChoice": [
+          -1,
+          1,
+          1
+        ],
+        "warnings": [
+          "low_silhouette_iou",
+          "low_cell_inside_silhouette"
+        ]
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_easy_corpus_overlays/set_26_B_global_model_v0.png",
+      "profile": "easy-corpus",
+      "setId": "26",
+      "side": "B",
+      "source": "corpus",
+      "status": "low_iou"
+    },
+    {
+      "currentScoreObserved": 54,
+      "detection": {
+        "boundaryAnglesDeg": [
+          144.0,
+          28.0,
+          96.0
+        ],
+        "cubeCenter": [
+          456.7,
+          604.4
+        ],
+        "error": null,
+        "lineQualities": [
+          1.0,
+          1.0,
+          0.0
+        ],
+        "signalQuality": 0.5
+      },
+      "diagnosticDisposition": "model_ok",
+      "evaluationTier": "easy_corpus",
+      "expectedCategory": "success_clean",
+      "expectedScoreFloor": 54,
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          1.0,
+          1.0,
+          0.0
+        ],
+        "detectorSignalQuality": 0.5,
+        "edgeMax": 389.76,
+        "edgeMin": 67.2,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 29 - A - white up IMG_6779.JPG",
+      "model": {
+        "axes": [
+          [
+            256.4,
+            -186.28
+          ],
+          [
+            -279.83,
+            -148.79
+          ],
+          [
+            -33.13,
+            315.19
+          ]
+        ],
+        "cubeCenter": [
+          456.68,
+          604.45
+        ],
+        "edgeLength": 316.924,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                456.68,
+                604.45
+              ],
+              [
+                713.08,
+                418.16
+              ],
+              [
+                433.25,
+                269.38
+              ],
+              [
+                176.86,
+                455.66
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                456.68,
+                604.45
+              ],
+              [
+                176.86,
+                455.66
+              ],
+              [
+                143.73,
+                770.85
+              ],
+              [
+                423.56,
+                919.63
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                456.68,
+                604.45
+              ],
+              [
+                423.56,
+                919.63
+              ],
+              [
+                679.95,
+                733.35
+              ],
+              [
+                713.08,
+                418.16
+              ]
+            ]
+          }
+        ],
+        "score": 2.2628,
+        "scoreComponents": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.5,
+          "insideRatio": 0.9626,
+          "maskCoverage": 0.8805,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.8513
+        },
+        "signChoice": [
+          -1,
+          -1,
+          1
+        ],
+        "warnings": []
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_easy_corpus_overlays/set_29_A_global_model_v0.png",
+      "profile": "easy-corpus",
+      "setId": "29",
+      "side": "A",
+      "source": "corpus",
+      "status": "ok"
+    },
+    {
+      "currentScoreObserved": 54,
+      "detection": {
+        "boundaryAnglesDeg": [
+          30.0,
+          150.0,
+          84.0
+        ],
+        "cubeCenter": [
+          398.3,
+          555.6
+        ],
+        "error": null,
+        "lineQualities": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "signalQuality": 0.0
+      },
+      "diagnosticDisposition": "model_ok",
+      "evaluationTier": "easy_corpus",
+      "expectedCategory": "success_clean",
+      "expectedScoreFloor": 54,
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "detectorSignalQuality": 0.0,
+        "edgeMax": 360.76,
+        "edgeMin": 62.2,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 29 - B - white up IMG_6780.JPG",
+      "model": {
+        "axes": [
+          [
+            -254.04,
+            -146.67
+          ],
+          [
+            254.04,
+            -146.67
+          ],
+          [
+            30.66,
+            291.74
+          ]
+        ],
+        "cubeCenter": [
+          398.3,
+          555.58
+        ],
+        "edgeLength": 293.343,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                398.3,
+                555.58
+              ],
+              [
+                144.26,
+                408.91
+              ],
+              [
+                398.3,
+                262.24
+              ],
+              [
+                652.34,
+                408.91
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                398.3,
+                555.58
+              ],
+              [
+                652.34,
+                408.91
+              ],
+              [
+                683.0,
+                700.64
+              ],
+              [
+                428.96,
+                847.32
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                398.3,
+                555.58
+              ],
+              [
+                428.96,
+                847.32
+              ],
+              [
+                174.92,
+                700.64
+              ],
+              [
+                144.26,
+                408.91
+              ]
+            ]
+          }
+        ],
+        "score": 2.2017,
+        "scoreComponents": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.0,
+          "insideRatio": 0.9676,
+          "maskCoverage": 0.885,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.8596
+        },
+        "signChoice": [
+          -1,
+          -1,
+          1
+        ],
+        "warnings": []
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_easy_corpus_overlays/set_29_B_global_model_v0.png",
+      "profile": "easy-corpus",
+      "setId": "29",
+      "side": "B",
+      "source": "corpus",
+      "status": "ok"
+    },
+    {
+      "currentScoreObserved": 54,
+      "detection": {
+        "boundaryAnglesDeg": [
+          150.0,
+          90.0,
+          36.0
+        ],
+        "cubeCenter": [
+          433.7,
+          567.0
+        ],
+        "error": null,
+        "lineQualities": [
+          1.0,
+          0.5054,
+          0.0
+        ],
+        "signalQuality": 0.2527
+      },
+      "diagnosticDisposition": "model_ok",
+      "evaluationTier": "easy_corpus",
+      "expectedCategory": "success_clean",
+      "expectedScoreFloor": 54,
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          1.0,
+          0.5054,
+          0.0
+        ],
+        "detectorSignalQuality": 0.2527,
+        "edgeMax": 358.44,
+        "edgeMin": 61.8,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 32 - A - white up IMG_7143.JPG",
+      "model": {
+        "axes": [
+          [
+            -252.41,
+            145.73
+          ],
+          [
+            -0.0,
+            -291.46
+          ],
+          [
+            235.79,
+            171.31
+          ]
+        ],
+        "cubeCenter": [
+          433.74,
+          567.01
+        ],
+        "edgeLength": 291.457,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                433.74,
+                567.01
+              ],
+              [
+                181.34,
+                712.74
+              ],
+              [
+                181.34,
+                421.28
+              ],
+              [
+                433.74,
+                275.55
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                433.74,
+                567.01
+              ],
+              [
+                433.74,
+                275.55
+              ],
+              [
+                669.54,
+                446.87
+              ],
+              [
+                669.54,
+                738.32
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                433.74,
+                567.01
+              ],
+              [
+                669.54,
+                738.32
+              ],
+              [
+                417.13,
+                884.05
+              ],
+              [
+                181.34,
+                712.74
+              ]
+            ]
+          }
+        ],
+        "score": 2.2236,
+        "scoreComponents": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.2527,
+          "insideRatio": 0.971,
+          "maskCoverage": 0.8669,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.845
+        },
+        "signChoice": [
+          1,
+          -1,
+          1
+        ],
+        "warnings": []
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_easy_corpus_overlays/set_32_A_global_model_v0.png",
+      "profile": "easy-corpus",
+      "setId": "32",
+      "side": "A",
+      "source": "corpus",
+      "status": "ok"
+    },
+    {
+      "currentScoreObserved": 54,
+      "detection": {
+        "boundaryAnglesDeg": [
+          152.0,
+          22.0,
+          84.0
+        ],
+        "cubeCenter": [
+          399.2,
+          514.9
+        ],
+        "error": null,
+        "lineQualities": [
+          0.8156,
+          0.0617,
+          0.0
+        ],
+        "signalQuality": 0.0308
+      },
+      "diagnosticDisposition": "model_ok",
+      "evaluationTier": "easy_corpus",
+      "expectedCategory": "success_clean",
+      "expectedScoreFloor": 54,
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          0.8156,
+          0.0617,
+          0.0
+        ],
+        "detectorSignalQuality": 0.0308,
+        "edgeMax": 357.86,
+        "edgeMin": 61.7,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 32 - B - white up IMG_7144.JPG",
+      "model": {
+        "axes": [
+          [
+            -256.92,
+            136.61
+          ],
+          [
+            269.8,
+            109.0
+          ],
+          [
+            -30.42,
+            -289.39
+          ]
+        ],
+        "cubeCenter": [
+          399.17,
+          514.92
+        ],
+        "edgeLength": 290.985,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                399.17,
+                514.92
+              ],
+              [
+                142.25,
+                651.53
+              ],
+              [
+                412.04,
+                760.54
+              ],
+              [
+                668.97,
+                623.93
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                399.17,
+                514.92
+              ],
+              [
+                668.97,
+                623.93
+              ],
+              [
+                638.55,
+                334.54
+              ],
+              [
+                368.76,
+                225.53
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                399.17,
+                514.92
+              ],
+              [
+                368.76,
+                225.53
+              ],
+              [
+                111.83,
+                362.14
+              ],
+              [
+                142.25,
+                651.53
+              ]
+            ]
+          }
+        ],
+        "score": 2.1896,
+        "scoreComponents": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.0308,
+          "insideRatio": 0.9637,
+          "maskCoverage": 0.8765,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.8485
+        },
+        "signChoice": [
+          1,
+          1,
+          -1
+        ],
+        "warnings": []
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_easy_corpus_overlays/set_32_B_global_model_v0.png",
+      "profile": "easy-corpus",
+      "setId": "32",
+      "side": "B",
+      "source": "corpus",
+      "status": "ok"
+    },
+    {
+      "currentScoreObserved": 54,
+      "detection": {
+        "boundaryAnglesDeg": [
+          28.0,
+          94.0,
+          158.0
+        ],
+        "cubeCenter": [
+          454.0,
+          336.3
+        ],
+        "error": null,
+        "lineQualities": [
+          0.4916,
+          0.2801,
+          0.1878
+        ],
+        "signalQuality": 0.2339
+      },
+      "diagnosticDisposition": "model_iteration_needed",
+      "evaluationTier": "easy_corpus",
+      "expectedCategory": "success_clean",
+      "expectedScoreFloor": 54,
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          0.4916,
+          0.2801,
+          0.1878
+        ],
+        "detectorSignalQuality": 0.2339,
+        "edgeMax": 340.46,
+        "edgeMin": 58.7,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 36 - A - white up IMG_7151.JPG",
+      "model": {
+        "axes": [
+          [
+            228.38,
+            121.43
+          ],
+          [
+            -18.04,
+            258.03
+          ],
+          [
+            -239.82,
+            96.9
+          ]
+        ],
+        "cubeCenter": [
+          454.0,
+          336.33
+        ],
+        "edgeLength": 258.659,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                454.0,
+                336.33
+              ],
+              [
+                682.38,
+                457.76
+              ],
+              [
+                664.34,
+                715.79
+              ],
+              [
+                435.96,
+                594.36
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                454.0,
+                336.33
+              ],
+              [
+                435.96,
+                594.36
+              ],
+              [
+                196.13,
+                691.25
+              ],
+              [
+                214.17,
+                433.22
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                454.0,
+                336.33
+              ],
+              [
+                214.17,
+                433.22
+              ],
+              [
+                442.56,
+                554.66
+              ],
+              [
+                682.38,
+                457.76
+              ]
+            ]
+          }
+        ],
+        "score": 1.805,
+        "scoreComponents": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.2339,
+          "insideRatio": 0.951,
+          "maskCoverage": 0.5431,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.5283
+        },
+        "signChoice": [
+          1,
+          1,
+          1
+        ],
+        "warnings": [
+          "low_silhouette_iou"
+        ]
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_easy_corpus_overlays/set_36_A_global_model_v0.png",
+      "profile": "easy-corpus",
+      "setId": "36",
+      "side": "A",
+      "source": "corpus",
+      "status": "low_iou"
+    },
+    {
+      "currentScoreObserved": 54,
+      "detection": {
+        "boundaryAnglesDeg": [
+          26.0,
+          156.0,
+          98.0
+        ],
+        "cubeCenter": [
+          384.9,
+          509.1
+        ],
+        "error": null,
+        "lineQualities": [
+          0.3206,
+          0.091,
+          0.0898
+        ],
+        "signalQuality": 0.0904
+      },
+      "diagnosticDisposition": "model_ok",
+      "evaluationTier": "easy_corpus",
+      "expectedCategory": "success_clean",
+      "expectedScoreFloor": 54,
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          0.3206,
+          0.091,
+          0.0898
+        ],
+        "detectorSignalQuality": 0.0904,
+        "edgeMax": 350.32,
+        "edgeMin": 60.4,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 36 - B - white up IMG_7152.JPG",
+      "model": {
+        "axes": [
+          [
+            247.62,
+            120.77
+          ],
+          [
+            -251.68,
+            112.06
+          ],
+          [
+            38.34,
+            -272.82
+          ]
+        ],
+        "cubeCenter": [
+          384.87,
+          509.12
+        ],
+        "edgeLength": 275.502,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                384.87,
+                509.12
+              ],
+              [
+                632.49,
+                629.89
+              ],
+              [
+                380.8,
+                741.94
+              ],
+              [
+                133.18,
+                621.17
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                384.87,
+                509.12
+              ],
+              [
+                133.18,
+                621.17
+              ],
+              [
+                171.53,
+                348.35
+              ],
+              [
+                423.21,
+                236.29
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                384.87,
+                509.12
+              ],
+              [
+                423.21,
+                236.29
+              ],
+              [
+                670.83,
+                357.07
+              ],
+              [
+                632.49,
+                629.89
+              ]
+            ]
+          }
+        ],
+        "score": 2.1582,
+        "scoreComponents": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.0904,
+          "insideRatio": 0.9706,
+          "maskCoverage": 0.8333,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.8128
+        },
+        "signChoice": [
+          1,
+          1,
+          -1
+        ],
+        "warnings": []
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_easy_corpus_overlays/set_36_B_global_model_v0.png",
+      "profile": "easy-corpus",
+      "setId": "36",
+      "side": "B",
+      "source": "corpus",
+      "status": "ok"
+    },
+    {
+      "currentScoreObserved": 54,
+      "detection": {
+        "boundaryAnglesDeg": [
+          104.0,
+          158.0,
+          28.0
+        ],
+        "cubeCenter": [
+          423.1,
+          525.2
+        ],
+        "error": null,
+        "lineQualities": [
+          0.1871,
+          0.026,
+          0.0154
+        ],
+        "signalQuality": 0.0207
+      },
+      "diagnosticDisposition": "model_ok",
+      "evaluationTier": "easy_corpus",
+      "expectedCategory": "success_clean",
+      "expectedScoreFloor": 54,
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          0.1871,
+          0.026,
+          0.0154
+        ],
+        "detectorSignalQuality": 0.0207,
+        "edgeMax": 390.92,
+        "edgeMin": 67.4,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 37 - A - white up IMG_7153.JPG",
+      "model": {
+        "axes": [
+          [
+            71.85,
+            -288.17
+          ],
+          [
+            -275.37,
+            111.26
+          ],
+          [
+            262.23,
+            139.43
+          ]
+        ],
+        "cubeCenter": [
+          423.14,
+          525.16
+        ],
+        "edgeLength": 296.995,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                423.14,
+                525.16
+              ],
+              [
+                494.99,
+                236.99
+              ],
+              [
+                219.62,
+                348.25
+              ],
+              [
+                147.77,
+                636.42
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                423.14,
+                525.16
+              ],
+              [
+                147.77,
+                636.42
+              ],
+              [
+                410.0,
+                775.85
+              ],
+              [
+                685.37,
+                664.59
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                423.14,
+                525.16
+              ],
+              [
+                685.37,
+                664.59
+              ],
+              [
+                757.22,
+                376.42
+              ],
+              [
+                494.99,
+                236.99
+              ]
+            ]
+          }
+        ],
+        "score": 2.0966,
+        "scoreComponents": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.0207,
+          "insideRatio": 0.9745,
+          "maskCoverage": 0.7858,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.77
+        },
+        "signChoice": [
+          -1,
+          1,
+          1
+        ],
+        "warnings": []
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_easy_corpus_overlays/set_37_A_global_model_v0.png",
+      "profile": "easy-corpus",
+      "setId": "37",
+      "side": "A",
+      "source": "corpus",
+      "status": "ok"
+    },
+    {
+      "currentScoreObserved": 54,
+      "detection": {
+        "boundaryAnglesDeg": [
+          162.0,
+          124.0,
+          24.0
+        ],
+        "cubeCenter": [
+          411.4,
+          557.3
+        ],
+        "error": null,
+        "lineQualities": [
+          0.1917,
+          0.0375,
+          0.0
+        ],
+        "signalQuality": 0.0188
+      },
+      "diagnosticDisposition": "model_ok",
+      "evaluationTier": "easy_corpus",
+      "expectedCategory": "success_clean",
+      "expectedScoreFloor": 54,
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          0.1917,
+          0.0375,
+          0.0
+        ],
+        "detectorSignalQuality": 0.0188,
+        "edgeMax": 398.46,
+        "edgeMin": 68.7,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 37 - B - white up IMG_7154.JPG",
+      "model": {
+        "axes": [
+          [
+            -267.67,
+            86.97
+          ],
+          [
+            157.38,
+            -233.33
+          ],
+          [
+            257.12,
+            114.48
+          ]
+        ],
+        "cubeCenter": [
+          411.39,
+          557.3
+        ],
+        "edgeLength": 281.448,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                411.39,
+                557.3
+              ],
+              [
+                143.72,
+                644.27
+              ],
+              [
+                301.1,
+                410.94
+              ],
+              [
+                568.78,
+                323.96
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                411.39,
+                557.3
+              ],
+              [
+                568.78,
+                323.96
+              ],
+              [
+                825.89,
+                438.44
+              ],
+              [
+                668.51,
+                671.77
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                411.39,
+                557.3
+              ],
+              [
+                668.51,
+                671.77
+              ],
+              [
+                400.84,
+                758.74
+              ],
+              [
+                143.72,
+                644.27
+              ]
+            ]
+          }
+        ],
+        "score": 1.802,
+        "scoreComponents": {
+          "cellInsideRatio": 0.963,
+          "detectorSignalQuality": 0.0188,
+          "insideRatio": 0.9371,
+          "maskCoverage": 0.5901,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.5676
+        },
+        "signChoice": [
+          1,
+          -1,
+          1
+        ],
+        "warnings": []
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_easy_corpus_overlays/set_37_B_global_model_v0.png",
+      "profile": "easy-corpus",
+      "setId": "37",
+      "side": "B",
+      "source": "corpus",
+      "status": "ok"
+    },
+    {
+      "currentScoreObserved": 54,
+      "detection": {
+        "boundaryAnglesDeg": [
+          22.0,
+          144.0,
+          52.0
+        ],
+        "cubeCenter": [
+          488.6,
+          432.9
+        ],
+        "error": null,
+        "lineQualities": [
+          0.9173,
+          0.0591,
+          0.0299
+        ],
+        "signalQuality": 0.0445
+      },
+      "diagnosticDisposition": "model_iteration_needed",
+      "evaluationTier": "easy_corpus",
+      "expectedCategory": "success_clean",
+      "expectedScoreFloor": 54,
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          0.9173,
+          0.0591,
+          0.0299
+        ],
+        "detectorSignalQuality": 0.0445,
+        "edgeMax": 384.54,
+        "edgeMin": 66.3,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 42 - A - white up IMG_7163.JPG",
+      "model": {
+        "axes": [
+          [
+            -347.02,
+            -140.21
+          ],
+          [
+            -302.79,
+            219.99
+          ],
+          [
+            230.43,
+            294.93
+          ]
+        ],
+        "cubeCenter": [
+          488.55,
+          432.86
+        ],
+        "edgeLength": 374.274,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                488.55,
+                432.86
+              ],
+              [
+                141.53,
+                292.65
+              ],
+              [
+                -161.26,
+                512.64
+              ],
+              [
+                185.76,
+                652.85
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                488.55,
+                432.86
+              ],
+              [
+                185.76,
+                652.85
+              ],
+              [
+                416.18,
+                947.78
+              ],
+              [
+                718.98,
+                727.79
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                488.55,
+                432.86
+              ],
+              [
+                718.98,
+                727.79
+              ],
+              [
+                371.96,
+                587.58
+              ],
+              [
+                141.53,
+                292.65
+              ]
+            ]
+          }
+        ],
+        "score": 1.7035,
+        "scoreComponents": {
+          "cellInsideRatio": 0.8519,
+          "detectorSignalQuality": 0.0445,
+          "insideRatio": 0.8539,
+          "maskCoverage": 0.6705,
+          "outsideImagePenalty": 0.0769,
+          "silhouetteIoU": 0.6015
+        },
+        "signChoice": [
+          -1,
+          1,
+          1
+        ],
+        "warnings": [
+          "low_cell_inside_silhouette"
+        ]
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_easy_corpus_overlays/set_42_A_global_model_v0.png",
+      "profile": "easy-corpus",
+      "setId": "42",
+      "side": "A",
+      "source": "corpus",
+      "status": "low_cell_inside"
+    },
+    {
+      "currentScoreObserved": 54,
+      "detection": {
+        "boundaryAnglesDeg": [
+          142.0,
+          80.0,
+          38.0
+        ],
+        "cubeCenter": [
+          416.3,
+          568.7
+        ],
+        "error": null,
+        "lineQualities": [
+          0.1654,
+          0.0984,
+          0.0289
+        ],
+        "signalQuality": 0.0637
+      },
+      "diagnosticDisposition": "model_ok",
+      "evaluationTier": "easy_corpus",
+      "expectedCategory": "success_clean",
+      "expectedScoreFloor": 54,
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          0.1654,
+          0.0984,
+          0.0289
+        ],
+        "detectorSignalQuality": 0.0637,
+        "edgeMax": 413.54,
+        "edgeMin": 71.3,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 42 - B - white up IMG_7164.JPG",
+      "model": {
+        "axes": [
+          [
+            -264.98,
+            207.02
+          ],
+          [
+            -58.39,
+            -331.15
+          ],
+          [
+            264.98,
+            207.02
+          ]
+        ],
+        "cubeCenter": [
+          416.31,
+          568.65
+        ],
+        "edgeLength": 336.26,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                416.31,
+                568.65
+              ],
+              [
+                151.33,
+                775.67
+              ],
+              [
+                92.94,
+                444.52
+              ],
+              [
+                357.92,
+                237.5
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                416.31,
+                568.65
+              ],
+              [
+                357.92,
+                237.5
+              ],
+              [
+                622.9,
+                444.52
+              ],
+              [
+                681.29,
+                775.67
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                416.31,
+                568.65
+              ],
+              [
+                681.29,
+                775.67
+              ],
+              [
+                416.31,
+                982.7
+              ],
+              [
+                151.33,
+                775.67
+              ]
+            ]
+          }
+        ],
+        "score": 2.0792,
+        "scoreComponents": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.0637,
+          "insideRatio": 0.9645,
+          "maskCoverage": 0.7786,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.7569
+        },
+        "signChoice": [
+          1,
+          -1,
+          1
+        ],
+        "warnings": []
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_easy_corpus_overlays/set_42_B_global_model_v0.png",
+      "profile": "easy-corpus",
+      "setId": "42",
+      "side": "B",
+      "source": "corpus",
+      "status": "ok"
+    }
+  ],
+  "schemaVersion": 1,
+  "summary": {
+    "easyImageRowCount": 16,
+    "easyOkRowCount": 11,
+    "easyWeakRowCount": 5,
+    "errorRowCount": 0,
+    "fittedRowCount": 16,
+    "imageRowCount": 16,
+    "lowCellInsideRowCount": 1,
+    "lowInsideRowCount": 0,
+    "lowIouRowCount": 4,
+    "modelIterationNeededRowCount": 5,
+    "okRowCount": 11,
+    "requestedPairCount": 8,
+    "retakeCandidateRowCount": 0
+  }
+}

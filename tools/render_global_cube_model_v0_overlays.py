@@ -44,6 +44,7 @@ DEFAULT_OUTPUT_DIR = Path("/tmp/global_cube_model_v0_overlays")
 DEFAULT_SUMMARY = ROOT / "tests" / "fixtures" / "global_cube_model_v0_summary.json"
 DEFAULT_REPORT = ROOT / "tools" / "GLOBAL_CUBE_MODEL_V0_REPORT.md"
 DEFAULT_SET_IDS = ("45", "17", "30", "31", "44", "47", "57", "58", "61")
+EASY_CORPUS_SET_IDS = ("15", "23", "26", "29", "32", "36", "37", "42")
 REQUIRED_OPTIONAL_DEPENDENCIES = ("rembg", "scipy", "onnxruntime")
 
 EXPLICIT_LOCAL_PAIRS: Dict[str, Dict[str, Any]] = {
@@ -73,6 +74,7 @@ def generate_global_cube_model_v0_artifacts(
     hard_manifest_path: Path = DEFAULT_HARD_MANIFEST,
     corpus_manifest_path: Path = DEFAULT_CORPUS_MANIFEST,
     edge_steps: int = 32,
+    profile: str = "custom",
 ) -> Dict[str, Any]:
     pairs = load_pairs(hard_manifest_path, corpus_manifest_path)
     rows: List[Dict[str, Any]] = []
@@ -81,7 +83,13 @@ def generate_global_cube_model_v0_artifacts(
     for set_id in [str(value) for value in set_ids]:
         pair = pairs.get(set_id)
         if pair is None:
-            rows.append({"setId": set_id, "status": "set_not_found"})
+            rows.append({
+                "setId": set_id,
+                "profile": profile,
+                "evaluationTier": "unknown",
+                "status": "set_not_found",
+                "diagnosticDisposition": diagnostic_disposition("unknown", "set_not_found"),
+            })
             continue
         for side, image_key in (("A", "imageAPath"), ("B", "imageBPath")):
             image_path = Path(pair[image_key])
@@ -89,10 +97,19 @@ def generate_global_cube_model_v0_artifacts(
                 "setId": set_id,
                 "side": side,
                 "source": pair.get("source"),
+                "profile": profile,
+                "evaluationTier": evaluation_tier(pair),
                 "imagePath": str(image_path),
+                "expectedCategory": pair.get("expectedCategory"),
+                "expectedScoreFloor": pair.get("expectedScoreFloor"),
+                "currentScoreObserved": pair.get("currentScoreObserved"),
             }
             if not image_path.exists():
-                rows.append({**row, "status": "image_missing"})
+                rows.append({
+                    **row,
+                    "status": "image_missing",
+                    "diagnosticDisposition": diagnostic_disposition(row["evaluationTier"], "image_missing"),
+                })
                 continue
             try:
                 image, image_rgb = _load_processing_image(image_path)
@@ -102,16 +119,23 @@ def generate_global_cube_model_v0_artifacts(
                 overlay_path = output_dir / f"set_{set_id}_{side}_global_model_v0.png"
                 if fit.model is not None:
                     render_overlay(image, mask, detection, fit, overlay_path)
+                status = fit.status
                 rows.append({
                     **row,
-                    "status": fit.status,
+                    "status": status,
+                    "diagnosticDisposition": diagnostic_disposition(row["evaluationTier"], status),
                     "overlayPath": str(overlay_path) if fit.model is not None else None,
                     "detection": compact_detection(detection),
                     "fitDiagnostics": fit.diagnostics,
                     "model": serialize_model(fit.model) if fit.model is not None else None,
                 })
             except Exception as exc:  # pragma: no cover - exercised by local CLI/deps
-                rows.append({**row, "status": "error", "error": f"{exc.__class__.__name__}: {exc}"})
+                rows.append({
+                    **row,
+                    "status": "error",
+                    "diagnosticDisposition": diagnostic_disposition(row["evaluationTier"], "error"),
+                    "error": f"{exc.__class__.__name__}: {exc}",
+                })
 
     document = {
         "schemaVersion": 1,
@@ -125,6 +149,7 @@ def generate_global_cube_model_v0_artifacts(
             "setIds": list(set_ids),
             "edgeSteps": edge_steps,
             "outputDir": str(output_dir),
+            "profile": profile,
         },
         "summary": summarize_rows(rows),
         "rows": rows,
@@ -181,11 +206,15 @@ def render_report(document: Dict[str, Any]) -> str:
         f"- Low-inside rows: {summary['lowInsideRowCount']}",
         f"- Low cell-inside rows: {summary['lowCellInsideRowCount']}",
         f"- Error/missing rows: {summary['errorRowCount']}",
+        f"- Easy-corpus OK rows: {summary['easyOkRowCount']} / {summary['easyImageRowCount']}",
+        f"- Easy-corpus weak rows: {summary['easyWeakRowCount']}",
+        f"- Retake/segmentation-candidate rows: {summary['retakeCandidateRowCount']}",
+        f"- Model-iteration-needed rows: {summary['modelIterationNeededRowCount']}",
         "",
         "## Readout",
         "",
-        "| Set | Side | Status | Score | IoU | Inside | Coverage | Cell inside | Overlay |",
-        "|---:|---|---|---:|---:|---:|---:|---:|---|",
+        "| Set | Side | Tier | Status | Disposition | Score | IoU | Inside | Coverage | Cell inside | Overlay |",
+        "|---:|---|---|---|---|---:|---:|---:|---:|---:|---|",
     ]
     for row in document["rows"]:
         model = row.get("model") or {}
@@ -193,7 +222,8 @@ def render_report(document: Dict[str, Any]) -> str:
         overlay = row.get("overlayPath") or ""
         overlay_text = f"`{overlay}`" if overlay else ""
         lines.append(
-            f"| {row.get('setId')} | {row.get('side', '')} | `{row.get('status')}` | "
+            f"| {row.get('setId')} | {row.get('side', '')} | `{row.get('evaluationTier', '')}` | "
+            f"`{row.get('status')}` | `{row.get('diagnosticDisposition', '')}` | "
             f"{model.get('score', '')} | {components.get('silhouetteIoU', '')} | "
             f"{components.get('insideRatio', '')} | {components.get('maskCoverage', '')} | "
             f"{components.get('cellInsideRatio', '')} | {overlay_text} |"
@@ -204,8 +234,10 @@ def render_report(document: Dict[str, Any]) -> str:
         "## Interpretation",
         "",
         "- This V0 fit is intentionally coarse: axes come from the interior-bezel detector and only axis signs plus one shared edge length are searched.",
-        "- A good row means the generated model mostly sits inside the rembg cube silhouette and produces plausible model-derived cell quads.",
-        "- A weak row is still useful: it tells us whether failure is in center/axis initialization, edge-length search, silhouette agreement, or the model shape itself.",
+        "- Easy-corpus rows are clean success cases from `tests/fixtures/corpus_manifest.json`; the model should become boringly consistent there before harder backgrounds are used as success targets.",
+        "- Weak rows outside the easy tier should be read as retake/segmentation candidates when the silhouette or background is confusing.",
+        "- A weak easy-corpus row is more serious: it points at center/axis initialization, edge-length search, silhouette agreement, or the model shape itself.",
+        "- The `diagnosticDisposition` field encodes that split directly: `model_iteration_needed` for easy-corpus weak rows, and `geometry_retake_or_segmentation_candidate` for weak non-easy rows.",
         "- The next useful human review artifact is the overlay PNG, not a production promotion threshold.",
         "",
     ])
@@ -224,8 +256,38 @@ def load_pairs(hard_manifest_path: Path, corpus_manifest_path: Path) -> Dict[str
     return pairs
 
 
+def evaluation_tier(pair: Dict[str, Any]) -> str:
+    if (
+        pair.get("source") == "corpus"
+        and pair.get("expectedCategory") == "success_clean"
+        and pair.get("expectedScoreFloor") == 54
+        and pair.get("currentScoreObserved") == 54
+    ):
+        return "easy_corpus"
+    if pair.get("source") == "hard-case":
+        return "hard_case_stress"
+    if pair.get("source") == "explicit-local":
+        return "local_example"
+    return "corpus_stress"
+
+
+def diagnostic_disposition(evaluation_tier_value: str, status: str) -> str:
+    if status == "ok":
+        return "model_ok"
+    if status in {"error", "image_missing", "set_not_found"}:
+        return "input_or_dependency_error"
+    if evaluation_tier_value == "easy_corpus":
+        return "model_iteration_needed"
+    return "geometry_retake_or_segmentation_candidate"
+
+
 def summarize_rows(rows: Sequence[Dict[str, Any]]) -> Dict[str, int]:
     fitted = [row for row in rows if row.get("model")]
+    easy = [row for row in rows if row.get("evaluationTier") == "easy_corpus"]
+    easy_weak = [
+        row for row in easy
+        if row.get("status") not in {"ok"}
+    ]
     return {
         "requestedPairCount": len({row.get("setId") for row in rows}),
         "imageRowCount": len(rows),
@@ -237,6 +299,17 @@ def summarize_rows(rows: Sequence[Dict[str, Any]]) -> Dict[str, int]:
         "errorRowCount": sum(
             1 for row in rows
             if row.get("status") in {"error", "image_missing", "set_not_found"}
+        ),
+        "easyImageRowCount": len(easy),
+        "easyOkRowCount": sum(1 for row in easy if row.get("status") == "ok"),
+        "easyWeakRowCount": len(easy_weak),
+        "retakeCandidateRowCount": sum(
+            1 for row in rows
+            if row.get("diagnosticDisposition") == "geometry_retake_or_segmentation_candidate"
+        ),
+        "modelIterationNeededRowCount": sum(
+            1 for row in rows
+            if row.get("diagnosticDisposition") == "model_iteration_needed"
         ),
     }
 
@@ -330,7 +403,13 @@ def _write_json(path: Path, payload: Dict[str, Any]) -> None:
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--sets", nargs="+", default=list(DEFAULT_SET_IDS))
+    parser.add_argument("--sets", nargs="+", default=None)
+    parser.add_argument(
+        "--profile",
+        choices=("v0-hard-mix", "easy-corpus", "custom"),
+        default="v0-hard-mix",
+        help="Named set selection. --sets overrides the named profile and uses custom.",
+    )
     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--summary", type=Path, default=DEFAULT_SUMMARY)
     parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
@@ -353,12 +432,22 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         )
         return 2
 
+    profile = args.profile
+    if args.sets is not None:
+        set_ids = args.sets
+        profile = "custom"
+    elif profile == "easy-corpus":
+        set_ids = list(EASY_CORPUS_SET_IDS)
+    else:
+        set_ids = list(DEFAULT_SET_IDS)
+
     document = generate_global_cube_model_v0_artifacts(
-        set_ids=args.sets,
+        set_ids=set_ids,
         output_dir=args.out_dir,
         hard_manifest_path=args.hard_manifest,
         corpus_manifest_path=args.corpus_manifest,
         edge_steps=args.edge_steps,
+        profile=profile,
     )
     if document["summary"]["fittedRowCount"] <= 0:
         print(

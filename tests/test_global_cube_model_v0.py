@@ -11,7 +11,13 @@ from tools.global_cube_model_v0 import (
     subdivide_face_quad,
 )
 from tools.interior_bezel_detection import InteriorBezelDetection
-from tools.render_global_cube_model_v0_overlays import render_report, summarize_rows
+from tools.render_global_cube_model_v0_overlays import (
+    EASY_CORPUS_SET_IDS,
+    diagnostic_disposition,
+    evaluation_tier,
+    render_report,
+    summarize_rows,
+)
 
 
 def test_subdivide_face_quad_returns_row_major_nine_cells():
@@ -67,9 +73,29 @@ def test_fit_projected_cube_model_abstains_on_missing_axes():
 
 def test_report_summary_keeps_empty_artifacts_visible():
     rows = [
-        {"setId": "45", "side": "A", "status": "ok", "model": {"score": 1.0, "scoreComponents": {}}},
-        {"setId": "45", "side": "B", "status": "image_missing"},
-        {"setId": "61", "side": "A", "status": "low_iou", "model": {"score": 0.2, "scoreComponents": {}}},
+        {
+            "setId": "45",
+            "side": "A",
+            "evaluationTier": "local_example",
+            "status": "ok",
+            "diagnosticDisposition": "model_ok",
+            "model": {"score": 1.0, "scoreComponents": {}},
+        },
+        {
+            "setId": "45",
+            "side": "B",
+            "evaluationTier": "local_example",
+            "status": "image_missing",
+            "diagnosticDisposition": "input_or_dependency_error",
+        },
+        {
+            "setId": "61",
+            "side": "A",
+            "evaluationTier": "easy_corpus",
+            "status": "low_iou",
+            "diagnosticDisposition": "model_iteration_needed",
+            "model": {"score": 0.2, "scoreComponents": {}},
+        },
     ]
 
     summary = summarize_rows(rows)
@@ -81,6 +107,38 @@ def test_report_summary_keeps_empty_artifacts_visible():
     assert summary["lowIouRowCount"] == 1
     assert summary["lowCellInsideRowCount"] == 0
     assert summary["errorRowCount"] == 1
+    assert summary["easyImageRowCount"] == 1
+    assert summary["easyWeakRowCount"] == 1
+    assert summary["modelIterationNeededRowCount"] == 1
+    assert summary["retakeCandidateRowCount"] == 0
     report = render_report({"summary": summary, "rows": rows})
     assert "Global Cube Model V0 Diagnostics" in report
     assert "`image_missing`" in report
+    assert "Easy-corpus weak rows" in report
+    assert "`model_iteration_needed`" in report
+
+
+def test_easy_corpus_profile_is_success_clean_54_set_list():
+    assert EASY_CORPUS_SET_IDS == ("15", "23", "26", "29", "32", "36", "37", "42")
+
+
+def test_evaluation_tier_marks_easy_corpus_and_stress_cases():
+    assert evaluation_tier({
+        "source": "corpus",
+        "expectedCategory": "success_clean",
+        "expectedScoreFloor": 54,
+        "currentScoreObserved": 54,
+    }) == "easy_corpus"
+    assert evaluation_tier({"source": "corpus", "expectedCategory": "needs_manual_review"}) == "corpus_stress"
+    assert evaluation_tier({"source": "hard-case"}) == "hard_case_stress"
+
+
+def test_diagnostic_disposition_splits_easy_failures_from_stress_failures():
+    assert diagnostic_disposition("easy_corpus", "ok") == "model_ok"
+    assert diagnostic_disposition("easy_corpus", "low_iou") == "model_iteration_needed"
+    assert diagnostic_disposition("easy_corpus", "image_missing") == "input_or_dependency_error"
+    assert (
+        diagnostic_disposition("hard_case_stress", "low_iou")
+        == "geometry_retake_or_segmentation_candidate"
+    )
+    assert diagnostic_disposition("local_example", "image_missing") == "input_or_dependency_error"

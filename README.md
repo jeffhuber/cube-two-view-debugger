@@ -398,6 +398,24 @@ centers dominate. The hard-case probe copies the supporting
 The probe also copies `recognitionSignals.selectedGridQuality` to top-level `selectedGridQuality`
 so selected-grid cell counts can be inspected without replaying a saved API response.
 
+For human-reviewed hybrid overlay investigations, `tools/overlay_feedback.py` ingests the
+spreadsheet feedback workbook into `tests/fixtures/hard_case_visual_feedback.json` and writes a
+ranked failure-mode report:
+
+```sh
+.venv/bin/python tools/overlay_feedback.py \
+  --workbook "$HOME/Downloads/overlay tool visual feedback  (1).xlsx"
+```
+
+`tools/probe_overlay_discontinuity.py` then replays the same hybrid overlay slots and scores
+rectified faces for cell-internal color variance / half-cell contrast. This is diagnostics-only
+multi-face-span evidence; it does not change recognition behavior:
+
+```sh
+.venv/bin/python tools/probe_overlay_discontinuity.py \
+  --labels tests/fixtures/hard_case_visual_feedback.json
+```
+
 For deeper repair-feasibility investigations, add `--include-repair-probe`. This optional pass is
 expensive: it runs direct validation and cubie-level repair on both raw and calibrated analyses, then
 records candidate counts, failed checks, repair timings, and the top repair candidates. When the

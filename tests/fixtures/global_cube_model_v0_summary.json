@@ -1,0 +1,2794 @@
+{
+  "config": {
+    "edgeSteps": 32,
+    "outputDir": "/tmp/global_cube_model_v0_overlays",
+    "setIds": [
+      "45",
+      "17",
+      "30",
+      "31",
+      "44",
+      "47",
+      "57",
+      "58",
+      "61"
+    ]
+  },
+  "description": "Diagnostics-only projected cube model scaffold. One cube center, three projected axes, one shared edge length; all visible face/cell quads are generated from that model.",
+  "probe": "global_cube_model_v0",
+  "rows": [
+    {
+      "detection": {
+        "boundaryAnglesDeg": [
+          0.0,
+          88.0,
+          56.0
+        ],
+        "cubeCenter": [
+          416.0,
+          403.6
+        ],
+        "error": null,
+        "lineQualities": [
+          0.1273,
+          0.0762,
+          0.0363
+        ],
+        "signalQuality": 0.0562
+      },
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          0.1273,
+          0.0762,
+          0.0363
+        ],
+        "detectorSignalQuality": 0.0562,
+        "edgeMax": 380.48,
+        "edgeMin": 65.6,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/cube-corpus/Set 45 - A - white up IMG_7169.JPG",
+      "model": {
+        "axes": [
+          [
+            -278.91,
+            -0.0
+          ],
+          [
+            9.73,
+            278.74
+          ],
+          [
+            155.96,
+            231.22
+          ]
+        ],
+        "cubeCenter": [
+          415.96,
+          403.64
+        ],
+        "edgeLength": 278.906,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                415.96,
+                403.64
+              ],
+              [
+                137.06,
+                403.64
+              ],
+              [
+                146.79,
+                682.38
+              ],
+              [
+                425.7,
+                682.38
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                415.96,
+                403.64
+              ],
+              [
+                425.7,
+                682.38
+              ],
+              [
+                581.66,
+                913.6
+              ],
+              [
+                571.93,
+                634.86
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                415.96,
+                403.64
+              ],
+              [
+                571.93,
+                634.86
+              ],
+              [
+                293.02,
+                634.86
+              ],
+              [
+                137.06,
+                403.64
+              ]
+            ]
+          }
+        ],
+        "score": 1.6205,
+        "scoreComponents": {
+          "cellInsideRatio": 0.963,
+          "detectorSignalQuality": 0.0562,
+          "insideRatio": 0.9431,
+          "maskCoverage": 0.4266,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.4159
+        },
+        "signChoice": [
+          -1,
+          1,
+          1
+        ],
+        "warnings": [
+          "low_silhouette_iou"
+        ]
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_overlays/set_45_A_global_model_v0.png",
+      "setId": "45",
+      "side": "A",
+      "source": "explicit-local",
+      "status": "low_iou"
+    },
+    {
+      "detection": {
+        "boundaryAnglesDeg": [
+          20.0,
+          156.0,
+          80.0
+        ],
+        "cubeCenter": [
+          440.9,
+          527.6
+        ],
+        "error": null,
+        "lineQualities": [
+          0.1634,
+          0.0646,
+          0.0428
+        ],
+        "signalQuality": 0.0537
+      },
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          0.1634,
+          0.0646,
+          0.0428
+        ],
+        "detectorSignalQuality": 0.0537,
+        "edgeMax": 400.78,
+        "edgeMin": 69.1,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/cube-corpus/Set 45 - B - white up IMG_7170.JPG",
+      "model": {
+        "axes": [
+          [
+            286.12,
+            104.14
+          ],
+          [
+            -278.16,
+            123.85
+          ],
+          [
+            -52.87,
+            -299.86
+          ]
+        ],
+        "cubeCenter": [
+          440.95,
+          527.56
+        ],
+        "edgeLength": 304.486,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                440.95,
+                527.56
+              ],
+              [
+                727.07,
+                631.7
+              ],
+              [
+                448.91,
+                755.54
+              ],
+              [
+                162.78,
+                651.4
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                440.95,
+                527.56
+              ],
+              [
+                162.78,
+                651.4
+              ],
+              [
+                109.91,
+                351.54
+              ],
+              [
+                388.07,
+                227.7
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                440.95,
+                527.56
+              ],
+              [
+                388.07,
+                227.7
+              ],
+              [
+                674.2,
+                331.84
+              ],
+              [
+                727.07,
+                631.7
+              ]
+            ]
+          }
+        ],
+        "score": 2.0912,
+        "scoreComponents": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.0537,
+          "insideRatio": 0.9737,
+          "maskCoverage": 0.7782,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.7622
+        },
+        "signChoice": [
+          1,
+          1,
+          -1
+        ],
+        "warnings": []
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_overlays/set_45_B_global_model_v0.png",
+      "setId": "45",
+      "side": "B",
+      "source": "explicit-local",
+      "status": "ok"
+    },
+    {
+      "detection": {
+        "boundaryAnglesDeg": [
+          38.0,
+          78.0,
+          136.0
+        ],
+        "cubeCenter": [
+          411.4,
+          626.2
+        ],
+        "error": null,
+        "lineQualities": [
+          0.1293,
+          0.1197,
+          0.0741
+        ],
+        "signalQuality": 0.0969
+      },
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          0.1293,
+          0.1197,
+          0.0741
+        ],
+        "detectorSignalQuality": 0.0969,
+        "edgeMax": 381.06,
+        "edgeMin": 65.7,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 17 - A - white up.JPG",
+      "model": {
+        "axes": [
+          [
+            228.13,
+            178.24
+          ],
+          [
+            -60.19,
+            -283.18
+          ],
+          [
+            -208.25,
+            201.11
+          ]
+        ],
+        "cubeCenter": [
+          411.4,
+          626.2
+        ],
+        "edgeLength": 289.504,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                411.4,
+                626.2
+              ],
+              [
+                639.54,
+                804.44
+              ],
+              [
+                579.34,
+                521.26
+              ],
+              [
+                351.21,
+                343.03
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                411.4,
+                626.2
+              ],
+              [
+                351.21,
+                343.03
+              ],
+              [
+                142.96,
+                544.13
+              ],
+              [
+                203.15,
+                827.31
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                411.4,
+                626.2
+              ],
+              [
+                203.15,
+                827.31
+              ],
+              [
+                431.28,
+                1005.55
+              ],
+              [
+                639.54,
+                804.44
+              ]
+            ]
+          }
+        ],
+        "score": 2.0417,
+        "scoreComponents": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.0969,
+          "insideRatio": 0.97,
+          "maskCoverage": 0.7365,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.7201
+        },
+        "signChoice": [
+          1,
+          -1,
+          1
+        ],
+        "warnings": []
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_overlays/set_17_A_global_model_v0.png",
+      "setId": "17",
+      "side": "A",
+      "source": "hard-case",
+      "status": "ok"
+    },
+    {
+      "detection": {
+        "boundaryAnglesDeg": [
+          86.0,
+          142.0,
+          32.0
+        ],
+        "cubeCenter": [
+          424.5,
+          562.7
+        ],
+        "error": null,
+        "lineQualities": [
+          0.4538,
+          0.1916,
+          0.0766
+        ],
+        "signalQuality": 0.1341
+      },
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          0.4538,
+          0.1916,
+          0.0766
+        ],
+        "detectorSignalQuality": 0.1341,
+        "edgeMax": 367.14,
+        "edgeMin": 63.3,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 17 - B - white up.JPG",
+      "model": {
+        "axes": [
+          [
+            -21.51,
+            -307.58
+          ],
+          [
+            -242.97,
+            189.83
+          ],
+          [
+            261.48,
+            163.39
+          ]
+        ],
+        "cubeCenter": [
+          424.48,
+          562.75
+        ],
+        "edgeLength": 308.332,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                424.48,
+                562.75
+              ],
+              [
+                402.97,
+                255.17
+              ],
+              [
+                160.0,
+                444.99
+              ],
+              [
+                181.51,
+                752.58
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                424.48,
+                562.75
+              ],
+              [
+                181.51,
+                752.58
+              ],
+              [
+                442.99,
+                915.97
+              ],
+              [
+                685.96,
+                726.14
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                424.48,
+                562.75
+              ],
+              [
+                685.96,
+                726.14
+              ],
+              [
+                664.45,
+                418.56
+              ],
+              [
+                402.97,
+                255.17
+              ]
+            ]
+          }
+        ],
+        "score": 2.1808,
+        "scoreComponents": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.1341,
+          "insideRatio": 0.9517,
+          "maskCoverage": 0.873,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.8359
+        },
+        "signChoice": [
+          -1,
+          1,
+          1
+        ],
+        "warnings": []
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_overlays/set_17_B_global_model_v0.png",
+      "setId": "17",
+      "side": "B",
+      "source": "hard-case",
+      "status": "ok"
+    },
+    {
+      "detection": {
+        "boundaryAnglesDeg": [
+          150.0,
+          90.0,
+          42.0
+        ],
+        "cubeCenter": [
+          398.0,
+          660.8
+        ],
+        "error": null,
+        "lineQualities": [
+          1.0,
+          0.7358,
+          0.1533
+        ],
+        "signalQuality": 0.4446
+      },
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          1.0,
+          0.7358,
+          0.1533
+        ],
+        "detectorSignalQuality": 0.4446,
+        "edgeMax": 310.88,
+        "edgeMin": 53.6,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 30 - A - white up IMG_7100.JPG",
+      "model": {
+        "axes": [
+          [
+            218.92,
+            -126.39
+          ],
+          [
+            0.0,
+            252.78
+          ],
+          [
+            -187.86,
+            -169.15
+          ]
+        ],
+        "cubeCenter": [
+          397.97,
+          660.84
+        ],
+        "edgeLength": 252.785,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                397.97,
+                660.84
+              ],
+              [
+                616.89,
+                534.44
+              ],
+              [
+                616.89,
+                787.23
+              ],
+              [
+                397.97,
+                913.62
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                397.97,
+                660.84
+              ],
+              [
+                397.97,
+                913.62
+              ],
+              [
+                210.11,
+                744.47
+              ],
+              [
+                210.11,
+                491.69
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                397.97,
+                660.84
+              ],
+              [
+                210.11,
+                491.69
+              ],
+              [
+                429.03,
+                365.3
+              ],
+              [
+                616.89,
+                534.44
+              ]
+            ]
+          }
+        ],
+        "score": 2.2349,
+        "scoreComponents": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.4446,
+          "insideRatio": 0.9479,
+          "maskCoverage": 0.8849,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.8439
+        },
+        "signChoice": [
+          -1,
+          1,
+          -1
+        ],
+        "warnings": []
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_overlays/set_30_A_global_model_v0.png",
+      "setId": "30",
+      "side": "A",
+      "source": "hard-case",
+      "status": "ok"
+    },
+    {
+      "detection": {
+        "boundaryAnglesDeg": [
+          148.0,
+          44.0,
+          100.0
+        ],
+        "cubeCenter": [
+          389.2,
+          618.4
+        ],
+        "error": null,
+        "lineQualities": [
+          1.0,
+          0.3661,
+          0.0909
+        ],
+        "signalQuality": 0.2285
+      },
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          1.0,
+          0.3661,
+          0.0909
+        ],
+        "detectorSignalQuality": 0.2285,
+        "edgeMax": 312.62,
+        "edgeMin": 53.9,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 30 - B - white up IMG_7101.JPG",
+      "model": {
+        "axes": [
+          [
+            222.65,
+            -139.13
+          ],
+          [
+            -188.86,
+            -182.38
+          ],
+          [
+            -45.59,
+            258.56
+          ]
+        ],
+        "cubeCenter": [
+          389.19,
+          618.45
+        ],
+        "edgeLength": 262.545,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                389.19,
+                618.45
+              ],
+              [
+                611.84,
+                479.32
+              ],
+              [
+                422.98,
+                296.94
+              ],
+              [
+                200.33,
+                436.07
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                389.19,
+                618.45
+              ],
+              [
+                200.33,
+                436.07
+              ],
+              [
+                154.74,
+                694.63
+              ],
+              [
+                343.6,
+                877.0
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                389.19,
+                618.45
+              ],
+              [
+                343.6,
+                877.0
+              ],
+              [
+                566.25,
+                737.88
+              ],
+              [
+                611.84,
+                479.32
+              ]
+            ]
+          }
+        ],
+        "score": 1.6747,
+        "scoreComponents": {
+          "cellInsideRatio": 0.7778,
+          "detectorSignalQuality": 0.2285,
+          "insideRatio": 0.7542,
+          "maskCoverage": 0.7244,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.5861
+        },
+        "signChoice": [
+          -1,
+          -1,
+          1
+        ],
+        "warnings": [
+          "low_cell_inside_silhouette"
+        ]
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_overlays/set_30_B_global_model_v0.png",
+      "setId": "30",
+      "side": "B",
+      "source": "hard-case",
+      "status": "low_cell_inside"
+    },
+    {
+      "detection": {
+        "boundaryAnglesDeg": [
+          88.0,
+          32.0,
+          158.0
+        ],
+        "cubeCenter": [
+          391.9,
+          559.0
+        ],
+        "error": null,
+        "lineQualities": [
+          1.0,
+          0.2144,
+          0.0068
+        ],
+        "signalQuality": 0.1106
+      },
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          1.0,
+          0.2144,
+          0.0068
+        ],
+        "detectorSignalQuality": 0.1106,
+        "edgeMax": 319.0,
+        "edgeMin": 55.0,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 31 - A - white up IMG_7102.JPG",
+      "model": {
+        "axes": [
+          [
+            -9.05,
+            -259.23
+          ],
+          [
+            219.97,
+            137.45
+          ],
+          [
+            -240.5,
+            97.17
+          ]
+        ],
+        "cubeCenter": [
+          391.86,
+          559.0
+        ],
+        "edgeLength": 259.387,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                391.86,
+                559.0
+              ],
+              [
+                382.81,
+                299.77
+              ],
+              [
+                602.78,
+                437.22
+              ],
+              [
+                611.83,
+                696.45
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                391.86,
+                559.0
+              ],
+              [
+                611.83,
+                696.45
+              ],
+              [
+                371.33,
+                793.62
+              ],
+              [
+                151.36,
+                656.16
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                391.86,
+                559.0
+              ],
+              [
+                151.36,
+                656.16
+              ],
+              [
+                142.31,
+                396.94
+              ],
+              [
+                382.81,
+                299.77
+              ]
+            ]
+          }
+        ],
+        "score": 2.1782,
+        "scoreComponents": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.1106,
+          "insideRatio": 0.9541,
+          "maskCoverage": 0.8703,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.8354
+        },
+        "signChoice": [
+          -1,
+          1,
+          1
+        ],
+        "warnings": []
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_overlays/set_31_A_global_model_v0.png",
+      "setId": "31",
+      "side": "A",
+      "source": "corpus",
+      "status": "ok"
+    },
+    {
+      "detection": {
+        "boundaryAnglesDeg": [
+          144.0,
+          90.0,
+          30.0
+        ],
+        "cubeCenter": [
+          397.2,
+          558.4
+        ],
+        "error": null,
+        "lineQualities": [
+          1.0,
+          0.7699,
+          0.6013
+        ],
+        "signalQuality": 0.6856
+      },
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          1.0,
+          0.7699,
+          0.6013
+        ],
+        "detectorSignalQuality": 0.6856,
+        "edgeMax": 332.92,
+        "edgeMin": 57.4,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 31 - B - white up IMG_7103.JPG",
+      "model": {
+        "axes": [
+          [
+            219.01,
+            -159.12
+          ],
+          [
+            0.0,
+            270.71
+          ],
+          [
+            -234.44,
+            -135.35
+          ]
+        ],
+        "cubeCenter": [
+          397.22,
+          558.42
+        ],
+        "edgeLength": 270.706,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                397.22,
+                558.42
+              ],
+              [
+                616.23,
+                399.3
+              ],
+              [
+                616.23,
+                670.01
+              ],
+              [
+                397.22,
+                829.13
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                397.22,
+                558.42
+              ],
+              [
+                397.22,
+                829.13
+              ],
+              [
+                162.78,
+                693.77
+              ],
+              [
+                162.78,
+                423.07
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                397.22,
+                558.42
+              ],
+              [
+                162.78,
+                423.07
+              ],
+              [
+                381.79,
+                263.95
+              ],
+              [
+                616.23,
+                399.3
+              ]
+            ]
+          }
+        ],
+        "score": 2.2854,
+        "scoreComponents": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.6856,
+          "insideRatio": 0.9606,
+          "maskCoverage": 0.8789,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.8483
+        },
+        "signChoice": [
+          -1,
+          1,
+          -1
+        ],
+        "warnings": []
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_overlays/set_31_B_global_model_v0.png",
+      "setId": "31",
+      "side": "B",
+      "source": "corpus",
+      "status": "ok"
+    },
+    {
+      "detection": {
+        "boundaryAnglesDeg": [
+          88.0,
+          148.0,
+          32.0
+        ],
+        "cubeCenter": [
+          409.1,
+          548.8
+        ],
+        "error": null,
+        "lineQualities": [
+          1.0,
+          0.2806,
+          0.2371
+        ],
+        "signalQuality": 0.2589
+      },
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          1.0,
+          0.2806,
+          0.2371
+        ],
+        "detectorSignalQuality": 0.2589,
+        "edgeMax": 413.54,
+        "edgeMin": 71.3,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 44 - A - white up IMG_7167.JPG",
+      "model": {
+        "axes": [
+          [
+            11.74,
+            336.06
+          ],
+          [
+            285.16,
+            -178.19
+          ],
+          [
+            -285.16,
+            -178.19
+          ]
+        ],
+        "cubeCenter": [
+          409.14,
+          548.77
+        ],
+        "edgeLength": 336.26,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                409.14,
+                548.77
+              ],
+              [
+                420.87,
+                884.82
+              ],
+              [
+                706.04,
+                706.63
+              ],
+              [
+                694.3,
+                370.58
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                409.14,
+                548.77
+              ],
+              [
+                694.3,
+                370.58
+              ],
+              [
+                409.14,
+                192.38
+              ],
+              [
+                123.97,
+                370.58
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                409.14,
+                548.77
+              ],
+              [
+                123.97,
+                370.58
+              ],
+              [
+                135.71,
+                706.63
+              ],
+              [
+                420.87,
+                884.82
+              ]
+            ]
+          }
+        ],
+        "score": 2.2095,
+        "scoreComponents": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.2589,
+          "insideRatio": 0.9581,
+          "maskCoverage": 0.8723,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.8403
+        },
+        "signChoice": [
+          1,
+          -1,
+          -1
+        ],
+        "warnings": []
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_overlays/set_44_A_global_model_v0.png",
+      "setId": "44",
+      "side": "A",
+      "source": "hard-case",
+      "status": "ok"
+    },
+    {
+      "detection": {
+        "boundaryAnglesDeg": [
+          154.0,
+          32.0,
+          84.0
+        ],
+        "cubeCenter": [
+          428.2,
+          548.3
+        ],
+        "error": null,
+        "lineQualities": [
+          1.0,
+          0.559,
+          0.0
+        ],
+        "signalQuality": 0.2795
+      },
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          1.0,
+          0.559,
+          0.0
+        ],
+        "detectorSignalQuality": 0.2795,
+        "edgeMax": 404.26,
+        "edgeMin": 69.7,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 44 - B - white up IMG_7168.JPG",
+      "model": {
+        "axes": [
+          [
+            295.45,
+            -144.1
+          ],
+          [
+            -278.77,
+            -174.19
+          ],
+          [
+            34.36,
+            326.91
+          ]
+        ],
+        "cubeCenter": [
+          428.15,
+          548.32
+        ],
+        "edgeLength": 328.714,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                428.15,
+                548.32
+              ],
+              [
+                723.6,
+                404.23
+              ],
+              [
+                444.83,
+                230.03
+              ],
+              [
+                149.39,
+                374.13
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                428.15,
+                548.32
+              ],
+              [
+                149.39,
+                374.13
+              ],
+              [
+                183.75,
+                701.05
+              ],
+              [
+                462.51,
+                875.24
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                428.15,
+                548.32
+              ],
+              [
+                462.51,
+                875.24
+              ],
+              [
+                757.96,
+                731.14
+              ],
+              [
+                723.6,
+                404.23
+              ]
+            ]
+          }
+        ],
+        "score": 2.2133,
+        "scoreComponents": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.2795,
+          "insideRatio": 0.9627,
+          "maskCoverage": 0.8665,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.8383
+        },
+        "signChoice": [
+          -1,
+          -1,
+          1
+        ],
+        "warnings": []
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_overlays/set_44_B_global_model_v0.png",
+      "setId": "44",
+      "side": "B",
+      "source": "hard-case",
+      "status": "ok"
+    },
+    {
+      "detection": {
+        "boundaryAnglesDeg": [
+          92.0,
+          24.0,
+          152.0
+        ],
+        "cubeCenter": [
+          390.9,
+          533.7
+        ],
+        "error": null,
+        "lineQualities": [
+          0.4364,
+          0.2022,
+          0.0753
+        ],
+        "signalQuality": 0.1387
+      },
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          0.4364,
+          0.2022,
+          0.0753
+        ],
+        "detectorSignalQuality": 0.1387,
+        "edgeMax": 366.56,
+        "edgeMin": 63.2,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 47 - A - white up +90 IMG_7381.JPG",
+      "model": {
+        "axes": [
+          [
+            10.06,
+            -288.1
+          ],
+          [
+            263.35,
+            117.25
+          ],
+          [
+            -254.53,
+            135.34
+          ]
+        ],
+        "cubeCenter": [
+          390.87,
+          533.69
+        ],
+        "edgeLength": 288.274,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                390.87,
+                533.69
+              ],
+              [
+                400.93,
+                245.59
+              ],
+              [
+                664.28,
+                362.84
+              ],
+              [
+                654.22,
+                650.94
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                390.87,
+                533.69
+              ],
+              [
+                654.22,
+                650.94
+              ],
+              [
+                399.69,
+                786.28
+              ],
+              [
+                136.34,
+                669.03
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                390.87,
+                533.69
+              ],
+              [
+                136.34,
+                669.03
+              ],
+              [
+                146.4,
+                380.93
+              ],
+              [
+                400.93,
+                245.59
+              ]
+            ]
+          }
+        ],
+        "score": 2.2088,
+        "scoreComponents": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.1387,
+          "insideRatio": 0.9788,
+          "maskCoverage": 0.8582,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.8426
+        },
+        "signChoice": [
+          -1,
+          1,
+          1
+        ],
+        "warnings": []
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_overlays/set_47_A_global_model_v0.png",
+      "setId": "47",
+      "side": "A",
+      "source": "hard-case",
+      "status": "ok"
+    },
+    {
+      "detection": {
+        "boundaryAnglesDeg": [
+          152.0,
+          24.0,
+          96.0
+        ],
+        "cubeCenter": [
+          407.9,
+          553.0
+        ],
+        "error": null,
+        "lineQualities": [
+          0.6066,
+          0.2276,
+          0.092
+        ],
+        "signalQuality": 0.1598
+      },
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          0.6066,
+          0.2276,
+          0.092
+        ],
+        "detectorSignalQuality": 0.1598,
+        "edgeMax": 364.82,
+        "edgeMin": 62.9,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 47 - B - white up +90 IMG_7382.JPG",
+      "model": {
+        "axes": [
+          [
+            -253.32,
+            134.69
+          ],
+          [
+            262.1,
+            116.69
+          ],
+          [
+            29.99,
+            -285.33
+          ]
+        ],
+        "cubeCenter": [
+          407.91,
+          552.96
+        ],
+        "edgeLength": 286.905,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                407.91,
+                552.96
+              ],
+              [
+                154.59,
+                687.65
+              ],
+              [
+                416.69,
+                804.35
+              ],
+              [
+                670.01,
+                669.65
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                407.91,
+                552.96
+              ],
+              [
+                670.01,
+                669.65
+              ],
+              [
+                700.0,
+                384.32
+              ],
+              [
+                437.9,
+                267.62
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                407.91,
+                552.96
+              ],
+              [
+                437.9,
+                267.62
+              ],
+              [
+                184.58,
+                402.32
+              ],
+              [
+                154.59,
+                687.65
+              ]
+            ]
+          }
+        ],
+        "score": 2.1694,
+        "scoreComponents": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.1598,
+          "insideRatio": 0.9605,
+          "maskCoverage": 0.8476,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.8191
+        },
+        "signChoice": [
+          1,
+          1,
+          -1
+        ],
+        "warnings": []
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_overlays/set_47_B_global_model_v0.png",
+      "setId": "47",
+      "side": "B",
+      "source": "hard-case",
+      "status": "ok"
+    },
+    {
+      "detection": {
+        "boundaryAnglesDeg": [
+          26.0,
+          148.0,
+          84.0
+        ],
+        "cubeCenter": [
+          413.4,
+          589.6
+        ],
+        "error": null,
+        "lineQualities": [
+          0.4439,
+          0.4306,
+          0.3959
+        ],
+        "signalQuality": 0.4133
+      },
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          0.4439,
+          0.4306,
+          0.3959
+        ],
+        "detectorSignalQuality": 0.4133,
+        "edgeMax": 366.56,
+        "edgeMin": 63.2,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 57 - A - white-up IMG_7510.JPG",
+      "model": {
+        "axes": [
+          [
+            267.89,
+            130.66
+          ],
+          [
+            -252.77,
+            157.95
+          ],
+          [
+            -31.16,
+            -296.43
+          ]
+        ],
+        "cubeCenter": [
+          413.42,
+          589.58
+        ],
+        "edgeLength": 298.059,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                413.42,
+                589.58
+              ],
+              [
+                681.31,
+                720.24
+              ],
+              [
+                428.54,
+                878.19
+              ],
+              [
+                160.65,
+                747.53
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                413.42,
+                589.58
+              ],
+              [
+                160.65,
+                747.53
+              ],
+              [
+                129.49,
+                451.1
+              ],
+              [
+                382.26,
+                293.15
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                413.42,
+                589.58
+              ],
+              [
+                382.26,
+                293.15
+              ],
+              [
+                650.16,
+                423.81
+              ],
+              [
+                681.31,
+                720.24
+              ]
+            ]
+          }
+        ],
+        "score": 2.2679,
+        "scoreComponents": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.4133,
+          "insideRatio": 0.967,
+          "maskCoverage": 0.8895,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.8633
+        },
+        "signChoice": [
+          1,
+          1,
+          -1
+        ],
+        "warnings": []
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_overlays/set_57_A_global_model_v0.png",
+      "setId": "57",
+      "side": "A",
+      "source": "hard-case",
+      "status": "ok"
+    },
+    {
+      "detection": {
+        "boundaryAnglesDeg": [
+          150.0,
+          28.0,
+          92.0
+        ],
+        "cubeCenter": [
+          369.8,
+          407.1
+        ],
+        "error": null,
+        "lineQualities": [
+          0.5615,
+          0.1334,
+          0.0363
+        ],
+        "signalQuality": 0.0849
+      },
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          0.5615,
+          0.1334,
+          0.0363
+        ],
+        "detectorSignalQuality": 0.0849,
+        "edgeMax": 362.5,
+        "edgeMin": 62.5,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 57 - B - white-up IMG_7511.JPG",
+      "model": {
+        "axes": [
+          [
+            221.74,
+            -128.02
+          ],
+          [
+            226.08,
+            120.21
+          ],
+          [
+            -8.94,
+            255.89
+          ]
+        ],
+        "cubeCenter": [
+          369.77,
+          407.07
+        ],
+        "edgeLength": 256.048,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                369.77,
+                407.07
+              ],
+              [
+                591.51,
+                279.05
+              ],
+              [
+                817.59,
+                399.26
+              ],
+              [
+                595.84,
+                527.28
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                369.77,
+                407.07
+              ],
+              [
+                595.84,
+                527.28
+              ],
+              [
+                586.91,
+                783.17
+              ],
+              [
+                360.83,
+                662.96
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                369.77,
+                407.07
+              ],
+              [
+                360.83,
+                662.96
+              ],
+              [
+                582.58,
+                534.94
+              ],
+              [
+                591.51,
+                279.05
+              ]
+            ]
+          }
+        ],
+        "score": 1.5565,
+        "scoreComponents": {
+          "cellInsideRatio": 0.9259,
+          "detectorSignalQuality": 0.0849,
+          "insideRatio": 0.8982,
+          "maskCoverage": 0.4183,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.3994
+        },
+        "signChoice": [
+          -1,
+          1,
+          1
+        ],
+        "warnings": [
+          "low_silhouette_iou"
+        ]
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_overlays/set_57_B_global_model_v0.png",
+      "setId": "57",
+      "side": "B",
+      "source": "hard-case",
+      "status": "low_iou"
+    },
+    {
+      "detection": {
+        "boundaryAnglesDeg": [
+          28.0,
+          90.0,
+          162.0
+        ],
+        "cubeCenter": [
+          418.2,
+          509.8
+        ],
+        "error": null,
+        "lineQualities": [
+          1.0,
+          0.5028,
+          0.0
+        ],
+        "signalQuality": 0.2514
+      },
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          1.0,
+          0.5028,
+          0.0
+        ],
+        "detectorSignalQuality": 0.2514,
+        "edgeMax": 353.22,
+        "edgeMin": 60.9,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 58 - A - white-up IMG_7512.JPG",
+      "model": {
+        "axes": [
+          [
+            253.59,
+            134.84
+          ],
+          [
+            -0.0,
+            -287.21
+          ],
+          [
+            -273.16,
+            88.75
+          ]
+        ],
+        "cubeCenter": [
+          418.2,
+          509.78
+        ],
+        "edgeLength": 287.212,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                418.2,
+                509.78
+              ],
+              [
+                671.79,
+                644.62
+              ],
+              [
+                671.79,
+                357.41
+              ],
+              [
+                418.2,
+                222.57
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                418.2,
+                509.78
+              ],
+              [
+                418.2,
+                222.57
+              ],
+              [
+                145.04,
+                311.32
+              ],
+              [
+                145.04,
+                598.54
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                418.2,
+                509.78
+              ],
+              [
+                145.04,
+                598.54
+              ],
+              [
+                398.63,
+                733.37
+              ],
+              [
+                671.79,
+                644.62
+              ]
+            ]
+          }
+        ],
+        "score": 2.1677,
+        "scoreComponents": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.2514,
+          "insideRatio": 0.96,
+          "maskCoverage": 0.8353,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.8072
+        },
+        "signChoice": [
+          1,
+          -1,
+          1
+        ],
+        "warnings": []
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_overlays/set_58_A_global_model_v0.png",
+      "setId": "58",
+      "side": "A",
+      "source": "hard-case",
+      "status": "ok"
+    },
+    {
+      "detection": {
+        "boundaryAnglesDeg": [
+          30.0,
+          84.0,
+          160.0
+        ],
+        "cubeCenter": [
+          404.8,
+          523.3
+        ],
+        "error": null,
+        "lineQualities": [
+          1.0,
+          0.1896,
+          0.0588
+        ],
+        "signalQuality": 0.1242
+      },
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          1.0,
+          0.1896,
+          0.0588
+        ],
+        "detectorSignalQuality": 0.1242,
+        "edgeMax": 359.02,
+        "edgeMin": 61.9,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 58 - B - white-up IMG_7513.JPG",
+      "model": {
+        "axes": [
+          [
+            244.52,
+            141.17
+          ],
+          [
+            -29.51,
+            -280.8
+          ],
+          [
+            -265.32,
+            96.57
+          ]
+        ],
+        "cubeCenter": [
+          404.75,
+          523.3
+        ],
+        "edgeLength": 282.344,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                404.75,
+                523.3
+              ],
+              [
+                649.27,
+                664.47
+              ],
+              [
+                619.76,
+                383.67
+              ],
+              [
+                375.24,
+                242.5
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                404.75,
+                523.3
+              ],
+              [
+                375.24,
+                242.5
+              ],
+              [
+                109.92,
+                339.07
+              ],
+              [
+                139.44,
+                619.86
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                404.75,
+                523.3
+              ],
+              [
+                139.44,
+                619.86
+              ],
+              [
+                383.95,
+                761.04
+              ],
+              [
+                649.27,
+                664.47
+              ]
+            ]
+          }
+        ],
+        "score": 2.1151,
+        "scoreComponents": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.1242,
+          "insideRatio": 0.9583,
+          "maskCoverage": 0.8092,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.7817
+        },
+        "signChoice": [
+          1,
+          -1,
+          1
+        ],
+        "warnings": []
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_overlays/set_58_B_global_model_v0.png",
+      "setId": "58",
+      "side": "B",
+      "source": "hard-case",
+      "status": "ok"
+    },
+    {
+      "detection": {
+        "boundaryAnglesDeg": [
+          26.0,
+          132.0,
+          60.0
+        ],
+        "cubeCenter": [
+          492.2,
+          477.3
+        ],
+        "error": null,
+        "lineQualities": [
+          0.8796,
+          0.0,
+          0.0
+        ],
+        "signalQuality": 0.0
+      },
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          0.8796,
+          0.0,
+          0.0
+        ],
+        "detectorSignalQuality": 0.0,
+        "edgeMax": 379.9,
+        "edgeMin": 65.5,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 61 - A - white-up IMG_7518.JPG",
+      "model": {
+        "axes": [
+          [
+            286.76,
+            139.86
+          ],
+          [
+            -213.49,
+            237.1
+          ],
+          [
+            -159.52,
+            -276.3
+          ]
+        ],
+        "cubeCenter": [
+          492.21,
+          477.28
+        ],
+        "edgeLength": 319.048,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                492.21,
+                477.28
+              ],
+              [
+                778.97,
+                617.15
+              ],
+              [
+                565.48,
+                854.24
+              ],
+              [
+                278.72,
+                714.38
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                492.21,
+                477.28
+              ],
+              [
+                278.72,
+                714.38
+              ],
+              [
+                119.2,
+                438.08
+              ],
+              [
+                332.68,
+                200.98
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                492.21,
+                477.28
+              ],
+              [
+                332.68,
+                200.98
+              ],
+              [
+                619.44,
+                340.84
+              ],
+              [
+                778.97,
+                617.15
+              ]
+            ]
+          }
+        ],
+        "score": 1.9665,
+        "scoreComponents": {
+          "cellInsideRatio": 0.9259,
+          "detectorSignalQuality": 0.0,
+          "insideRatio": 0.8985,
+          "maskCoverage": 0.7933,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.7281
+        },
+        "signChoice": [
+          1,
+          1,
+          -1
+        ],
+        "warnings": []
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_overlays/set_61_A_global_model_v0.png",
+      "setId": "61",
+      "side": "A",
+      "source": "hard-case",
+      "status": "ok"
+    },
+    {
+      "detection": {
+        "boundaryAnglesDeg": [
+          92.0,
+          148.0,
+          38.0
+        ],
+        "cubeCenter": [
+          491.2,
+          628.8
+        ],
+        "error": null,
+        "lineQualities": [
+          1.0,
+          0.5437,
+          0.2478
+        ],
+        "signalQuality": 0.3957
+      },
+      "fitDiagnostics": {
+        "detectorLineQualities": [
+          1.0,
+          0.5437,
+          0.2478
+        ],
+        "detectorSignalQuality": 0.3957,
+        "edgeMax": 353.8,
+        "edgeMin": 61.0,
+        "evaluatedCandidates": 256
+      },
+      "imagePath": "/Users/jhuber/Downloads/Set 61 - B - white-up IMG_7519.JPG",
+      "model": {
+        "axes": [
+          [
+            -10.37,
+            296.95
+          ],
+          [
+            251.98,
+            -157.45
+          ],
+          [
+            -234.14,
+            -182.93
+          ]
+        ],
+        "cubeCenter": [
+          491.18,
+          628.8
+        ],
+        "edgeLength": 297.129,
+        "faces": [
+          {
+            "axisPair": [
+              0,
+              1
+            ],
+            "cellCount": 9,
+            "name": "face_01",
+            "quad": [
+              [
+                491.18,
+                628.8
+              ],
+              [
+                480.81,
+                925.75
+              ],
+              [
+                732.79,
+                768.29
+              ],
+              [
+                743.15,
+                471.34
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              1,
+              2
+            ],
+            "cellCount": 9,
+            "name": "face_12",
+            "quad": [
+              [
+                491.18,
+                628.8
+              ],
+              [
+                743.15,
+                471.34
+              ],
+              [
+                509.01,
+                288.41
+              ],
+              [
+                257.03,
+                445.87
+              ]
+            ]
+          },
+          {
+            "axisPair": [
+              2,
+              0
+            ],
+            "cellCount": 9,
+            "name": "face_20",
+            "quad": [
+              [
+                491.18,
+                628.8
+              ],
+              [
+                257.03,
+                445.87
+              ],
+              [
+                246.66,
+                742.82
+              ],
+              [
+                480.81,
+                925.75
+              ]
+            ]
+          }
+        ],
+        "score": 1.8254,
+        "scoreComponents": {
+          "cellInsideRatio": 0.8148,
+          "detectorSignalQuality": 0.3957,
+          "insideRatio": 0.825,
+          "maskCoverage": 0.7353,
+          "outsideImagePenalty": 0.0,
+          "silhouetteIoU": 0.6361
+        },
+        "signChoice": [
+          1,
+          -1,
+          -1
+        ],
+        "warnings": [
+          "low_cell_inside_silhouette"
+        ]
+      },
+      "overlayPath": "/tmp/global_cube_model_v0_overlays/set_61_B_global_model_v0.png",
+      "setId": "61",
+      "side": "B",
+      "source": "hard-case",
+      "status": "low_cell_inside"
+    }
+  ],
+  "schemaVersion": 1,
+  "summary": {
+    "errorRowCount": 0,
+    "fittedRowCount": 18,
+    "imageRowCount": 18,
+    "lowCellInsideRowCount": 2,
+    "lowInsideRowCount": 0,
+    "lowIouRowCount": 2,
+    "okRowCount": 14,
+    "requestedPairCount": 9
+  }
+}

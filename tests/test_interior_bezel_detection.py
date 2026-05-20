@@ -83,3 +83,62 @@ def test_detect_runs_on_synthetic_mask_when_scipy_available():
     assert isinstance(det.boundary_lines, list)
     assert isinstance(det.boundary_angles, list)
     assert 0.0 <= det.signal_quality <= 1.0
+
+
+def test_cell_line_diagnostics_high_quality_threshold_flag():
+    """The derived `crosses_high_quality_bezel` flag fires only when a
+    line is BOTH high-quality AND close to the cell centroid AND
+    geometrically crosses the cell. Verify the gates compose correctly
+    so future threshold-tuning doesn't silently drop one of them."""
+    from tools.interior_bezel_detection import (
+        InteriorBezelDetection,
+        cell_line_diagnostics,
+    )
+
+    # Three lines through (50, 50): vertical (q=0.95), horizontal
+    # (q=0.50), and a diagonal (q=0.10).
+    detection = InteriorBezelDetection(
+        cube_center=(50.0, 50.0),
+        boundary_lines=[
+            ((50.0, 50.0), (50.0, 0.0)),
+            ((50.0, 50.0), (100.0, 50.0)),
+            ((50.0, 50.0), (0.0, 100.0)),
+        ],
+        boundary_angles=[1.5708, 0.0, 2.3562],
+        line_equations=[
+            (-1.0, 0.0, 50.0),                # x = 50
+            (0.0, 1.0, -50.0),                # y = 50
+            (-0.7071, -0.7071, 70.71),        # x + y = 100
+        ],
+        line_qualities=[0.95, 0.50, 0.10],
+        signal_quality=0.5,
+    )
+
+    # Quad containing (50, 50) — vertical + horizontal (both >= 0.40)
+    # cross it. HQ flag should fire.
+    quad_contains = [(40, 40), (60, 40), (60, 60), (40, 60)]
+    d = cell_line_diagnostics(detection, quad_contains,
+                              high_quality_threshold=0.40,
+                              max_distance_px=30.0)
+    assert d["crosses_high_quality_bezel"] is True
+    assert d["thresholds"]["line_quality"] == 0.40
+    assert d["thresholds"]["distance_px"] == 30.0
+    assert d["detector_version"] == "iterative-v1"
+
+    # Quad far from any line — no crossings at all.
+    quad_far = [(200, 200), (220, 200), (220, 220), (200, 220)]
+    d_far = cell_line_diagnostics(detection, quad_far)
+    assert d_far["any_crossing"] is False
+    assert d_far["crosses_high_quality_bezel"] is False
+
+    # Quad crossed ONLY by the low-quality diagonal (q=0.10 < 0.40).
+    # `any_crossing` should fire; `crosses_high_quality_bezel` should
+    # NOT (line quality below threshold).
+    quad_low_only = [(0, 80), (20, 80), (20, 100), (0, 100)]
+    d_low = cell_line_diagnostics(detection, quad_low_only,
+                                  high_quality_threshold=0.40,
+                                  max_distance_px=30.0)
+    assert d_low["any_crossing"] is True
+    assert d_low["crosses_high_quality_bezel"] is False, (
+        "low-quality crossing must not trip the HQ-gated flag"
+    )

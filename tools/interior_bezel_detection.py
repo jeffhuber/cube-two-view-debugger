@@ -16,27 +16,37 @@ vertex out toward h1, h3, h5 (or extensions thereof). Detect them
 via gradient + a constrained angular sweep through the silhouette
 centroid.
 
-Algorithm (post-RANSAC iteration on Set 47 A — first-pass sequential
-RANSAC was dominated by sticker-grid edges):
+Algorithm (iterative refinement, post-human-review iteration on the
+18 worst pairs):
 
   1. Compute the silhouette centroid as an initial cube-center seed.
   2. Compute Sobel gradient magnitude on grayscale, masked to an
      eroded silhouette (erode by `erosion_radius` px to avoid the
      outer hull boundary).
-  3. For each angle θ in [0, π) at 1° steps, sum the gradient
-     magnitude along a line through (cx, cy) at angle θ. This is a
-     1-D angular Hough transform anchored at the centroid.
-  4. Pick the top-3 angles with non-max suppression (min 15°
-     separation). These are 3 candidate face-boundary line angles.
-  5. Locally optimize cube-center: search a small window around the
-     centroid for the (cx, cy) that maximizes the SUM of line-mass
-     for the 3 chosen angles. (Joint refinement; coarse-to-fine.)
-  6. Build boundary line segments from the refined cube-center
+  3. ITERATIVE LOOP (up to `max_iter` rounds, typically 3-5):
+       a. For each angle θ in [0, π) at 1° steps, sum the gradient
+          magnitude along a line through (cx, cy) at angle θ.
+       b. Pick the top-3 angles with non-max suppression.
+       c. Locally search for the (cx, cy) that maximizes the SUM
+          of line-mass for the 3 chosen angles.
+       d. If (cx, cy) moved < `convergence_px` from the previous
+          iteration, stop.
+  4. Build boundary line segments from the converged cube-center
      outward along each of the 3 angles, terminating at the
      silhouette edge.
-  7. Return InteriorBezelDetection with the cube-center estimate,
-     the 3 boundary lines, and a signal_quality score derived from
-     line-mass-vs-baseline ratio + angular separation regularity.
+  5. Score each line individually: per-line quality = how much
+     stronger that line's mass is relative to the local baseline
+     (90th-percentile of mass over the full sweep). Exposes which
+     of the 3 lines are robust vs which are sticker-grid contaminants.
+  6. Return InteriorBezelDetection with cube-center, 3 boundary
+     lines, per-line qualities, and an aggregate signal_quality.
+
+The first-pass single-iteration version (committed in PR #177) scored
+the 18 worst pairs at 5/18 human-overall_pass. The iterative refinement
+targets the 13/18 cases where the centroid seed was correct on the
+cube but the angle-picker had landed on sticker-grid contaminants —
+re-picking angles after refining the center should let those cases
+escape the local optimum.
 
 This module is DIAGNOSTICS-ONLY (per the project decision-log entries).
 The wiring into `_derive_face_quad_topology_aware` (using the detected
@@ -84,7 +94,14 @@ class InteriorBezelDetection:
     boundary_lines: List[Line] = field(default_factory=list)
     # 0-3 angles in radians, one per boundary line
     boundary_angles: List[float] = field(default_factory=list)
-    # Heuristic confidence 0.0-1.0
+    # 0-3 line equations as (a, b, c) tuples such that ax + by + c = 0
+    # (same order as boundary_angles). Pre-computed for downstream
+    # geometric joins — point-to-line distance is
+    # `abs(a*x + b*y + c) / hypot(a, b)`.
+    line_equations: List[Tuple[float, float, float]] = field(default_factory=list)
+    # 0-3 per-line quality scores in [0, 1], same order as boundary_angles
+    line_qualities: List[float] = field(default_factory=list)
+    # Heuristic overall confidence 0.0-1.0
     signal_quality: float = 0.0
     debug: dict = field(default_factory=dict)
 
@@ -164,22 +181,27 @@ def _line_mass(
 ) -> float:
     """Sum gradient magnitude along a line through (cx, cy) at angle θ,
     sampling only pixels inside the silhouette mask. Returns 0.0 if the
-    line doesn't have at least `min_samples` valid pixels."""
+    line doesn't have at least `min_samples` valid pixels.
+
+    Vectorized via numpy fancy-indexing — Python-loop version (~5000
+    iterations per call × 180 angles × 5 seeds × multiple iterations
+    per pair) was the dominant cost; this is ~50x faster.
+    """
     h, w = grad.shape
     dx = math.cos(theta)
     dy = math.sin(theta)
-    total = 0.0
-    n_samples = 0
-    # 1-pixel-spaced sampling along the line
-    for r in range(-max_radius, max_radius + 1):
-        x = int(round(cx + r * dx))
-        y = int(round(cy + r * dy))
-        if 0 <= x < w and 0 <= y < h and silhouette_mask[y, x]:
-            total += grad[y, x]
-            n_samples += 1
-    if n_samples < min_samples:
+    r_arr = np.arange(-max_radius, max_radius + 1)
+    xs = np.round(cx + r_arr * dx).astype(np.int32)
+    ys = np.round(cy + r_arr * dy).astype(np.int32)
+    inside = (xs >= 0) & (xs < w) & (ys >= 0) & (ys < h)
+    xs = xs[inside]
+    ys = ys[inside]
+    in_mask = silhouette_mask[ys, xs]
+    xs = xs[in_mask]
+    ys = ys[in_mask]
+    if len(xs) < min_samples:
         return 0.0
-    return total
+    return float(grad[ys, xs].sum())
 
 
 def _top_k_with_nms(arr: np.ndarray, k: int, min_separation: int) -> List[int]:
@@ -236,15 +258,31 @@ def _refine_cube_center(
 ) -> Tuple[float, float, float]:
     """Coarse-to-fine search for (cx, cy) that maximizes the SUM of
     line-masses for the given fixed `angles` (radians). Returns
-    (cx_refined, cy_refined, total_mass)."""
+    (cx_refined, cy_refined, total_mass).
+
+    HARD CONSTRAINT: (cx, cy) must be inside the silhouette mask.
+    Without this, multi-seed restart can walk the center outside the
+    silhouette where line-masses are spuriously high (most line passes
+    through empty image regions that the mask filter doesn't reject
+    completely because of the min_samples threshold).
+    """
+    h, w = silhouette_mask.shape
+
+    def inside(cx: float, cy: float) -> bool:
+        ix = int(round(cx))
+        iy = int(round(cy))
+        return 0 <= ix < w and 0 <= iy < h and bool(silhouette_mask[iy, ix])
 
     def score(cx: float, cy: float) -> float:
+        if not inside(cx, cy):
+            return -1.0
         return sum(
             _line_mass(cx, cy, t, silhouette_mask, grad, max_radius)
             for t in angles
         )
 
-    # Coarse
+    # If seed is outside silhouette, fall back to (0, 0) score = -1
+    # so subsequent search still tries to find a valid point.
     best_cx, best_cy = cx0, cy0
     best_score = score(cx0, cy0)
     for dx in range(-coarse_window, coarse_window + 1, coarse_step):
@@ -313,11 +351,15 @@ def detect_interior_bezel_lines(
     silhouette_mask: np.ndarray,
     *,
     erosion_radius: int = 30,
-    n_theta: int = 180,
+    n_theta: int = 90,
     nms_separation_deg: int = 15,
     n_lines: int = 3,
+    max_iter: int = 4,
+    convergence_px: float = 6.0,
+    max_drift_px: float = 180.0,
 ) -> InteriorBezelDetection:
-    """Detect the cube-center vertex + up to `n_lines` face-boundary lines.
+    """Detect the cube-center vertex + up to `n_lines` face-boundary lines
+    via iterative (angle-pick, center-refine) until convergence.
 
     Args:
       image_rgb: HxWx3 uint8 array of the input photo
@@ -329,10 +371,12 @@ def detect_interior_bezel_lines(
       nms_separation_deg: min angular separation between picked lines
       n_lines: number of boundary lines to pick (default 3 — one per
         face boundary of a 3-face iso projection)
+      max_iter: maximum (angle-pick, center-refine) iterations
+      convergence_px: stop iterating when center moves < N px
 
     Returns:
       InteriorBezelDetection with cube_center, up to 3 boundary lines,
-      angular signature, and signal_quality score.
+      per-line qualities, and an aggregate signal_quality score.
     """
     debug: dict = {}
     # Hard-gate scipy availability before any other work — if scipy is
@@ -375,87 +419,313 @@ def detect_interior_bezel_lines(
     gray = _rgb_to_gray(image_rgb)
     grad = _sobel_gradient_magnitude(gray).astype(np.float32)
     grad_inside = np.where(eroded, grad, 0.0).astype(np.float32)
-
-    # 1-D angular sweep through the centroid
     max_r = int(math.hypot(w, h) / 2)
-    masses = _angular_sweep(cx0, cy0, eroded, grad_inside, max_r, n_theta)
-    if float(masses.max()) <= 0.0:
-        return InteriorBezelDetection(
-            debug={**debug, "error": "no line-mass signal at centroid"},
-        )
 
+    # ---- Iterative (angle-pick, center-refine) from centroid seed ----
+    # Multi-seed restart (5- and 9-seed variants with offsets ±150-200 px)
+    # was tried and EMPIRICALLY MADE THINGS WORSE on Sets 30 B and 44 B:
+    # the optimization landscape has many local maxima from sticker-grid
+    # edges, and "highest total line-mass" doesn't reliably distinguish
+    # the true cube-center from a sticker-grid-aligned center. The
+    # discarded multi-seed code is preserved in git history at commits
+    # on this branch prior to the "drop multi-seed" commit. Single-seed
+    # iteration + the new per-line quality score gives more honest signal.
+    cx, cy = cx0, cy0
+    angles: List[float] = []
+    masses: np.ndarray = np.zeros(n_theta, dtype=np.float32)
+    iteration_history = []
+    converged = False
+    for iteration in range(max_iter):
+        masses = _angular_sweep(cx, cy, eroded, grad_inside, max_r, n_theta)
+        if float(masses.max()) <= 0.0:
+            return InteriorBezelDetection(
+                debug={**debug, "error": "no line-mass signal at center"},
+            )
+        top_idx = _top_k_with_nms(masses, n_lines, nms_separation_deg)
+        angles = [math.pi * i / n_theta for i in top_idx]
+        if len(angles) < 2:
+            return InteriorBezelDetection(
+                debug={**debug, "error": "fewer than 2 lines detected"},
+            )
+        cx_new, cy_new, _ = _refine_cube_center(
+            cx, cy, angles, eroded, grad_inside, max_r
+        )
+        shift = math.hypot(cx_new - cx, cy_new - cy)
+        iteration_history.append({
+            "iter": iteration,
+            "center_before": [round(cx, 1), round(cy, 1)],
+            "angles_picked_deg": [round(math.degrees(a), 1) for a in angles],
+            "center_after": [round(cx_new, 1), round(cy_new, 1)],
+            "shift_px": round(shift, 1),
+        })
+        cx, cy = cx_new, cy_new
+        # Drift cap: if iteration has carried us too far from the
+        # centroid seed, the iteration is probably chasing a
+        # sticker-grid local optimum. Roll back to centroid + the
+        # angles picked from centroid in iteration 0.
+        cumulative_shift = math.hypot(cx - cx0, cy - cy0)
+        if cumulative_shift > max_drift_px:
+            iteration_history.append({
+                "iter": iteration + 1,
+                "action": "drift_cap_rollback",
+                "cumulative_shift_px": round(cumulative_shift, 1),
+                "max_drift_px": max_drift_px,
+            })
+            cx, cy = cx0, cy0
+            # Re-sweep + re-pick at centroid (gives us angles for downstream)
+            masses = _angular_sweep(cx, cy, eroded, grad_inside, max_r, n_theta)
+            top_idx = _top_k_with_nms(masses, n_lines, nms_separation_deg)
+            angles = [math.pi * i / n_theta for i in top_idx]
+            converged = False
+            break
+        if shift < convergence_px:
+            converged = True
+            break
+
+    debug["iterations"] = iteration_history
+    debug["iter_count"] = len(iteration_history)
+    debug["converged"] = converged
+    debug["centroid_to_final_shift_px"] = round(
+        math.hypot(cx - cx0, cy - cy0), 1
+    )
     debug["mass_max"] = round(float(masses.max()), 1)
     debug["mass_median"] = round(float(np.median(masses)), 1)
-    debug["mass_max_to_median"] = round(
-        float(masses.max()) / max(1.0, float(np.median(masses))), 3
-    )
+    debug["mass_p90"] = round(float(np.percentile(masses, 90)), 1)
 
-    # Top-3 angles with NMS
-    top_idx = _top_k_with_nms(masses, n_lines, nms_separation_deg)
-    angles = [math.pi * i / n_theta for i in top_idx]
-    debug["initial_angles_deg"] = [round(math.degrees(a), 1) for a in angles]
-    debug["initial_masses"] = [round(float(masses[i]), 1) for i in top_idx]
-
-    if len(angles) < 2:
-        return InteriorBezelDetection(
-            debug={**debug, "error": "fewer than 2 lines detected"},
-        )
-
-    # Refine cube-center: search a window around the centroid for the
-    # (cx, cy) that maximizes the sum of line-masses for these angles
-    cx_ref, cy_ref, total_mass = _refine_cube_center(
-        cx0, cy0, angles, eroded, grad_inside, max_r
-    )
-    debug["cube_center_refined"] = [round(cx_ref, 1), round(cy_ref, 1)]
-    debug["refined_shift_px"] = round(
-        math.hypot(cx_ref - cx0, cy_ref - cy0), 1
-    )
-
-    # Build boundary segments
+    # Build boundary segments at the final center
     boundary_lines: List[Line] = []
     for theta in angles:
-        seg = _trace_boundary_segment(cx_ref, cy_ref, theta, silhouette_mask)
+        seg = _trace_boundary_segment(cx, cy, theta, silhouette_mask)
         if seg is not None:
             boundary_lines.append(seg)
     debug["boundary_line_count"] = len(boundary_lines)
 
-    # ---- Signal quality heuristic ----
-    # 3 components, geometric mean → 0.0-1.0:
-    # (a) line_mass_ratio: max angular peak / median ; expect ~1.5+ for
-    #     a real cube, ~1.0 for noise
-    # (b) angle_regularity: how close to 60° apart the 3 angles are
-    #     (in iso projection cube bezels are ~60° apart)
-    # (c) boundary_line_completeness: fraction of lines that traced out
-    ratio = float(masses.max()) / max(1.0, float(np.median(masses)))
-    ratio_score = min(1.0, max(0.0, (ratio - 1.0) / 1.0))  # 1.0→0, 2.0→1.0
+    # ---- Per-line quality ----
+    # For each picked angle θ, score how much its line-mass exceeds the
+    # local baseline (90th percentile of mass over the full sweep).
+    # Lines that are 1.5x+ above the p90 = a real bezel; lines barely
+    # above are likely sticker-grid contaminants.
+    p90 = max(1.0, float(np.percentile(masses, 90)))
+    line_qualities: List[float] = []
+    # angle θ = math.pi * i / n_theta → idx i = round(θ / (math.pi / n_theta))
+    angle_step_rad = math.pi / n_theta
+    for theta in angles:
+        idx = int(round(theta / angle_step_rad)) % n_theta
+        mass_here = float(masses[idx])
+        # ratio: 1.0 = at p90, 2.0 = double p90; clamp to [0,1] via
+        # min(1.0, (ratio - 1.0) / 1.0); below p90 → 0
+        line_q = min(1.0, max(0.0, (mass_here / p90) - 1.0))
+        line_qualities.append(line_q)
+    debug["per_line_mass"] = [
+        round(float(masses[int(round(t / angle_step_rad)) % n_theta]), 1)
+        for t in angles
+    ]
+    debug["per_line_quality"] = [round(q, 3) for q in line_qualities]
 
-    if len(angles) == 3:
-        deg_angles = sorted([math.degrees(a) % 180.0 for a in angles])
-        # pairwise circular distances
-        gaps = [
-            min(abs(deg_angles[(i + 1) % 3] - deg_angles[i]),
-                180 - abs(deg_angles[(i + 1) % 3] - deg_angles[i]))
-            for i in range(3)
-        ]
-        # ideal: 60° + 60° + 60°. Compute std around 60°.
-        gap_dev = sum(abs(g - 60.0) for g in gaps) / 3.0
-        angle_score = max(0.0, 1.0 - gap_dev / 30.0)  # 0° dev→1, 30°→0
+    # ---- Aggregate signal_quality (recalibrated post-human-review) ----
+    # The previous heuristic over-rewarded angle_regularity. New scheme:
+    # the aggregate is the WEIGHTED MIN of the per-line qualities — a
+    # single bad line caps the aggregate, which matches the human
+    # review's "1 bad line means overall fail" pattern.
+    if not line_qualities:
+        signal_quality = 0.0
     else:
-        angle_score = 0.3
-
+        # Mean of the bottom-2 quality values (worst-case-biased).
+        sorted_q = sorted(line_qualities)
+        if len(sorted_q) == 1:
+            signal_quality = sorted_q[0]
+        elif len(sorted_q) == 2:
+            signal_quality = sum(sorted_q) / 2
+        else:
+            signal_quality = (sorted_q[0] + sorted_q[1]) / 2
+    # Multiply by completeness so partial detections don't claim full score
     completeness = len(boundary_lines) / max(1, n_lines)
+    signal_quality *= completeness
 
-    signal_quality = (ratio_score * angle_score * completeness) ** (1.0 / 3.0)
     debug["quality_components"] = {
-        "line_mass_ratio_score": round(ratio_score, 3),
-        "angle_regularity_score": round(angle_score, 3),
+        "per_line_quality": [round(q, 3) for q in line_qualities],
         "completeness": round(completeness, 3),
+        "aggregator": "mean_of_bottom_2 * completeness",
     }
 
+    # Line equations: for a line through (cx, cy) at angle θ, the unit
+    # NORMAL is (-sin θ, cos θ) and the line is `-sin(θ)*x + cos(θ)*y +
+    # (sin(θ)*cx - cos(θ)*cy) = 0`.
+    line_equations: List[Tuple[float, float, float]] = []
+    for theta in angles:
+        a = -math.sin(theta)
+        b = math.cos(theta)
+        c = -(a * cx + b * cy)
+        line_equations.append((float(a), float(b), float(c)))
+
     return InteriorBezelDetection(
-        cube_center=(float(cx_ref), float(cy_ref)),
+        cube_center=(float(cx), float(cy)),
         boundary_lines=boundary_lines,
         boundary_angles=[float(a) for a in angles],
+        line_equations=line_equations,
+        line_qualities=line_qualities,
         signal_quality=float(signal_quality),
         debug=debug,
     )
+
+
+# ----------------- helpers for downstream slot/cell-level joins -----------------
+
+
+def point_to_line_distance(
+    point: Point, line_eq: Tuple[float, float, float]
+) -> float:
+    """Distance from a point to a line in ax + by + c = 0 form."""
+    a, b, c = line_eq
+    denom = math.hypot(a, b)
+    if denom < 1e-9:
+        return float("inf")
+    return abs(a * point[0] + b * point[1] + c) / denom
+
+
+def line_crosses_quad(
+    quad_pts: Sequence[Point], line_eq: Tuple[float, float, float]
+) -> bool:
+    """True iff the infinite line `ax + by + c = 0` passes through the
+    interior of the convex polygon `quad_pts` (4 vertices in CW or CCW
+    order). Detected by checking that quad vertices straddle the line —
+    i.e., not all on one side."""
+    a, b, c = line_eq
+    signs = []
+    for x, y in quad_pts:
+        v = a * x + b * y + c
+        if v > 1e-6:
+            signs.append(1)
+        elif v < -1e-6:
+            signs.append(-1)
+        else:
+            signs.append(0)
+    return any(s == 1 for s in signs) and any(s == -1 for s in signs)
+
+
+# Default thresholds for the `crosses_high_quality_bezel` derived flag.
+# Picked from this branch's 18-pair human-review walkthroughs (#177 fixture):
+#   * line_q >= 0.40 selects the magenta-vertical bezel that's correct
+#     on 13/18 pairs (and excludes the yellow-dimmest line that's
+#     essentially noise on 10/18 pairs)
+#   * cell-centroid distance <= 30 px is a conservative "actually
+#     crosses the cell's center, not just clipping a corner"
+# These are NOT validated as zero-FP thresholds — they exist to give
+# the broader-corpus mining a concrete starting point. The raw
+# per-line `quality`, `distance_from_centroid_px`, and `crosses_cell`
+# fields are preserved alongside so downstream consumers can re-tune
+# without re-running the detector.
+DEFAULT_LINE_QUALITY_THRESHOLD = 0.40
+DEFAULT_DISTANCE_THRESHOLD_PX = 30.0
+
+
+def cell_line_diagnostics(
+    detection: InteriorBezelDetection,
+    cell_quad: Sequence[Point],
+    *,
+    min_line_quality: float = 0.0,
+    high_quality_threshold: float = DEFAULT_LINE_QUALITY_THRESHOLD,
+    max_distance_px: float = DEFAULT_DISTANCE_THRESHOLD_PX,
+    detector_version: str = "iterative-v1",
+) -> dict:
+    """Compute per-line diagnostics for a single cell quad against the
+    detected bezel lines. Intended for downstream slot/cell-level joins
+    against #175's overlay_feedback per-slot rows.
+
+    Args:
+      detection: an InteriorBezelDetection (image-level result)
+      cell_quad: 4-vertex sequence of (x, y) image-space points
+        describing the cell's quadrilateral in image coords
+      min_line_quality: when computing the aggregate `any_crossing_high_quality`
+        flag, ignore lines whose per-line quality is below this
+        threshold (default 0.0 = consider all detected lines)
+      high_quality_threshold: line-quality threshold for the derived
+        `crosses_high_quality_bezel` flag (default 0.40, see
+        DEFAULT_LINE_QUALITY_THRESHOLD).
+      max_distance_px: maximum distance from cell centroid to a line
+        for that line to count as "crossing through the cell" (used by
+        the derived `crosses_high_quality_bezel` flag — independent of
+        the geometric `crosses_cell` boolean which only checks straddle).
+      detector_version: tag stamped on the output so future detector
+        iterations can be distinguished in cross-tab mining without
+        re-running upstream.
+
+    Returns dict with keys:
+      detector_version: str (passed through; for cross-tab join keys)
+      cell_centroid: (cx, cy)
+      cell_center_to_cube_center_px: float (proxy for "is this cell
+        near the cube-center vertex?")
+      per_line: list of {angle_deg, quality, distance_from_centroid_px,
+        crosses_cell} — RAW per-line fields preserved
+      any_crossing: bool (any detected line straddles the cell?)
+      any_crossing_high_quality: bool (any line with quality >=
+        `min_line_quality` straddles the cell?)
+      crosses_high_quality_bezel: bool (derived flag — any line with
+        quality >= `high_quality_threshold` AND distance from cell
+        centroid <= `max_distance_px` crosses through the cell)
+      thresholds: {"line_quality": ..., "distance_px": ...} (echoed
+        back so the join row records WHICH threshold produced the flag)
+      min_distance_from_centroid_px: float (closest line to cell centroid)
+    """
+    # Centroid of the quad
+    cx = sum(p[0] for p in cell_quad) / len(cell_quad)
+    cy = sum(p[1] for p in cell_quad) / len(cell_quad)
+    cell_centroid: Point = (cx, cy)
+
+    if detection.cube_center is not None:
+        cc_dist = math.hypot(
+            cx - detection.cube_center[0], cy - detection.cube_center[1]
+        )
+    else:
+        cc_dist = float("inf")
+
+    per_line = []
+    for i, (eq, q, theta) in enumerate(zip(
+        detection.line_equations,
+        detection.line_qualities,
+        detection.boundary_angles,
+    )):
+        per_line.append({
+            "line_index": i,
+            "angle_deg": round(math.degrees(theta), 2),
+            "quality": round(float(q), 3),
+            "distance_from_centroid_px": round(
+                point_to_line_distance(cell_centroid, eq), 1
+            ),
+            "crosses_cell": bool(line_crosses_quad(cell_quad, eq)),
+        })
+
+    any_crossing = any(pl["crosses_cell"] for pl in per_line)
+    any_crossing_high_quality = any(
+        pl["crosses_cell"] and pl["quality"] >= min_line_quality
+        for pl in per_line
+    )
+    # Derived flag: line quality >= threshold AND distance to cell
+    # centroid <= threshold AND geometric crosses_cell. Strictest of
+    # the three signals — meant as a starting point for broader-corpus
+    # zero-FP mining, NOT a validated production threshold.
+    crosses_hq = any(
+        pl["crosses_cell"]
+        and pl["quality"] >= high_quality_threshold
+        and pl["distance_from_centroid_px"] <= max_distance_px
+        for pl in per_line
+    )
+    min_dist = min(
+        (pl["distance_from_centroid_px"] for pl in per_line),
+        default=float("inf"),
+    )
+
+    return {
+        "detector_version": detector_version,
+        "cell_centroid": [round(cx, 1), round(cy, 1)],
+        "cell_center_to_cube_center_px": round(cc_dist, 1),
+        "per_line": per_line,
+        "any_crossing": any_crossing,
+        "any_crossing_high_quality": any_crossing_high_quality,
+        "crosses_high_quality_bezel": crosses_hq,
+        "thresholds": {
+            "line_quality": high_quality_threshold,
+            "distance_px": max_distance_px,
+        },
+        "min_distance_from_centroid_px": min_dist,
+    }

@@ -1,0 +1,275 @@
+{
+  "source": "/private/tmp/hybrid_overlays/overlay tool visual feedback  (1) copy.xlsx",
+  "captured_at": "2026-05-18",
+  "pipeline_version_at_capture": "pre_PR_160",
+  "notes": "Per-slot human visual judgments from overlay-tool review. 'good'/'bad' is the visual verdict; 'src_face' is the analyze_image center-face attribution for the rectified slot (when present in the cell text). 'src_face' != slot label indicates a slot/src mismatch \u2014 analyze_image classified a grid for face X but the proposer assigned it to slot Y. This was the dominant failure mode in the May 18 review.",
+  "color_to_slot": {
+    "A": {
+      "red": "U",
+      "green": "R",
+      "blue": "F"
+    },
+    "B": {
+      "purple": "D",
+      "orange": "L",
+      "yellow": "B"
+    }
+  },
+  "pairs": [
+    {
+      "set_id": "17",
+      "quads": {
+        "A": {
+          "U": "good",
+          "R": "good",
+          "F": "bad"
+        },
+        "B": {
+          "D": "bad",
+          "L": "bad",
+          "B": "bad"
+        }
+      },
+      "rectified": {
+        "A": {
+          "U": {
+            "src_face": "U",
+            "verdict": "good"
+          },
+          "R": {
+            "src_face": "R",
+            "verdict": "good"
+          },
+          "F": {
+            "src_face": "B",
+            "verdict": "bad"
+          }
+        },
+        "B": {
+          "D": {
+            "src_face": "D",
+            "verdict": "bad"
+          },
+          "L": {
+            "src_face": "B",
+            "verdict": "bad"
+          },
+          "B": {
+            "src_face": "B",
+            "verdict": "bad"
+          }
+        }
+      },
+      "summary": {
+        "good_count": 4,
+        "total_cells": 12,
+        "good_fraction": 0.3333,
+        "src_mismatch_count": 2
+      }
+    },
+    {
+      "set_id": "21",
+      "quads": {
+        "A": {
+          "U": "good",
+          "R": "bad",
+          "F": "bad"
+        },
+        "B": {
+          "D": "bad",
+          "L": "bad",
+          "B": "good"
+        }
+      },
+      "rectified": {
+        "A": {
+          "U": {
+            "src_face": "U",
+            "verdict": "bad"
+          },
+          "R": {
+            "src_face": "B",
+            "verdict": "good"
+          },
+          "F": {
+            "src_face": "D",
+            "verdict": "bad"
+          }
+        },
+        "B": {
+          "D": {
+            "src_face": "D",
+            "verdict": "good"
+          },
+          "L": {
+            "src_face": "F",
+            "verdict": "bad"
+          },
+          "B": {
+            "src_face": "R",
+            "verdict": "bad"
+          }
+        }
+      },
+      "summary": {
+        "good_count": 4,
+        "total_cells": 12,
+        "good_fraction": 0.3333,
+        "src_mismatch_count": 4
+      }
+    },
+    {
+      "set_id": "47",
+      "quads": {
+        "A": {
+          "U": "good",
+          "R": "bad",
+          "F": "bad"
+        },
+        "B": {
+          "D": "bad",
+          "L": "bad",
+          "B": "good"
+        }
+      },
+      "rectified": {
+        "A": {
+          "U": {
+            "src_face": "U",
+            "verdict": "bad"
+          },
+          "R": {
+            "src_face": "F",
+            "verdict": "good"
+          },
+          "F": {
+            "src_face": "L",
+            "verdict": "bad"
+          }
+        },
+        "B": {
+          "D": {
+            "src_face": "D",
+            "verdict": "good"
+          },
+          "L": {
+            "src_face": "B",
+            "verdict": "bad"
+          },
+          "B": {
+            "src_face": "U",
+            "verdict": "bad"
+          }
+        }
+      },
+      "summary": {
+        "good_count": 4,
+        "total_cells": 12,
+        "good_fraction": 0.3333,
+        "src_mismatch_count": 4
+      }
+    },
+    {
+      "set_id": "49",
+      "quads": {
+        "A": {
+          "U": "bad",
+          "R": "bad",
+          "F": "bad"
+        },
+        "B": {
+          "D": "bad",
+          "L": "bad",
+          "B": "good"
+        }
+      },
+      "rectified": {
+        "A": {
+          "U": {
+            "src_face": null,
+            "verdict": "src = u;' bad"
+          },
+          "R": {
+            "src_face": "B",
+            "verdict": "bad"
+          },
+          "F": {
+            "src_face": "F",
+            "verdict": "bad"
+          }
+        },
+        "B": {
+          "D": {
+            "src_face": "D",
+            "verdict": "good"
+          },
+          "L": {
+            "src_face": "F",
+            "verdict": "bad"
+          },
+          "B": {
+            "src_face": "B",
+            "verdict": "bad"
+          }
+        }
+      },
+      "summary": {
+        "good_count": 2,
+        "total_cells": 12,
+        "good_fraction": 0.1667,
+        "src_mismatch_count": 2
+      }
+    },
+    {
+      "set_id": "61",
+      "quads": {
+        "A": {
+          "U": "good",
+          "R": "bad",
+          "F": "bad"
+        },
+        "B": {
+          "D": "bad",
+          "L": "bad",
+          "B": "bad"
+        }
+      },
+      "rectified": {
+        "A": {
+          "U": {
+            "src_face": "U",
+            "verdict": "bad"
+          },
+          "R": {
+            "src_face": "F",
+            "verdict": "good"
+          },
+          "F": {
+            "src_face": "B",
+            "verdict": "bad"
+          }
+        },
+        "B": {
+          "D": {
+            "src_face": "D",
+            "verdict": "bad"
+          },
+          "L": {
+            "src_face": "U",
+            "verdict": "bad"
+          },
+          "B": {
+            "src_face": "L",
+            "verdict": "bad"
+          }
+        }
+      },
+      "summary": {
+        "good_count": 2,
+        "total_cells": 12,
+        "good_fraction": 0.1667,
+        "src_mismatch_count": 4
+      }
+    }
+  ]
+}

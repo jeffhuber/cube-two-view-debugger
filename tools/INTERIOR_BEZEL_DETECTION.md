@@ -201,10 +201,24 @@ up across the broader corpus:
 | `tools/INTERIOR_BEZEL_DETECTION.md`                      | This doc (results writeup)                          |
 | `tests/fixtures/interior_bezel_visual_feedback.json`     | Human review of the 18 worst-pair overlays — ground truth for measuring the follow-up iterative-refinement PR |
 
+## Dependencies
+
+| Dependency | Status                                              |
+|------------|-----------------------------------------------------|
+| numpy      | required (in `requirements.txt`)                    |
+| scipy      | **optional research dependency** — used for binary erosion + Sobel-filter convolution. Same opt-in pattern as `propose_geometry_labels.py:_fit_hexagon_optimized` and `amg_face_refiner.py`. When absent, `detect_interior_bezel_lines()` returns a graceful `InteriorBezelDetection` with `signal_quality=0.0` and `debug["error"]` rather than raising. Install with `.venv/bin/pip install scipy`. |
+| rembg      | required only by `tools/test_interior_bezel.py` for generating the silhouette mask. The detection module itself has no `rembg` dependency — callers pass in the mask. |
+
+A smoke test covering both scipy-present and scipy-absent paths is at
+`tests/test_interior_bezel_detection.py` and runs in the standard
+`tests/run_tests.py` / `pytest tests` invocation.
+
 ## Reproducing this artifact
 
 ```bash
-# Requires rembg (.venv/bin/pip install rembg) for the silhouette mask
+# Install scipy + rembg if not already in the venv
+.venv/bin/pip install scipy rembg
+
 .venv/bin/python tools/test_interior_bezel.py \
     --sets 17 21 30 31 44 47 57 58 61 \
     --out /tmp/interior_bezel_results

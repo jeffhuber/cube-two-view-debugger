@@ -43,8 +43,17 @@ The wiring into `_derive_face_quad_topology_aware` (using the detected
 center + h1/h3/h5 as authoritative when available) is a future step,
 gated on zero-FP mining across the corpus first.
 
-Dependencies: numpy, scipy (already in requirements). No `rembg`
-dependency at module top — the caller supplies the silhouette mask.
+Dependencies:
+  * numpy (in `requirements.txt`) — required at module import
+  * scipy — **optional research dependency**, not in `requirements.txt`.
+    Used for binary erosion + Sobel-filter convolution. When absent,
+    `detect_interior_bezel_lines()` returns an InteriorBezelDetection
+    with `signal_quality=0.0` and `debug["error"]` explaining the
+    missing dependency (matches the pattern used by
+    `propose_geometry_labels.py:_fit_hexagon_optimized` and
+    `amg_face_refiner.py`). Install with `.venv/bin/pip install scipy`.
+  * No `rembg` dependency at module top — the caller supplies the
+    silhouette mask.
 """
 from __future__ import annotations
 
@@ -83,9 +92,36 @@ class InteriorBezelDetection:
 # ----------------- low-level helpers (unchanged from v1) -----------------
 
 
+def _try_import_scipy_ndimage():
+    """Return `scipy.ndimage` if installed, else None. Cached on first
+    call. Lets `detect_interior_bezel_lines` return a graceful
+    debug["error"] instead of raising ImportError when scipy is missing.
+
+    scipy is an optional research dependency in this repo — it's not in
+    `requirements.txt`. The same pattern is used by
+    `propose_geometry_labels.py:_fit_hexagon_optimized` and
+    `amg_face_refiner.py`.
+    """
+    cached = getattr(_try_import_scipy_ndimage, "_cached", "MISSING")
+    if cached != "MISSING":
+        return cached
+    try:
+        from scipy import ndimage  # type: ignore
+    except ImportError:
+        ndimage = None
+    _try_import_scipy_ndimage._cached = ndimage  # type: ignore[attr-defined]
+    return ndimage
+
+
 def _sobel_gradient_magnitude(gray: np.ndarray) -> np.ndarray:
-    """Sobel gradient magnitude on a grayscale image (numpy-only)."""
-    from scipy import ndimage
+    """Sobel gradient magnitude on a grayscale image.
+
+    Caller is responsible for checking that `_try_import_scipy_ndimage()`
+    is not None before calling this. Raises ImportError otherwise.
+    """
+    ndimage = _try_import_scipy_ndimage()
+    if ndimage is None:
+        raise ImportError("scipy.ndimage is required")
     kx = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=np.float32)
     ky = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]], dtype=np.float32)
     gx = ndimage.convolve(gray.astype(np.float32), kx, mode="reflect")
@@ -103,8 +139,14 @@ def _rgb_to_gray(rgb: np.ndarray) -> np.ndarray:
 
 
 def _erode_mask(mask: np.ndarray, radius: int) -> np.ndarray:
-    """Binary erosion via scipy."""
-    from scipy import ndimage
+    """Binary erosion via `scipy.ndimage`.
+
+    Caller is responsible for checking that `_try_import_scipy_ndimage()`
+    is not None before calling this. Raises ImportError otherwise.
+    """
+    ndimage = _try_import_scipy_ndimage()
+    if ndimage is None:
+        raise ImportError("scipy.ndimage is required")
     return ndimage.binary_erosion(mask, iterations=radius)
 
 
@@ -293,6 +335,18 @@ def detect_interior_bezel_lines(
       angular signature, and signal_quality score.
     """
     debug: dict = {}
+    # Hard-gate scipy availability before any other work — if scipy is
+    # missing we want a clear diagnostic, not a bare ModuleNotFoundError
+    # inside the first call to a helper. scipy is an optional research
+    # dependency (not in requirements.txt); see module docstring.
+    if _try_import_scipy_ndimage() is None:
+        return InteriorBezelDetection(
+            debug={"error": (
+                "scipy is not installed; this diagnostic probe requires "
+                "scipy.ndimage for Sobel + binary_erosion. Install with: "
+                ".venv/bin/pip install scipy"
+            )},
+        )
     if image_rgb.shape[:2] != silhouette_mask.shape:
         return InteriorBezelDetection(
             debug={"error": "image and mask shape mismatch"},

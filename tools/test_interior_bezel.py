@@ -39,7 +39,9 @@ if str(REPO_ROOT) not in sys.path:
 
 from tools.interior_bezel_detection import (  # noqa: E402
     InteriorBezelDetection,
+    InteriorHVertex,
     detect_interior_bezel_lines,
+    find_interior_h_vertices,
 )
 
 
@@ -91,12 +93,16 @@ def _draw_visualization(
     mask: np.ndarray,
     detection: InteriorBezelDetection,
     title: str,
+    h_vertices: List["InteriorHVertex"] = None,
 ) -> Image.Image:
     """Side-by-side panel: original photo, mask, photo + overlay.
 
     Overlay draws:
-      * cube_center as a magenta dot
-      * each boundary line as a magenta segment from center outward
+      * cube_center as a white dot
+      * each boundary line as a colored full chord (per-line color)
+      * h-vertex candidates as smaller filled circles at trace termini,
+        color-matched to parent bezel line; radius scaled by confidence,
+        filled gray if drop_clean=False
       * signal_quality printed in the top-left corner
     """
     h, w = rgb.shape[:2]
@@ -152,7 +158,24 @@ def _draw_visualization(
             color = line_colors[i % len(line_colors)]
             draw.line((p_minus[0], p_minus[1], p_plus[0], p_plus[1]),
                       fill=color, width=4)
-        # cube-center dot
+        # h-vertex candidates (drawn before cube_center dot so the
+        # center stays on top visually).
+        if h_vertices:
+            for v in h_vertices:
+                vx_s, vy_s = _tx(v.position[0], v.position[1])
+                parent_color = line_colors[v.parent_line_index % len(line_colors)]
+                if v.debug.get("drop_clean", False):
+                    fill = parent_color
+                else:
+                    # ambiguous terminus — gray fill
+                    fill = (140, 140, 140)
+                hv_r = int(5 + v.confidence * 10)
+                draw.ellipse(
+                    (vx_s - hv_r, vy_s - hv_r, vx_s + hv_r, vy_s + hv_r),
+                    fill=fill, outline=(0, 0, 0), width=2,
+                )
+
+        # cube-center dot (drawn last so it's on top)
         r = 14
         draw.ellipse(
             (cx_s - r, cy_s - r, cx_s + r, cy_s + r),
@@ -171,9 +194,12 @@ def _draw_visualization(
     n_lines = len(detection.boundary_lines)
     lq_str = " ".join(f"{q:.2f}" for q in detection.line_qualities) or "—"
     n_iter = detection.debug.get("iter_count", "?")
+    n_hv_clean = sum(1 for v in (h_vertices or []) if v.debug.get("drop_clean"))
+    n_hv = len(h_vertices or [])
     header = (
         f"{title}  sq={detection.signal_quality:.2f}  "
-        f"per-line=[{lq_str}]  lines={n_lines}  iter={n_iter}"
+        f"per-line=[{lq_str}]  lines={n_lines}  iter={n_iter}  "
+        f"h-vert={n_hv_clean}/{n_hv}"
     )
     draw.rectangle((0, 0, nw, 28), fill=(0, 0, 0, 180))
     draw.text((6, 4), header, fill=(255, 255, 255), font=font)
@@ -215,6 +241,20 @@ def _serialize_detection(d: InteriorBezelDetection) -> dict:
         "detector_version": "iterative-v1",
         "debug": d.debug,
     }
+
+
+def _serialize_h_vertices(vertices: List["InteriorHVertex"]) -> List[dict]:
+    return [
+        {
+            "position": [round(v.position[0], 1), round(v.position[1], 1)],
+            "parent_line_index": v.parent_line_index,
+            "direction_sign": v.direction_sign,
+            "distance_from_center_px": round(v.distance_from_center_px, 1),
+            "confidence": round(v.confidence, 3),
+            "debug": v.debug,
+        }
+        for v in vertices
+    ]
 
 
 def main() -> None:
@@ -259,6 +299,9 @@ def main() -> None:
             mask = _compute_rembg_mask(rgb)
             print(f"[set {set_id} {side}]   mask pixels={int(mask.sum()):,}", file=sys.stderr)
             detection = detect_interior_bezel_lines(rgb, mask)
+            h_vertices = find_interior_h_vertices(
+                detection, rgb, mask, min_line_quality=0.40
+            )
             row = {
                 "setId": set_id,
                 "side": side,
@@ -266,21 +309,25 @@ def main() -> None:
                 "imageSize": [rgb.shape[1], rgb.shape[0]],
                 "maskPixels": int(mask.sum()),
                 **_serialize_detection(detection),
+                "h_vertices": _serialize_h_vertices(h_vertices),
             }
             summary.append(row)
             lq = ",".join(f"{q:.2f}" for q in detection.line_qualities)
+            n_hv_clean = sum(1 for v in h_vertices if v.debug.get("drop_clean"))
             print(
                 f"[set {set_id} {side}]   sq={detection.signal_quality:.2f}  "
                 f"per-line=[{lq}]  iter={detection.debug.get('iter_count', '?')}  "
                 f"converged={detection.debug.get('converged', '?')}  "
                 f"final_shift={detection.debug.get('centroid_to_final_shift_px', '?')}  "
-                f"lines={len(detection.boundary_lines)}",
+                f"lines={len(detection.boundary_lines)}  "
+                f"h-vert={n_hv_clean}/{len(h_vertices)} clean",
                 file=sys.stderr,
             )
 
             if args.out is not None:
                 panel = _draw_visualization(
-                    rgb, mask, detection, title=f"Set {set_id} {side}"
+                    rgb, mask, detection, title=f"Set {set_id} {side}",
+                    h_vertices=h_vertices,
                 )
                 png_path = args.out / f"set_{set_id}_{side}_overlay.png"
                 json_path = args.out / f"set_{set_id}_{side}_data.json"

@@ -142,3 +142,40 @@ def test_cell_line_diagnostics_high_quality_threshold_flag():
     assert d_low["crosses_high_quality_bezel"] is False, (
         "low-quality crossing must not trip the HQ-gated flag"
     )
+
+
+def test_find_interior_h_vertices_filters_by_line_quality():
+    """`find_interior_h_vertices` only traces bezels whose
+    `line_qualities[i] >= min_line_quality`. Verify that bezels below
+    the threshold are skipped (no candidate emitted for them)."""
+    from tools.interior_bezel_detection import (
+        find_interior_h_vertices, _try_import_scipy_ndimage,
+    )
+
+    if _try_import_scipy_ndimage() is None:
+        pytest.skip("scipy not installed in this venv")
+
+    # Build a synthetic image with no real bezels — detector will
+    # produce a graceful empty/low-signal result, and h-vertex tracing
+    # should return [] (nothing to trace).
+    from tools.interior_bezel_detection import detect_interior_bezel_lines
+    rgb = np.zeros((300, 300, 3), dtype=np.uint8)
+    mask = np.zeros((300, 300), dtype=bool)
+    mask[40:260, 40:260] = True
+
+    det = detect_interior_bezel_lines(rgb, mask)
+    vertices = find_interior_h_vertices(
+        det, rgb, mask, min_line_quality=0.40
+    )
+    # No real bezels in this synthetic image; either no detection lines
+    # at all (filtered out) or detection lines with low quality (filtered
+    # out by min_line_quality threshold). Either way: empty result.
+    assert isinstance(vertices, list)
+    for v in vertices:
+        # Any vertex that DOES get emitted must have a parent line
+        # quality >= the threshold we passed
+        parent_q = det.line_qualities[v.parent_line_index]
+        assert parent_q >= 0.40 - 1e-9, (
+            f"h-vertex emitted for parent quality {parent_q} "
+            f"below threshold 0.40"
+        )

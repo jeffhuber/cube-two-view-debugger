@@ -57,8 +57,7 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 | Owner | Branch | PR | What | Touches | ETA |
 |---|---|---|---|---|---|
-| Claude | `claude/interior-bezel-detection` | #177 | Diagnostics-only probe: angular Hough sweep through silhouette centroid → cube-center vertex + 3 face-boundary lines. Targets the h1/h3/h5 ceiling identified in #176 (3 hexagon vertices are interior to silhouette on yawed cubes). Human review: 5/18 worst pairs overall_pass; magenta line robust ~17/18; cyan/yellow miss frequently. | `tools/interior_bezel_detection.py`, `tools/test_interior_bezel.py`, `tools/INTERIOR_BEZEL_DETECTION.md`, `tests/fixtures/interior_bezel_visual_feedback.json` (all new) | awaiting Devin audit |
-| Claude | `claude/interior-bezel-iterative` | (in-flight) | Follow-up to #177: iterative (angle-pick, center-refine) refinement + per-line quality + vectorized line_mass (4x faster). Multi-seed restart tried + dropped (made things worse). 4/18 strong detections (31 A/B, 57 A, 58 A; all genuinely cube-aligned). Stacked on #177 — rebase to main after #177 lands. | `tools/interior_bezel_detection.py`, `tools/test_interior_bezel.py`, `tools/INTERIOR_BEZEL_DETECTION.md` (all modified) | awaiting Devin audit |
+| Claude | `claude/h-vertex-tracing` | (in-flight) | Tier 1 follow-up to #178: trace h1/h3/h5 candidate positions by walking outward from cube_center along high-quality bezel lines until perpendicular-gradient drops off (the cube corner). 4/18 worst pairs produce ≥4 clean h-vertex candidates (31 A, 31 B, 57 A, 58 A — all in the strong-detection cluster). Diagnostics-only. The 6-vertex hexagon (3 hull-detectable h0/h2/h4 + 3 traced h1/h3/h5) is the prerequisite for any future proposer wiring. | `tools/interior_bezel_detection.py`, `tools/test_interior_bezel.py`, `tools/INTERIOR_BEZEL_DETECTION.md`, `tests/test_interior_bezel_detection.py` (all modified) | awaiting Devin audit |
 
 *(Codex: please populate your row when you start something.)*
 
@@ -70,10 +69,11 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 ### Claude
 
+- **#178** — Iterative refinement + per-line quality + slot/cell join shape (diagnostics-only). 4x perf via vectorized `_line_mass`; 4/18 strong detections (31 A/B, 57 A, 58 A all genuinely cube-aligned); `crosses_high_quality_bezel` derived flag with explicit thresholds.
+- **#177** — Interior bezel-line detection probe (diagnostics-only). Angular Hough sweep through silhouette centroid finds cube_center + 3 face-boundary lines. Targets the h1/h3/h5 ceiling from #176. Ships human-review fixture + scipy-optional pattern.
 - **#176** — Hex-fitter failure taxonomy + walkthrough generator (diagnostics-only). 12/18 worst-pair hexagons are degenerate (min_edge < 20 px); structural finding that h1/h3/h5 are interior to silhouette on yawed cubes — bounds what hull-based fitters can achieve.
 - **#163** — Full-hull lookup for shared vertices + sweep-state cache fix. Tooling evaluator gains +4.0pp and beats WhiteUpRecognizer in that lane.
 - **#157** — Slot/src filter for hybrid pipeline. Real diagnostic signal, but negative deployment result; kept as experimental infrastructure.
-- **#156** — Hull-guard attempt for hybrid pipeline. Negative result; documents why cube-hull containment cannot fix multi-face rectification failures.
 - **#152** — Hybrid pipeline evaluator. Rectify-on-existing-recognizer-quads transfers poorly end-to-end; geometry, not color, is binding.
 - **#142** — Learned vertex regressor (sklearn Ridge on 68 hull labels). Mixed result: better mean IoU, still 0% pass at face≥0.85.
 

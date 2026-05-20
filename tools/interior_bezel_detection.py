@@ -106,6 +106,30 @@ class InteriorBezelDetection:
     debug: dict = field(default_factory=dict)
 
 
+@dataclass
+class InteriorHVertex:
+    """One of h1 / h3 / h5 — a cube corner interior to the silhouette,
+    found by tracing along a bezel line outward from cube_center until
+    the bezel terminates (perpendicular-gradient peak drops below a
+    fraction of its peak-near-center value)."""
+
+    position: Point
+    # Index into InteriorBezelDetection.boundary_angles / line_equations /
+    # line_qualities — which bezel line produced this h-vertex.
+    parent_line_index: int
+    # Sign along the parent line's direction unit vector (+1 or -1) —
+    # which side of cube_center this h-vertex lies on.
+    direction_sign: int
+    # Distance from cube_center to this h-vertex (in px).
+    distance_from_center_px: float
+    # Per-vertex confidence in [0, 1]. Combines:
+    #   * the parent bezel's line quality (high quality → high confidence)
+    #   * how sharply the gradient peak dropped at the terminus
+    #     (a clear drop → high confidence; ambiguous → low confidence)
+    confidence: float
+    debug: dict = field(default_factory=dict)
+
+
 # ----------------- low-level helpers (unchanged from v1) -----------------
 
 
@@ -729,3 +753,260 @@ def cell_line_diagnostics(
         },
         "min_distance_from_centroid_px": min_dist,
     }
+
+
+# ----------------- h-vertex tracing (Tier 1) -----------------
+
+# Default thresholds for `find_interior_h_vertices` — picked from the
+# 18-pair walkthroughs but NOT validated as zero-FP. Same disclaimer as
+# DEFAULT_LINE_QUALITY_THRESHOLD / DEFAULT_DISTANCE_THRESHOLD_PX above:
+# these exist to give downstream mining concrete starting points.
+DEFAULT_H_VERTEX_MIN_LINE_QUALITY = 0.40
+# A bezel's perpendicular gradient peak terminates at the h-vertex.
+# Walk outward from cube_center along the bezel direction, sampling
+# perpendicular gradient at each step. The h-vertex is where the
+# running gradient peak drops to less than this fraction of the
+# in-bezel median peak. Picked at 0.20 because the empirical bezel
+# signal bounces between ~70-330 in-regime (high variance due to
+# sticker boundaries crossing the perpendicular) and drops to ~20-40
+# post-h-vertex. 0.40 was too aggressive (the in-regime dips alone
+# triggered false termination); 0.20 cleanly separates the two regimes.
+DEFAULT_H_VERTEX_TERMINATION_FRACTION = 0.20
+
+
+def _perpendicular_gradient_peak(
+    px: float, py: float,
+    theta: float,
+    grad: np.ndarray,
+    silhouette_mask: np.ndarray,
+    perp_half_width: int = 24,
+) -> float:
+    """Sample gradient magnitude along a short perpendicular slice
+    through (px, py) and return the peak value within the silhouette.
+
+    The bezel line direction is (cos θ, sin θ). Perpendicular direction
+    is (-sin θ, cos θ). We sample 2*perp_half_width + 1 pixels along the
+    perpendicular and return the max gradient seen, clipped to silhouette.
+    """
+    h, w = grad.shape
+    px_dir = -math.sin(theta)
+    py_dir = math.cos(theta)
+    r = np.arange(-perp_half_width, perp_half_width + 1)
+    xs = np.round(px + r * px_dir).astype(np.int32)
+    ys = np.round(py + r * py_dir).astype(np.int32)
+    inside = (xs >= 0) & (xs < w) & (ys >= 0) & (ys < h)
+    if not inside.any():
+        return 0.0
+    xs = xs[inside]
+    ys = ys[inside]
+    in_mask = silhouette_mask[ys, xs]
+    if not in_mask.any():
+        return 0.0
+    return float(grad[ys[in_mask], xs[in_mask]].max())
+
+
+def _trace_h_vertex(
+    cube_center: Point,
+    theta: float,
+    direction_sign: float,
+    grad: np.ndarray,
+    silhouette_mask: np.ndarray,
+    *,
+    step_px: int = 4,
+    perp_half_width: int = 24,
+    skip_center_px: int = 30,
+    absolute_in_bezel_threshold: float = 60.0,
+    drop_consec_required: int = 5,
+    line_quality: float = 1.0,
+) -> Optional[InteriorHVertex]:
+    """Find an h-vertex by walking outward from `cube_center` along
+    bezel direction θ * sign and locating the bezel terminus.
+
+    Algorithm (revised after profiling Set 31 A's actual peak profile):
+
+      Empirical observation: bezel-regime perpendicular gradient peaks
+      range 70-330 (high variance — sticker boundaries crossing the
+      perpendicular cause fluctuation). Post-h-vertex peaks are 15-40.
+      A FIXED absolute threshold around 60 cleanly separates the two
+      regimes — median-baseline approaches were unreliable because the
+      bezel-regime variance is so high.
+
+      1. SKIP the first `skip_center_px` of samples — the perpendicular
+         slice near cube_center sees all 3 bezels at once and is noisy.
+      2. Walk outward in `step_px` increments, sampling perpendicular
+         gradient peak.
+      3. The h-vertex is the LAST sample where peak >= absolute
+         threshold, before `drop_consec_required` consecutive samples
+         below the threshold. (Consecutive-drop hysteresis handles
+         in-bezel dips that cross the threshold for a single sample.)
+      4. If we exit the silhouette without a clean drop, the bezel
+         extends all the way to the hull — return the last
+         above-threshold sample with reduced confidence.
+
+    Returns: InteriorHVertex with position, distance, confidence, debug.
+    """
+    cx0, cy0 = cube_center
+    dx = math.cos(theta) * direction_sign
+    dy = math.sin(theta) * direction_sign
+    h, w = grad.shape
+    max_r = int(math.hypot(w, h) / 2)
+
+    # Walk outward, sampling perpendicular peaks
+    samples: List[Tuple[int, float, float, float]] = []  # (r, px, py, peak)
+    in_silhouette_count = 0
+    for r in range(0, max_r + 1, step_px):
+        px = cx0 + r * dx
+        py = cy0 + r * dy
+        ix = int(round(px))
+        iy = int(round(py))
+        if not (0 <= ix < w and 0 <= iy < h and silhouette_mask[iy, ix]):
+            break
+        in_silhouette_count += 1
+        peak = _perpendicular_gradient_peak(
+            px, py, theta, grad, silhouette_mask,
+            perp_half_width=perp_half_width,
+        )
+        samples.append((r, float(px), float(py), float(peak)))
+
+    if len(samples) < (skip_center_px // step_px) + drop_consec_required:
+        return None
+
+    # Find the bezel terminus
+    last_above_idx = None
+    drop_consec = 0
+    drop_clean = False
+    for i, (r, px, py, peak) in enumerate(samples):
+        if r < skip_center_px:
+            # In the skip-center zone, just track presence but don't
+            # let it count toward drops
+            if peak >= absolute_in_bezel_threshold:
+                last_above_idx = i
+            continue
+        if peak >= absolute_in_bezel_threshold:
+            last_above_idx = i
+            drop_consec = 0
+        else:
+            drop_consec += 1
+            if (drop_consec >= drop_consec_required
+                    and last_above_idx is not None):
+                drop_clean = True
+                break
+
+    # If we never found a sample above threshold after skip_center, the
+    # bezel signal was already gone by the time we passed the skip zone
+    # — likely a misidentified bezel angle or extremely short bezel.
+    if last_above_idx is None:
+        return None
+
+    # Sanity check: the last_above_idx must be PAST the skip zone for
+    # this to be a reliable h-vertex. (If the last above-threshold
+    # sample was WITHIN the skip zone, the bezel signal didn't extend
+    # past cube_center's immediate vicinity → no meaningful h-vertex.)
+    h_r, h_x, h_y, h_peak = samples[last_above_idx]
+    if h_r < skip_center_px:
+        return None
+
+    # Confidence: combine parent line quality + sharpness of drop
+    if drop_clean:
+        below = [s[3] for s in samples[last_above_idx + 1:
+                                       last_above_idx + 1 + drop_consec_required]]
+        avg_below = float(np.mean(below)) if below else 0.0
+        sharpness = max(0.0, min(1.0, 1.0 - avg_below / max(1.0, h_peak)))
+    else:
+        # Bezel ran all the way to silhouette boundary — terminus may
+        # actually be at a hull vertex (h0/h2/h4), not an interior
+        # h-vertex. Low sharpness reflects that ambiguity.
+        sharpness = 0.3
+
+    confidence = max(0.0, min(1.0, line_quality * sharpness))
+
+    return InteriorHVertex(
+        position=(float(h_x), float(h_y)),
+        parent_line_index=-1,
+        direction_sign=int(direction_sign),
+        distance_from_center_px=float(h_r),
+        confidence=confidence,
+        debug={
+            "threshold": round(absolute_in_bezel_threshold, 1),
+            "terminus_peak": round(h_peak, 1),
+            "drop_clean": drop_clean,
+            "sharpness": round(sharpness, 3),
+            "samples_count": len(samples),
+            "in_silhouette_count": in_silhouette_count,
+        },
+    )
+
+
+def find_interior_h_vertices(
+    detection: InteriorBezelDetection,
+    image_rgb: np.ndarray,
+    silhouette_mask: np.ndarray,
+    *,
+    min_line_quality: float = DEFAULT_H_VERTEX_MIN_LINE_QUALITY,
+    erosion_radius: int = 30,
+    absolute_in_bezel_threshold: float = 60.0,
+) -> List[InteriorHVertex]:
+    """For each bezel line in `detection` with quality >= `min_line_quality`,
+    trace OUTWARD from cube_center in BOTH directions and find where the
+    bezel terminates at a cube corner. Returns up to 2 * n_lines
+    candidates (positive + negative direction per line), sorted by
+    descending confidence.
+
+    The 3 INTERIOR hexagon vertices h1/h3/h5 are at the FAR ends of the
+    3 bezel lines (going from cube_center outward to the cube corner).
+    The other 3 hexagon vertices h0/h2/h4 are HULL-detectable from
+    `_fit_hexagon_to_hull`. Combining both produces a complete 6-vertex
+    hexagon for yawed cubes — the key downstream payoff.
+
+    Args:
+      detection: InteriorBezelDetection from `detect_interior_bezel_lines`
+      image_rgb: HxWx3 uint8 — used only for gradient recomputation
+      silhouette_mask: HxW bool — same mask passed to detection
+      min_line_quality: only trace bezels with quality >= threshold
+      erosion_radius: same erosion used in detection (for consistency
+        with the gradient masking; bezel termination happens INSIDE the
+        eroded silhouette to avoid mask-boundary noise)
+      absolute_in_bezel_threshold: perpendicular gradient peak below
+        which the bezel is considered terminated at a cube corner.
+        Default 60 was empirically picked — bezel-regime peaks are
+        70-330 and post-h-vertex peaks are 15-40, so 60 cleanly
+        separates them on the 18-pair walkthroughs.
+
+    Returns: list of InteriorHVertex (0 to 2*n_lines), with
+    parent_line_index filled in.
+    """
+    if detection.cube_center is None:
+        return []
+    if _try_import_scipy_ndimage() is None:
+        return []
+
+    eroded = _erode_mask(silhouette_mask, erosion_radius)
+    if int(eroded.sum()) < 1000:
+        return []
+    gray = _rgb_to_gray(image_rgb)
+    grad = _sobel_gradient_magnitude(gray).astype(np.float32)
+    grad_inside = np.where(eroded, grad, 0.0).astype(np.float32)
+
+    results: List[InteriorHVertex] = []
+    for line_idx, (theta, q) in enumerate(
+        zip(detection.boundary_angles, detection.line_qualities)
+    ):
+        if q < min_line_quality:
+            continue
+        for sign in (+1, -1):
+            hv = _trace_h_vertex(
+                detection.cube_center,
+                theta,
+                sign,
+                grad_inside,
+                eroded,
+                absolute_in_bezel_threshold=absolute_in_bezel_threshold,
+                line_quality=q,
+            )
+            if hv is not None:
+                hv.parent_line_index = line_idx
+                results.append(hv)
+
+    # Sort by confidence descending
+    results.sort(key=lambda v: -v.confidence)
+    return results

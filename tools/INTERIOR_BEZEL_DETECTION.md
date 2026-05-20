@@ -245,25 +245,98 @@ The `crosses_high_quality_bezel` flag's default thresholds (line_quality
 `distance_from_centroid_px`, and `crosses_cell` fields are preserved so
 the mining can re-tune without re-running the detector.
 
+## H-vertex tracing (Tier 1 — `find_interior_h_vertices`)
+
+Once a bezel line passes through cube_center with high `line_quality`,
+the next step toward a complete hexagon is finding where that bezel
+TERMINATES at a cube corner. That terminus is an h-vertex (h1, h3, or
+h5 — the 3 hexagon vertices the hull-based fitter provably can't find
+on yawed cubes).
+
+`find_interior_h_vertices(detection, image_rgb, mask, ...)` walks
+outward from cube_center along each bezel direction (both ±1) and
+locates the bezel terminus by perpendicular-gradient drop-off:
+
+1. Skip the first 30 px from cube_center (the 3-bezel convergence is
+   noisy at the very center).
+2. At each step `r` along the bezel, sample perpendicular gradient
+   peak via `_perpendicular_gradient_peak`.
+3. Walk until 5 consecutive samples have peak < 60 (fixed absolute
+   threshold; empirical bezel-regime peaks are 70-330 and post-h-vertex
+   peaks are 15-40 → 60 cleanly separates).
+4. h-vertex = last sample where peak >= 60, before the consecutive
+   drop. Confidence = parent line quality × drop sharpness.
+
+Per-pair results on the 18 worst pairs (only counting `drop_clean=True`
+terminations — `False` means the bezel ran to silhouette boundary
+without clean termination, suggesting a hull-end termination):
+
+| pair  | sq    | line_q (M, C, Y)    | clean h-vertices | human |
+|-------|------:|---------------------|-----------------:|-------|
+| 31 A  | 0.73  | 1.00, 0.95, 0.52   | **5 / 6**        | —     |
+| 57 A  | 0.56  | 0.79, 0.73, 0.40   | **4 / 4**        | PASS  |
+| 31 B  | 0.64  | 1.00, 1.00, 0.28   | **4 / 4**        | PASS  |
+| 58 A  | 0.41  | 1.00, 0.81, 0.00   | **4 / 4**        | —     |
+| 30 B  | 0.23  | 1.00, 0.41, 0.07   | 2 / 3            | PASS  |
+| 30 A  | 0.11  | 0.83, 0.15, 0.07   | 2 / 2            | PASS  |
+| 21 A  | 0.17  | 1.00, 0.28, 0.05   | 2 / 2            | —     |
+| 21 B  | 0.07  | 0.41, 0.11, 0.03   | 2 / 2            | —     |
+| 44 A  | 0.17  | 1.00, 0.24, 0.11   | 2 / 2            | —     |
+| 44 B  | 0.14  | 0.78, 0.28, 0.00   | 1 / 2            | PASS  |
+| 47 A  | 0.14  | 0.60, 0.28, 0.00   | 1 / 1            | —     |
+| 47 B  | 0.16  | 0.52, 0.23, 0.09   | 2 / 2            | —     |
+| 58 B  | 0.11  | 1.00, 0.13, 0.09   | 2 / 2            | —     |
+| 61 A  | 0.04  | 1.00, 0.08, 0.00   | 1 / 2            | —     |
+| 17 A  | 0.15  | 0.85, 0.29, 0.00   | 0 / 1            | —     |
+| 17 B  | 0.20  | 0.40, 0.25, 0.15   | 0 / 0            | —     |
+| 57 B  | 0.07  | 0.26, 0.12, 0.03   | 0 / 0            | —     |
+| 61 B  | 0.12  | 0.26, 0.25, 0.00   | 0 / 0            | —     |
+
+**4 of 18 pairs (22%) produce ≥4 clean h-vertex candidates** — these
+are the cases where multiple bezels terminate cleanly within the
+silhouette. Multiple candidates per line is expected (each bezel has
+both +1 and -1 directions traced; one will be the real h-vertex and
+the other is incidental sticker-grid termination on the opposite
+direction). Confidence-sorting + downstream filtering will pick the
+real h-vertices.
+
+**The 4 strong-cluster cases overlap with the 4 human-pass cases**
+(31 B, 57 A, 30 A/B, 44 B PASS; 31 A, 58 A also produce strong
+h-vertex signal but weren't in the human PASS list — the latter is
+worth a second human-review pass).
+
+The candidate list is returned sorted by confidence. Downstream:
+- Filter to `drop_clean=True` and `confidence >= some_threshold`
+- Per parent line, keep only the highest-confidence candidate (each
+  bezel has ONE real h-vertex, the other direction is noise)
+- Combine with hull-detectable h0/h2/h4 from `_fit_hexagon_to_hull`
+  → complete 6-vertex hexagon
+
+NOT wired into proposer / `_derive_face_quad_topology_aware`.
+Still diagnostics-only.
+
 ## What this probe is signal for
 
-The (cube_center, 3 angles) pair is the prerequisite for finding h1, h3,
-h5 — the 3 hexagon vertices interior to the silhouette. Once we have
-those, the cardinal-position cube-face derivation that powers
-`_derive_face_quad_topology_aware` becomes well-defined on yawed cubes.
+The (cube_center, 3 angles, 3 h-vertices) tuple is the prerequisite
+for completing the hexagon on yawed cubes. Once we have a complete
+6-vertex hexagon, the cardinal-position cube-face derivation that
+powers `_derive_face_quad_topology_aware` becomes well-defined.
 
-Future signals to mine, gated on broader-corpus signal_quality holding up:
+Future signals to mine, gated on broader-corpus h-vertex confidence
+holding up:
 
-- **h1, h3, h5 locations**: trace each high-quality boundary line from
-  cube-center outward to where the bezel terminates at a cube corner
-  (a visible change in bezel direction).
 - **Refined hexagon fit**: combine the 3 hull-detectable hexagon
   vertices (h0, h2, h4 from `_fit_hexagon_to_hull`) with h1/h3/h5
-  from this probe when per-line quality is high enough → a complete
-  6-vertex hexagon respecting the cube's interior geometry.
+  from this probe when per-h-vertex confidence is high enough → a
+  complete 6-vertex hexagon respecting the cube's interior geometry.
 - **Cell-level disambiguation**: when slot/src mismatches are
   ambiguous (the May 18 overlay-feedback pattern), the detected
   boundary lines tell us which sticker cells span TWO faces.
+- **Sticker-grid mass subtraction** (Tier 3a — deferred): detect the
+  dominant sticker-grid angle (likely ~30°/150° in iso projection),
+  suppress its contribution to the angular sweep, re-pick top-3.
+  Should turn cyan/yellow-line noise into signal on most cases,
+  expanding the strong-cluster from 4/18 toward higher coverage.
 
 ## Files
 

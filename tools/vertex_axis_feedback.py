@@ -247,16 +247,23 @@ def render_report(feedback: Dict[str, Any], evaluation: Dict[str, Any]) -> str:
             f"{_fmt_px(row.get('currentModelVertexErrorPx'))} | "
             f"{source.get('notes') or ''} |"
         )
-    lines.extend(
-        [
-            "",
-            "## Interpretation",
-            "",
-            "- The scaffold is ready for human axis labels, but the committed durable labels are still vertex-only.",
-            "- The next scorer can evaluate current model axes as soon as full trihedral labels exist; until then, axis-quality conclusions should stay pending.",
-            "",
-        ]
-    )
+    lines.extend(["", "## Interpretation", ""])
+    if summary["trihedralLabeledRowCount"]:
+        lines.extend(
+            [
+                "- The fixture now contains full visible-trihedral labels: human vertex plus all three outgoing cube-edge rays.",
+                "- These labels are input data for trihedral model scoring; recognition behavior remains unchanged.",
+                "",
+            ]
+        )
+    else:
+        lines.extend(
+            [
+                "- The scaffold is ready for human axis labels, but the committed durable labels are still vertex-only.",
+                "- The next scorer can evaluate current model axes as soon as full trihedral labels exist; until then, axis-quality conclusions should stay pending.",
+                "",
+            ]
+        )
     return "\n".join(lines)
 
 

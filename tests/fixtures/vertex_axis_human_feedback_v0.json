@@ -11,7 +11,7 @@
   "description": "Human-label scaffold for the complete visible trihedral: vertex point plus three outgoing cube-edge rays. Existing vertex labels are preserved; axis endpoints remain unlabeled until a human marks them in the labeler.",
   "rows": [
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -71,13 +71,22 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          502.1,
+          1440.36
+        ],
+        [
+          2535.85,
+          1430.22
+        ],
+        [
+          1546.87,
+          3261.1
+        ]
       ],
       "humanVertexPoint": [
-        1546.3,
-        2044.8
+        1546.87,
+        2033.75
       ],
       "imagePath": "/Users/jhuber/Downloads/Set 12 - B - white up IMG_6702.JPG",
       "key": "12_B",
@@ -92,11 +101,11 @@
         ],
         "currentVertexErrorPx": 37.3
       },
-      "status": "vertex_labeled_axes_unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -156,13 +165,22 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          385.45,
+          1141.13
+        ],
+        [
+          2576.42,
+          1146.2
+        ],
+        [
+          1506.29,
+          3200.24
+        ]
       ],
       "humanVertexPoint": [
-        1465.0,
-        1802.6
+        1445.43,
+        1795.38
       ],
       "imagePath": "/Users/jhuber/Downloads/Set 14 - B - white up IMG_6706.JPG",
       "key": "14_B",
@@ -177,11 +195,11 @@
         ],
         "currentVertexErrorPx": 33.1
       },
-      "status": "vertex_labeled_axes_unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -241,9 +259,18 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          420.95,
+          1354.14
+        ],
+        [
+          2566.28,
+          1359.22
+        ],
+        [
+          1491.08,
+          3301.68
+        ]
       ],
       "humanVertexPoint": [
         1421.1,
@@ -262,11 +289,11 @@
         ],
         "currentVertexErrorPx": 63.5
       },
-      "status": "vertex_labeled_axes_unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -326,9 +353,18 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          400.66,
+          1318.64
+        ],
+        [
+          2632.21,
+          1298.35
+        ],
+        [
+          1551.94,
+          3271.25
+        ]
       ],
       "humanVertexPoint": [
         1561.2,
@@ -347,11 +383,11 @@
         ],
         "currentVertexErrorPx": 72.1
       },
-      "status": "vertex_labeled_axes_unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -411,13 +447,22 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          426.02,
+          1308.5
+        ],
+        [
+          2535.85,
+          1313.57
+        ],
+        [
+          1475.86,
+          3205.31
+        ]
       ],
       "humanVertexPoint": [
-        1529.0,
-        1836.5
+        1531.65,
+        1841.03
       ],
       "imagePath": "/Users/jhuber/Downloads/Set 17 - B - white up.JPG",
       "key": "17_B",
@@ -432,11 +477,11 @@
         ],
         "currentVertexErrorPx": 109.9
       },
-      "status": "vertex_labeled_axes_unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -496,9 +541,18 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          329.66,
+          1298.35
+        ],
+        [
+          2540.92,
+          1318.64
+        ],
+        [
+          1399.79,
+          3266.17
+        ]
       ],
       "humanVertexPoint": [
         1371.5,
@@ -517,11 +571,11 @@
         ],
         "currentVertexErrorPx": 38.6
       },
-      "status": "vertex_labeled_axes_unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -581,9 +635,18 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          400.66,
+          1394.72
+        ],
+        [
+          2667.71,
+          1374.43
+        ],
+        [
+          1557.01,
+          3342.25
+        ]
       ],
       "humanVertexPoint": [
         1599.4,
@@ -602,11 +665,11 @@
         ],
         "currentVertexErrorPx": 75.6
       },
-      "status": "vertex_labeled_axes_unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -666,9 +729,18 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          557.89,
+          1333.86
+        ],
+        [
+          2682.93,
+          1364.29
+        ],
+        [
+          1551.94,
+          3225.6
+        ]
       ],
       "humanVertexPoint": [
         1554.5,
@@ -687,11 +759,11 @@
         ],
         "currentVertexErrorPx": 87.5
       },
-      "status": "vertex_labeled_axes_unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -751,9 +823,18 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          481.81,
+          1354.14
+        ],
+        [
+          2535.85,
+          1374.43
+        ],
+        [
+          1506.29,
+          3164.74
+        ]
       ],
       "humanVertexPoint": [
         1461.4,
@@ -772,11 +853,11 @@
         ],
         "currentVertexErrorPx": 72.5
       },
-      "status": "vertex_labeled_axes_unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -836,9 +917,18 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          344.88,
+          1460.65
+        ],
+        [
+          2500.35,
+          1369.36
+        ],
+        [
+          1511.37,
+          3321.96
+        ]
       ],
       "humanVertexPoint": [
         1468.1,
@@ -857,11 +947,11 @@
         ],
         "currentVertexErrorPx": 80.9
       },
-      "status": "vertex_labeled_axes_unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -921,11 +1011,23 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          486.88,
+          1389.65
+        ],
+        [
+          2495.28,
+          1349.07
+        ],
+        [
+          1531.65,
+          3154.6
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1521.51,
+        1942.46
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 27 - B - white up IMG_6776.JPG",
       "key": "27_B",
       "notes": "",
@@ -939,11 +1041,11 @@
         ],
         "currentVertexErrorPx": null
       },
-      "status": "judgment_only",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -1003,9 +1105,18 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          365.16,
+          1257.78
+        ],
+        [
+          2586.57,
+          1283.14
+        ],
+        [
+          1460.65,
+          3205.31
+        ]
       ],
       "humanVertexPoint": [
         1426.7,
@@ -1024,11 +1135,11 @@
         ],
         "currentVertexErrorPx": 124.4
       },
-      "status": "vertex_labeled_axes_unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -1088,9 +1199,18 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          405.74,
+          1328.78
+        ],
+        [
+          2500.35,
+          1338.93
+        ],
+        [
+          1450.51,
+          3174.88
+        ]
       ],
       "humanVertexPoint": [
         1410.5,
@@ -1109,11 +1229,11 @@
         ],
         "currentVertexErrorPx": 102.5
       },
-      "status": "vertex_labeled_axes_unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -1173,9 +1293,18 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          349.95,
+          1445.43
+        ],
+        [
+          2535.85,
+          1415.0
+        ],
+        [
+          1506.29,
+          3403.11
+        ]
       ],
       "humanVertexPoint": [
         1491.0,
@@ -1194,11 +1323,11 @@
         ],
         "currentVertexErrorPx": 57.3
       },
-      "status": "vertex_labeled_axes_unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -1258,11 +1387,23 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          446.31,
+          1364.29
+        ],
+        [
+          2485.13,
+          1349.07
+        ],
+        [
+          1460.65,
+          3139.38
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1415.0,
+        1972.89
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 29 - B - white up IMG_6780.JPG",
       "key": "29_B",
       "notes": "",
@@ -1276,11 +1417,11 @@
         ],
         "currentVertexErrorPx": null
       },
-      "status": "judgment_only",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -1340,9 +1481,18 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          699.89,
+          1699.02
+        ],
+        [
+          2307.62,
+          1754.81
+        ],
+        [
+          1450.51,
+          3205.31
+        ]
       ],
       "humanVertexPoint": [
         1440.2,
@@ -1361,11 +1511,11 @@
         ],
         "currentVertexErrorPx": 39.7
       },
-      "status": "vertex_labeled_axes_unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -1425,11 +1575,23 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          806.4,
+          1420.08
+        ],
+        [
+          2490.2,
+          1420.08
+        ],
+        [
+          1628.02,
+          2911.15
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1617.87,
+        1922.17
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 30 - B - white up IMG_7101.JPG",
       "key": "30_B",
       "notes": "",
@@ -1443,11 +1605,11 @@
         ],
         "currentVertexErrorPx": null
       },
-      "status": "judgment_only",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -1507,9 +1669,18 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          461.52,
+          1480.94
+        ],
+        [
+          2236.62,
+          1430.22
+        ],
+        [
+          1450.51,
+          3007.52
+        ]
       ],
       "humanVertexPoint": [
         1420.5,
@@ -1528,11 +1699,11 @@
         ],
         "currentVertexErrorPx": 47.2
       },
-      "status": "vertex_labeled_axes_unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -1592,11 +1763,23 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          304.3,
+          1404.86
+        ],
+        [
+          2190.97,
+          1298.35
+        ],
+        [
+          1394.72,
+          2951.73
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1333.86,
+        1942.46
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 31 - B - white up IMG_7103.JPG",
       "key": "31_B",
       "notes": "",
@@ -1610,11 +1793,11 @@
         ],
         "currentVertexErrorPx": null
       },
-      "status": "judgment_only",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -1674,9 +1857,18 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          527.46,
+          1379.5
+        ],
+        [
+          2561.21,
+          1369.36
+        ],
+        [
+          1572.23,
+          3190.1
+        ]
       ],
       "humanVertexPoint": [
         1601.8,
@@ -1695,11 +1887,11 @@
         ],
         "currentVertexErrorPx": 72.3
       },
-      "status": "vertex_labeled_axes_unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -1759,9 +1951,18 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          360.09,
+          1237.49
+        ],
+        [
+          2414.13,
+          1247.64
+        ],
+        [
+          1425.15,
+          2987.23
+        ]
       ],
       "humanVertexPoint": [
         1373.6,
@@ -1780,11 +1981,11 @@
         ],
         "currentVertexErrorPx": 70.7
       },
-      "status": "vertex_labeled_axes_unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -1844,9 +2045,18 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          329.66,
+          1318.64
+        ],
+        [
+          2322.84,
+          1257.78
+        ],
+        [
+          1364.29,
+          2941.58
+        ]
       ],
       "humanVertexPoint": [
         1320.8,
@@ -1865,11 +2075,11 @@
         ],
         "currentVertexErrorPx": 102.9
       },
-      "status": "vertex_labeled_axes_unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -1929,13 +2139,22 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          284.02,
+          1328.78
+        ],
+        [
+          2627.14,
+          1262.85
+        ],
+        [
+          1506.29,
+          3316.89
+        ]
       ],
       "humanVertexPoint": [
-        1560.6,
-        1844.9
+        1572.23,
+        1851.17
       ],
       "imagePath": "/Users/jhuber/Downloads/Set 42 - B - white up IMG_7164.JPG",
       "key": "42_B",
@@ -1950,11 +2169,11 @@
         ],
         "currentVertexErrorPx": 89.2
       },
-      "status": "vertex_labeled_axes_unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -2014,9 +2233,18 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          187.65,
+          1196.92
+        ],
+        [
+          2642.35,
+          1151.28
+        ],
+        [
+          1480.94,
+          3215.46
+        ]
       ],
       "humanVertexPoint": [
         1362.7,
@@ -2035,11 +2263,11 @@
         ],
         "currentVertexErrorPx": 185.5
       },
-      "status": "vertex_labeled_axes_unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -2099,9 +2327,18 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          426.02,
+          1267.92
+        ],
+        [
+          2759.0,
+          1318.64
+        ],
+        [
+          1526.58,
+          3337.18
+        ]
       ],
       "humanVertexPoint": [
         1499.2,
@@ -2120,11 +2357,11 @@
         ],
         "currentVertexErrorPx": 117.6
       },
-      "status": "vertex_labeled_axes_unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -2184,11 +2421,23 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          365.16,
+          1567.15
+        ],
+        [
+          2464.85,
+          1480.94
+        ],
+        [
+          1480.94,
+          3286.46
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1420.08,
+        2160.54
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 57 - A - white-up IMG_7510.JPG",
       "key": "57_A",
       "notes": "",
@@ -2202,11 +2451,11 @@
         ],
         "currentVertexErrorPx": null
       },
-      "status": "judgment_only",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -2266,9 +2515,18 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          466.6,
+          1384.57
+        ],
+        [
+          2581.49,
+          1394.72
+        ],
+        [
+          1465.72,
+          3281.39
+        ]
       ],
       "humanVertexPoint": [
         1495.4,
@@ -2287,11 +2545,11 @@
         ],
         "currentVertexErrorPx": 70.7
       },
-      "status": "vertex_labeled_axes_unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
@@ -2351,9 +2609,18 @@
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          441.24,
+          1374.43
+        ],
+        [
+          2429.34,
+          1369.36
+        ],
+        [
+          1374.43,
+          3169.81
+        ]
       ],
       "humanVertexPoint": [
         1362.2,
@@ -2372,7 +2639,7 @@
         ],
         "currentVertexErrorPx": 60
       },
-      "status": "vertex_labeled_axes_unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     }
   ],

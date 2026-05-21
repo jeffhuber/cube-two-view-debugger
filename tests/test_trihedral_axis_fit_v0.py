@@ -41,9 +41,41 @@ def test_trihedral_axis_fit_is_order_invariant(tmp_path: Path):
     row = document["rows"][0]
 
     assert row["status"] == "strict_ready"
+    assert row["failureCategory"] == "strict_ready"
     assert row["vertexErrorPx"] < 3
     assert row["maxAxisAngleErrorDeg"] == 0.0
     assert row["axisAssignment"]["candidatePermutation"] == [1, 0, 2]
+
+
+def test_trihedral_axis_fit_reports_failure_taxonomy(tmp_path: Path):
+    fixture = {
+        "rows": [
+            _row(key="vertex_only", model_vertex=(170.0, 100.0)),
+            _row(
+                key="axis_only",
+                model_axes=((0.0, 100.0), (-86.6, -50.0), (86.6, -50.0)),
+            ),
+            _row(
+                key="both",
+                model_vertex=(170.0, 100.0),
+                model_axes=((0.0, 100.0), (-86.6, -50.0), (86.6, -50.0)),
+            ),
+        ]
+    }
+    path = tmp_path / "feedback.json"
+    path.write_text(json.dumps(fixture), encoding="utf-8")
+
+    document = generate_trihedral_axis_fit_summary(feedback_path=path)
+    by_key = {row["key"]: row for row in document["rows"]}
+
+    assert by_key["vertex_only"]["failureCategory"] == "vertex_localization_blocked"
+    assert by_key["axis_only"]["failureCategory"] == "axis_correspondence_blocked"
+    assert by_key["both"]["failureCategory"] == "both_blocked"
+    assert document["summary"]["failureCategoryCounts"] == {
+        "axis_correspondence_blocked": 1,
+        "both_blocked": 1,
+        "vertex_localization_blocked": 1,
+    }
 
 
 def test_trihedral_axis_fit_reports_pending_until_axes_are_labeled(tmp_path: Path):
@@ -66,10 +98,17 @@ def test_trihedral_axis_fit_reports_pending_until_axes_are_labeled(tmp_path: Pat
     assert document["rows"][0]["evaluationStatus"] == "axis_labels_pending"
 
 
-def test_committed_trihedral_axis_summary_is_label_pending():
+def test_committed_trihedral_axis_summary_uses_completed_axis_labels():
     path = Path(__file__).resolve().parents[1] / "tests" / "fixtures" / "trihedral_axis_fit_v0_summary.json"
     document = json.loads(path.read_text(encoding="utf-8"))
 
     assert document["summary"]["rowCount"] == 28
-    assert document["summary"]["trihedralLabeledRowCount"] == 0
-    assert document["summary"]["axisLabelsPendingRowCount"] == 23
+    assert document["summary"]["trihedralLabeledRowCount"] == 28
+    assert document["summary"]["axisLabelsPendingRowCount"] == 0
+    assert document["summary"]["failureCategoryCounts"] == {
+        "axis_correspondence_blocked": 1,
+        "both_blocked": 10,
+        "plausible": 4,
+        "strict_ready": 4,
+        "vertex_localization_blocked": 9,
+    }

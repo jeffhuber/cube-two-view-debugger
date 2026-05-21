@@ -221,6 +221,7 @@ INDEX_HTML = r"""<!doctype html>
       </select>
       <textarea id="notes" rows="5" placeholder="notes"></textarea>
       <button class="primary" id="save">Save</button>
+      <div id="saveStatus" class="muted"></div>
       <button id="undo">Undo last point</button>
       <button class="danger" id="clear">Clear points</button>
       <pre id="debug" class="mono"></pre>
@@ -234,10 +235,15 @@ const ctx = canvas.getContext('2d');
 async function load() {
   payload = await (await fetch('/api/feedback')).json();
   rows = payload.feedback.rows || [];
-  document.getElementById('summary').textContent =
-    `${payload.evaluation.summary.trihedralLabeledRowCount}/${payload.evaluation.summary.rowCount} full labels`;
+  updateSummary();
   renderRows();
   selectRow(activeIndex);
+}
+
+function updateSummary() {
+  const summary = payload.evaluation.summary;
+  document.getElementById('summary').textContent =
+    `${summary.trihedralLabeledRowCount}/${summary.rowCount} full labels`;
 }
 
 function renderRows() {
@@ -322,6 +328,7 @@ document.getElementById('undo').onclick = () => { points.pop(); draw(); };
 document.getElementById('clear').onclick = () => { points = []; draw(); };
 document.getElementById('save').onclick = async () => {
   const row = rows[activeIndex];
+  document.getElementById('saveStatus').textContent = 'Saving...';
   const response = await fetch('/api/label', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
@@ -338,6 +345,8 @@ document.getElementById('save').onclick = async () => {
   if (!result.ok) { alert(result.error); return; }
   payload = result;
   rows = result.feedback.rows || rows;
+  updateSummary();
+  document.getElementById('saveStatus').textContent = `Saved ${row.key}`;
   activeIndex = Math.min(activeIndex + 1, rows.length - 1);
   selectRow(activeIndex);
 };

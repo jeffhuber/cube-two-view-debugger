@@ -24,52 +24,53 @@
         "score": 131.424,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": 22.0,
+            "angleDeg": 21.99,
             "endpoint": [
-              802.46,
-              597.99
+              2815.13,
+              2096.6
             ],
-            "lengthPx": 312.68,
+            "lengthPx": 1096.82,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              289.91,
-              117.13
+              1017.04,
+              410.67
             ]
           },
           {
-            "angleDeg": 144.0,
+            "angleDeg": 144.02,
             "endpoint": [
-              259.59,
-              664.65
+              910.67,
+              2330.32
             ],
-            "lengthPx": 312.68,
+            "lengthPx": 1096.69,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              -252.96,
-              183.79
+              -887.41,
+              644.38
             ]
           },
           {
-            "angleDeg": -128.0,
+            "angleDeg": -128.02,
             "endpoint": [
-              320.05,
-              234.47
+              1122.77,
+              822.07
             ],
-            "lengthPx": 312.67,
+            "lengthPx": 1096.5,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              -192.5,
-              -246.39
+              -675.31,
+              -863.86
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 1.0,
           "detectorSignalQuality": 0.0445,
@@ -77,35 +78,61 @@
           "edgeLength": 312.679,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.9213,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.6797,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             1,
             1,
             -1
           ],
           "silhouetteIoU": 0.6424,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 1.8981,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          512.55,
-          480.86
+          1798.09,
+          1685.94
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2561.21,
+          1344.0
+        ],
+        [
+          431.09,
+          1333.86
+        ],
+        [
+          1491.08,
+          3261.1
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1592.51,
+        1906.96
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 42 - A - white up IMG_7163.JPG",
       "key": "42_A",
       "notes": "",
       "setId": "42",
       "side": "A",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -121,52 +148,53 @@
         "score": 130.962,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": 28.0,
+            "angleDeg": 27.99,
             "endpoint": [
-              698.43,
-              418.3
+              2450.18,
+              1466.6
             ],
-            "lengthPx": 276.84,
+            "lengthPx": 971.05,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              244.43,
-              129.97
+              857.49,
+              455.69
             ]
           },
           {
             "angleDeg": 94.0,
             "endpoint": [
-              434.69,
-              564.49
+              1524.94,
+              1979.15
             ],
-            "lengthPx": 276.83,
+            "lengthPx": 970.61,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              -19.31,
-              276.16
+              -67.74,
+              968.24
             ]
           },
           {
-            "angleDeg": 158.0,
+            "angleDeg": 158.01,
             "endpoint": [
-              197.32,
-              392.03
+              692.22,
+              1374.49
             ],
-            "lengthPx": 276.84,
+            "lengthPx": 971.1,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              -256.68,
-              103.7
+              -900.46,
+              363.58
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 1.0,
           "detectorSignalQuality": 0.2339,
@@ -174,35 +202,61 @@
           "edgeLength": 276.837,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.9448,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.6177,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             1,
             1,
             1
           ],
           "silhouetteIoU": 0.5962,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 1.886,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          454.0,
-          288.33
+          1592.69,
+          1010.91
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2515.56,
+          1328.78
+        ],
+        [
+          603.53,
+          1318.64
+        ],
+        [
+          1557.01,
+          2926.37
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1572.23,
+        2028.68
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 36 - A - white up IMG_7151.JPG",
       "key": "36_A",
       "notes": "",
       "setId": "36",
       "side": "A",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -216,52 +270,53 @@
         "score": 113.686,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": 32.0,
+            "angleDeg": 31.99,
             "endpoint": [
-              671.79,
-              715.3
+              2356.72,
+              2507.9
             ],
-            "lengthPx": 320.02,
+            "lengthPx": 1122.49,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              271.39,
-              169.59
+              952.07,
+              594.6
             ]
           },
           {
-            "angleDeg": 146.0,
+            "angleDeg": 146.02,
             "endpoint": [
-              135.09,
-              724.66
+              473.91,
+              2540.72
             ],
-            "lengthPx": 320.02,
+            "lengthPx": 1122.46,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              -265.31,
-              178.95
+              -930.74,
+              627.41
             ]
           },
           {
             "angleDeg": -86.0,
             "endpoint": [
-              422.72,
-              226.47
+              1482.95,
+              794.02
             ],
-            "lengthPx": 320.02,
+            "lengthPx": 1122.02,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              22.32,
-              -319.24
+              78.3,
+              -1119.28
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 1.0,
           "detectorSignalQuality": 0.2341,
@@ -269,35 +324,61 @@
           "edgeLength": 320.023,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.931,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.9284,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             1,
             1,
             -1
           ],
           "silhouetteIoU": 0.8686,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 2.2238,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          400.4,
-          545.71
+          1404.65,
+          1913.31
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2510.49,
+          1344.0
+        ],
+        [
+          395.59,
+          1344.0
+        ],
+        [
+          1445.43,
+          3266.17
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1404.86,
+        2033.75
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 23 - B - white up.JPG",
       "key": "23_B",
       "notes": "",
       "setId": "23",
       "side": "B",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -311,52 +392,53 @@
         "score": 113.182,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": -76.0,
+            "angleDeg": -75.99,
             "endpoint": [
-              473.51,
-              226.86
+              1661.13,
+              795.39
             ],
-            "lengthPx": 307.43,
+            "lengthPx": 1077.92,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              74.37,
-              -298.3
+              260.9,
+              -1045.87
             ]
           },
           {
-            "angleDeg": 158.0,
+            "angleDeg": 158.01,
             "endpoint": [
-              114.09,
-              640.33
+              400.24,
+              2245.05
             ],
-            "lengthPx": 307.44,
+            "lengthPx": 1078.44,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              -285.05,
-              115.17
+              -999.99,
+              403.8
             ]
           },
           {
-            "angleDeg": 28.0,
+            "angleDeg": 27.99,
             "endpoint": [
-              670.59,
-              669.49
+              2352.51,
+              2347.29
             ],
-            "lengthPx": 307.43,
+            "lengthPx": 1078.38,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              271.45,
-              144.33
+              952.28,
+              506.03
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 1.0,
           "detectorSignalQuality": 0.0207,
@@ -364,35 +446,61 @@
           "edgeLength": 307.431,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.9715,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.8383,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             -1,
             1,
             1
           ],
           "silhouetteIoU": 0.8182,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 2.1552,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          399.14,
-          525.16
+          1400.23,
+          1841.26
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2627.14,
+          1293.28
+        ],
+        [
+          349.95,
+          1257.78
+        ],
+        [
+          1460.65,
+          3169.81
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1440.36,
+        2104.75
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 37 - A - white up IMG_7153.JPG",
       "key": "37_A",
       "notes": "",
       "setId": "37",
       "side": "A",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -406,52 +514,53 @@
         "score": 113.06,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": 28.0,
+            "angleDeg": 27.99,
             "endpoint": [
-              647.28,
-              670.03
+              2270.74,
+              2349.18
             ],
-            "lengthPx": 299.47,
+            "lengthPx": 1050.45,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              264.42,
-              140.59
+              927.62,
+              492.92
             ]
           },
           {
-            "angleDeg": 144.0,
+            "angleDeg": 144.02,
             "endpoint": [
-              140.58,
-              705.47
+              493.17,
+              2473.44
             ],
-            "lengthPx": 299.48,
+            "lengthPx": 1050.39,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              -242.28,
-              176.03
+              -849.95,
+              617.18
             ]
           },
           {
-            "angleDeg": -76.0,
+            "angleDeg": -75.99,
             "endpoint": [
-              455.31,
-              238.86
+              1597.28,
+              837.46
             ],
-            "lengthPx": 299.48,
+            "lengthPx": 1050.02,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              72.45,
-              -290.58
+              254.16,
+              -1018.8
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 1.0,
           "detectorSignalQuality": 0.1024,
@@ -459,35 +568,61 @@
           "edgeLength": 299.474,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.9623,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.8323,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             1,
             1,
             -1
           ],
           "silhouetteIoU": 0.806,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 2.1455,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          382.86,
-          529.44
+          1343.12,
+          1856.26
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2454.7,
+          1232.42
+        ],
+        [
+          370.23,
+          1196.92
+        ],
+        [
+          1338.93,
+          3124.17
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1293.28,
+        1770.02
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 23 - A - white up.JPG",
       "key": "23_A",
       "notes": "",
       "setId": "23",
       "side": "A",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -502,52 +637,53 @@
         "score": 111.599,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": 162.0,
+            "angleDeg": 162.01,
             "endpoint": [
-              75.48,
-              650.85
+              264.79,
+              2281.94
             ],
-            "lengthPx": 302.73,
+            "lengthPx": 1061.94,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              -287.91,
-              93.55
+              -1010.02,
+              327.99
             ]
           },
           {
-            "angleDeg": -56.0,
+            "angleDeg": -55.98,
             "endpoint": [
-              532.67,
-              306.33
+              1868.67,
+              1074.02
             ],
-            "lengthPx": 302.72,
+            "lengthPx": 1061.57,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              169.28,
-              -250.97
+              593.85,
+              -879.92
             ]
           },
           {
-            "angleDeg": 24.0,
+            "angleDeg": 23.99,
             "endpoint": [
-              639.94,
-              680.43
+              2244.99,
+              2385.65
             ],
-            "lengthPx": 302.72,
+            "lengthPx": 1061.89,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              276.55,
-              123.13
+              970.17,
+              431.7
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 1.0,
           "detectorSignalQuality": 0.0188,
@@ -555,35 +691,61 @@
           "edgeLength": 302.723,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.9436,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.687,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             1,
             -1,
             1
           ],
           "silhouetteIoU": 0.6599,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 1.9337,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          363.39,
-          557.3
+          1274.82,
+          1953.94
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2627.14,
+          1480.94
+        ],
+        [
+          329.66,
+          1328.78
+        ],
+        [
+          1328.78,
+          3296.6
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1440.36,
+        2287.34
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 37 - B - white up IMG_7154.JPG",
       "key": "37_B",
       "notes": "",
       "setId": "37",
       "side": "B",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -598,52 +760,53 @@
         "score": 93.675,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": -148.0,
+            "angleDeg": -148.02,
             "endpoint": [
-              166.15,
-              421.8
+              582.87,
+              1478.87
             ],
-            "lengthPx": 316.45,
+            "lengthPx": 1109.97,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              -268.37,
-              -167.69
+              -941.47,
+              -587.94
             ]
           },
           {
             "angleDeg": 90.0,
             "endpoint": [
-              434.52,
-              905.94
+              1524.35,
+              3176.3
             ],
-            "lengthPx": 316.45,
+            "lengthPx": 1109.5,
             "name": "axis_1",
             "status": "ok",
             "vector": [
               0.0,
-              316.45
+              1109.5
             ]
           },
           {
-            "angleDeg": -28.0,
+            "angleDeg": -27.99,
             "endpoint": [
-              713.93,
-              440.92
+              2504.55,
+              1545.9
             ],
-            "lengthPx": 316.45,
+            "lengthPx": 1110.02,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              279.41,
-              -148.57
+              980.2,
+              -520.9
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 1.0,
           "detectorSignalQuality": 0.1299,
@@ -651,35 +814,61 @@
           "edgeLength": 316.452,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.9567,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.9029,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             -1,
             1,
             -1
           ],
           "silhouetteIoU": 0.8675,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 2.2238,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          434.52,
-          589.49
+          1524.35,
+          2066.8
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2632.21,
+          1435.29
+        ],
+        [
+          461.52,
+          1455.58
+        ],
+        [
+          1592.51,
+          3387.89
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1592.51,
+        2160.54
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 12 - A - white up IMG_6701.JPG",
       "key": "12_A",
       "notes": "",
       "setId": "12",
       "side": "A",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -694,52 +883,53 @@
         "score": 93.504,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": -152.0,
+            "angleDeg": -152.01,
             "endpoint": [
-              177.89,
-              378.6
+              624.06,
+              1327.4
             ],
-            "lengthPx": 315.97,
+            "lengthPx": 1108.34,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              -278.99,
-              -148.34
+              -978.73,
+              -520.09
             ]
           },
           {
-            "angleDeg": -30.0,
+            "angleDeg": -29.99,
             "endpoint": [
-              730.53,
-              368.95
+              2562.79,
+              1293.57
             ],
-            "lengthPx": 315.98,
+            "lengthPx": 1108.35,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              273.65,
-              -157.99
+              960.0,
+              -553.93
             ]
           },
           {
             "angleDeg": 94.0,
             "endpoint": [
-              434.84,
-              842.15
+              1525.47,
+              2952.65
             ],
-            "lengthPx": 315.98,
+            "lengthPx": 1107.86,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              -22.04,
-              315.21
+              -77.32,
+              1105.15
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 1.0,
           "detectorSignalQuality": 0.5839,
@@ -747,35 +937,61 @@
           "edgeLength": 315.981,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.9668,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.876,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             -1,
             -1,
             1
           ],
           "silhouetteIoU": 0.8504,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 2.2772,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          456.88,
-          526.94
+          1602.79,
+          1847.5
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2657.57,
+          1262.85
+        ],
+        [
+          405.74,
+          1242.57
+        ],
+        [
+          1506.29,
+          3215.46
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1440.36,
+        1947.53
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 27 - A - white upIMG_6775.JPG",
       "key": "27_A",
       "notes": "",
       "setId": "27",
       "side": "A",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -790,52 +1006,53 @@
         "score": 93.139,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": 32.0,
+            "angleDeg": 31.98,
             "endpoint": [
-              658.29,
-              689.44
+              2309.36,
+              2417.24
             ],
-            "lengthPx": 307.35,
+            "lengthPx": 1078.05,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              260.65,
-              162.87
+              914.39,
+              571.04
             ]
           },
           {
-            "angleDeg": 138.0,
+            "angleDeg": 138.02,
             "endpoint": [
-              169.23,
-              732.23
+              593.68,
+              2567.26
             ],
-            "lengthPx": 307.36,
+            "lengthPx": 1077.96,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              -228.41,
-              205.66
+              -801.29,
+              721.06
             ]
           },
           {
-            "angleDeg": -82.0,
+            "angleDeg": -81.99,
             "endpoint": [
-              440.42,
-              222.2
+              1545.05,
+              779.05
             ],
-            "lengthPx": 307.36,
+            "lengthPx": 1077.65,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              42.78,
-              -304.37
+              150.08,
+              -1067.15
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 1.0,
           "detectorSignalQuality": 0.0,
@@ -843,35 +1060,61 @@
           "edgeLength": 307.358,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.9274,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.8693,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             1,
             1,
             -1
           ],
           "silhouetteIoU": 0.8139,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 2.1159,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          397.64,
-          526.57
+          1394.97,
+          1846.2
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2586.57,
+          1379.5
+        ],
+        [
+          497.03,
+          1333.86
+        ],
+        [
+          1455.58,
+          3205.31
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1435.29,
+        1983.03
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 24 - B - white up IMG_6770.JPG",
       "key": "24_B",
       "notes": "",
       "setId": "24",
       "side": "B",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -888,52 +1131,53 @@
         "score": 91.2715,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": -30.0,
+            "angleDeg": -29.99,
             "endpoint": [
-              684.96,
-              333.67
+              2402.92,
+              1169.88
             ],
-            "lengthPx": 289.53,
+            "lengthPx": 1015.57,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              250.74,
-              -144.77
+              879.63,
+              -507.58
             ]
           },
           {
-            "angleDeg": -156.0,
+            "angleDeg": -156.01,
             "endpoint": [
-              169.72,
-              360.68
+              595.4,
+              1264.58
             ],
-            "lengthPx": 289.53,
+            "lengthPx": 1015.61,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              -264.5,
-              -117.76
+              -927.9,
+              -412.88
             ]
           },
           {
             "angleDeg": 88.0,
             "endpoint": [
-              444.32,
-              767.8
+              1558.73,
+              2691.97
             ],
-            "lengthPx": 289.54,
+            "lengthPx": 1015.14,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              10.1,
-              289.36
+              35.43,
+              1014.52
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 0.9259,
           "detectorSignalQuality": 0.404,
@@ -941,35 +1185,61 @@
           "edgeLength": 289.535,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.9118,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.7098,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             -1,
             -1,
             1
           ],
           "silhouetteIoU": 0.6642,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 1.9544,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          434.22,
-          478.44
+          1523.3,
+          1677.45
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2586.57,
+          1333.86
+        ],
+        [
+          441.24,
+          1379.5
+        ],
+        [
+          1551.94,
+          3342.25
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1663.52,
+        2089.54
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 14 - A - white up IMG_6705.JPG",
       "key": "14_A",
       "notes": "",
       "setId": "14",
       "side": "A",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -984,52 +1254,53 @@
         "score": 73.071,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": 38.0,
+            "angleDeg": 37.98,
             "endpoint": [
-              663.58,
-              775.23
+              2327.92,
+              2718.02
             ],
-            "lengthPx": 320.02,
+            "lengthPx": 1122.44,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              252.18,
-              197.03
+              884.68,
+              690.8
             ]
           },
           {
-            "angleDeg": -102.0,
+            "angleDeg": -102.01,
             "endpoint": [
-              344.86,
-              265.17
+              1209.81,
+              929.71
             ],
-            "lengthPx": 320.02,
+            "lengthPx": 1122.06,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              -66.54,
-              -313.03
+              -233.43,
+              -1097.51
             ]
           },
           {
-            "angleDeg": 136.0,
+            "angleDeg": 136.02,
             "endpoint": [
-              181.2,
-              800.51
+              635.67,
+              2806.66
             ],
-            "lengthPx": 320.02,
+            "lengthPx": 1122.36,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              -230.2,
-              222.31
+              -807.57,
+              779.44
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 0.963,
           "detectorSignalQuality": 0.0969,
@@ -1037,35 +1308,61 @@
           "edgeLength": 320.023,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.9396,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.8718,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             1,
             -1,
             1
           ],
           "silhouetteIoU": 0.8256,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 2.1445,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          411.4,
-          578.2
+          1443.24,
+          2027.22
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2500.35,
+          1516.44
+        ],
+        [
+          380.38,
+          1531.65
+        ],
+        [
+          1480.94,
+          3479.18
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1516.44,
+        2119.97
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 17 - A - white up.JPG",
       "key": "17_A",
       "notes": "",
       "setId": "17",
       "side": "A",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -1082,52 +1379,53 @@
         "score": 70.1735,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": -30.0,
+            "angleDeg": -29.99,
             "endpoint": [
-              593.8,
-              274.01
+              2083.12,
+              960.7
             ],
-            "lengthPx": 314.11,
+            "lengthPx": 1101.79,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              272.03,
-              -157.06
+              954.31,
+              -550.67
             ]
           },
           {
-            "angleDeg": 28.0,
+            "angleDeg": 27.99,
             "endpoint": [
-              599.12,
-              578.54
+              2101.79,
+              2028.41
             ],
-            "lengthPx": 314.12,
+            "lengthPx": 1101.82,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              277.35,
-              147.47
+              972.98,
+              517.04
             ]
           },
           {
             "angleDeg": 92.0,
             "endpoint": [
-              310.81,
-              744.99
+              1090.36,
+              2612.0
             ],
-            "lengthPx": 314.11,
+            "lengthPx": 1101.3,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              -10.96,
-              313.92
+              -38.45,
+              1100.63
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 0.9259,
           "detectorSignalQuality": 0.0849,
@@ -1135,35 +1433,61 @@
           "edgeLength": 314.113,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.8653,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.6067,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             -1,
             1,
             1
           ],
           "silhouetteIoU": 0.5544,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 1.6752,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          321.77,
-          431.07
+          1128.81,
+          1511.37
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2581.49,
+          1374.43
+        ],
+        [
+          497.03,
+          1480.94
+        ],
+        [
+          1617.87,
+          3185.03
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1597.58,
+        2196.05
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 57 - B - white-up IMG_7511.JPG",
       "key": "57_B",
       "notes": "",
       "setId": "57",
       "side": "B",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -1177,52 +1501,53 @@
         "score": 53.956,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": -150.0,
+            "angleDeg": -150.01,
             "endpoint": [
-              96.24,
-              374.66
+              337.62,
+              1313.59
             ],
-            "lengthPx": 354.61,
+            "lengthPx": 1243.82,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              -307.1,
-              -177.3
+              -1077.34,
+              -621.63
             ]
           },
           {
             "angleDeg": 86.0,
             "endpoint": [
-              428.08,
-              905.7
+              1501.76,
+              3175.46
             ],
-            "lengthPx": 354.6,
+            "lengthPx": 1243.28,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              24.74,
-              353.74
+              86.79,
+              1240.24
             ]
           },
           {
-            "angleDeg": -32.0,
+            "angleDeg": -31.98,
             "endpoint": [
-              704.06,
-              364.05
+              2469.93,
+              1276.39
             ],
-            "lengthPx": 354.6,
+            "lengthPx": 1243.78,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              300.72,
-              -187.91
+              1054.96,
+              -658.83
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 1.0,
           "detectorSignalQuality": 0.2075,
@@ -1230,35 +1555,61 @@
           "edgeLength": 354.606,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.9575,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.9326,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             -1,
             1,
             -1
           ],
           "silhouetteIoU": 0.8956,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 2.2716,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          403.34,
-          551.96
+          1414.97,
+          1935.22
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2642.35,
+          1252.71
+        ],
+        [
+          258.66,
+          1257.78
+        ],
+        [
+          1455.58,
+          3311.82
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1496.15,
+        2023.61
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 62 - A - white-up IMG_7521.JPG",
       "key": "62_A",
       "notes": "",
       "setId": "62",
       "side": "A",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -1272,52 +1623,53 @@
         "score": 53.769,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": 156.0,
+            "angleDeg": 156.01,
             "endpoint": [
-              66.55,
-              695.2
+              233.47,
+              2437.43
             ],
-            "lengthPx": 350.71,
+            "lengthPx": 1230.22,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              -320.39,
-              142.65
+              -1123.97,
+              500.14
             ]
           },
           {
-            "angleDeg": 22.0,
+            "angleDeg": 21.99,
             "endpoint": [
-              712.11,
-              683.93
+              2498.17,
+              2397.92
             ],
-            "lengthPx": 350.71,
+            "lengthPx": 1230.23,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              325.17,
-              131.38
+              1140.74,
+              460.63
             ]
           },
           {
             "angleDeg": -92.0,
             "endpoint": [
-              374.7,
-              202.05
+              1314.49,
+              708.4
             ],
-            "lengthPx": 350.71,
+            "lengthPx": 1229.63,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              -12.24,
-              -350.5
+              -42.94,
+              -1228.88
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 1.0,
           "detectorSignalQuality": 0.0932,
@@ -1325,35 +1677,61 @@
           "edgeLength": 350.71,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.9503,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.919,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             1,
             1,
             -1
           ],
           "silhouetteIoU": 0.8769,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 2.226,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          386.94,
-          552.55
+          1357.43,
+          1937.29
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2535.85,
+          1207.06
+        ],
+        [
+          202.87,
+          1227.35
+        ],
+        [
+          1445.43,
+          3235.74
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1526.58,
+        2003.32
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 62 - B - white-up IMG_7522.JPG",
       "key": "62_B",
       "notes": "",
       "setId": "62",
       "side": "B",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -1367,52 +1745,53 @@
         "score": 53.622,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": -148.0,
+            "angleDeg": -148.01,
             "endpoint": [
-              145.48,
-              404.25
+              510.36,
+              1417.34
             ],
-            "lengthPx": 293.82,
+            "lengthPx": 1030.58,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              -249.17,
-              -155.7
+              -874.12,
+              -545.9
             ]
           },
           {
-            "angleDeg": -34.0,
+            "angleDeg": -33.99,
             "endpoint": [
-              638.23,
-              395.65
+              2238.99,
+              1387.18
             ],
-            "lengthPx": 293.81,
+            "lengthPx": 1030.54,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              243.58,
-              -164.3
+              854.51,
+              -576.05
             ]
           },
           {
             "angleDeg": 88.0,
             "endpoint": [
-              404.9,
-              853.59
+              1420.44,
+              2992.76
             ],
-            "lengthPx": 293.82,
+            "lengthPx": 1030.16,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              10.25,
-              293.64
+              35.96,
+              1029.53
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 1.0,
           "detectorSignalQuality": 0.2408,
@@ -1420,35 +1799,61 @@
           "edgeLength": 293.815,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.965,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.8901,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             -1,
             -1,
             1
           ],
           "silhouetteIoU": 0.8622,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 2.2393,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          394.65,
-          559.95
+          1384.48,
+          1963.23
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2383.7,
+          1283.14
+        ],
+        [
+          355.02,
+          1267.92
+        ],
+        [
+          1369.36,
+          3103.88
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1323.71,
+        1922.17
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 22 - B - white up.JPG",
       "key": "22_B",
       "notes": "",
       "setId": "22",
       "side": "B",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -1462,52 +1867,53 @@
         "score": 53.518,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": 28.0,
+            "angleDeg": 27.99,
             "endpoint": [
-              680.12,
-              673.04
+              2385.94,
+              2359.74
             ],
-            "lengthPx": 296.64,
+            "lengthPx": 1040.52,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              261.92,
-              139.26
+              918.85,
+              488.26
             ]
           },
           {
             "angleDeg": -90.0,
             "endpoint": [
-              418.2,
-              237.14
+              1467.1,
+              831.43
             ],
-            "lengthPx": 296.64,
+            "lengthPx": 1040.05,
             "name": "axis_1",
             "status": "ok",
             "vector": [
               -0.0,
-              -296.64
+              -1040.05
             ]
           },
           {
-            "angleDeg": 162.0,
+            "angleDeg": 162.01,
             "endpoint": [
-              136.08,
-              625.45
+              477.39,
+              2192.88
             ],
-            "lengthPx": 296.64,
+            "lengthPx": 1040.59,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              -282.12,
-              91.67
+              -989.71,
+              321.4
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 1.0,
           "detectorSignalQuality": 0.2514,
@@ -1515,35 +1921,61 @@
           "edgeLength": 296.642,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.955,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.8874,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             1,
             -1,
             1
           ],
           "silhouetteIoU": 0.8518,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 2.2209,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          418.2,
-          533.78
+          1467.1,
+          1871.48
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2500.35,
+          1217.21
+        ],
+        [
+          415.88,
+          1201.99
+        ],
+        [
+          1491.08,
+          2951.73
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1536.72,
+        1922.17
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 58 - A - white-up IMG_7512.JPG",
       "key": "58_A",
       "notes": "",
       "setId": "58",
       "side": "A",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -1557,52 +1989,53 @@
         "score": 53.499,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": 30.0,
+            "angleDeg": 29.99,
             "endpoint": [
-              689.87,
-              698.06
+              2420.15,
+              2447.46
             ],
-            "lengthPx": 301.52,
+            "lengthPx": 1057.6,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              261.12,
-              150.76
+              916.04,
+              528.58
             ]
           },
           {
             "angleDeg": -96.0,
             "endpoint": [
-              397.23,
-              247.44
+              1393.53,
+              867.55
             ],
-            "lengthPx": 301.51,
+            "lengthPx": 1057.13,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              -31.52,
-              -299.86
+              -110.58,
+              -1051.34
             ]
           },
           {
-            "angleDeg": 160.0,
+            "angleDeg": 160.01,
             "endpoint": [
-              145.42,
-              650.42
+              510.15,
+              2280.43
             ],
-            "lengthPx": 301.51,
+            "lengthPx": 1057.67,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              -283.33,
-              103.12
+              -993.96,
+              361.55
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 1.0,
           "detectorSignalQuality": 0.1242,
@@ -1610,35 +2043,61 @@
           "edgeLength": 301.513,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.9366,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.9018,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             1,
             -1,
             1
           ],
           "silhouetteIoU": 0.8499,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 2.1868,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          428.75,
-          547.3
+          1504.11,
+          1918.88
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2480.06,
+          1349.07
+        ],
+        [
+          390.52,
+          1273.0
+        ],
+        [
+          1369.36,
+          3012.59
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1506.29,
+        1952.6
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 58 - B - white-up IMG_7513.JPG",
       "key": "58_B",
       "notes": "",
       "setId": "58",
       "side": "B",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -1652,52 +2111,53 @@
         "score": 53.442,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": 38.0,
+            "angleDeg": 37.98,
             "endpoint": [
-              683.8,
-              738.44
+              2398.85,
+              2589.03
             ],
-            "lengthPx": 328.69,
+            "lengthPx": 1152.82,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              259.01,
-              202.36
+              908.64,
+              709.49
             ]
           },
           {
-            "angleDeg": 146.0,
+            "angleDeg": 146.01,
             "endpoint": [
-              152.3,
-              719.88
+              534.29,
+              2523.96
             ],
-            "lengthPx": 328.68,
+            "lengthPx": 1152.85,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              -272.49,
-              183.8
+              -955.93,
+              644.42
             ]
           },
           {
             "angleDeg": -96.0,
             "endpoint": [
-              390.43,
-              209.19
+              1369.68,
+              733.44
             ],
-            "lengthPx": 328.69,
+            "lengthPx": 1152.43,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              -34.36,
-              -326.89
+              -120.54,
+              -1146.1
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 1.0,
           "detectorSignalQuality": 0.0609,
@@ -1705,35 +2165,61 @@
           "edgeLength": 328.688,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.965,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.8708,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             1,
             1,
             -1
           ],
           "silhouetteIoU": 0.8442,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 2.1895,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          424.79,
-          536.08
+          1490.21,
+          1879.54
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2530.78,
+          1252.71
+        ],
+        [
+          360.09,
+          1252.71
+        ],
+        [
+          1364.29,
+          3210.38
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1364.29,
+        1744.66
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 39 - A - white up IMG_7157.JPG",
       "key": "39_A",
       "notes": "",
       "setId": "39",
       "side": "A",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -1747,52 +2233,53 @@
         "score": 53.433,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
             "angleDeg": 92.0,
             "endpoint": [
-              380.47,
-              807.57
+              1334.73,
+              2831.41
             ],
-            "lengthPx": 298.06,
+            "lengthPx": 1045.03,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              -10.4,
-              297.88
+              -36.48,
+              1044.39
             ]
           },
           {
-            "angleDeg": -156.0,
+            "angleDeg": -156.01,
             "endpoint": [
-              118.58,
-              388.46
+              415.99,
+              1361.97
             ],
-            "lengthPx": 298.06,
+            "lengthPx": 1045.52,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              -272.29,
-              -121.23
+              -955.23,
+              -425.04
             ]
           },
           {
-            "angleDeg": -28.0,
+            "angleDeg": -27.99,
             "endpoint": [
-              654.04,
-              369.76
+              2294.45,
+              1296.41
             ],
-            "lengthPx": 298.06,
+            "lengthPx": 1045.49,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              263.17,
-              -139.93
+              923.23,
+              -490.61
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 0.963,
           "detectorSignalQuality": 0.1387,
@@ -1800,35 +2287,61 @@
           "edgeLength": 298.059,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.9572,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.8964,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             1,
             -1,
             -1
           ],
           "silhouetteIoU": 0.8618,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 2.209,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          390.87,
-          509.69
+          1371.22,
+          1787.02
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2388.77,
+          1283.14
+        ],
+        [
+          294.16,
+          1349.07
+        ],
+        [
+          1404.86,
+          3108.95
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1344.0,
+        2048.97
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 47 - A - white up +90 IMG_7381.JPG",
       "key": "47_A",
       "notes": "",
       "setId": "47",
       "side": "A",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -1842,52 +2355,53 @@
         "score": 53.399,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": -28.0,
+            "angleDeg": -27.99,
             "endpoint": [
-              685.23,
-              394.27
+              2403.87,
+              1382.34
             ],
-            "lengthPx": 286.9,
+            "lengthPx": 1006.36,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              253.32,
-              -134.69
+              888.68,
+              -472.23
             ]
           },
           {
-            "angleDeg": -156.0,
+            "angleDeg": -156.01,
             "endpoint": [
-              169.81,
-              412.27
+              595.71,
+              1445.45
             ],
-            "lengthPx": 286.9,
+            "lengthPx": 1006.39,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              -262.1,
-              -116.69
+              -919.48,
+              -409.13
             ]
           },
           {
             "angleDeg": 96.0,
             "endpoint": [
-              401.92,
-              814.29
+              1409.98,
+              2854.97
             ],
-            "lengthPx": 286.9,
+            "lengthPx": 1005.91,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              -29.99,
-              285.33
+              -105.21,
+              1000.39
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 1.0,
           "detectorSignalQuality": 0.1598,
@@ -1895,35 +2409,61 @@
           "edgeLength": 286.905,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.9733,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.8597,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             -1,
             -1,
             1
           ],
           "silhouetteIoU": 0.8399,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 2.2047,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          431.91,
-          528.96
+          1515.19,
+          1854.58
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2444.56,
+          1399.79
+        ],
+        [
+          380.38,
+          1369.36
+        ],
+        [
+          1379.5,
+          3164.74
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1323.71,
+        2114.9
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 47 - B - white up +90 IMG_7382.JPG",
       "key": "47_B",
       "notes": "",
       "setId": "47",
       "side": "B",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -1937,52 +2477,53 @@
         "score": 53.386,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
             "angleDeg": 86.0,
             "endpoint": [
-              430.43,
-              809.7
+              1510.0,
+              2838.88
             ],
-            "lengthPx": 308.9,
+            "lengthPx": 1083.04,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              21.55,
-              308.15
+              75.6,
+              1080.4
             ]
           },
           {
-            "angleDeg": -24.0,
+            "angleDeg": -23.99,
             "endpoint": [
-              691.08,
-              375.91
+              2424.39,
+              1317.97
             ],
-            "lengthPx": 308.9,
+            "lengthPx": 1083.57,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              282.2,
-              -125.64
+              989.99,
+              -440.5
             ]
           },
           {
-            "angleDeg": -158.0,
+            "angleDeg": -158.01,
             "endpoint": [
-              122.47,
-              385.83
+              429.64,
+              1352.75
             ],
-            "lengthPx": 308.9,
+            "lengthPx": 1083.59,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              -286.41,
-              -115.72
+              -1004.76,
+              -405.72
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 0.963,
           "detectorSignalQuality": 0.1547,
@@ -1990,35 +2531,61 @@
           "edgeLength": 308.906,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.9437,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.9033,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             1,
             -1,
             -1
           ],
           "silhouetteIoU": 0.8571,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 2.1962,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          408.88,
-          501.55
+          1434.4,
+          1758.48
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2490.2,
+          1359.22
+        ],
+        [
+          365.16,
+          1364.29
+        ],
+        [
+          1450.51,
+          3210.38
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1384.57,
+        2145.33
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 49 - A - white up +270 IMG_7385.JPG",
       "key": "49_A",
       "notes": "",
       "setId": "49",
       "side": "A",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -2032,52 +2599,53 @@
         "score": 53.218,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
             "angleDeg": 94.0,
             "endpoint": [
-              426.82,
-              827.47
+              1497.34,
+              2901.18
             ],
-            "lengthPx": 298.06,
+            "lengthPx": 1045.01,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              -20.79,
-              297.33
+              -72.93,
+              1042.46
             ]
           },
           {
-            "angleDeg": -30.0,
+            "angleDeg": -29.99,
             "endpoint": [
-              705.74,
-              381.11
+              2475.82,
+              1336.2
             ],
-            "lengthPx": 298.06,
+            "lengthPx": 1045.49,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              258.13,
-              -149.03
+              905.55,
+              -522.51
             ]
           },
           {
-            "angleDeg": -156.0,
+            "angleDeg": -156.01,
             "endpoint": [
-              175.32,
-              408.91
+              615.04,
+              1433.67
             ],
-            "lengthPx": 298.06,
+            "lengthPx": 1045.52,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              -272.29,
-              -121.23
+              -955.23,
+              -425.04
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 0.963,
           "detectorSignalQuality": 0.3086,
@@ -2085,35 +2653,61 @@
           "edgeLength": 298.059,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.9308,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.8963,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             1,
             -1,
             -1
           ],
           "silhouetteIoU": 0.8403,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 2.1891,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          447.61,
-          530.14
+          1570.27,
+          1858.72
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2515.56,
+          1374.43
+        ],
+        [
+          471.67,
+          1359.22
+        ],
+        [
+          1486.01,
+          3179.95
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1506.29,
+        2013.46
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 22 - A - white up.JPG",
       "key": "22_A",
       "notes": "",
       "setId": "22",
       "side": "A",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -2127,52 +2721,53 @@
         "score": 53.022,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": 24.0,
+            "angleDeg": 23.99,
             "endpoint": [
-              727.65,
-              691.99
+              2552.68,
+              2426.18
             ],
-            "lengthPx": 311.08,
+            "lengthPx": 1091.22,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              284.19,
-              126.53
+              996.97,
+              443.63
             ]
           },
           {
-            "angleDeg": -102.0,
+            "angleDeg": -102.01,
             "endpoint": [
-              378.78,
-              261.18
+              1328.81,
+              915.72
             ],
-            "lengthPx": 311.08,
+            "lengthPx": 1090.7,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              -64.68,
-              -304.28
+              -226.91,
+              -1066.83
             ]
           },
           {
-            "angleDeg": 158.0,
+            "angleDeg": 158.01,
             "endpoint": [
-              155.03,
-              681.99
+              543.86,
+              2391.12
             ],
-            "lengthPx": 311.08,
+            "lengthPx": 1091.22,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              -288.43,
-              116.53
+              -1011.85,
+              408.56
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 1.0,
           "detectorSignalQuality": 0.0415,
@@ -2180,35 +2775,61 @@
           "edgeLength": 311.08,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.9494,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.838,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             1,
             -1,
             1
           ],
           "silhouetteIoU": 0.8022,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 2.1225,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          443.46,
-          565.46
+          1555.71,
+          1982.55
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2586.57,
+          1313.57
+        ],
+        [
+          349.95,
+          1354.14
+        ],
+        [
+          1536.72,
+          3220.53
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1541.8,
+        2165.62
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 49 - B - white up +270 IMG_7386.JPG",
       "key": "49_B",
       "notes": "",
       "setId": "49",
       "side": "B",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -2222,52 +2843,53 @@
         "score": 52.603,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": 150.0,
+            "angleDeg": 150.01,
             "endpoint": [
-              117.89,
-              668.28
+              413.57,
+              2343.05
             ],
-            "lengthPx": 274.14,
+            "lengthPx": 961.57,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              -237.41,
-              137.07
+              -832.86,
+              480.58
             ]
           },
           {
-            "angleDeg": 26.0,
+            "angleDeg": 25.99,
             "endpoint": [
-              601.69,
-              651.38
+              2110.8,
+              2283.79
             ],
-            "lengthPx": 274.13,
+            "lengthPx": 961.58,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              246.39,
-              120.17
+              864.37,
+              421.33
             ]
           },
           {
-            "angleDeg": -68.0,
+            "angleDeg": -67.99,
             "endpoint": [
-              457.99,
-              277.04
+              1606.68,
+              971.33
             ],
-            "lengthPx": 274.13,
+            "lengthPx": 961.2,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              102.69,
-              -254.17
+              360.25,
+              -891.14
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 1.0,
           "detectorSignalQuality": 0.0848,
@@ -2275,35 +2897,61 @@
           "edgeLength": 274.134,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.9576,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.7868,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             1,
             1,
             -1
           ],
           "silhouetteIoU": 0.7603,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 2.0815,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          355.3,
-          531.21
+          1246.44,
+          1862.47
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2393.84,
+          1338.93
+        ],
+        [
+          420.95,
+          1283.14
+        ],
+        [
+          1384.57,
+          3027.8
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1323.71,
+        1998.25
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 48 - B - white up +180 IMG_7384.JPG",
       "key": "48_B",
       "notes": "",
       "setId": "48",
       "side": "B",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -2317,52 +2965,53 @@
         "score": 52.119,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": -144.0,
+            "angleDeg": -144.02,
             "endpoint": [
-              122.58,
-              408.58
+              430.03,
+              1432.52
             ],
-            "lengthPx": 313.82,
+            "lengthPx": 1100.68,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              -253.88,
-              -184.46
+              -890.64,
+              -646.73
             ]
           },
           {
-            "angleDeg": -36.0,
+            "angleDeg": -35.98,
             "endpoint": [
-              630.34,
-              408.58
+              2211.31,
+              1432.52
             ],
-            "lengthPx": 313.82,
+            "lengthPx": 1100.68,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              253.88,
-              -184.46
+              890.64,
+              -646.73
             ]
           },
           {
             "angleDeg": 94.0,
             "endpoint": [
-              354.57,
-              906.09
+              1243.87,
+              3176.83
             ],
-            "lengthPx": 313.81,
+            "lengthPx": 1100.26,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              -21.89,
-              313.05
+              -76.79,
+              1097.58
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 1.0,
           "detectorSignalQuality": 0.0299,
@@ -2370,35 +3019,61 @@
           "edgeLength": 313.817,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.9353,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.7487,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             -1,
             -1,
             1
           ],
           "silhouetteIoU": 0.7119,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 1.9953,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          376.46,
-          593.04
+          1320.67,
+          2079.25
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2596.71,
+          1257.78
+        ],
+        [
+          370.23,
+          1212.14
+        ],
+        [
+          1440.36,
+          3240.82
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1389.65,
+        1851.17
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 39 - B - white up IMG_7158.JPG",
       "key": "39_B",
       "notes": "",
       "setId": "39",
       "side": "B",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -2412,52 +3087,53 @@
         "score": 52.092,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": -26.0,
+            "angleDeg": -25.99,
             "endpoint": [
-              711.84,
-              311.03
+              2497.22,
+              1090.5
             ],
-            "lengthPx": 295.12,
+            "lengthPx": 1035.19,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              265.25,
-              -129.37
+              930.53,
+              -453.58
             ]
           },
           {
             "angleDeg": -176.0,
             "endpoint": [
-              152.19,
-              419.81
+              533.9,
+              1471.89
             ],
-            "lengthPx": 295.12,
+            "lengthPx": 1035.31,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              -294.4,
-              -20.59
+              -1032.79,
+              -72.19
             ]
           },
           {
             "angleDeg": 90.0,
             "endpoint": [
-              446.59,
-              735.52
+              1566.69,
+              2578.8
             ],
-            "lengthPx": 295.12,
+            "lengthPx": 1034.72,
             "name": "axis_2",
             "status": "ok",
             "vector": [
               0.0,
-              295.12
+              1034.72
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 0.963,
           "detectorSignalQuality": 0.0659,
@@ -2465,35 +3141,61 @@
           "edgeLength": 295.115,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.9366,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.7654,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             -1,
             -1,
             1
           ],
           "silhouetteIoU": 0.7277,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 2.0125,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          446.59,
-          440.4
+          1566.69,
+          1544.08
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2525.71,
+          1338.93
+        ],
+        [
+          405.74,
+          1288.21
+        ],
+        [
+          1435.29,
+          3159.67
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1404.86,
+        2094.61
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 46 - B - white up WCA IMG_7380.JPG",
       "key": "46_B",
       "notes": "",
       "setId": "46",
       "side": "B",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -2508,52 +3210,53 @@
         "score": 51.173,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": -146.0,
+            "angleDeg": -146.01,
             "endpoint": [
-              86.75,
-              318.87
+              304.33,
+              1117.99
             ],
-            "lengthPx": 302.72,
+            "lengthPx": 1061.77,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              -250.96,
-              -169.28
+              -880.4,
+              -593.51
             ]
           },
           {
             "angleDeg": 84.0,
             "endpoint": [
-              369.35,
-              789.21
+              1295.72,
+              2767.04
             ],
-            "lengthPx": 302.72,
+            "lengthPx": 1061.36,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              31.64,
-              301.06
+              111.0,
+              1055.54
             ]
           },
           {
-            "angleDeg": -24.0,
+            "angleDeg": -23.99,
             "endpoint": [
-              614.25,
-              365.02
+              2154.86,
+              1279.79
             ],
-            "lengthPx": 302.71,
+            "lengthPx": 1061.85,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              276.54,
-              -123.13
+              970.14,
+              -431.7
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 0.963,
           "detectorSignalQuality": 0.4308,
@@ -2561,35 +3264,61 @@
           "edgeLength": 302.715,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.9278,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.6689,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             -1,
             1,
             -1
           ],
           "silhouetteIoU": 0.6358,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 1.9435,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          337.71,
-          488.15
+          1184.73,
+          1711.5
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2753.93,
+          1222.28
+        ],
+        [
+          324.59,
+          1166.49
+        ],
+        [
+          1496.15,
+          3321.96
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1475.86,
+        1927.25
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 25 - B - white up IMG_6772.JPG",
       "key": "25_B",
       "notes": "",
       "setId": "25",
       "side": "B",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -2604,52 +3333,53 @@
         "score": 50.86,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": -154.0,
+            "angleDeg": -154.01,
             "endpoint": [
-              218.33,
-              364.54
+              765.93,
+              1278.11
             ],
-            "lengthPx": 235.73,
+            "lengthPx": 826.87,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              -211.87,
-              -103.34
+              -743.27,
+              -362.32
             ]
           },
           {
-            "angleDeg": -30.0,
+            "angleDeg": -29.98,
             "endpoint": [
-              634.35,
-              350.02
+              2225.38,
+              1227.2
             ],
-            "lengthPx": 235.73,
+            "lengthPx": 826.85,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              204.15,
-              -117.86
+              716.18,
+              -413.23
             ]
           },
           {
-            "angleDeg": 108.0,
+            "angleDeg": 108.01,
             "endpoint": [
-              357.36,
-              692.07
+              1253.66,
+              2426.46
             ],
-            "lengthPx": 235.73,
+            "lengthPx": 826.52,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              -72.84,
-              224.19
+              -255.53,
+              786.03
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 1.0,
           "detectorSignalQuality": 0.3031,
@@ -2657,35 +3387,61 @@
           "edgeLength": 235.728,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.9596,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.6008,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             -1,
             -1,
             1
           ],
           "silhouetteIoU": 0.586,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 1.8954,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          430.2,
-          467.88
+          1509.19,
+          1640.43
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2373.55,
+          1328.78
+        ],
+        [
+          415.88,
+          1359.22
+        ],
+        [
+          1445.43,
+          3053.16
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1440.36,
+        2003.32
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 48 - A - white up +180 IMG_7383.JPG",
       "key": "48_A",
       "notes": "",
       "setId": "48",
       "side": "A",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -2700,52 +3456,53 @@
         "score": 50.519,
         "sourceModelStatus": "ok"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": -156.0,
+            "angleDeg": -156.01,
             "endpoint": [
-              231.32,
-              273.98
+              811.5,
+              960.6
             ],
-            "lengthPx": 305.9,
+            "lengthPx": 1073.02,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              -279.45,
-              -124.42
+              -980.34,
+              -436.23
             ]
           },
           {
-            "angleDeg": 152.0,
+            "angleDeg": 152.01,
             "endpoint": [
-              240.68,
-              542.01
+              844.33,
+              1900.33
             ],
-            "lengthPx": 305.9,
+            "lengthPx": 1072.98,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              -270.09,
-              143.61
+              -947.51,
+              503.51
             ]
           },
           {
             "angleDeg": 82.0,
             "endpoint": [
-              553.34,
-              701.32
+              1941.18,
+              2458.89
             ],
-            "lengthPx": 305.9,
+            "lengthPx": 1072.51,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              42.57,
-              302.92
+              149.34,
+              1062.06
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 0.963,
           "detectorSignalQuality": 0.1763,
@@ -2753,35 +3510,61 @@
           "edgeLength": 305.897,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.9085,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.6052,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             -1,
             1,
             1
           ],
           "silhouetteIoU": 0.5704,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "ok"
         },
         "fitQuality": 1.7527,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          510.77,
-          398.4
+          1791.84,
+          1396.83
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2343.12,
+          1308.5
+        ],
+        [
+          278.94,
+          1333.86
+        ],
+        [
+          1369.36,
+          3114.02
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1318.64,
+        2064.18
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 46 - A - white up WCA IMG_7379.JPG",
       "key": "46_A",
       "notes": "",
       "setId": "46",
       "side": "A",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     },
     {
@@ -2798,52 +3581,53 @@
         "score": 24.9395,
         "sourceModelStatus": "low_cell_inside"
       },
-      "axisLabelQuality": null,
+      "axisLabelQuality": "high",
       "currentModel": {
         "axes": [
           {
-            "angleDeg": -152.0,
+            "angleDeg": -152.01,
             "endpoint": [
-              163.35,
-              232.78
+              573.05,
+              816.15
             ],
-            "lengthPx": 406.01,
+            "lengthPx": 1424.13,
             "name": "axis_0",
             "status": "ok",
             "vector": [
-              -358.48,
-              -190.61
+              -1257.59,
+              -668.3
             ]
           },
           {
-            "angleDeg": 58.0,
+            "angleDeg": 57.98,
             "endpoint": [
-              736.98,
-              767.7
+              2585.41,
+              2691.62
             ],
-            "lengthPx": 406.0,
+            "lengthPx": 1423.72,
             "name": "axis_1",
             "status": "ok",
             "vector": [
-              215.15,
-              344.31
+              754.77,
+              1207.18
             ]
           },
           {
-            "angleDeg": 170.0,
+            "angleDeg": 170.01,
             "endpoint": [
-              122.0,
-              493.89
+              427.99,
+              1731.62
             ],
-            "lengthPx": 406.0,
+            "lengthPx": 1424.26,
             "name": "axis_2",
             "status": "ok",
             "vector": [
-              -399.83,
-              70.5
+              -1402.65,
+              247.18
             ]
           }
         ],
+        "coordinateSpace": "source_image_exif_fullres",
         "debug": {
           "cellInsideRatio": 0.8519,
           "detectorSignalQuality": 0.0446,
@@ -2851,39 +3635,65 @@
           "edgeLength": 406.0,
           "fitVersion": "v0.1-center-refine",
           "insideRatio": 0.8271,
+          "labelCoordinateSpace": "source_image_exif_fullres",
           "maskCoverage": 0.6445,
+          "processingImageSize": [
+            862,
+            1150
+          ],
+          "processingToLabelScale": [
+            3.508121,
+            3.506087
+          ],
           "signChoice": [
             -1,
             1,
             1
           ],
           "silhouetteIoU": 0.568,
+          "sourceImageSize": [
+            3024,
+            4032
+          ],
+          "sourceModelCoordinateSpace": "processing_image_max_1150",
           "sourceStatus": "low_cell_inside"
         },
         "fitQuality": 1.6393,
         "modelSource": "global_cube_model_v01_manifest_pool",
         "status": "ok",
         "vertexPoint": [
-          521.83,
-          423.39
+          1830.64,
+          1484.44
         ]
       },
       "humanAxisEndpoints": [
-        null,
-        null,
-        null
+        [
+          2637.28,
+          1267.92
+        ],
+        [
+          339.8,
+          1222.28
+        ],
+        [
+          1435.29,
+          3327.03
+        ]
       ],
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        1374.43,
+        2018.54
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 25 - A - white up IMG_6771.JPG",
       "key": "25_A",
       "notes": "",
       "setId": "25",
       "side": "A",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
     }
   ],
   "schemaVersion": 1,
-  "sourceExistingFeedback": "/private/tmp/cube-active-vertex-labels-v0/tests/fixtures/vertex_axis_human_feedback_v0.json",
-  "sourceModelSummary": "/private/tmp/cube-active-vertex-labels-v0/tests/fixtures/active_vertex_global_model_v01_summary.json"
+  "sourceExistingFeedback": "/private/tmp/cube-richer-vertex-localizer-v0/tests/fixtures/vertex_axis_human_feedback_v0.json",
+  "sourceModelSummary": "/private/tmp/cube-richer-vertex-localizer-v0/tests/fixtures/active_vertex_global_model_v01_summary.json"
 }

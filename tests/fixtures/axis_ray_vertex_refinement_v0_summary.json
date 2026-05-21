@@ -1,0 +1,1279 @@
+{
+  "config": {
+    "axisGoodDeg": 15.0,
+    "centerRadiusPx": 5.0,
+    "distancePriorWeight": 0.08,
+    "lineHalfWidthPx": 2.0,
+    "plausibleVertexPx": 50.0,
+    "rayMaxPx": 150.0,
+    "rayMinPx": 18.0,
+    "raySampleCount": 9,
+    "searchRadiusPx": 180,
+    "searchStepPx": 12,
+    "sideOffsetPx": 16.0,
+    "strictVertexPx": 30.0
+  },
+  "description": "Diagnostics-only search for a better visible-trihedral vertex using dark-line support along fixed outgoing axis rays.",
+  "probe": "axis_ray_vertex_refinement_v0",
+  "rows": [
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1537.36,
+        2008.64
+      ],
+      "baselineVertexErrorPx": 26.85,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": -20.11,
+      "humanAxisOracleScore": 2.128745,
+      "humanAxisOracleStatus": "plausible",
+      "humanAxisOracleVertex": [
+        1549.36,
+        2080.64
+      ],
+      "humanAxisOracleVertexErrorPx": 46.96,
+      "humanVertex": [
+        1546.87,
+        2033.75
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 12 - B - white up IMG_6702.JPG",
+      "key": "12_B",
+      "modelAxisImprovementPx": -63.21,
+      "modelAxisMaxAngleErrorDeg": 60.81,
+      "modelAxisRefinedStatus": "blocked",
+      "modelAxisRefinedVertex": [
+        1633.36,
+        2008.64
+      ],
+      "modelAxisRefinedVertexErrorPx": 90.06,
+      "modelAxisScore": 1.809116,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.95599,
+        "distancePrior": 0.5333,
+        "meanRayContrast": 0.0148,
+        "meanRayDarkness": 0.77281,
+        "meanRayScore": 0.69292,
+        "minRayContrast": 0.00223,
+        "minRayScore": 0.62548,
+        "status": "ok"
+      },
+      "setId": "12",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1495.99,
+        1814.07
+      ],
+      "baselineVertexErrorPx": 53.9,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": -2.69,
+      "humanAxisOracleScore": 2.176972,
+      "humanAxisOracleStatus": "blocked",
+      "humanAxisOracleVertex": [
+        1459.99,
+        1850.07
+      ],
+      "humanAxisOracleVertexErrorPx": 56.59,
+      "humanVertex": [
+        1445.43,
+        1795.38
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 14 - B - white up IMG_6706.JPG",
+      "key": "14_B",
+      "modelAxisImprovementPx": -49.81,
+      "modelAxisMaxAngleErrorDeg": 62.48,
+      "modelAxisRefinedStatus": "blocked",
+      "modelAxisRefinedVertex": [
+        1459.99,
+        1898.07
+      ],
+      "modelAxisRefinedVertexErrorPx": 103.72,
+      "modelAxisScore": 1.858603,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.98577,
+        "distancePrior": 0.5077,
+        "meanRayContrast": 0.0166,
+        "meanRayDarkness": 0.80731,
+        "meanRayScore": 0.71328,
+        "minRayContrast": 0.00769,
+        "minRayScore": 0.62726,
+        "status": "ok"
+      },
+      "setId": "14",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1484.51,
+        2009.22
+      ],
+      "baselineVertexErrorPx": 63.51,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": 11.28,
+      "humanAxisOracleScore": 2.158805,
+      "humanAxisOracleStatus": "blocked",
+      "humanAxisOracleVertex": [
+        1412.51,
+        2057.22
+      ],
+      "humanAxisOracleVertexErrorPx": 52.23,
+      "humanVertex": [
+        1421.1,
+        2005.7
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 15 - A - white up IMG_6707.JPG",
+      "key": "15_A",
+      "modelAxisImprovementPx": 23.84,
+      "modelAxisMaxAngleErrorDeg": 6.53,
+      "modelAxisRefinedStatus": "plausible",
+      "modelAxisRefinedVertex": [
+        1424.51,
+        2045.22
+      ],
+      "modelAxisRefinedVertexErrorPx": 39.67,
+      "modelAxisScore": 2.183035,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.99041,
+        "distancePrior": 0.3887,
+        "meanRayContrast": 0.06855,
+        "meanRayDarkness": 0.98487,
+        "meanRayScore": 0.86241,
+        "minRayContrast": 0.06513,
+        "minRayScore": 0.85995,
+        "status": "ok"
+      },
+      "setId": "15",
+      "side": "A"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1491.53,
+        2003.42
+      ],
+      "baselineVertexErrorPx": 71.99,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": 16.0,
+      "humanAxisOracleScore": 2.123424,
+      "humanAxisOracleStatus": "blocked",
+      "humanAxisOracleVertex": [
+        1575.53,
+        2039.42
+      ],
+      "humanAxisOracleVertexErrorPx": 55.99,
+      "humanVertex": [
+        1561.2,
+        1985.3
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 15 - B - white up IMG_6708.JPG",
+      "key": "15_B",
+      "modelAxisImprovementPx": 17.82,
+      "modelAxisMaxAngleErrorDeg": 4.06,
+      "modelAxisRefinedStatus": "blocked",
+      "modelAxisRefinedVertex": [
+        1563.53,
+        2039.42
+      ],
+      "modelAxisRefinedVertexErrorPx": 54.17,
+      "modelAxisScore": 2.132808,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.99092,
+        "distancePrior": 0.4472,
+        "meanRayContrast": 0.06011,
+        "meanRayDarkness": 0.97821,
+        "meanRayScore": 0.85383,
+        "minRayContrast": 0.02034,
+        "minRayScore": 0.81677,
+        "status": "ok"
+      },
+      "setId": "15",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1479.79,
+        1934.83
+      ],
+      "baselineVertexErrorPx": 107.18,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": 44.86,
+      "humanAxisOracleScore": 2.15972,
+      "humanAxisOracleStatus": "blocked",
+      "humanAxisOracleVertex": [
+        1527.79,
+        1778.83
+      ],
+      "humanAxisOracleVertexErrorPx": 62.32,
+      "humanVertex": [
+        1531.65,
+        1841.03
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 17 - B - white up.JPG",
+      "key": "17_B",
+      "modelAxisImprovementPx": 44.86,
+      "modelAxisMaxAngleErrorDeg": 5.15,
+      "modelAxisRefinedStatus": "blocked",
+      "modelAxisRefinedVertex": [
+        1527.79,
+        1778.83
+      ],
+      "modelAxisRefinedVertexErrorPx": 62.32,
+      "modelAxisScore": 2.134581,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.91997,
+        "distancePrior": 0.9068,
+        "meanRayContrast": 0.29024,
+        "meanRayDarkness": 0.91582,
+        "meanRayScore": 0.88597,
+        "minRayContrast": 0.0359,
+        "minRayScore": 0.79119,
+        "status": "ok"
+      },
+      "setId": "17",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1362.39,
+        1964.47
+      ],
+      "baselineVertexErrorPx": 38.72,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": -17.73,
+      "humanAxisOracleScore": 2.13847,
+      "humanAxisOracleStatus": "blocked",
+      "humanAxisOracleVertex": [
+        1398.39,
+        1952.47
+      ],
+      "humanAxisOracleVertexErrorPx": 56.45,
+      "humanVertex": [
+        1371.5,
+        2002.1
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 21 - A - white up.JPG",
+      "key": "21_A",
+      "modelAxisImprovementPx": -24.69,
+      "modelAxisMaxAngleErrorDeg": 5.08,
+      "modelAxisRefinedStatus": "blocked",
+      "modelAxisRefinedVertex": [
+        1386.39,
+        1940.47
+      ],
+      "modelAxisRefinedVertexErrorPx": 63.4,
+      "modelAxisScore": 2.13521,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.92494,
+        "distancePrior": 0.1886,
+        "meanRayContrast": 0.15846,
+        "meanRayDarkness": 0.93115,
+        "meanRayScore": 0.85032,
+        "minRayContrast": 0.00759,
+        "minRayScore": 0.8322,
+        "status": "ok"
+      },
+      "setId": "21",
+      "side": "A"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1529.0,
+        2073.0
+      ],
+      "baselineVertexErrorPx": 75.69,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": 59.81,
+      "humanAxisOracleScore": 2.104573,
+      "humanAxisOracleStatus": "strict",
+      "humanAxisOracleVertex": [
+        1613.0,
+        2037.0
+      ],
+      "humanAxisOracleVertexErrorPx": 15.88,
+      "humanVertex": [
+        1599.4,
+        2045.2
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 21 - B - white up.JPG",
+      "key": "21_B",
+      "modelAxisImprovementPx": 59.81,
+      "modelAxisMaxAngleErrorDeg": 5.12,
+      "modelAxisRefinedStatus": "strict",
+      "modelAxisRefinedVertex": [
+        1613.0,
+        2037.0
+      ],
+      "modelAxisRefinedVertexErrorPx": 15.88,
+      "modelAxisScore": 2.131557,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.995,
+        "distancePrior": 0.5077,
+        "meanRayContrast": 0.04411,
+        "meanRayDarkness": 0.9755,
+        "meanRayScore": 0.84621,
+        "minRayContrast": 0.00306,
+        "minRayScore": 0.84412,
+        "status": "ok"
+      },
+      "setId": "21",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1636.2,
+        1996.37
+      ],
+      "baselineVertexErrorPx": 87.57,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": 35.05,
+      "humanAxisOracleScore": 2.150732,
+      "humanAxisOracleStatus": "blocked",
+      "humanAxisOracleVertex": [
+        1552.2,
+        2080.37
+      ],
+      "humanAxisOracleVertexErrorPx": 52.52,
+      "humanVertex": [
+        1554.5,
+        2027.9
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 24 - A - white up IMG_6769.JPG",
+      "key": "24_A",
+      "modelAxisImprovementPx": 17.94,
+      "modelAxisMaxAngleErrorDeg": 61.72,
+      "modelAxisRefinedStatus": "blocked",
+      "modelAxisRefinedVertex": [
+        1528.2,
+        2092.37
+      ],
+      "modelAxisRefinedVertexErrorPx": 69.63,
+      "modelAxisScore": 1.799301,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.9848,
+        "distancePrior": 0.8028,
+        "meanRayContrast": 0.02062,
+        "meanRayDarkness": 0.77073,
+        "meanRayScore": 0.68892,
+        "minRayContrast": 0.00586,
+        "minRayScore": 0.60597,
+        "status": "ok"
+      },
+      "setId": "24",
+      "side": "A"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1471.0,
+        2003.0
+      ],
+      "baselineVertexErrorPx": 72.54,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": 24.58,
+      "humanAxisOracleScore": 2.230744,
+      "humanAxisOracleStatus": "plausible",
+      "humanAxisOracleVertex": [
+        1459.0,
+        2027.0
+      ],
+      "humanAxisOracleVertexErrorPx": 47.96,
+      "humanVertex": [
+        1461.4,
+        2074.9
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 26 - A - white up IMG_6773.JPG",
+      "key": "26_A",
+      "modelAxisImprovementPx": 23.69,
+      "modelAxisMaxAngleErrorDeg": 2.99,
+      "modelAxisRefinedStatus": "plausible",
+      "modelAxisRefinedVertex": [
+        1471.0,
+        2027.0
+      ],
+      "modelAxisRefinedVertexErrorPx": 48.85,
+      "modelAxisScore": 2.174563,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.95345,
+        "distancePrior": 0.1333,
+        "meanRayContrast": 0.20669,
+        "meanRayDarkness": 0.94123,
+        "meanRayScore": 0.87909,
+        "minRayContrast": -0.01059,
+        "minRayScore": 0.77887,
+        "status": "ok"
+      },
+      "setId": "26",
+      "side": "A"
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1442.64,
+        2016.51
+      ],
+      "baselineVertexErrorPx": 80.9,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": 40.08,
+      "humanAxisOracleScore": 2.117594,
+      "humanAxisOracleStatus": "plausible",
+      "humanAxisOracleVertex": [
+        1466.64,
+        2052.51
+      ],
+      "humanAxisOracleVertexErrorPx": 40.82,
+      "humanVertex": [
+        1468.1,
+        2093.3
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 26 - B - white up IMG_6774.JPG",
+      "key": "26_B",
+      "modelAxisImprovementPx": -101.81,
+      "modelAxisMaxAngleErrorDeg": 64.04,
+      "modelAxisRefinedStatus": "blocked",
+      "modelAxisRefinedVertex": [
+        1334.64,
+        1968.51
+      ],
+      "modelAxisRefinedVertexErrorPx": 182.71,
+      "modelAxisScore": 1.830798,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.96005,
+        "distancePrior": 0.6566,
+        "meanRayContrast": 0.09795,
+        "meanRayDarkness": 0.79497,
+        "meanRayScore": 0.7243,
+        "minRayContrast": -0.02726,
+        "minRayScore": 0.57487,
+        "status": "ok"
+      },
+      "setId": "26",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1525.97,
+        1947.84
+      ],
+      "baselineVertexErrorPx": 6.99,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": -60.06,
+      "humanAxisOracleScore": 2.196549,
+      "humanAxisOracleStatus": "blocked",
+      "humanAxisOracleVertex": [
+        1513.97,
+        1875.84
+      ],
+      "humanAxisOracleVertexErrorPx": 67.05,
+      "humanVertex": [
+        1521.51,
+        1942.46
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 27 - B - white up IMG_6776.JPG",
+      "key": "27_B",
+      "modelAxisImprovementPx": -60.06,
+      "modelAxisMaxAngleErrorDeg": 3.4,
+      "modelAxisRefinedStatus": "blocked",
+      "modelAxisRefinedVertex": [
+        1513.97,
+        1875.84
+      ],
+      "modelAxisRefinedVertexErrorPx": 67.05,
+      "modelAxisScore": 2.189057,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.91382,
+        "distancePrior": 0.4055,
+        "meanRayContrast": 0.23736,
+        "meanRayDarkness": 0.95827,
+        "meanRayScore": 0.90328,
+        "minRayContrast": 0.04074,
+        "minRayScore": 0.82568,
+        "status": "ok"
+      },
+      "setId": "27",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1549.19,
+        1946.05
+      ],
+      "baselineVertexErrorPx": 124.3,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": 58.33,
+      "humanAxisOracleScore": 2.090176,
+      "humanAxisOracleStatus": "blocked",
+      "humanAxisOracleVertex": [
+        1489.19,
+        1946.05
+      ],
+      "humanAxisOracleVertexErrorPx": 65.97,
+      "humanVertex": [
+        1426.7,
+        1967.2
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 28 - A - white up IMG_6777.JPG",
+      "key": "28_A",
+      "modelAxisImprovementPx": 84.31,
+      "modelAxisMaxAngleErrorDeg": 4.91,
+      "modelAxisRefinedStatus": "plausible",
+      "modelAxisRefinedVertex": [
+        1417.19,
+        2006.05
+      ],
+      "modelAxisRefinedVertexErrorPx": 40.0,
+      "modelAxisScore": 2.066434,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.98937,
+        "distancePrior": 0.8055,
+        "meanRayContrast": 0.09222,
+        "meanRayDarkness": 0.9251,
+        "meanRayScore": 0.81974,
+        "minRayContrast": 0.00076,
+        "minRayScore": 0.79788,
+        "status": "ok"
+      },
+      "setId": "28",
+      "side": "A"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1477.34,
+        1934.2
+      ],
+      "baselineVertexErrorPx": 102.57,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": 48.52,
+      "humanAxisOracleScore": 2.201055,
+      "humanAxisOracleStatus": "blocked",
+      "humanAxisOracleVertex": [
+        1405.34,
+        1958.2
+      ],
+      "humanAxisOracleVertexErrorPx": 54.05,
+      "humanVertex": [
+        1410.5,
+        2012.0
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 28 - B - white up IMG_6778.JPG",
+      "key": "28_B",
+      "modelAxisImprovementPx": 48.52,
+      "modelAxisMaxAngleErrorDeg": 2.91,
+      "modelAxisRefinedStatus": "blocked",
+      "modelAxisRefinedVertex": [
+        1405.34,
+        1958.2
+      ],
+      "modelAxisRefinedVertexErrorPx": 54.05,
+      "modelAxisScore": 2.136236,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.93359,
+        "distancePrior": 0.4216,
+        "meanRayContrast": 0.17708,
+        "meanRayDarkness": 0.95134,
+        "meanRayScore": 0.8742,
+        "minRayContrast": 0.01218,
+        "minRayScore": 0.80252,
+        "status": "ok"
+      },
+      "setId": "28",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1445.16,
+        2067.17
+      ],
+      "baselineVertexErrorPx": 57.39,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": -1.18,
+      "humanAxisOracleScore": 2.144988,
+      "humanAxisOracleStatus": "blocked",
+      "humanAxisOracleVertex": [
+        1493.16,
+        2043.17
+      ],
+      "humanAxisOracleVertexErrorPx": 58.57,
+      "humanVertex": [
+        1491.0,
+        2101.7
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 29 - A - white up IMG_6779.JPG",
+      "key": "29_A",
+      "modelAxisImprovementPx": 31.73,
+      "modelAxisMaxAngleErrorDeg": 60.57,
+      "modelAxisRefinedStatus": "strict",
+      "modelAxisRefinedVertex": [
+        1469.16,
+        2115.17
+      ],
+      "modelAxisRefinedVertexErrorPx": 25.66,
+      "modelAxisScore": 1.80309,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.99261,
+        "distancePrior": 0.2981,
+        "meanRayContrast": 0.0084,
+        "meanRayDarkness": 0.68811,
+        "meanRayScore": 0.64142,
+        "minRayContrast": -0.00574,
+        "minRayScore": 0.61821,
+        "status": "ok"
+      },
+      "setId": "29",
+      "side": "A"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1435.41,
+        1957.79
+      ],
+      "baselineVertexErrorPx": 25.39,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": -26.4,
+      "humanAxisOracleScore": 2.221409,
+      "humanAxisOracleStatus": "blocked",
+      "humanAxisOracleVertex": [
+        1423.41,
+        1921.79
+      ],
+      "humanAxisOracleVertexErrorPx": 51.79,
+      "humanVertex": [
+        1415.0,
+        1972.89
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 29 - B - white up IMG_6780.JPG",
+      "key": "29_B",
+      "modelAxisImprovementPx": -26.4,
+      "modelAxisMaxAngleErrorDeg": 1.5,
+      "modelAxisRefinedStatus": "blocked",
+      "modelAxisRefinedVertex": [
+        1423.41,
+        1921.79
+      ],
+      "modelAxisRefinedVertexErrorPx": 51.79,
+      "modelAxisScore": 2.218058,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.95617,
+        "distancePrior": 0.2108,
+        "meanRayContrast": 0.19532,
+        "meanRayDarkness": 0.96456,
+        "meanRayScore": 0.89135,
+        "minRayContrast": 0.03905,
+        "minRayScore": 0.83204,
+        "status": "ok"
+      },
+      "setId": "29",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1466.93,
+        2250.07
+      ],
+      "baselineVertexErrorPx": 39.71,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": -13.73,
+      "humanAxisOracleScore": 2.22764,
+      "humanAxisOracleStatus": "blocked",
+      "humanAxisOracleVertex": [
+        1442.93,
+        2274.07
+      ],
+      "humanAxisOracleVertexErrorPx": 53.44,
+      "humanVertex": [
+        1440.2,
+        2220.7
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 30 - A - white up IMG_7100.JPG",
+      "key": "30_A",
+      "modelAxisImprovementPx": -27.3,
+      "modelAxisMaxAngleErrorDeg": 7.45,
+      "modelAxisRefinedStatus": "blocked",
+      "modelAxisRefinedVertex": [
+        1454.93,
+        2286.07
+      ],
+      "modelAxisRefinedVertexErrorPx": 67.01,
+      "modelAxisScore": 2.218188,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.97642,
+        "distancePrior": 0.2108,
+        "meanRayContrast": 0.19658,
+        "meanRayDarkness": 0.95744,
+        "meanRayScore": 0.88434,
+        "minRayContrast": 0.00062,
+        "minRayScore": 0.82674,
+        "status": "ok"
+      },
+      "setId": "30",
+      "side": "A"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1613.57,
+        1931.2
+      ],
+      "baselineVertexErrorPx": 10.0,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": -47.55,
+      "humanAxisOracleScore": 2.1799,
+      "humanAxisOracleStatus": "blocked",
+      "humanAxisOracleVertex": [
+        1625.57,
+        1979.2
+      ],
+      "humanAxisOracleVertexErrorPx": 57.55,
+      "humanVertex": [
+        1617.87,
+        1922.17
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 30 - B - white up IMG_7101.JPG",
+      "key": "30_B",
+      "modelAxisImprovementPx": -55.25,
+      "modelAxisMaxAngleErrorDeg": 3.89,
+      "modelAxisRefinedStatus": "blocked",
+      "modelAxisRefinedVertex": [
+        1649.57,
+        1979.2
+      ],
+      "modelAxisRefinedVertexErrorPx": 65.25,
+      "modelAxisScore": 2.177522,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.97174,
+        "distancePrior": 0.3333,
+        "meanRayContrast": 0.15677,
+        "meanRayDarkness": 0.95134,
+        "meanRayScore": 0.86601,
+        "minRayContrast": 0.00899,
+        "minRayScore": 0.8314,
+        "status": "ok"
+      },
+      "setId": "30",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1391.46,
+        1974.52
+      ],
+      "baselineVertexErrorPx": 47.18,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": -12.05,
+      "humanAxisOracleScore": 2.178727,
+      "humanAxisOracleStatus": "blocked",
+      "humanAxisOracleVertex": [
+        1427.46,
+        2070.52
+      ],
+      "humanAxisOracleVertexErrorPx": 59.23,
+      "humanVertex": [
+        1420.5,
+        2011.7
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 31 - A - white up IMG_7102.JPG",
+      "key": "31_A",
+      "modelAxisImprovementPx": -12.05,
+      "modelAxisMaxAngleErrorDeg": 2.32,
+      "modelAxisRefinedStatus": "blocked",
+      "modelAxisRefinedVertex": [
+        1427.46,
+        2070.52
+      ],
+      "modelAxisRefinedVertexErrorPx": 59.23,
+      "modelAxisScore": 2.178301,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.97861,
+        "distancePrior": 0.5696,
+        "meanRayContrast": 0.16145,
+        "meanRayDarkness": 0.96796,
+        "meanRayScore": 0.88056,
+        "minRayContrast": -0.00166,
+        "minRayScore": 0.83168,
+        "status": "ok"
+      },
+      "setId": "31",
+      "side": "A"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1327.0,
+        1939.0
+      ],
+      "baselineVertexErrorPx": 7.68,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": -40.04,
+      "humanAxisOracleScore": 2.16926,
+      "humanAxisOracleStatus": "plausible",
+      "humanAxisOracleVertex": [
+        1351.0,
+        1987.0
+      ],
+      "humanAxisOracleVertexErrorPx": 47.72,
+      "humanVertex": [
+        1333.86,
+        1942.46
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 31 - B - white up IMG_7103.JPG",
+      "key": "31_B",
+      "modelAxisImprovementPx": -40.04,
+      "modelAxisMaxAngleErrorDeg": 2.67,
+      "modelAxisRefinedStatus": "plausible",
+      "modelAxisRefinedVertex": [
+        1351.0,
+        1987.0
+      ],
+      "modelAxisRefinedVertexErrorPx": 47.72,
+      "modelAxisScore": 2.182084,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.98164,
+        "distancePrior": 0.2981,
+        "meanRayContrast": 0.13742,
+        "meanRayDarkness": 0.96125,
+        "meanRayScore": 0.8665,
+        "minRayContrast": 0.00533,
+        "minRayScore": 0.83201,
+        "status": "ok"
+      },
+      "setId": "31",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1532.91,
+        1989.84
+      ],
+      "baselineVertexErrorPx": 72.33,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": 21.58,
+      "humanAxisOracleScore": 2.181524,
+      "humanAxisOracleStatus": "blocked",
+      "humanAxisOracleVertex": [
+        1592.91,
+        1917.84
+      ],
+      "humanAxisOracleVertexErrorPx": 50.74,
+      "humanVertex": [
+        1601.8,
+        1967.8
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 32 - A - white up IMG_7143.JPG",
+      "key": "32_A",
+      "modelAxisImprovementPx": -70.68,
+      "modelAxisMaxAngleErrorDeg": 59.88,
+      "modelAxisRefinedStatus": "blocked",
+      "modelAxisRefinedVertex": [
+        1472.91,
+        1905.84
+      ],
+      "modelAxisRefinedVertexErrorPx": 143.01,
+      "modelAxisScore": 1.905489,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.97366,
+        "distancePrior": 0.5735,
+        "meanRayContrast": 0.01144,
+        "meanRayDarkness": 0.83624,
+        "meanRayScore": 0.74242,
+        "minRayContrast": 0.00514,
+        "minRayScore": 0.68905,
+        "status": "ok"
+      },
+      "setId": "32",
+      "side": "A"
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1367.0,
+        1826.0
+      ],
+      "baselineVertexErrorPx": 70.61,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": 20.71,
+      "humanAxisOracleScore": 2.214314,
+      "humanAxisOracleStatus": "plausible",
+      "humanAxisOracleVertex": [
+        1355.0,
+        1850.0
+      ],
+      "humanAxisOracleVertexErrorPx": 49.9,
+      "humanVertex": [
+        1373.6,
+        1896.3
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 32 - B - white up IMG_7144.JPG",
+      "key": "32_B",
+      "modelAxisImprovementPx": -32.51,
+      "modelAxisMaxAngleErrorDeg": 62.97,
+      "modelAxisRefinedStatus": "blocked",
+      "modelAxisRefinedVertex": [
+        1271.0,
+        1886.0
+      ],
+      "modelAxisRefinedVertexErrorPx": 103.12,
+      "modelAxisScore": 1.90481,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.97326,
+        "distancePrior": 0.6289,
+        "meanRayContrast": 0.02685,
+        "meanRayDarkness": 0.84039,
+        "meanRayScore": 0.74429,
+        "minRayContrast": 0.00705,
+        "minRayScore": 0.68328,
+        "status": "ok"
+      },
+      "setId": "32",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1288.77,
+        1842.56
+      ],
+      "baselineVertexErrorPx": 102.95,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": 64.9,
+      "humanAxisOracleScore": 2.180071,
+      "humanAxisOracleStatus": "plausible",
+      "humanAxisOracleVertex": [
+        1324.77,
+        1902.56
+      ],
+      "humanAxisOracleVertexErrorPx": 38.05,
+      "humanVertex": [
+        1320.8,
+        1940.4
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 36 - B - white up IMG_7152.JPG",
+      "key": "36_B",
+      "modelAxisImprovementPx": 52.95,
+      "modelAxisMaxAngleErrorDeg": 1.79,
+      "modelAxisRefinedStatus": "plausible",
+      "modelAxisRefinedVertex": [
+        1324.77,
+        1890.56
+      ],
+      "modelAxisRefinedVertexErrorPx": 50.0,
+      "modelAxisScore": 2.184037,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.99858,
+        "distancePrior": 0.3333,
+        "meanRayContrast": 0.0765,
+        "meanRayDarkness": 0.9863,
+        "meanRayScore": 0.86717,
+        "minRayContrast": 0.02922,
+        "minRayScore": 0.84248,
+        "status": "ok"
+      },
+      "setId": "36",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1508.0,
+        1917.0
+      ],
+      "baselineVertexErrorPx": 91.97,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": 61.84,
+      "humanAxisOracleScore": 2.167014,
+      "humanAxisOracleStatus": "plausible",
+      "humanAxisOracleVertex": [
+        1568.0,
+        1881.0
+      ],
+      "humanAxisOracleVertexErrorPx": 30.13,
+      "humanVertex": [
+        1572.23,
+        1851.17
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 42 - B - white up IMG_7164.JPG",
+      "key": "42_B",
+      "modelAxisImprovementPx": 14.03,
+      "modelAxisMaxAngleErrorDeg": 64.06,
+      "modelAxisRefinedStatus": "blocked",
+      "modelAxisRefinedVertex": [
+        1568.0,
+        1929.0
+      ],
+      "modelAxisRefinedVertexErrorPx": 77.94,
+      "modelAxisScore": 1.810791,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.99133,
+        "distancePrior": 0.3399,
+        "meanRayContrast": 0.01132,
+        "meanRayDarkness": 0.73122,
+        "meanRayScore": 0.66631,
+        "minRayContrast": -0.00729,
+        "minRayScore": 0.59733,
+        "status": "ok"
+      },
+      "setId": "42",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1472.0,
+        1826.0
+      ],
+      "baselineVertexErrorPx": 185.52,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": 159.49,
+      "humanAxisOracleScore": 1.931083,
+      "humanAxisOracleStatus": "strict",
+      "humanAxisOracleVertex": [
+        1388.0,
+        1982.0
+      ],
+      "humanAxisOracleVertexErrorPx": 26.02,
+      "humanVertex": [
+        1362.7,
+        1975.9
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 44 - A - white up IMG_7167.JPG",
+      "key": "44_A",
+      "modelAxisImprovementPx": 179.48,
+      "modelAxisMaxAngleErrorDeg": 62.49,
+      "modelAxisRefinedStatus": "strict",
+      "modelAxisRefinedVertex": [
+        1364.0,
+        1970.0
+      ],
+      "modelAxisRefinedVertexErrorPx": 6.04,
+      "modelAxisScore": 1.713587,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.96452,
+        "distancePrior": 1.0,
+        "meanRayContrast": -0.00188,
+        "meanRayDarkness": 0.73072,
+        "meanRayScore": 0.6478,
+        "minRayContrast": -0.01503,
+        "minRayScore": 0.59722,
+        "status": "ok"
+      },
+      "setId": "44",
+      "side": "A"
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1615.0,
+        1988.0
+      ],
+      "baselineVertexErrorPx": 117.57,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": 108.93,
+      "humanAxisOracleScore": 2.109324,
+      "humanAxisOracleStatus": "strict",
+      "humanAxisOracleVertex": [
+        1507.0,
+        2012.0
+      ],
+      "humanAxisOracleVertexErrorPx": 8.63,
+      "humanVertex": [
+        1499.2,
+        2008.3
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 44 - B - white up IMG_7168.JPG",
+      "key": "44_B",
+      "modelAxisImprovementPx": 5.79,
+      "modelAxisMaxAngleErrorDeg": 62.18,
+      "modelAxisRefinedStatus": "blocked",
+      "modelAxisRefinedVertex": [
+        1495.0,
+        2120.0
+      ],
+      "modelAxisRefinedVertexErrorPx": 111.78,
+      "modelAxisScore": 1.815126,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.98523,
+        "distancePrior": 0.9911,
+        "meanRayContrast": 0.0183,
+        "meanRayDarkness": 0.79023,
+        "meanRayScore": 0.70433,
+        "minRayContrast": 0.00647,
+        "minRayScore": 0.63359,
+        "status": "ok"
+      },
+      "setId": "44",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1423.84,
+        2163.77
+      ],
+      "baselineVertexErrorPx": 4.96,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": -20.37,
+      "humanAxisOracleScore": 2.035678,
+      "humanAxisOracleStatus": "strict",
+      "humanAxisOracleVertex": [
+        1399.84,
+        2175.77
+      ],
+      "humanAxisOracleVertexErrorPx": 25.33,
+      "humanVertex": [
+        1420.08,
+        2160.54
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 57 - A - white-up IMG_7510.JPG",
+      "key": "57_A",
+      "modelAxisImprovementPx": 0.0,
+      "modelAxisMaxAngleErrorDeg": 8.6,
+      "modelAxisRefinedStatus": "strict",
+      "modelAxisRefinedVertex": [
+        1423.84,
+        2163.77
+      ],
+      "modelAxisRefinedVertexErrorPx": 4.96,
+      "modelAxisScore": 2.075582,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.96042,
+        "distancePrior": 0.0,
+        "meanRayContrast": 0.0349,
+        "meanRayDarkness": 0.93745,
+        "meanRayScore": 0.81326,
+        "minRayContrast": 0.00501,
+        "minRayScore": 0.78901,
+        "status": "ok"
+      },
+      "setId": "57",
+      "side": "A"
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1558.87,
+        1985.83
+      ],
+      "baselineVertexErrorPx": 70.74,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": 0.0,
+      "humanAxisOracleScore": 2.0715,
+      "humanAxisOracleStatus": "blocked",
+      "humanAxisOracleVertex": [
+        1558.87,
+        1985.83
+      ],
+      "humanAxisOracleVertexErrorPx": 70.74,
+      "humanVertex": [
+        1495.4,
+        1954.6
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 61 - A - white-up IMG_7518.JPG",
+      "key": "61_A",
+      "modelAxisImprovementPx": -6.06,
+      "modelAxisMaxAngleErrorDeg": 61.3,
+      "modelAxisRefinedStatus": "blocked",
+      "modelAxisRefinedVertex": [
+        1558.87,
+        1997.83
+      ],
+      "modelAxisRefinedVertexErrorPx": 76.79,
+      "modelAxisScore": 1.980643,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.93057,
+        "distancePrior": 0.0667,
+        "meanRayContrast": 0.03154,
+        "meanRayDarkness": 0.8725,
+        "meanRayScore": 0.76729,
+        "minRayContrast": 0.00351,
+        "minRayScore": 0.75721,
+        "status": "ok"
+      },
+      "setId": "61",
+      "side": "A"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1367.73,
+        1888.78
+      ],
+      "baselineVertexErrorPx": 60.04,
+      "evaluationStatus": "ok",
+      "humanAxisOracleImprovementPx": 0.0,
+      "humanAxisOracleScore": 2.157425,
+      "humanAxisOracleStatus": "blocked",
+      "humanAxisOracleVertex": [
+        1367.73,
+        1888.78
+      ],
+      "humanAxisOracleVertexErrorPx": 60.04,
+      "humanVertex": [
+        1362.2,
+        1829.0
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 61 - B - white-up IMG_7519.JPG",
+      "key": "61_B",
+      "modelAxisImprovementPx": 0.0,
+      "modelAxisMaxAngleErrorDeg": 4.09,
+      "modelAxisRefinedStatus": "blocked",
+      "modelAxisRefinedVertex": [
+        1367.73,
+        1888.78
+      ],
+      "modelAxisRefinedVertexErrorPx": 60.04,
+      "modelAxisScore": 2.147395,
+      "modelAxisScoreComponents": {
+        "centerDarkness": 0.98528,
+        "distancePrior": 0.0,
+        "meanRayContrast": 0.07352,
+        "meanRayDarkness": 0.95159,
+        "meanRayScore": 0.83596,
+        "minRayContrast": 0.07308,
+        "minRayScore": 0.79233,
+        "status": "ok"
+      },
+      "setId": "61",
+      "side": "B"
+    }
+  ],
+  "schemaVersion": 1,
+  "sourceFeedback": "/private/tmp/cube-axis-ray-vertex-refinement-pr/tests/fixtures/vertex_axis_human_feedback_v0.json",
+  "summary": {
+    "axisBlockedRowCount": 11,
+    "axisGoodBaselineStrictCount": 5,
+    "axisGoodHumanAxisOracleStrictCount": 2,
+    "axisGoodModelAxisRefinedStrictCount": 2,
+    "axisGoodRowCount": 17,
+    "baselinePlausibleCount": 9,
+    "baselineStrictCount": 6,
+    "evaluatedRowCount": 28,
+    "humanAxisOracleImprovedRowCount": 15,
+    "humanAxisOraclePlausibleCount": 11,
+    "humanAxisOracleStrictCount": 4,
+    "humanAxisOracleWorsenedRowCount": 9,
+    "meanBaselineVertexErrorPx": 67.0268,
+    "meanHumanAxisOracleVertexErrorPx": 48.6668,
+    "meanModelAxisRefinedVertexErrorPx": 65.7804,
+    "medianBaselineVertexErrorPx": 70.675,
+    "medianHumanAxisOracleVertexErrorPx": 52.375,
+    "medianModelAxisRefinedVertexErrorPx": 61.18,
+    "modelAxisImprovedRowCount": 13,
+    "modelAxisRefinedPlausibleCount": 9,
+    "modelAxisRefinedStrictCount": 4,
+    "modelAxisWorsenedRowCount": 13,
+    "rowCount": 28
+  }
+}

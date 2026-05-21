@@ -57,6 +57,7 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 | Owner | Branch | PR | What | Touches | ETA |
 |---|---|---|---|---|---|
+| Codex | `codex/sam3-current-prompt-bakeoff` | #194 | Diagnostics/data-only MLX SAM3 current-prompt bakeoff; preserves negative vertex result for current text prompts on 16 easy rows. | `tools/SAM3_MLX_CURRENT_PROMPT_BAKEOFF_V0_REPORT.md`, `tests/fixtures/sam3_mlx_current_prompt_bakeoff_v0_easy_summary.json`, `tests/test_sam3_mlx_current_prompt_bakeoff_v0.py` | ready for audit |
 | Codex | `codex/bezel-discontinuity-mining` | #179 | Diagnostics-only slot/cell join of #175 cell-discontinuity with #178 interior-bezel per-line crossings on the human-reviewed hybrid overlay quads. | `tools/probe_bezel_discontinuity_join.py`, `tools/BEZEL_DISCONTINUITY_JOIN_REPORT.md`, `tests/fixtures/hard_case_visual_feedback_bezel_join.json`, `tests/test_bezel_discontinuity_join.py` | ready for audit |
 
 *(Codex: please populate your row when you start something.)*
@@ -81,6 +82,7 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 ### Codex
 
+- **#193** — MLX SAM3 mask export diagnostics. Preserves Claude's cached whole-cube masks, proves the MLX bridge can run on this Mac without re-downloading weights, and keeps SAM3 outputs in the #192 external-mask schema.
 - **#175** — Overlay-feedback ingest + cell-discontinuity diagnostics. Ships structured per-slot human labels (`hard_case_visual_feedback.json`) + stdlib xlsx parser + probe.
 - **#174** — Repair-backfill behavior experiment. Probes unstable standard repairs only as a manual-review path; Set 61 improves 33/54 -> 34/54 and stays manual.
 - **#173** — Grid purity manual-review guard. Promotes no states; routes Set 30-style top-visible grid impurity to manual review only.

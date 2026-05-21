@@ -1,0 +1,3623 @@
+{
+  "config": {
+    "externalMaskDir": "/Users/jhuber/sam3_artifacts/foundation_masks_mlx_current",
+    "outputDir": "/tmp/sam3_mlx_current_bakeoff_overlays",
+    "prompts": [
+      {
+        "key": "whole_cube",
+        "prompt": "Rubik's cube",
+        "role": "cube_silhouette"
+      },
+      {
+        "key": "top_face",
+        "prompt": "top visible face of the Rubik's cube",
+        "role": "visible_face"
+      },
+      {
+        "key": "left_face",
+        "prompt": "left visible face of the Rubik's cube",
+        "role": "visible_face"
+      },
+      {
+        "key": "right_face",
+        "prompt": "right visible face of the Rubik's cube",
+        "role": "visible_face"
+      },
+      {
+        "key": "stickers",
+        "prompt": "colored sticker squares on the Rubik's cube",
+        "role": "stickers"
+      },
+      {
+        "key": "black_grid_lines",
+        "prompt": "black plastic grid lines between stickers",
+        "role": "grid_or_bezel"
+      }
+    ],
+    "providers": [
+      "sam3",
+      "falcon"
+    ]
+  },
+  "description": "Diagnostics-only bakeoff harness for SAM3/Falcon-style promptable segmentation masks as vertex and face-rectification signals.",
+  "probe": "foundation_segmentation_bakeoff_v0",
+  "providerStatus": {
+    "falcon": {
+      "displayName": "Falcon Perception",
+      "externalMaskFileCount": 0,
+      "installedPackages": [],
+      "notes": "Open-vocabulary detection/segmentation candidate; external masks keep the repo dependency-free.",
+      "packageInstalled": false,
+      "status": "package_missing_external_masks_required"
+    },
+    "sam3": {
+      "displayName": "SAM3 / SAM3.1",
+      "externalMaskFileCount": 98,
+      "installedPackages": [],
+      "notes": "Promptable segmentation candidate; direct adapter intentionally not wired until local package/API is stable.",
+      "packageInstalled": false,
+      "status": "external_masks_available"
+    }
+  },
+  "rows": [
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        399.73,
+        572.52
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 15 - A - white up IMG_6707.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 20,
+          "maskPrompts": [
+            "left_face",
+            "right_face",
+            "stickers",
+            "top_face",
+            "whole_cube"
+          ],
+          "maskStats": {
+            "left_face": {
+              "areaFraction": 0.094639,
+              "bbox": [
+                115,
+                350,
+                652,
+                721
+              ],
+              "centroid": [
+                417.95,
+                527.44
+              ],
+              "pixelCount": 93816
+            },
+            "right_face": {
+              "areaFraction": 0.098419,
+              "bbox": [
+                282,
+                349,
+                741,
+                721
+              ],
+              "centroid": [
+                501.05,
+                525.08
+              ],
+              "pixelCount": 97563
+            },
+            "stickers": {
+              "areaFraction": 0.274401,
+              "bbox": [
+                116,
+                288,
+                740,
+                943
+              ],
+              "centroid": [
+                430.92,
+                572.98
+              ],
+              "pixelCount": 272014
+            },
+            "top_face": {
+              "areaFraction": 0.273069,
+              "bbox": [
+                117,
+                289,
+                740,
+                942
+              ],
+              "centroid": [
+                430.81,
+                572.18
+              ],
+              "pixelCount": 270693
+            },
+            "whole_cube": {
+              "areaFraction": 0.273177,
+              "bbox": [
+                116,
+                289,
+                741,
+                943
+              ],
+              "centroid": [
+                430.96,
+                572.87
+              ],
+              "pixelCount": 270800
+            }
+          },
+          "metrics": {
+            "bestDistancePx": 120.66,
+            "candidateCount": 20,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": 270.22,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": 234.53,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": 120.66,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "",
+          "overlayPath": "/tmp/sam3_mlx_current_bakeoff_overlays/sam3/set_15_A_foundation_segmentation_v0.png",
+          "status": "evaluated",
+          "topCandidates": [
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 67.48,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 1.0,
+                  "right_face": 0.0,
+                  "top_face": 66.48
+                },
+                "faceBoundaryHitCount": 2
+              },
+              "point": [
+                620.0,
+                416.0
+              ],
+              "score": 1932.5169,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 68.19,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 67.19,
+                  "right_face": 0.0,
+                  "top_face": 1.0
+                },
+                "faceBoundaryHitCount": 2
+              },
+              "point": [
+                637.0,
+                352.0
+              ],
+              "score": 1931.8137,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 68.47,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 1.0,
+                  "right_face": 0.0,
+                  "top_face": 67.47
+                },
+                "faceBoundaryHitCount": 2
+              },
+              "point": [
+                553.0,
+                395.0
+              ],
+              "score": 1931.5315,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 68.53,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 1.41,
+                  "right_face": 0.0,
+                  "top_face": 67.12
+                },
+                "faceBoundaryHitCount": 2
+              },
+              "point": [
+                349.0,
+                682.0
+              ],
+              "score": 1931.4665,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 69.01,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 68.01,
+                  "right_face": 0.0,
+                  "top_face": 1.0
+                },
+                "faceBoundaryHitCount": 2
+              },
+              "point": [
+                621.0,
+                349.0
+              ],
+              "score": 1930.9926,
+              "source": "face_boundary_intersection"
+            }
+          ]
+        }
+      },
+      "setId": "15",
+      "side": "A"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        446.64,
+        566.99
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 15 - B - white up IMG_6708.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 20,
+          "maskPrompts": [
+            "left_face",
+            "right_face",
+            "stickers",
+            "top_face",
+            "whole_cube"
+          ],
+          "maskStats": {
+            "left_face": {
+              "areaFraction": 0.091598,
+              "bbox": [
+                116,
+                331,
+                758,
+                718
+              ],
+              "centroid": [
+                437.79,
+                508.96
+              ],
+              "pixelCount": 90801
+            },
+            "right_face": {
+              "areaFraction": 0.099344,
+              "bbox": [
+                311,
+                331,
+                757,
+                718
+              ],
+              "centroid": [
+                522.82,
+                515.01
+              ],
+              "pixelCount": 98480
+            },
+            "stickers": {
+              "areaFraction": 0.283403,
+              "bbox": [
+                117,
+                271,
+                757,
+                934
+              ],
+              "centroid": [
+                438.85,
+                558.53
+              ],
+              "pixelCount": 280937
+            },
+            "top_face": {
+              "areaFraction": 0.179649,
+              "bbox": [
+                117,
+                272,
+                757,
+                719
+              ],
+              "centroid": [
+                437.69,
+                468.12
+              ],
+              "pixelCount": 178086
+            },
+            "whole_cube": {
+              "areaFraction": 0.282235,
+              "bbox": [
+                117,
+                272,
+                757,
+                934
+              ],
+              "centroid": [
+                438.94,
+                558.53
+              ],
+              "pixelCount": 279780
+            }
+          },
+          "metrics": {
+            "bestDistancePx": 122.86,
+            "candidateCount": 20,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": 351.08,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": 122.86,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": 122.86,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "",
+          "overlayPath": "/tmp/sam3_mlx_current_bakeoff_overlays/sam3/set_15_B_foundation_segmentation_v0.png",
+          "status": "evaluated",
+          "topCandidates": [
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                728.0,
+                357.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 1.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                518.0,
+                667.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 1.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                697.0,
+                348.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 1.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                449.0,
+                718.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.41,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 1.41
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                321.0,
+                616.0
+              ],
+              "score": 2998.5858,
+              "source": "face_boundary_intersection"
+            }
+          ]
+        }
+      },
+      "setId": "15",
+      "side": "B"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        371.38,
+        512.22
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 23 - A - white up.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 20,
+          "maskPrompts": [
+            "left_face",
+            "right_face",
+            "stickers",
+            "top_face",
+            "whole_cube"
+          ],
+          "maskStats": {
+            "left_face": {
+              "areaFraction": 0.081262,
+              "bbox": [
+                103,
+                308,
+                705,
+                658
+              ],
+              "centroid": [
+                399.84,
+                468.83
+              ],
+              "pixelCount": 80555
+            },
+            "right_face": {
+              "areaFraction": 0.091078,
+              "bbox": [
+                261,
+                315,
+                705,
+                658
+              ],
+              "centroid": [
+                471.79,
+                474.88
+              ],
+              "pixelCount": 90286
+            },
+            "stickers": {
+              "areaFraction": 0.261838,
+              "bbox": [
+                104,
+                258,
+                704,
+                892
+              ],
+              "centroid": [
+                405.59,
+                532.95
+              ],
+              "pixelCount": 259560
+            },
+            "top_face": {
+              "areaFraction": 0.154268,
+              "bbox": [
+                104,
+                258,
+                705,
+                657
+              ],
+              "centroid": [
+                401.61,
+                434.26
+              ],
+              "pixelCount": 152926
+            },
+            "whole_cube": {
+              "areaFraction": 0.260968,
+              "bbox": [
+                104,
+                258,
+                705,
+                892
+              ],
+              "centroid": [
+                405.54,
+                532.82
+              ],
+              "pixelCount": 258698
+            }
+          },
+          "metrics": {
+            "bestDistancePx": 115.25,
+            "candidateCount": 20,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": 369.17,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": 301.18,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": 301.18,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "",
+          "overlayPath": "/tmp/sam3_mlx_current_bakeoff_overlays/sam3/set_23_A_foundation_segmentation_v0.png",
+          "status": "evaluated",
+          "topCandidates": [
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                703.0,
+                350.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                684.0,
+                470.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 1.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                599.0,
+                315.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 1.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                609.0,
+                317.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 1.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                632.0,
+                325.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            }
+          ]
+        }
+      },
+      "setId": "23",
+      "side": "A"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        399.73,
+        576.76
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 23 - B - white up.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 20,
+          "maskPrompts": [
+            "left_face",
+            "right_face",
+            "stickers",
+            "top_face",
+            "whole_cube"
+          ],
+          "maskStats": {
+            "left_face": {
+              "areaFraction": 0.090134,
+              "bbox": [
+                110,
+                343,
+                534,
+                719
+              ],
+              "centroid": [
+                333.3,
+                521.8
+              ],
+              "pixelCount": 89350
+            },
+            "right_face": {
+              "areaFraction": 0.091929,
+              "bbox": [
+                186,
+                342,
+                721,
+                719
+              ],
+              "centroid": [
+                419.71,
+                520.5
+              ],
+              "pixelCount": 91129
+            },
+            "stickers": {
+              "areaFraction": 0.266875,
+              "bbox": [
+                111,
+                278,
+                721,
+                933
+              ],
+              "centroid": [
+                418.86,
+                564.34
+              ],
+              "pixelCount": 264553
+            },
+            "top_face": {
+              "areaFraction": 0.265149,
+              "bbox": [
+                111,
+                278,
+                721,
+                933
+              ],
+              "centroid": [
+                418.93,
+                563.28
+              ],
+              "pixelCount": 262842
+            },
+            "whole_cube": {
+              "areaFraction": 0.265951,
+              "bbox": [
+                111,
+                279,
+                721,
+                934
+              ],
+              "centroid": [
+                418.82,
+                564.25
+              ],
+              "pixelCount": 263637
+            }
+          },
+          "metrics": {
+            "bestDistancePx": 109.36,
+            "candidateCount": 20,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": 111.76,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": 111.35,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": 109.58,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "",
+          "overlayPath": "/tmp/sam3_mlx_current_bakeoff_overlays/sam3/set_23_B_foundation_segmentation_v0.png",
+          "status": "evaluated",
+          "topCandidates": [
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 5.06,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 2.24,
+                  "top_face": 2.83
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                312.0,
+                646.0
+              ],
+              "score": 2994.9355,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 7.24,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 2.24,
+                  "top_face": 5.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                315.0,
+                649.0
+              ],
+              "score": 2992.7639,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 9.63,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 5.39,
+                  "right_face": 4.24,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                310.0,
+                651.0
+              ],
+              "score": 2990.3722,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 10.24,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 2.24,
+                  "right_face": 0.0,
+                  "top_face": 8.0
+                },
+                "faceBoundaryHitCount": 2
+              },
+              "point": [
+                318.0,
+                652.0
+              ],
+              "score": 1989.7639,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 12.17,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 12.17
+                },
+                "faceBoundaryHitCount": 2
+              },
+              "point": [
+                322.0,
+                654.0
+              ],
+              "score": 1987.8345,
+              "source": "face_boundary_intersection"
+            }
+          ]
+        }
+      },
+      "setId": "23",
+      "side": "B"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        416.34,
+        595.34
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 26 - A - white up IMG_6773.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 20,
+          "maskPrompts": [
+            "left_face",
+            "right_face",
+            "stickers",
+            "top_face",
+            "whole_cube"
+          ],
+          "maskStats": {
+            "left_face": {
+              "areaFraction": 0.082024,
+              "bbox": [
+                135,
+                345,
+                542,
+                717
+              ],
+              "centroid": [
+                347.54,
+                524.46
+              ],
+              "pixelCount": 81310
+            },
+            "right_face": {
+              "areaFraction": 0.243643,
+              "bbox": [
+                136,
+                275,
+                728,
+                901
+              ],
+              "centroid": [
+                432.83,
+                550.76
+              ],
+              "pixelCount": 241523
+            },
+            "stickers": {
+              "areaFraction": 0.243853,
+              "bbox": [
+                135,
+                275,
+                728,
+                901
+              ],
+              "centroid": [
+                432.66,
+                550.71
+              ],
+              "pixelCount": 241731
+            },
+            "top_face": {
+              "areaFraction": 0.24095,
+              "bbox": [
+                136,
+                275,
+                728,
+                900
+              ],
+              "centroid": [
+                433.02,
+                548.56
+              ],
+              "pixelCount": 238854
+            },
+            "whole_cube": {
+              "areaFraction": 0.242886,
+              "bbox": [
+                135,
+                276,
+                728,
+                901
+              ],
+              "centroid": [
+                432.7,
+                550.77
+              ],
+              "pixelCount": 240773
+            }
+          },
+          "metrics": {
+            "bestDistancePx": 273.98,
+            "candidateCount": 20,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": 331.77,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": 277.69,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": 273.98,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "",
+          "overlayPath": "/tmp/sam3_mlx_current_bakeoff_overlays/sam3/set_26_A_foundation_segmentation_v0.png",
+          "status": "evaluated",
+          "topCandidates": [
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                171.0,
+                372.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                153.0,
+                471.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                159.0,
+                491.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 1.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                228.0,
+                351.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 1.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                161.0,
+                496.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            }
+          ]
+        }
+      },
+      "setId": "26",
+      "side": "A"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        417.32,
+        599.26
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 26 - B - white up IMG_6774.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 20,
+          "maskPrompts": [
+            "left_face",
+            "right_face",
+            "stickers",
+            "top_face",
+            "whole_cube"
+          ],
+          "maskStats": {
+            "left_face": {
+              "areaFraction": 0.085394,
+              "bbox": [
+                96,
+                357,
+                718,
+                740
+              ],
+              "centroid": [
+                411.52,
+                533.3
+              ],
+              "pixelCount": 84651
+            },
+            "right_face": {
+              "areaFraction": 0.086001,
+              "bbox": [
+                96,
+                356,
+                718,
+                740
+              ],
+              "centroid": [
+                411.81,
+                533.27
+              ],
+              "pixelCount": 85253
+            },
+            "stickers": {
+              "areaFraction": 0.268034,
+              "bbox": [
+                97,
+                295,
+                718,
+                946
+              ],
+              "centroid": [
+                413.48,
+                579.31
+              ],
+              "pixelCount": 265702
+            },
+            "top_face": {
+              "areaFraction": 0.261699,
+              "bbox": [
+                97,
+                295,
+                718,
+                944
+              ],
+              "centroid": [
+                412.63,
+                574.77
+              ],
+              "pixelCount": 259422
+            },
+            "whole_cube": {
+              "areaFraction": 0.266857,
+              "bbox": [
+                97,
+                295,
+                718,
+                946
+              ],
+              "centroid": [
+                413.5,
+                579.36
+              ],
+              "pixelCount": 264535
+            }
+          },
+          "metrics": {
+            "bestDistancePx": 297.03,
+            "candidateCount": 20,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": 304.55,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": 301.89,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": 301.89,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "",
+          "overlayPath": "/tmp/sam3_mlx_current_bakeoff_overlays/sam3/set_26_B_foundation_segmentation_v0.png",
+          "status": "evaluated",
+          "topCandidates": [
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                123.0,
+                521.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                701.0,
+                496.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 1.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                699.0,
+                383.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 1.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                142.0,
+                393.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 1.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                101.0,
+                437.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            }
+          ]
+        }
+      },
+      "setId": "26",
+      "side": "B"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        420.25,
+        597.3
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 29 - A - white up IMG_6779.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 20,
+          "maskPrompts": [
+            "left_face",
+            "right_face",
+            "stickers",
+            "top_face",
+            "whole_cube"
+          ],
+          "maskStats": {
+            "left_face": {
+              "areaFraction": 0.059704,
+              "bbox": [
+                97,
+                364,
+                729,
+                645
+              ],
+              "centroid": [
+                347.15,
+                474.15
+              ],
+              "pixelCount": 59185
+            },
+            "right_face": {
+              "areaFraction": 0.089982,
+              "bbox": [
+                97,
+                364,
+                729,
+                749
+              ],
+              "centroid": [
+                415.56,
+                539.82
+              ],
+              "pixelCount": 89199
+            },
+            "stickers": {
+              "areaFraction": 0.281346,
+              "bbox": [
+                98,
+                304,
+                728,
+                972
+              ],
+              "centroid": [
+                416.91,
+                593.49
+              ],
+              "pixelCount": 278898
+            },
+            "top_face": {
+              "areaFraction": 0.279975,
+              "bbox": [
+                98,
+                304,
+                728,
+                972
+              ],
+              "centroid": [
+                416.89,
+                592.81
+              ],
+              "pixelCount": 277539
+            },
+            "whole_cube": {
+              "areaFraction": 0.280296,
+              "bbox": [
+                98,
+                305,
+                728,
+                972
+              ],
+              "centroid": [
+                416.93,
+                593.42
+              ],
+              "pixelCount": 277857
+            }
+          },
+          "metrics": {
+            "bestDistancePx": 300.09,
+            "candidateCount": 20,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": 316.82,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": 303.58,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": 303.58,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "",
+          "overlayPath": "/tmp/sam3_mlx_current_bakeoff_overlays/sam3/set_29_A_foundation_segmentation_v0.png",
+          "status": "evaluated",
+          "topCandidates": [
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                643.0,
+                372.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                124.0,
+                531.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 1.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                113.0,
+                489.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 1.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                634.0,
+                370.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 1.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                676.0,
+                381.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            }
+          ]
+        }
+      },
+      "setId": "29",
+      "side": "A"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        403.63,
+        564.05
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 29 - B - white up IMG_6780.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 20,
+          "maskPrompts": [
+            "left_face",
+            "right_face",
+            "stickers",
+            "top_face",
+            "whole_cube"
+          ],
+          "maskStats": {
+            "left_face": {
+              "areaFraction": 0.080283,
+              "bbox": [
+                122,
+                348,
+                530,
+                697
+              ],
+              "centroid": [
+                336.88,
+                515.22
+              ],
+              "pixelCount": 79585
+            },
+            "right_face": {
+              "areaFraction": 0.077406,
+              "bbox": [
+                292,
+                345,
+                714,
+                901
+              ],
+              "centroid": [
+                462.47,
+                585.69
+              ],
+              "pixelCount": 76733
+            },
+            "stickers": {
+              "areaFraction": 0.244622,
+              "bbox": [
+                122,
+                280,
+                714,
+                901
+              ],
+              "centroid": [
+                422.52,
+                552.92
+              ],
+              "pixelCount": 242494
+            },
+            "top_face": {
+              "areaFraction": 0.24182,
+              "bbox": [
+                123,
+                280,
+                714,
+                900
+              ],
+              "centroid": [
+                422.82,
+                550.9
+              ],
+              "pixelCount": 239716
+            },
+            "whole_cube": {
+              "areaFraction": 0.243637,
+              "bbox": [
+                123,
+                280,
+                714,
+                901
+              ],
+              "centroid": [
+                422.61,
+                552.87
+              ],
+              "pixelCount": 241517
+            }
+          },
+          "metrics": {
+            "bestDistancePx": 104.07,
+            "candidateCount": 20,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": 111.49,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": 108.03,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": 108.03,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "",
+          "overlayPath": "/tmp/sam3_mlx_current_bakeoff_overlays/sam3/set_29_B_foundation_segmentation_v0.png",
+          "status": "evaluated",
+          "topCandidates": [
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 71.71,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 1.41,
+                  "right_face": 0.0,
+                  "top_face": 70.29
+                },
+                "faceBoundaryHitCount": 2
+              },
+              "point": [
+                366.0,
+                669.0
+              ],
+              "score": 1928.2935,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 72.12,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 1.41,
+                  "top_face": 70.71
+                },
+                "faceBoundaryHitCount": 2
+              },
+              "point": [
+                371.0,
+                673.0
+              ],
+              "score": 1927.8751,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 73.95,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 2.83,
+                  "right_face": 0.0,
+                  "top_face": 71.12
+                },
+                "faceBoundaryHitCount": 2
+              },
+              "point": [
+                354.0,
+                660.0
+              ],
+              "score": 1926.052,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 76.17,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 1.0,
+                  "top_face": 75.17
+                },
+                "faceBoundaryHitCount": 2
+              },
+              "point": [
+                378.0,
+                674.0
+              ],
+              "score": 1923.8335,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 76.32,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 76.32
+                },
+                "faceBoundaryHitCount": 2
+              },
+              "point": [
+                479.0,
+                652.0
+              ],
+              "score": 1923.6783,
+              "source": "face_boundary_intersection"
+            }
+          ]
+        }
+      },
+      "setId": "29",
+      "side": "B"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        457.39,
+        560.14
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 32 - A - white up IMG_7143.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 20,
+          "maskPrompts": [
+            "left_face",
+            "right_face",
+            "stickers",
+            "top_face",
+            "whole_cube"
+          ],
+          "maskStats": {
+            "left_face": {
+              "areaFraction": 0.076652,
+              "bbox": [
+                144,
+                354,
+                735,
+                700
+              ],
+              "centroid": [
+                440.17,
+                513.33
+              ],
+              "pixelCount": 75985
+            },
+            "right_face": {
+              "areaFraction": 0.245838,
+              "bbox": [
+                144,
+                298,
+                734,
+                912
+              ],
+              "centroid": [
+                435.72,
+                566.53
+              ],
+              "pixelCount": 243699
+            },
+            "stickers": {
+              "areaFraction": 0.246226,
+              "bbox": [
+                144,
+                297,
+                734,
+                912
+              ],
+              "centroid": [
+                435.67,
+                566.48
+              ],
+              "pixelCount": 244084
+            },
+            "top_face": {
+              "areaFraction": 0.15131,
+              "bbox": [
+                144,
+                298,
+                734,
+                699
+              ],
+              "centroid": [
+                438.36,
+                477.0
+              ],
+              "pixelCount": 149994
+            },
+            "whole_cube": {
+              "areaFraction": 0.245249,
+              "bbox": [
+                144,
+                298,
+                734,
+                912
+              ],
+              "centroid": [
+                435.67,
+                566.52
+              ],
+              "pixelCount": 243115
+            }
+          },
+          "metrics": {
+            "bestDistancePx": 270.81,
+            "candidateCount": 20,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": 293.87,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": 274.2,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": 270.81,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "",
+          "overlayPath": "/tmp/sam3_mlx_current_bakeoff_overlays/sam3/set_32_A_foundation_segmentation_v0.png",
+          "status": "evaluated",
+          "topCandidates": [
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                246.0,
+                356.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                649.0,
+                364.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                184.0,
+                375.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 1.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                642.0,
+                362.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 1.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                217.0,
+                365.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            }
+          ]
+        }
+      },
+      "setId": "32",
+      "side": "A"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        391.91,
+        543.52
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 32 - B - white up IMG_7144.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 20,
+          "maskPrompts": [
+            "left_face",
+            "right_face",
+            "stickers",
+            "top_face",
+            "whole_cube"
+          ],
+          "maskStats": {
+            "left_face": {
+              "areaFraction": 0.075729,
+              "bbox": [
+                100,
+                312,
+                693,
+                669
+              ],
+              "centroid": [
+                394.65,
+                476.03
+              ],
+              "pixelCount": 75070
+            },
+            "right_face": {
+              "areaFraction": 0.238273,
+              "bbox": [
+                100,
+                244,
+                693,
+                854
+              ],
+              "centroid": [
+                397.19,
+                513.45
+              ],
+              "pixelCount": 236200
+            },
+            "stickers": {
+              "areaFraction": 0.238968,
+              "bbox": [
+                100,
+                243,
+                693,
+                854
+              ],
+              "centroid": [
+                397.18,
+                513.62
+              ],
+              "pixelCount": 236889
+            },
+            "top_face": {
+              "areaFraction": 0.157497,
+              "bbox": [
+                100,
+                244,
+                693,
+                670
+              ],
+              "centroid": [
+                396.06,
+                435.99
+              ],
+              "pixelCount": 156127
+            },
+            "whole_cube": {
+              "areaFraction": 0.23831,
+              "bbox": [
+                100,
+                244,
+                693,
+                855
+              ],
+              "centroid": [
+                397.2,
+                513.72
+              ],
+              "pixelCount": 236237
+            }
+          },
+          "metrics": {
+            "bestDistancePx": 272.58,
+            "candidateCount": 20,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": 318.86,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": 315.05,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": 286.65,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "",
+          "overlayPath": "/tmp/sam3_mlx_current_bakeoff_overlays/sam3/set_32_B_foundation_segmentation_v0.png",
+          "status": "evaluated",
+          "topCandidates": [
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                156.0,
+                329.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                164.0,
+                326.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                105.0,
+                381.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                122.0,
+                447.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 1.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                209.0,
+                312.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            }
+          ]
+        }
+      },
+      "setId": "32",
+      "side": "B"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        449.57,
+        577.74
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 36 - A - white up IMG_7151.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 20,
+          "maskPrompts": [
+            "left_face",
+            "right_face",
+            "stickers",
+            "top_face",
+            "whole_cube"
+          ],
+          "maskStats": {
+            "left_face": {
+              "areaFraction": 0.050508,
+              "bbox": [
+                165,
+                329,
+                725,
+                589
+              ],
+              "centroid": [
+                392.13,
+                432.28
+              ],
+              "pixelCount": 50069
+            },
+            "right_face": {
+              "areaFraction": 0.211468,
+              "bbox": [
+                165,
+                253,
+                724,
+                836
+              ],
+              "centroid": [
+                444.47,
+                514.22
+              ],
+              "pixelCount": 209628
+            },
+            "stickers": {
+              "areaFraction": 0.211893,
+              "bbox": [
+                165,
+                253,
+                724,
+                836
+              ],
+              "centroid": [
+                444.44,
+                514.33
+              ],
+              "pixelCount": 210050
+            },
+            "top_face": {
+              "areaFraction": 0.199105,
+              "bbox": [
+                165,
+                253,
+                725,
+                834
+              ],
+              "centroid": [
+                445.15,
+                502.49
+              ],
+              "pixelCount": 197373
+            },
+            "whole_cube": {
+              "areaFraction": 0.211438,
+              "bbox": [
+                165,
+                253,
+                725,
+                836
+              ],
+              "centroid": [
+                444.44,
+                514.42
+              ],
+              "pixelCount": 209598
+            }
+          },
+          "metrics": {
+            "bestDistancePx": 270.14,
+            "candidateCount": 20,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": 315.68,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": 280.35,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": 273.54,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "",
+          "overlayPath": "/tmp/sam3_mlx_current_bakeoff_overlays/sam3/set_36_A_foundation_segmentation_v0.png",
+          "status": "evaluated",
+          "topCandidates": [
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                717.0,
+                410.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                707.0,
+                450.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                704.0,
+                460.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                701.0,
+                470.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                720.0,
+                400.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            }
+          ]
+        }
+      },
+      "setId": "36",
+      "side": "A"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        374.32,
+        557.21
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 36 - B - white up IMG_7152.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 20,
+          "maskPrompts": [
+            "left_face",
+            "right_face",
+            "stickers",
+            "top_face",
+            "whole_cube"
+          ],
+          "maskStats": {
+            "left_face": {
+              "areaFraction": 0.225586,
+              "bbox": [
+                88,
+                243,
+                668,
+                841
+              ],
+              "centroid": [
+                385.65,
+                509.34
+              ],
+              "pixelCount": 223623
+            },
+            "right_face": {
+              "areaFraction": 0.224805,
+              "bbox": [
+                88,
+                243,
+                668,
+                841
+              ],
+              "centroid": [
+                385.63,
+                509.19
+              ],
+              "pixelCount": 222849
+            },
+            "stickers": {
+              "areaFraction": 0.225286,
+              "bbox": [
+                88,
+                243,
+                668,
+                841
+              ],
+              "centroid": [
+                385.6,
+                509.22
+              ],
+              "pixelCount": 223326
+            },
+            "top_face": {
+              "areaFraction": 0.224315,
+              "bbox": [
+                88,
+                243,
+                668,
+                841
+              ],
+              "centroid": [
+                385.64,
+                508.59
+              ],
+              "pixelCount": 222363
+            },
+            "whole_cube": {
+              "areaFraction": 0.22464,
+              "bbox": [
+                88,
+                243,
+                668,
+                841
+              ],
+              "centroid": [
+                385.67,
+                509.31
+              ],
+              "pixelCount": 222686
+            }
+          },
+          "metrics": {
+            "bestDistancePx": 208.16,
+            "candidateCount": 20,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": 299.72,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": 299.72,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": 290.64,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "",
+          "overlayPath": "/tmp/sam3_mlx_current_bakeoff_overlays/sam3/set_36_B_foundation_segmentation_v0.png",
+          "status": "evaluated",
+          "topCandidates": [
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                453.0,
+                268.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 1.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                390.0,
+                244.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 1.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                428.0,
+                259.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 1.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                287.0,
+                280.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 1.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                560.0,
+                314.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            }
+          ]
+        }
+      },
+      "setId": "36",
+      "side": "B"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        414.39,
+        605.12
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 37 - A - white up IMG_7153.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 20,
+          "maskPrompts": [
+            "left_face",
+            "right_face",
+            "stickers",
+            "top_face",
+            "whole_cube"
+          ],
+          "maskStats": {
+            "left_face": {
+              "areaFraction": 0.093352,
+              "bbox": [
+                96,
+                311,
+                752,
+                729
+              ],
+              "centroid": [
+                421.66,
+                503.59
+              ],
+              "pixelCount": 92540
+            },
+            "right_face": {
+              "areaFraction": 0.27707,
+              "bbox": [
+                97,
+                229,
+                751,
+                900
+              ],
+              "centroid": [
+                423.72,
+                524.89
+              ],
+              "pixelCount": 274659
+            },
+            "stickers": {
+              "areaFraction": 0.277796,
+              "bbox": [
+                97,
+                229,
+                751,
+                900
+              ],
+              "centroid": [
+                423.63,
+                525.17
+              ],
+              "pixelCount": 275379
+            },
+            "top_face": {
+              "areaFraction": 0.19651,
+              "bbox": [
+                97,
+                229,
+                751,
+                729
+              ],
+              "centroid": [
+                423.45,
+                453.89
+              ],
+              "pixelCount": 194800
+            },
+            "whole_cube": {
+              "areaFraction": 0.276993,
+              "bbox": [
+                96,
+                229,
+                752,
+                900
+              ],
+              "centroid": [
+                423.61,
+                525.21
+              ],
+              "pixelCount": 274583
+            }
+          },
+          "metrics": {
+            "bestDistancePx": 327.81,
+            "candidateCount": 20,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": 357.94,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": 357.94,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": 354.8,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "",
+          "overlayPath": "/tmp/sam3_mlx_current_bakeoff_overlays/sam3/set_37_A_foundation_segmentation_v0.png",
+          "status": "evaluated",
+          "topCandidates": [
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                202.0,
+                317.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 1.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                181.0,
+                326.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 1.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                666.0,
+                329.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 1.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                745.0,
+                397.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 1.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                731.0,
+                445.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            }
+          ]
+        }
+      },
+      "setId": "37",
+      "side": "A"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        412.43,
+        660.86
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 37 - B - white up IMG_7154.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 20,
+          "maskPrompts": [
+            "left_face",
+            "right_face",
+            "stickers",
+            "top_face",
+            "whole_cube"
+          ],
+          "maskStats": {
+            "left_face": {
+              "areaFraction": 0.283441,
+              "bbox": [
+                91,
+                255,
+                751,
+                939
+              ],
+              "centroid": [
+                412.17,
+                557.52
+              ],
+              "pixelCount": 280975
+            },
+            "right_face": {
+              "areaFraction": 0.282255,
+              "bbox": [
+                91,
+                256,
+                751,
+                938
+              ],
+              "centroid": [
+                412.18,
+                557.17
+              ],
+              "pixelCount": 279799
+            },
+            "stickers": {
+              "areaFraction": 0.283349,
+              "bbox": [
+                91,
+                256,
+                751,
+                938
+              ],
+              "centroid": [
+                412.13,
+                557.41
+              ],
+              "pixelCount": 280884
+            },
+            "top_face": {
+              "areaFraction": 0.205154,
+              "bbox": [
+                91,
+                256,
+                751,
+                779
+              ],
+              "centroid": [
+                415.71,
+                489.74
+              ],
+              "pixelCount": 203369
+            },
+            "whole_cube": {
+              "areaFraction": 0.282435,
+              "bbox": [
+                91,
+                256,
+                751,
+                939
+              ],
+              "centroid": [
+                412.1,
+                557.58
+              ],
+              "pixelCount": 279978
+            }
+          },
+          "metrics": {
+            "bestDistancePx": 339.5,
+            "candidateCount": 20,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": 389.59,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": 339.5,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": 339.5,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "",
+          "overlayPath": "/tmp/sam3_mlx_current_bakeoff_overlays/sam3/set_37_B_foundation_segmentation_v0.png",
+          "status": "evaluated",
+          "topCandidates": [
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                479.0,
+                277.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                492.0,
+                284.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                719.0,
+                515.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                404.0,
+                264.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                184.0,
+                340.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            }
+          ]
+        }
+      },
+      "setId": "37",
+      "side": "B"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        459.34,
+        549.38
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 42 - A - white up IMG_7163.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 20,
+          "maskPrompts": [
+            "left_face",
+            "right_face",
+            "stickers",
+            "top_face",
+            "whole_cube"
+          ],
+          "maskStats": {
+            "left_face": {
+              "areaFraction": 0.081578,
+              "bbox": [
+                119,
+                342,
+                738,
+                682
+              ],
+              "centroid": [
+                427.03,
+                496.84
+              ],
+              "pixelCount": 80868
+            },
+            "right_face": {
+              "areaFraction": 0.312732,
+              "bbox": [
+                120,
+                272,
+                738,
+                935
+              ],
+              "centroid": [
+                422.68,
+                582.02
+              ],
+              "pixelCount": 310011
+            },
+            "stickers": {
+              "areaFraction": 0.313488,
+              "bbox": [
+                120,
+                272,
+                737,
+                936
+              ],
+              "centroid": [
+                422.52,
+                581.86
+              ],
+              "pixelCount": 310761
+            },
+            "top_face": {
+              "areaFraction": 0.167079,
+              "bbox": [
+                120,
+                272,
+                737,
+                681
+              ],
+              "centroid": [
+                428.26,
+                462.42
+              ],
+              "pixelCount": 165625
+            },
+            "whole_cube": {
+              "areaFraction": 0.312152,
+              "bbox": [
+                119,
+                273,
+                738,
+                935
+              ],
+              "centroid": [
+                422.53,
+                581.92
+              ],
+              "pixelCount": 309436
+            }
+          },
+          "metrics": {
+            "bestDistancePx": 265.75,
+            "candidateCount": 20,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": 277.25,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": 277.25,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": 277.25,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "",
+          "overlayPath": "/tmp/sam3_mlx_current_bakeoff_overlays/sam3/set_42_A_foundation_segmentation_v0.png",
+          "status": "evaluated",
+          "topCandidates": [
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                652.0,
+                350.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                668.0,
+                356.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                712.0,
+                369.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                725.0,
+                373.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 0.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                702.0,
+                366.0
+              ],
+              "score": 3000.0,
+              "source": "face_boundary_intersection"
+            }
+          ]
+        }
+      },
+      "setId": "42",
+      "side": "A"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        444.68,
+        525.91
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 42 - B - white up IMG_7164.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 20,
+          "maskPrompts": [
+            "left_face",
+            "right_face",
+            "stickers",
+            "top_face",
+            "whole_cube"
+          ],
+          "maskStats": {
+            "left_face": {
+              "areaFraction": 0.09331,
+              "bbox": [
+                80,
+                318,
+                756,
+                674
+              ],
+              "centroid": [
+                420.98,
+                483.63
+              ],
+              "pixelCount": 92498
+            },
+            "right_face": {
+              "areaFraction": 0.354758,
+              "bbox": [
+                81,
+                236,
+                756,
+                947
+              ],
+              "centroid": [
+                418.66,
+                569.49
+              ],
+              "pixelCount": 351672
+            },
+            "stickers": {
+              "areaFraction": 0.355276,
+              "bbox": [
+                80,
+                236,
+                756,
+                947
+              ],
+              "centroid": [
+                418.53,
+                569.58
+              ],
+              "pixelCount": 352185
+            },
+            "top_face": {
+              "areaFraction": 0.193478,
+              "bbox": [
+                81,
+                236,
+                756,
+                674
+              ],
+              "centroid": [
+                418.47,
+                444.52
+              ],
+              "pixelCount": 191795
+            },
+            "whole_cube": {
+              "areaFraction": 0.353925,
+              "bbox": [
+                80,
+                236,
+                756,
+                948
+              ],
+              "centroid": [
+                418.63,
+                569.5
+              ],
+              "pixelCount": 350846
+            }
+          },
+          "metrics": {
+            "bestDistancePx": 280.52,
+            "candidateCount": 20,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": 289.37,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": 289.37,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": 289.37,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "",
+          "overlayPath": "/tmp/sam3_mlx_current_bakeoff_overlays/sam3/set_42_B_foundation_segmentation_v0.png",
+          "status": "evaluated",
+          "topCandidates": [
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 1.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                649.0,
+                321.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 1.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                676.0,
+                330.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 1.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                90.0,
+                475.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 1.0,
+                  "right_face": 0.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                92.0,
+                495.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            },
+            {
+              "details": {
+                "faceBoundaryDistanceSumPx": 1.0,
+                "faceBoundaryDistancesPx": {
+                  "left_face": 0.0,
+                  "right_face": 1.0,
+                  "top_face": 0.0
+                },
+                "faceBoundaryHitCount": 3
+              },
+              "point": [
+                92.0,
+                499.0
+              ],
+              "score": 2999.0,
+              "source": "face_boundary_intersection"
+            }
+          ]
+        }
+      },
+      "setId": "42",
+      "side": "B"
+    }
+  ],
+  "schemaVersion": 1,
+  "sourceFeedback": "/private/tmp/cube-sam3-mask-export/tests/fixtures/vertex_point_human_feedback.json",
+  "summary": {
+    "providerSummaries": {
+      "falcon": {
+        "oracleHitCount@10px": 0,
+        "oracleHitCount@20px": 0,
+        "rowCount": 16,
+        "rowsWithAnyMask": 0,
+        "rowsWithCandidates": 0,
+        "rowsWithThreeFaceMasks": 0,
+        "top1HitCount@10px": 0,
+        "top1HitCount@20px": 0,
+        "top3HitCount@10px": 0,
+        "top3HitCount@20px": 0,
+        "top5HitCount@10px": 0,
+        "top5HitCount@20px": 0
+      },
+      "sam3": {
+        "oracleHitCount@10px": 0,
+        "oracleHitCount@20px": 0,
+        "rowCount": 16,
+        "rowsWithAnyMask": 16,
+        "rowsWithCandidates": 16,
+        "rowsWithThreeFaceMasks": 16,
+        "top1HitCount@10px": 0,
+        "top1HitCount@20px": 0,
+        "top3HitCount@10px": 0,
+        "top3HitCount@20px": 0,
+        "top5HitCount@10px": 0,
+        "top5HitCount@20px": 0
+      }
+    },
+    "rowCount": 16
+  },
+  "thresholdsPx": [
+    10.0,
+    20.0
+  ]
+}

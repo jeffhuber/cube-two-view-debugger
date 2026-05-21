@@ -1,0 +1,341 @@
+{
+  "15_A": {
+    "center_correct": false,
+    "notes": "but very close!",
+    "current_vertex": [
+      1484.5,
+      2009.2
+    ],
+    "true_vertex": [
+      1421.1,
+      2005.7
+    ],
+    "error_px": 63.5
+  },
+  "15_B": {
+    "center_correct": false,
+    "notes": "but very close!",
+    "current_vertex": [
+      1491.5,
+      2003.4
+    ],
+    "true_vertex": [
+      1561.2,
+      1985.3
+    ],
+    "error_px": 72.1
+  },
+  "17_B": {
+    "center_correct": false,
+    "notes": "but very close!",
+    "current_vertex": [
+      1479.8,
+      1934.8
+    ],
+    "true_vertex": [
+      1529,
+      1836.5
+    ],
+    "error_px": 109.9
+  },
+  "21_B": {
+    "center_correct": false,
+    "notes": "but very close!",
+    "current_vertex": [
+      1529,
+      2073
+    ],
+    "true_vertex": [
+      1599.4,
+      2045.2
+    ],
+    "error_px": 75.6
+  },
+  "24_A": {
+    "center_correct": false,
+    "notes": "but close!",
+    "current_vertex": [
+      1636.2,
+      1996.4
+    ],
+    "true_vertex": [
+      1554.5,
+      2027.9
+    ],
+    "error_px": 87.5
+  },
+  "26_A": {
+    "center_correct": false,
+    "notes": "but very close!",
+    "current_vertex": [
+      1471,
+      2003
+    ],
+    "true_vertex": [
+      1461.4,
+      2074.9
+    ],
+    "error_px": 72.5
+  },
+  "26_B": {
+    "center_correct": false,
+    "notes": "but close!",
+    "current_vertex": [
+      1442.6,
+      2016.5
+    ],
+    "true_vertex": [
+      1468.1,
+      2093.3
+    ],
+    "error_px": 80.9
+  },
+  "28_A": {
+    "center_correct": false,
+    "notes": "but close!",
+    "current_vertex": [
+      1549.2,
+      1946
+    ],
+    "true_vertex": [
+      1426.7,
+      1967.2
+    ],
+    "error_px": 124.4
+  },
+  "29_A": {
+    "center_correct": false,
+    "notes": "but very close!",
+    "current_vertex": [
+      1445.2,
+      2067.2
+    ],
+    "true_vertex": [
+      1491,
+      2101.7
+    ],
+    "error_px": 57.3
+  },
+  "29_B": {
+    "center_correct": true,
+    "notes": "",
+    "current_vertex": [
+      1435.4,
+      1957.8
+    ]
+  },
+  "30_B": {
+    "center_correct": true,
+    "notes": "",
+    "current_vertex": [
+      1613.6,
+      1931.2
+    ]
+  },
+  "32_B": {
+    "center_correct": false,
+    "notes": "but close!",
+    "current_vertex": [
+      1367,
+      1826
+    ],
+    "true_vertex": [
+      1373.6,
+      1896.3
+    ],
+    "error_px": 70.7
+  },
+  "36_B": {
+    "center_correct": false,
+    "notes": "but close!",
+    "current_vertex": [
+      1288.8,
+      1842.6
+    ],
+    "true_vertex": [
+      1320.8,
+      1940.4
+    ],
+    "error_px": 102.9
+  },
+  "42_B": {
+    "center_correct": false,
+    "notes": "but close!",
+    "current_vertex": [
+      1508,
+      1917
+    ],
+    "true_vertex": [
+      1560.6,
+      1844.9
+    ],
+    "error_px": 89.2
+  },
+  "44_A": {
+    "center_correct": false,
+    "notes": "",
+    "current_vertex": [
+      1472,
+      1826
+    ],
+    "true_vertex": [
+      1362.7,
+      1975.9
+    ],
+    "error_px": 185.5
+  },
+  "44_B": {
+    "center_correct": false,
+    "notes": "",
+    "current_vertex": [
+      1615,
+      1988
+    ],
+    "true_vertex": [
+      1499.2,
+      2008.3
+    ],
+    "error_px": 117.6
+  },
+  "57_A": {
+    "center_correct": true,
+    "notes": "",
+    "current_vertex": [
+      1423.8,
+      2163.8
+    ]
+  },
+  "61_A": {
+    "center_correct": false,
+    "notes": "but close!",
+    "current_vertex": [
+      1558.9,
+      1985.8
+    ],
+    "true_vertex": [
+      1495.4,
+      1954.6
+    ],
+    "error_px": 70.7
+  },
+  "12_B": {
+    "center_correct": true,
+    "notes": "",
+    "current_vertex": [
+      1537.4,
+      2008.6
+    ],
+    "true_vertex": [
+      1546.3,
+      2044.8
+    ],
+    "error_px": 37.3
+  },
+  "14_B": {
+    "center_correct": true,
+    "notes": "",
+    "current_vertex": [
+      1496,
+      1814.1
+    ],
+    "true_vertex": [
+      1465,
+      1802.6
+    ],
+    "error_px": 33.1
+  },
+  "21_A": {
+    "center_correct": true,
+    "notes": "",
+    "current_vertex": [
+      1362.4,
+      1964.5
+    ],
+    "true_vertex": [
+      1371.5,
+      2002.1
+    ],
+    "error_px": 38.6
+  },
+  "27_B": {
+    "center_correct": true,
+    "notes": "",
+    "current_vertex": [
+      1526,
+      1947.8
+    ]
+  },
+  "28_B": {
+    "center_correct": false,
+    "notes": "but close!",
+    "current_vertex": [
+      1477.3,
+      1934.2
+    ],
+    "true_vertex": [
+      1410.5,
+      2012
+    ],
+    "error_px": 102.5
+  },
+  "30_A": {
+    "center_correct": true,
+    "notes": "",
+    "current_vertex": [
+      1466.9,
+      2250.1
+    ],
+    "true_vertex": [
+      1440.2,
+      2220.7
+    ],
+    "error_px": 39.7
+  },
+  "31_A": {
+    "center_correct": false,
+    "notes": "but very close!",
+    "current_vertex": [
+      1391.5,
+      1974.5
+    ],
+    "true_vertex": [
+      1420.5,
+      2011.7
+    ],
+    "error_px": 47.2
+  },
+  "31_B": {
+    "center_correct": true,
+    "notes": "",
+    "current_vertex": [
+      1327,
+      1939
+    ]
+  },
+  "32_A": {
+    "center_correct": false,
+    "notes": "but close!",
+    "current_vertex": [
+      1532.9,
+      1989.8
+    ],
+    "true_vertex": [
+      1601.8,
+      1967.8
+    ],
+    "error_px": 72.3
+  },
+  "61_B": {
+    "center_correct": false,
+    "notes": "but very close!",
+    "current_vertex": [
+      1367.7,
+      1888.8
+    ],
+    "true_vertex": [
+      1362.2,
+      1829
+    ],
+    "error_px": 60
+  }
+}

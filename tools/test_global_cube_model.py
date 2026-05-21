@@ -56,6 +56,31 @@ def _compute_rembg_mask(rgb: np.ndarray) -> np.ndarray:
     return alpha > 128
 
 
+def _load_sam3_mask(set_id: str, side: str, sam3_mask_dir: Path) -> np.ndarray:
+    """Load a pre-computed SAM 3 mask from disk.
+
+    SAM 3 (via Apple Silicon MLX port) is significantly heavier than rembg
+    (~7s/image on M1 vs <1s for rembg) and requires Python 3.13+, so we
+    treat it as a separate offline pre-processing step. Run
+    ``tools/extract_sam3_masks.py`` first (in a Python 3.13 env with the
+    `mlx-sam3` package installed) to populate the mask cache.
+
+    On the 27-case ground-truth corpus (2026-05-21), SAM 3 masks give:
+      median vertex error 57 px (vs 72 px with rembg, -22%)
+      <50 px count 9 (vs 5 with rembg, +80%)
+      but 5 cases regress (worst: 42_B 89 → 186 px) — SAM 3's slightly
+      different mask shape can push Visvalingam into a different basin.
+      Notable: 44_B recovered fully (118 → 15 px).
+    """
+    mask_path = sam3_mask_dir / f"set_{set_id}_{side}_sam3.npy"
+    if not mask_path.exists():
+        raise FileNotFoundError(
+            f"SAM 3 mask not found at {mask_path}. "
+            f"Run tools/extract_sam3_masks.py first to populate the cache."
+        )
+    return np.load(mask_path).astype(bool)
+
+
 def _load_manifests() -> list:
     out = []
     for fname in ("hard_case_manifest.json", "corpus_manifest.json"):
@@ -127,13 +152,20 @@ def _draw_visualization(
             pts.append(pts[0])
             for i in range(len(pts) - 1):
                 draw.line(pts[i] + pts[i + 1], fill=color, width=3)
-        # Hexagon vertices
-        for k in ("001", "011", "010", "110", "100", "101"):
-            cx_s, cy_s = tx(*model.visible_corners[k])
-            draw.ellipse((cx_s - 5, cy_s - 5, cx_s + 5, cy_s + 5),
-                         fill=(255, 255, 0), outline=(0, 0, 0))
+        # NEAR corners (1 cube-edge from center): h_x, h_y, h_z → CYAN
+        for k in ("h_x", "h_y", "h_z"):
+            if k in model.visible_corners:
+                cx_s, cy_s = tx(*model.visible_corners[k])
+                draw.ellipse((cx_s - 7, cy_s - 7, cx_s + 7, cy_s + 7),
+                             fill=(0, 255, 255), outline=(0, 0, 0), width=2)
+        # FAR corners (2 cube-edges from center, via two axes): h_xy, h_xz, h_yz → YELLOW
+        for k in ("h_xy", "h_xz", "h_yz"):
+            if k in model.visible_corners:
+                cx_s, cy_s = tx(*model.visible_corners[k])
+                draw.ellipse((cx_s - 7, cy_s - 7, cx_s + 7, cy_s + 7),
+                             fill=(255, 255, 0), outline=(0, 0, 0), width=2)
         # Cube center
-        cc = tx(*model.cube_center)
+        cc = tx(*model.cube_center_screen)
         r = 10
         draw.ellipse((cc[0] - r, cc[1] - r, cc[0] + r, cc[1] + r),
                      fill=(255, 255, 255), outline=(0, 0, 0), width=2)
@@ -147,10 +179,8 @@ def _draw_visualization(
 
     if model is not None:
         header = (
-            f"{title}  fit={model.fit_quality:.2f}  "
-            f"IoU={model.debug.get('final_silhouette_iou', '?')}  "
-            f"bezel={model.debug.get('final_bezel_match', '?')}  "
-            f"L={model.edge_length_px:.0f}px"
+            f"{title}  quality={model.fit_quality:.3f}  "
+            f"rms={model.debug.get('fit_residual_rms_px', '?')}px"
         )
     else:
         header = f"{title}  (no fit)"
@@ -170,9 +200,10 @@ def _draw_visualization(
 
 def _serialize_model(m: GlobalCubeModel) -> dict:
     return {
-        "cube_center": list(m.cube_center),
-        "axis_angles_deg": [round(math.degrees(a), 2) for a in m.axis_angles_rad],
-        "edge_length_px": round(m.edge_length_px, 1),
+        "cube_center_screen": list(m.cube_center_screen),
+        "axis_x_2d": list(m.axis_x_2d),
+        "axis_y_2d": list(m.axis_y_2d),
+        "axis_z_2d": list(m.axis_z_2d),
         "fit_loss": round(m.fit_loss, 4),
         "fit_quality": round(m.fit_quality, 3),
         "visible_corners": {
@@ -194,7 +225,33 @@ def main() -> None:
     parser.add_argument("--out", type=Path, default=None)
     parser.add_argument("--no-optimize", action="store_true",
                         help="Skip optimization; show initialization only")
+    parser.add_argument(
+        "--silhouette-source",
+        choices=["rembg", "sam3"],
+        default="rembg",
+        help=(
+            "Silhouette extraction backend. 'rembg' (default) is fast "
+            "(<1s/image) and works without extra setup. 'sam3' uses "
+            "pre-computed SAM 3 masks from --sam3-mask-dir; on the "
+            "27-case ground-truth corpus it gives median vertex error "
+            "57 px (vs 72 px for rembg) but regresses on 5/23 cases. "
+            "Use rembg for production; sam3 for diagnostics or "
+            "server-side high-quality processing."
+        ),
+    )
+    parser.add_argument(
+        "--sam3-mask-dir",
+        type=Path,
+        default=None,
+        help=(
+            "Directory containing pre-computed SAM 3 masks (npy files "
+            "named 'set_<id>_<side>_sam3.npy'). Required when "
+            "--silhouette-source=sam3. See tools/extract_sam3_masks.py."
+        ),
+    )
     args = parser.parse_args()
+    if args.silhouette_source == "sam3" and args.sam3_mask_dir is None:
+        parser.error("--silhouette-source=sam3 requires --sam3-mask-dir")
     if args.out is not None:
         args.out.mkdir(parents=True, exist_ok=True)
 
@@ -211,10 +268,13 @@ def main() -> None:
             print(f"[set {set_id} {side}] processing {path.name} ...", file=sys.stderr)
             img = _exif_correct(path)
             rgb = np.asarray(img, dtype=np.uint8)
-            mask = _compute_rembg_mask(rgb)
+            if args.silhouette_source == "sam3":
+                mask = _load_sam3_mask(set_id, side, args.sam3_mask_dir)
+            else:
+                mask = _compute_rembg_mask(rgb)
             det = detect_interior_bezel_lines(rgb, mask)
             model = fit_global_cube_model(
-                det, mask, optimize=(not args.no_optimize)
+                det, rgb, mask, optimize=(not args.no_optimize)
             )
             row = {
                 "setId": set_id,
@@ -228,12 +288,8 @@ def main() -> None:
             if model is not None:
                 print(
                     f"[set {set_id} {side}]   "
-                    f"fit_quality={model.fit_quality:.3f}  "
-                    f"IoU={model.debug.get('final_silhouette_iou', model.debug.get('initial_silhouette_iou'))}  "
-                    f"bezel={model.debug.get('final_bezel_match', model.debug.get('initial_bezel_match'))}  "
-                    f"L={model.edge_length_px:.0f}px  "
-                    f"shift={model.debug.get('center_shift_from_init_px', 0)}px  "
-                    f"iter={model.debug.get('optimizer_iterations', 'init-only')}",
+                    f"quality={model.fit_quality:.3f}  "
+                    f"rms_residual={model.debug.get('fit_residual_rms_px', '?')}px",
                     file=sys.stderr,
                 )
             else:

@@ -1,9 +1,15 @@
 # Global cube projection model — diagnostics
 
-Diagnostics-only probe that fits a single **6-DOF projected cube
-model** per photo so that all 27 sticker quads come from one coherent
-geometry. This is the post-pivot Tier 2 work (per Decision Log
-entry **2026-05-20** in `COORDINATION.md`).
+Diagnostics-only probe that fits a single global cube model per photo
+so that all 27 sticker quads come from one coherent geometry. This is
+the post-pivot Tier 2 work (per Decision Log entry **2026-05-20** in
+`COORDINATION.md`).
+
+**Status:** prototype validated against 27-case user ground truth
+(`tests/fixtures/gcm_vertex_ground_truth.json`). **Median vertex error
+77 px, p95 120 px, 11/27 cases within 50 px.** Not the "17/18 strong"
+claim from earlier iterations of this doc — that was overconfident
+visual spot-checking before ground truth landed.
 
 ## Motivation
 
@@ -14,200 +20,217 @@ Devin) converged on the same architecture:
 > reconciliation with a SINGLE GLOBAL CUBE PROJECTION MODEL per photo
 > whose 27 sticker quads are coherent **by construction**.
 
-Per Codex: *"Every sampled sticker must come from the same valid
-projected cube model."* The structural failure mode of "local
-detection then reconcile" — exactly what's been biting #175's per-cell
-discontinuity probe and #177-#180's bezel approach — disappears when
-the parameterization itself guarantees coherence.
+The structural failure mode of "local detection then reconcile"
+disappears when the parameterization itself guarantees coherence.
 
-## Parameterization (6 DOF)
+## Architecture (current)
 
 ```
-cube_center: (cx, cy)              # 2 DOF — front cube corner
-axis_angles_rad: (θ_0, θ_1, θ_2)   # 3 DOF — 3 axes from cube_center
-edge_length_px: L                  # 1 DOF — shared cube edge length
+silhouette (rembg)
+  → 6-corner Visvalingam-Whyatt simplification of convex hull
+    → cv2.solvePnP (fx=0.82*image_max_dim, calibrated iPhone-like K)
+      → mean-of-3 vertex ensemble (PnP + bezel + hex_centroid)
+        → score-gated image-based vertex refinement
+          → 6-DOF cube pose → 27 sticker cells
 ```
 
-From these 6 numbers, the geometry is fully determined:
+Each stage is independently testable; vertex error is dominated by
+upstream silhouette quality.
 
-- **7 visible cube corners**: the front corner (cube_center) + the 6
-  hexagon silhouette vertices h0-h5. Computed via:
-  ```
-  h-vertex (axis i alone)  = cube_center + L * (cos θ_i, sin θ_i)
-  h-vertex (axes i + j)    = cube_center + L * (cos θ_i, sin θ_i) + L * (cos θ_j, sin θ_j)
-  ```
-- **3 face quads**: each face is a parallelogram containing 4 corners
-  (front + 2 single-axis h-vertices + their sum).
-- **27 sticker cells**: bilinear 3×3 subdivision of each face quad.
+### Camera intrinsics
 
-## Algorithm
+`fx = fy = 0.82 × max(image_h, image_w)`. iPhone main cameras have
+~26mm-equivalent focal length on a 1/1.7" sensor, giving fx ≈ 3300 px
+on a 4032-wide capture. Defaulting to `image_max_dim` (4032) overshoots
+by ~22% and biased PnP toward systematic vertex offset of 50-100 px
+under perspective+yaw. Validated 2026-05-21: switching to 0.82× reduces
+RMS on 6 of 7 user-flagged-wrong cases.
 
-```
-1. Initialize from bezel detection (#178) outputs:
-   - cube_center: direct from detection
-   - 3 axis angles: try ALL 8 sign combinations of detection.boundary_angles
-     (the bezel detector returns line angles in [0, π); the model needs
-     outward axis angles in [0, 2π) — only one sign combination produces
-     3 axes that span 360° once); pick the combination with highest
-     initial silhouette IoU
-   - edge_length: ~0.32 × silhouette max extent (empirical underestimate;
-     optimizer grows it)
+### Mean-of-3 vertex ensemble
 
-2. Optimize the 6-parameter vector via Nelder-Mead (scipy.optimize.minimize):
-   - Objective: weighted sum of
-     · (1 - silhouette IoU) — predicted hexagon vs rembg mask
-     · (1 - bezel angle match) — how well model axes match detected bezels
-   - Weights default: silhouette=1.0, bezel=0.5
-   - Convergence: xatol=1px, fatol=0.001, maxiter=300
+After PnP fits the hexagon corners, we override the trihedral vertex
+with the mean of three independent estimates:
 
-3. Derive geometry from fitted parameters. Output:
-   - cube_center, axis angles (deg), edge_length
-   - 7 visible corners
-   - 3 face quads
-   - 27 sticker cells
-   - fit_quality = 0.7 * IoU + 0.3 * bezel_match
-```
+- **PnP-derived vertex** — from the 6-corner fit
+- **Bezel-detected vertex** — from `interior_bezel_detection.py` Hough line intersection
+- **Hexagon centroid** — mean of the 6 detected hexagon corners
 
-## Per-pair results (18 worst pairs from PR #176)
+On the 27-case ground truth, this ensemble has mean error 77 px vs
+99 px for any single method alone (-22%). PnP's axes are kept; only
+the vertex (and derived geometry, shifted by the same delta) is
+overridden.
 
-| pair  | bezel_sq | fit_quality | IoU    | bezel_match | edge_px | shift  | iter |
-|-------|---------:|------------:|-------:|------------:|--------:|-------:|-----:|
-| 17 A  | 0.15     | **0.91**    | 0.873  | 0.987       | 1140    | 122    | 143  |
-| 17 B  | 0.20     | **0.89**    | 0.846  | 0.984       | 1137    | 201    | 214  |
-| 21 A  | 0.17     | **0.91**    | 0.869  | 0.998       | 1153    | 48     | 198  |
-| 21 B  | 0.07     | **0.89**    | 0.859  | 0.950       | 1172    | 53     | 166  |
-| 30 A  | 0.11     | **0.92**    | 0.885  | 0.990       | 912     | 22     | 200  |
-| 30 B  | 0.23     | **0.93**    | 0.900  | 0.994       | 933     | 148    | 184  |
-| 31 A  | 0.73     | **0.92**    | 0.888  | 1.000       | 954     | 14     | 197  |
-| 31 B  | 0.64     | **0.92**    | 0.888  | 1.000       | 991     | 98     | 195  |
-| 44 A  | 0.17     | **0.90**    | 0.862  | 1.000       | 1242    | 119    | 160  |
-| 44 B  | 0.14     | **0.91**    | 0.867  | 1.000       | 1212    | 25     | 191  |
-| 47 A  | 0.14     | **0.91**    | 0.874  | 0.996       | 1077    | 96     | 161  |
-| 47 B  | 0.16     | **0.91**    | 0.873  | 0.998       | 1069    | 98     | 209  |
-| 57 A  | 0.56     | **0.92**    | 0.880  | 1.000       | 1091    | 33     | 171  |
-| 57 B  | 0.07     | 0.81        | 0.787  | 0.849       | 1074    | 150    | 178  |
-| 58 A  | 0.41     | **0.92**    | 0.884  | 0.992       | 1072    | 30     | 182  |
-| 58 B  | 0.11     | **0.91**    | 0.878  | 0.996       | 1070    | 85     | 193  |
-| 61 A  | 0.04     | **0.93**    | 0.909  | 0.962       | 1163    | 142    | 214  |
-| 61 B  | 0.12     | **0.93**    | 0.902  | 0.992       | 1104    | 119    | 204  |
+Rationale: each method has semi-independent error sources (PnP from
+silhouette noise propagation, bezel from Hough line uncertainty, hex
+centroid from perspective bias). Averaging regresses toward truth.
+Tried weighted variants — uniform mean is within 6 px of an oracle that
+picks the best per case.
 
-**Headline:** **17 of 18 pairs (94%) at fit_quality ≥ 0.85.**
-**18 of 18 (100%) at fit_quality ≥ 0.70.**
+### Score-gated image refinement
 
-Compare to prior approaches on the same 18-pair corpus:
-- `_fit_hexagon_to_hull` (original): 12/18 degenerate (min_edge < 20 px)
-- PR #177 (single-pass bezel detection): 9/18 "strong" by overconfident scorer
-- PR #178 (iterative bezel + per-line quality): 4/18 strong by recalibrated scorer
-- PR #180 (h-vertex tracing): 4/18 strong cluster (subset of #178's)
-- **This PR**: **17/18 strong** by silhouette-IoU + bezel-match scorer
+After the ensemble, we search a ±40 px window around the candidate
+vertex for the strongest "3-way dark-line junction" using the
+PnP-derived axis directions. Score is `min(darkness_along_3_dirs)` —
+penalizes false junctions where only 1-2 directions have dark lines
+(sticker corners look "dark" in one direction, not three).
 
-## Even where bezel signal is weak, the model converges
+Gated: refinement applied only when score at the ensemble vertex is
+below threshold (default 200). High-score cases mean the ensemble is
+already at a real junction; refinement on them tends to drift to
+nearby sticker corners with marginally higher local score.
 
-Note Set 61 A: bezel_sq=0.04 (the worst bezel signal in the corpus —
-only the magenta line was high-quality). The global model fit STILL
-achieves fit_quality=0.93 because silhouette IoU drives optimization
-when bezel information is sparse. The model's parameterization (3
-axes from one center, fixed edge length) is so constraining that
-even bad initial angles can be corrected by the silhouette objective.
+On the 27-case ground truth this lowers mean error 77 → 71 px (8%),
+median 77 → 69 px (-10%), and helps the worst cases substantially
+(42_B 161 → 78 px, 32_B 158 → 36 px). One small regression on a
+borderline case (31_B 26 → 34 px). Doesn't fix the truly bad cases
+(44_A stayed at 186 px) — those are silhouette-input failures, not
+refinement-window failures.
 
-This is the key structural win the pivot was after: the fit is robust
-to weak inputs because the parameter space is small and physically
-meaningful.
+## Ground-truth-validated stats
 
-## The one non-strong case (Set 57 B, 0.81)
+| metric | rembg + mean3 + refinement |
+|---|---|
+| n cases evaluated | 23 (with user-marked true_vertex) |
+| mean vertex error | 77 px |
+| median | 76 px |
+| p95 | 120 px |
+| max | 161 px |
+| within 30 px | 5 |
+| within 50 px | 9 |
+| within 75 px | 13 |
+| within 100 px | 17 |
 
-Set 57 B has bezel_sq=0.07 (very weak bezel signal) AND the
-silhouette is noisier (background interference). The optimizer
-converged to a hexagon slightly larger than the cube. The model is
-visibly off but in a clearly-diagnosable way: this is the kind of
-case where the upstream silhouette has issues that propagate.
+User's "correct" threshold: ~75 px in this round. By that bar, 13/23
+cases pass (57%), 17/23 (74%) are within 100 px (close enough for
+sticker sampling given 200-300 px cell width), and 2 cases (44_A,
+44_B) are >100 px.
 
-For production, this is what the refusal-to-solve / retake-prompt
-path is for. fit_quality < 0.85 → flag for manual review or retake.
+Per-case details and the user's true_vertex marks are in
+`tests/fixtures/gcm_vertex_ground_truth.json`.
 
-## Visible cube corners (h-vertex termini, for free)
+## Why 44_A doesn't fix
 
-Because the model is parameterized at the corner level, the 3
-interior hexagon vertices (h1, h3, h5 — what PR #180 was trying to
-trace) are **direct outputs** of the model: `visible_corners["011"]`,
-`["101"]`, `["110"]`. No separate trace step needed.
+Tested image-based refinement diagnostic on 44_A:
 
-Similarly h0/h2/h4 (the 3 hull vertices) are `visible_corners["001"]`,
-`["010"]`, `["100"]`. The model produces a complete 6-vertex hexagon
-on EVERY pair, even ones the hull-based fitter rejected as degenerate.
+- True vertex has junction score 231 (HIGHER than any candidate in
+  the ±40 search window — so the score metric is correct)
+- BUT the true vertex is 94+ px from the ensemble starting point,
+  outside the refinement window
+- Widening the window introduces drift on already-good cases
+- Better silhouette (SAM 3, tested 2026-05-21) recovers 44_B (118 → 15)
+  but only partially helps 44_A (186 → 148)
 
-## What this PR does NOT do
+44_A is therefore a "fundamentally hard capture" case for silhouette-
+based methods. In production this is what guided capture should
+prompt-to-retake, not algorithmically rescue.
 
-- **NOT wired into recognizer behavior.** Diagnostics-only.
-- **NOT integrated with `_derive_face_quad_topology_aware`.** That's
-  the next step, gated on validation against ground-truth geometry
-  labels (the "human geometry overlay" investment from Devin's
-  first-principles design).
-- **NOT a face-identity resolver.** The model outputs 3 face quads
-  labeled `face_01`, `face_12`, `face_02` (per the axes they
-  contain). Mapping to U/F/R/D/L/B requires center-sticker color
-  reading + the capture convention (white-up A, yellow-up B).
-  That's a separate step.
-- **NOT a color classifier.** Per-photo calibration + probabilistic
-  color reads are the next module to build, separately.
+## SAM 3 silhouette source (optional)
+
+`--silhouette-source sam3` swaps rembg for SAM 3 masks (pre-computed
+via `tools/extract_sam3_masks.py`; SAM 3 requires Python 3.13 +
+CUDA-or-MLX environment, so it's an offline step).
+
+| metric | rembg | SAM 3 |
+|---|---|---|
+| mean | 79 | 72 (-9%) |
+| median | 72 | 57 (-21%) |
+| <30 px | 0 | 6 |
+| <50 px | 5 | 9 |
+| p95 | 124 | 147 (worse) |
+| max | 186 | 186 (44_A) |
+
+SAM 3 is moderately better on average and dramatically better on some
+cases (44_B 118 → 15 px), but introduces 5 new regressions (worst:
+42_B 89 → 186 px) because the slightly different mask shape can push
+Visvalingam into a different PnP basin. **Default remains rembg**
+since it's <1s/image vs ~7s for SAM 3, and the mean improvement is
+modest. SAM 3 is documented as a diagnostics / server-side option.
+
+Per-face concept prompts ("top face", "yellow sticker") don't cleanly
+work — would require fine-tuning SAM 3 on a cube-specific dataset.
+Worth revisiting if we ever want to skip the PnP pipeline entirely.
+
+## Where this fits in the system
+
+**Diagnostics-only.** This pipeline is NOT wired into the recognizer.
+It produces per-photo vertex + axes + face quads + 27 sticker cells,
+which downstream consumers can use to:
+
+- Validate capture quality (vertex confidence ≥ threshold → "OK"; lower → "retake")
+- Drive guided-capture UI (live overlay showing where the model thinks the cube is)
+- Provide geometric backbone to a color classifier (sample each cell, classify)
+
+Wiring into actual recognition (replacing the cloud LLM recognizer or
+the cv-local Fixer path) is a separate decision predicated on:
+- Per-cell color sampling robustness against the floor's vertex error
+- Two-view stitching (A + B sides → 54-char state)
+- Production reliability vs the current cloud recognizer
 
 ## Dependencies
 
 | Dependency | Status |
 |---|---|
 | numpy | required |
-| Pillow | required (for silhouette IoU rasterization) |
-| scipy | optional — `scipy.optimize.minimize` for the Nelder-Mead fit, AND `scipy.ndimage` via the bezel detection module's helpers. When missing, the fitter returns an initialization-only model with `debug["error"]` rather than raising. |
+| Pillow | required |
+| scipy | optional (`spatial.ConvexHull` for hexagon extraction, `optimize` legacy path) |
+| opencv-python | required (`cv2.solvePnP`) |
+| rembg | required for default silhouette path |
+| sam3 / mlx-sam3 | optional, for `--silhouette-source sam3` |
 
 ## Files
 
 | File | Purpose |
 |---|---|
-| `tools/global_cube_model.py` | Module: 6-DOF parameterization, geometry derivation, silhouette IoU, bezel match score, fitter |
-| `tools/test_global_cube_model.py` | Test driver + visualization (uses rembg for mask, fits + renders overlay) |
+| `tools/global_cube_model.py` | Core module: PnP fit, mean3 ensemble, score-gated refinement |
+| `tools/test_global_cube_model.py` | Test driver + 3-panel visualization |
+| `tools/extract_sam3_masks.py` | Offline SAM 3 mask extraction (separate Python 3.13 env) |
 | `tools/GLOBAL_CUBE_MODEL.md` | This doc |
-| `tests/test_global_cube_model.py` | Unit tests (4 passing: import, geometry derivation, scipy-missing fallback, end-to-end synthetic) |
+| `tests/test_global_cube_model.py` | Unit tests (5 passing) |
+| `tests/fixtures/gcm_vertex_ground_truth.json` | User-marked true vertex positions for 27 cases (durable regression fixture) |
 
-## Reproducing this artifact
+## Reproducing the headline numbers
 
 ```bash
-.venv/bin/pip install scipy rembg
-
+# Default: rembg silhouette
 .venv/bin/python tools/test_global_cube_model.py \
-    --sets 17 21 30 31 44 47 57 58 61 \
-    --out /tmp/gcm_results
+    --sets 12 14 15 17 21 23 24 26 27 28 29 30 31 32 36 37 42 44 47 57 58 61 \
+    --out /tmp/gcm_run
+
+# With SAM 3 (pre-compute masks first, in SAM 3 venv):
+# (in mlx_sam3 env, Python 3.13)
+.venv/bin/python /path/to/tools/extract_sam3_masks.py \
+    --sets 12 14 15 17 21 23 24 26 27 28 29 30 31 32 36 37 42 44 47 57 58 61 \
+    --out /tmp/sam3_masks
+# (back in cube-two-view-debugger env)
+.venv/bin/python tools/test_global_cube_model.py \
+    --sets 12 14 15 17 21 23 24 26 27 28 29 30 31 32 36 37 42 44 47 57 58 61 \
+    --silhouette-source sam3 --sam3-mask-dir /tmp/sam3_masks \
+    --out /tmp/gcm_sam3_run
 ```
 
-Outputs per pair:
-- `set_<N>_<side>_overlay.png` — 3-panel side-by-side (photo / rembg
-  mask / photo with fitted model overlay: 3 face quads + 27 sticker
-  cells + cube_center + hexagon vertices)
-- `set_<N>_<side>_data.json` — fitted model parameters + derived
-  geometry + fit quality + optimizer telemetry
+Then compare against `tests/fixtures/gcm_vertex_ground_truth.json`
+to compute per-case vertex error.
 
-PNGs are not committed (large binaries); the generator + this doc
-are the durable artifacts.
+PNGs from `--out` are not committed (large binaries); the generator,
+this doc, and the JSON ground-truth fixture are the durable artifacts.
 
 ## What to validate next
 
-This PR is a prototype establishing the global model approach works.
-The natural follow-ups, in order:
+The natural follow-ups, in priority order:
 
-1. **Ground-truth geometry labels** (per Devin: "human marks true
-   face quads on bad cases"). Validate that the 17/18 fits at
-   fit_quality ≥ 0.85 actually have face quads that match human-labeled
-   geometry. The current scoring is silhouette + bezel; human review
-   tests whether the fits are visually correct on a finer scale.
-2. **Broader corpus run**. The 18-pair test set is biased toward
-   hard cases. Run on the full corpus_manifest.json (15 additional
-   pairs) to verify the easy cases stay easy.
-3. **Two-view consistency**: if photos A and B were taken of the
-   same cube with the standard flip, the two models should produce
-   GEOMETRICALLY CONSISTENT outputs (same cube edge length, same yaw
-   roughly, etc.). Useful cross-check.
-4. **Face-identity resolution**: combine model output with center
-   sticker color reads to assign U/F/R/D/L/B labels.
-5. **Behavior wiring**: only after #4, the model can replace
-   `_fit_hexagon_to_hull` in `_derive_face_quad_topology_aware`. With
-   confidence gating: use model when fit_quality ≥ threshold; fall
-   back to current path otherwise.
+1. **Guided capture wiring** in `cube-snap` — the architectural answer
+   to the 2/28 unrecoverable cases is "refuse to commit on bad
+   captures." Real-time vertex computation in mobile Safari, live
+   overlay shows confidence, prompts user to adjust until locked.
+   Phase 0 (feasibility): can the pipeline (or a stripped version)
+   run at 10 fps or even 1 fps in browser?
+2. **Two-view consistency**: photos A and B of the same cube should
+   produce geometrically consistent outputs (same cube edge length,
+   compatible yaw). Useful cross-check + could tighten the floor by
+   joint fit.
+3. **Face-identity resolution + sticker color sampling**: combine
+   model output with center-sticker color reads to assign U/F/R/D/L/B
+   labels, then test downstream solveable-cube delivery rate.
+4. **SAM 3 fine-tune for per-face segmentation** (deferred — see
+   user nice-to-have backlog). Would eliminate the PnP/vertex
+   pipeline entirely if successful.

@@ -1,0 +1,3353 @@
+{
+  "conclusion": {
+    "productionWiringRecommendation": "wait",
+    "reason": "Agreement-based deployable policies still make false-confident vertex selections: gcm_fullres/agreement_cluster_v0, gcm_fullres/strict_agreement_cluster_v0, easy_processing/agreement_cluster_v0, easy_processing/strict_agreement_cluster_v0."
+  },
+  "description": "Diagnostics/data-only ensemble probe for canonical vertex/axis feedback. Evaluates expanded candidate pools and agreement-based confidence policies.",
+  "laneResults": {
+    "easy_processing": {
+      "candidateSummary": {
+        "maxCandidateCount": 21,
+        "meanCandidateCount": 21.0,
+        "minCandidateCount": 21
+      },
+      "config": {
+        "agreementClusterV0": {
+          "minDistinctSources": 4,
+          "radiusPx": 25.0
+        },
+        "plausiblePx": 20.0,
+        "sourcePriority": [
+          "model_ranked",
+          "model_local_grid",
+          "bezel_axis_ray",
+          "bezel_line_intersection",
+          "dark_junction_grid"
+        ],
+        "strictAgreementClusterV0": {
+          "minDistinctSources": 4,
+          "radiusPx": 20.0
+        },
+        "strictPx": 10.0
+      },
+      "oracleSummary": {
+        "falseReachableCount": 6,
+        "meanBestErrorPx": 22.36,
+        "medianBestErrorPx": 11.18,
+        "plausibleReachableCount": 10,
+        "strictReachableCount": 7
+      },
+      "policySummaries": {
+        "agreement_cluster_v0": {
+          "abstainCount": 7,
+          "falseConfidentCount": 5,
+          "meanSelectedErrorPx": 35.1378,
+          "medianSelectedErrorPx": 24.32,
+          "plausibleCount": 4,
+          "selectedCount": 9,
+          "strictReadyCount": 0
+        },
+        "oracle_best_candidate": {
+          "abstainCount": 0,
+          "falseConfidentCount": 6,
+          "meanSelectedErrorPx": 22.36,
+          "medianSelectedErrorPx": 11.18,
+          "plausibleCount": 10,
+          "selectedCount": 16,
+          "strictReadyCount": 7
+        },
+        "source_priority_top1_v0": {
+          "abstainCount": 0,
+          "falseConfidentCount": 13,
+          "meanSelectedErrorPx": 42.4963,
+          "medianSelectedErrorPx": 30.875,
+          "plausibleCount": 3,
+          "selectedCount": 16,
+          "strictReadyCount": 1
+        },
+        "strict_agreement_cluster_v0": {
+          "abstainCount": 13,
+          "falseConfidentCount": 2,
+          "meanSelectedErrorPx": 25.7167,
+          "medianSelectedErrorPx": 25.49,
+          "plausibleCount": 1,
+          "selectedCount": 3,
+          "strictReadyCount": 0
+        }
+      },
+      "rowCount": 16,
+      "rows": [
+        {
+          "candidateCount": 21,
+          "key": "15_A",
+          "oracleBestCandidate": {
+            "errorPx": 14.71,
+            "family": "source_probe_top_candidates",
+            "point": [
+              414.4,
+              571.4
+            ],
+            "rank": 2,
+            "source": "model_local_grid",
+            "status": "plausible"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "selection": "abstain",
+              "status": "abstained"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 2,
+                "reason": "label_oracle"
+              },
+              "errorPx": 14.71,
+              "point": [
+                414.4,
+                571.4
+              ],
+              "selection": "model_local_grid",
+              "selectionType": "candidate_oracle",
+              "status": "plausible"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 30.69,
+              "point": [
+                430.4,
+                571.4
+              ],
+              "selection": "model_ranked",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "selection": "abstain",
+              "status": "abstained"
+            }
+          }
+        },
+        {
+          "candidateCount": 21,
+          "key": "15_B",
+          "oracleBestCandidate": {
+            "errorPx": 12.35,
+            "family": "source_probe_top_candidates",
+            "point": [
+              444.42,
+              579.14
+            ],
+            "rank": 4,
+            "source": "model_local_grid",
+            "status": "plausible"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 2.2,
+                "distinctSources": [
+                  "bezel_axis_ray",
+                  "bezel_line_intersection",
+                  "model_local_grid",
+                  "model_ranked"
+                ],
+                "maxDistanceToCenterPx": 21.68,
+                "memberCount": 5,
+                "minDistinctSources": 4,
+                "radiusPx": 25.0
+              },
+              "errorPx": 25.5,
+              "point": [
+                426.19,
+                551.75
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 4,
+                "reason": "label_oracle"
+              },
+              "errorPx": 12.35,
+              "point": [
+                444.42,
+                579.14
+              ],
+              "selection": "model_local_grid",
+              "selectionType": "candidate_oracle",
+              "status": "plausible"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 18.37,
+              "point": [
+                460.42,
+                579.14
+              ],
+              "selection": "model_ranked",
+              "selectionType": "candidate",
+              "status": "plausible"
+            },
+            "strict_agreement_cluster_v0": {
+              "selection": "abstain",
+              "status": "abstained"
+            }
+          }
+        },
+        {
+          "candidateCount": 21,
+          "key": "23_A",
+          "oracleBestCandidate": {
+            "errorPx": 7.55,
+            "family": "source_probe_top_candidates",
+            "point": [
+              378.6,
+              514.42
+            ],
+            "rank": 1,
+            "source": "bezel_axis_ray",
+            "status": "strict_ready"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 2.3333,
+                "distinctSources": [
+                  "bezel_axis_ray",
+                  "bezel_line_intersection",
+                  "model_local_grid",
+                  "model_ranked"
+                ],
+                "maxDistanceToCenterPx": 27.48,
+                "memberCount": 9,
+                "minDistinctSources": 4,
+                "radiusPx": 25.0
+              },
+              "errorPx": 15.34,
+              "point": [
+                379.72,
+                525.1
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "plausible"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 7.55,
+              "point": [
+                378.6,
+                514.42
+              ],
+              "selection": "bezel_axis_ray",
+              "selectionType": "candidate_oracle",
+              "status": "strict_ready"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 20.7,
+              "point": [
+                382.86,
+                529.44
+              ],
+              "selection": "model_ranked",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "selection": "abstain",
+              "status": "abstained"
+            }
+          }
+        },
+        {
+          "candidateCount": 21,
+          "key": "23_B",
+          "oracleBestCandidate": {
+            "errorPx": 2.47,
+            "family": "source_probe_top_candidates",
+            "point": [
+              397.26,
+              576.76
+            ],
+            "rank": 1,
+            "source": "bezel_axis_ray",
+            "status": "strict_ready"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 2.4,
+                "distinctSources": [
+                  "bezel_axis_ray",
+                  "bezel_line_intersection",
+                  "model_local_grid",
+                  "model_ranked"
+                ],
+                "maxDistanceToCenterPx": 24.29,
+                "memberCount": 5,
+                "minDistinctSources": 4,
+                "radiusPx": 25.0
+              },
+              "errorPx": 45.78,
+              "point": [
+                444.23,
+                587.5
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 2.47,
+              "point": [
+                397.26,
+                576.76
+              ],
+              "selection": "bezel_axis_ray",
+              "selectionType": "candidate_oracle",
+              "status": "strict_ready"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 31.06,
+              "point": [
+                400.4,
+                545.71
+              ],
+              "selection": "model_ranked",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "selection": "abstain",
+              "status": "abstained"
+            }
+          }
+        },
+        {
+          "candidateCount": 21,
+          "key": "26_A",
+          "oracleBestCandidate": {
+            "errorPx": 33.71,
+            "family": "source_probe_top_candidates",
+            "point": [
+              432.4,
+              565.7
+            ],
+            "rank": 4,
+            "source": "model_local_grid",
+            "status": "false_confident"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "selection": "abstain",
+              "status": "abstained"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 4,
+                "reason": "label_oracle"
+              },
+              "errorPx": 33.71,
+              "point": [
+                432.4,
+                565.7
+              ],
+              "selection": "model_local_grid",
+              "selectionType": "candidate_oracle",
+              "status": "false_confident"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 48.38,
+              "point": [
+                432.4,
+                549.7
+              ],
+              "selection": "model_ranked",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "selection": "abstain",
+              "status": "abstained"
+            }
+          }
+        },
+        {
+          "candidateCount": 21,
+          "key": "26_B",
+          "oracleBestCandidate": {
+            "errorPx": 6.58,
+            "family": "source_probe_top_candidates",
+            "point": [
+              413.5,
+              593.9
+            ],
+            "rank": 5,
+            "source": "model_local_grid",
+            "status": "strict_ready"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "selection": "abstain",
+              "status": "abstained"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 5,
+                "reason": "label_oracle"
+              },
+              "errorPx": 6.58,
+              "point": [
+                413.5,
+                593.9
+              ],
+              "selection": "model_local_grid",
+              "selectionType": "candidate_oracle",
+              "status": "strict_ready"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 21.7,
+              "point": [
+                413.5,
+                577.9
+              ],
+              "selection": "model_ranked",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "selection": "abstain",
+              "status": "abstained"
+            }
+          }
+        },
+        {
+          "candidateCount": 21,
+          "key": "29_A",
+          "oracleBestCandidate": {
+            "errorPx": 6.05,
+            "family": "source_probe_top_candidates",
+            "point": [
+              416.7,
+              592.4
+            ],
+            "rank": 3,
+            "source": "model_ranked",
+            "status": "strict_ready"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 2.7,
+                "distinctSources": [
+                  "bezel_axis_ray",
+                  "bezel_line_intersection",
+                  "model_local_grid",
+                  "model_ranked"
+                ],
+                "maxDistanceToCenterPx": 25.87,
+                "memberCount": 10,
+                "minDistinctSources": 4,
+                "radiusPx": 25.0
+              },
+              "errorPx": 15.11,
+              "point": [
+                434.47,
+                602.42
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "plausible"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 3,
+                "reason": "label_oracle"
+              },
+              "errorPx": 6.05,
+              "point": [
+                416.7,
+                592.4
+              ],
+              "selection": "model_ranked",
+              "selectionType": "candidate_oracle",
+              "status": "strict_ready"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 37.13,
+              "point": [
+                456.68,
+                604.45
+              ],
+              "selection": "model_ranked",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "details": {
+                "avgRank": 2.5,
+                "distinctSources": [
+                  "bezel_axis_ray",
+                  "bezel_line_intersection",
+                  "model_local_grid",
+                  "model_ranked"
+                ],
+                "maxDistanceToCenterPx": 21.02,
+                "memberCount": 6,
+                "minDistinctSources": 4,
+                "radiusPx": 20.0
+              },
+              "errorPx": 25.49,
+              "point": [
+                445.31,
+                601.95
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            }
+          }
+        },
+        {
+          "candidateCount": 21,
+          "key": "29_B",
+          "oracleBestCandidate": {
+            "errorPx": 10.01,
+            "family": "source_probe_top_candidates",
+            "point": [
+              398.3,
+              555.58
+            ],
+            "rank": 1,
+            "source": "model_ranked",
+            "status": "plausible"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 2.1111,
+                "distinctSources": [
+                  "bezel_axis_ray",
+                  "bezel_line_intersection",
+                  "model_local_grid",
+                  "model_ranked"
+                ],
+                "maxDistanceToCenterPx": 26.27,
+                "memberCount": 9,
+                "minDistinctSources": 4,
+                "radiusPx": 25.0
+              },
+              "errorPx": 18.09,
+              "point": [
+                420.05,
+                556.47
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "plausible"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 10.01,
+              "point": [
+                398.3,
+                555.58
+              ],
+              "selection": "model_ranked",
+              "selectionType": "candidate_oracle",
+              "status": "plausible"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 10.01,
+              "point": [
+                398.3,
+                555.58
+              ],
+              "selection": "model_ranked",
+              "selectionType": "candidate",
+              "status": "plausible"
+            },
+            "strict_agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.6,
+                "distinctSources": [
+                  "bezel_axis_ray",
+                  "bezel_line_intersection",
+                  "model_local_grid",
+                  "model_ranked"
+                ],
+                "maxDistanceToCenterPx": 22.88,
+                "memberCount": 5,
+                "minDistinctSources": 4,
+                "radiusPx": 20.0
+              },
+              "errorPx": 18.28,
+              "point": [
+                389.56,
+                552.38
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "plausible"
+            }
+          }
+        },
+        {
+          "candidateCount": 21,
+          "key": "32_A",
+          "oracleBestCandidate": {
+            "errorPx": 6.88,
+            "family": "source_probe_top_candidates",
+            "point": [
+              457.74,
+              567.01
+            ],
+            "rank": 5,
+            "source": "model_ranked",
+            "status": "strict_ready"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 2.5,
+                "distinctSources": [
+                  "bezel_axis_ray",
+                  "bezel_line_intersection",
+                  "model_local_grid",
+                  "model_ranked"
+                ],
+                "maxDistanceToCenterPx": 22.37,
+                "memberCount": 6,
+                "minDistinctSources": 4,
+                "radiusPx": 25.0
+              },
+              "errorPx": 14.81,
+              "point": [
+                443.01,
+                563.67
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "plausible"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 5,
+                "reason": "label_oracle"
+              },
+              "errorPx": 6.88,
+              "point": [
+                457.74,
+                567.01
+              ],
+              "selection": "model_ranked",
+              "selectionType": "candidate_oracle",
+              "status": "strict_ready"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 29.2,
+              "point": [
+                433.74,
+                543.01
+              ],
+              "selection": "model_ranked",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "selection": "abstain",
+              "status": "abstained"
+            }
+          }
+        },
+        {
+          "candidateCount": 21,
+          "key": "32_B",
+          "oracleBestCandidate": {
+            "errorPx": 8.59,
+            "family": "source_probe_top_candidates",
+            "point": [
+              399.17,
+              538.92
+            ],
+            "rank": 4,
+            "source": "model_ranked",
+            "status": "strict_ready"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 2.0,
+                "distinctSources": [
+                  "bezel_axis_ray",
+                  "bezel_line_intersection",
+                  "dark_junction_grid",
+                  "model_local_grid",
+                  "model_ranked"
+                ],
+                "maxDistanceToCenterPx": 25.64,
+                "memberCount": 8,
+                "minDistinctSources": 4,
+                "radiusPx": 25.0
+              },
+              "errorPx": 24.32,
+              "point": [
+                394.25,
+                519.31
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 4,
+                "reason": "label_oracle"
+              },
+              "errorPx": 8.59,
+              "point": [
+                399.17,
+                538.92
+              ],
+              "selection": "model_ranked",
+              "selectionType": "candidate_oracle",
+              "status": "strict_ready"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 29.51,
+              "point": [
+                399.17,
+                514.92
+              ],
+              "selection": "model_ranked",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.8571,
+                "distinctSources": [
+                  "bezel_axis_ray",
+                  "bezel_line_intersection",
+                  "dark_junction_grid",
+                  "model_local_grid",
+                  "model_ranked"
+                ],
+                "maxDistanceToCenterPx": 25.15,
+                "memberCount": 7,
+                "minDistinctSources": 4,
+                "radiusPx": 20.0
+              },
+              "errorPx": 33.38,
+              "point": [
+                406.19,
+                513.35
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            }
+          }
+        },
+        {
+          "candidateCount": 21,
+          "key": "36_A",
+          "oracleBestCandidate": {
+            "errorPx": 47.77,
+            "family": "source_probe_top_candidates",
+            "point": [
+              444.0,
+              530.3
+            ],
+            "rank": 4,
+            "source": "model_local_grid",
+            "status": "false_confident"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "selection": "abstain",
+              "status": "abstained"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 4,
+                "reason": "label_oracle"
+              },
+              "errorPx": 47.77,
+              "point": [
+                444.0,
+                530.3
+              ],
+              "selection": "model_local_grid",
+              "selectionType": "candidate_oracle",
+              "status": "false_confident"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 63.68,
+              "point": [
+                444.0,
+                514.3
+              ],
+              "selection": "model_ranked",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "selection": "abstain",
+              "status": "abstained"
+            }
+          }
+        },
+        {
+          "candidateCount": 21,
+          "key": "36_B",
+          "oracleBestCandidate": {
+            "errorPx": 27.59,
+            "family": "source_probe_top_candidates",
+            "point": [
+              360.87,
+              533.12
+            ],
+            "rank": 4,
+            "source": "model_ranked",
+            "status": "false_confident"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 2.4286,
+                "distinctSources": [
+                  "bezel_axis_ray",
+                  "bezel_line_intersection",
+                  "model_local_grid",
+                  "model_ranked"
+                ],
+                "maxDistanceToCenterPx": 24.87,
+                "memberCount": 7,
+                "minDistinctSources": 4,
+                "radiusPx": 25.0
+              },
+              "errorPx": 50.64,
+              "point": [
+                361.33,
+                508.26
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 4,
+                "reason": "label_oracle"
+              },
+              "errorPx": 27.59,
+              "point": [
+                360.87,
+                533.12
+              ],
+              "selection": "model_ranked",
+              "selectionType": "candidate_oracle",
+              "status": "false_confident"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 49.94,
+              "point": [
+                360.87,
+                509.12
+              ],
+              "selection": "model_ranked",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "selection": "abstain",
+              "status": "abstained"
+            }
+          }
+        },
+        {
+          "candidateCount": 21,
+          "key": "37_A",
+          "oracleBestCandidate": {
+            "errorPx": 26.07,
+            "family": "source_probe_top_candidates",
+            "point": [
+              409.59,
+              579.5
+            ],
+            "rank": 4,
+            "source": "bezel_axis_ray",
+            "status": "false_confident"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "selection": "abstain",
+              "status": "abstained"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 4,
+                "reason": "label_oracle"
+              },
+              "errorPx": 26.07,
+              "point": [
+                409.59,
+                579.5
+              ],
+              "selection": "bezel_axis_ray",
+              "selectionType": "candidate_oracle",
+              "status": "false_confident"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 81.4,
+              "point": [
+                399.14,
+                525.16
+              ],
+              "selection": "model_ranked",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "selection": "abstain",
+              "status": "abstained"
+            }
+          }
+        },
+        {
+          "candidateCount": 21,
+          "key": "37_B",
+          "oracleBestCandidate": {
+            "errorPx": 93.46,
+            "family": "source_probe_top_candidates",
+            "point": [
+              363.39,
+              581.3
+            ],
+            "rank": 2,
+            "source": "model_ranked",
+            "status": "false_confident"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 2.3333,
+                "distinctSources": [
+                  "bezel_axis_ray",
+                  "bezel_line_intersection",
+                  "model_local_grid",
+                  "model_ranked"
+                ],
+                "maxDistanceToCenterPx": 30.45,
+                "memberCount": 6,
+                "minDistinctSources": 4,
+                "radiusPx": 25.0
+              },
+              "errorPx": 106.65,
+              "point": [
+                380.98,
+                558.95
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 2,
+                "reason": "label_oracle"
+              },
+              "errorPx": 93.46,
+              "point": [
+                363.39,
+                581.3
+              ],
+              "selection": "model_ranked",
+              "selectionType": "candidate_oracle",
+              "status": "false_confident"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 114.58,
+              "point": [
+                363.39,
+                557.3
+              ],
+              "selection": "model_ranked",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "selection": "abstain",
+              "status": "abstained"
+            }
+          }
+        },
+        {
+          "candidateCount": 21,
+          "key": "42_A",
+          "oracleBestCandidate": {
+            "errorPx": 47.13,
+            "family": "source_probe_top_candidates",
+            "point": [
+              422.6,
+              578.9
+            ],
+            "rank": 3,
+            "source": "model_ranked",
+            "status": "false_confident"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "selection": "abstain",
+              "status": "abstained"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 3,
+                "reason": "label_oracle"
+              },
+              "errorPx": 47.13,
+              "point": [
+                422.6,
+                578.9
+              ],
+              "selection": "model_ranked",
+              "selectionType": "candidate_oracle",
+              "status": "false_confident"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 86.75,
+              "point": [
+                512.55,
+                480.86
+              ],
+              "selection": "model_ranked",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "selection": "abstain",
+              "status": "abstained"
+            }
+          }
+        },
+        {
+          "candidateCount": 21,
+          "key": "42_B",
+          "oracleBestCandidate": {
+            "errorPx": 6.84,
+            "family": "source_probe_top_candidates",
+            "point": [
+              440.31,
+              520.65
+            ],
+            "rank": 1,
+            "source": "model_ranked",
+            "status": "strict_ready"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "selection": "abstain",
+              "status": "abstained"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 6.84,
+              "point": [
+                440.31,
+                520.65
+              ],
+              "selection": "model_ranked",
+              "selectionType": "candidate_oracle",
+              "status": "strict_ready"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 6.84,
+              "point": [
+                440.31,
+                520.65
+              ],
+              "selection": "model_ranked",
+              "selectionType": "candidate",
+              "status": "strict_ready"
+            },
+            "strict_agreement_cluster_v0": {
+              "selection": "abstain",
+              "status": "abstained"
+            }
+          }
+        }
+      ]
+    },
+    "gcm_fullres": {
+      "candidateSummary": {
+        "maxCandidateCount": 5,
+        "meanCandidateCount": 5.0,
+        "minCandidateCount": 5
+      },
+      "config": {
+        "agreementClusterV0": {
+          "minDistinctSources": 2,
+          "radiusPx": 50.0
+        },
+        "plausiblePx": 50.0,
+        "sourcePriority": [
+          "sam3",
+          "rembg",
+          "inverse_residual_weighted",
+          "fit_quality_weighted",
+          "midpoint"
+        ],
+        "strictAgreementClusterV0": {
+          "minDistinctSources": 2,
+          "radiusPx": 20.0
+        },
+        "strictPx": 30.0
+      },
+      "oracleSummary": {
+        "falseReachableCount": 11,
+        "meanBestErrorPx": 58.2057,
+        "medianBestErrorPx": 47.65,
+        "plausibleReachableCount": 12,
+        "strictReachableCount": 6
+      },
+      "policySummaries": {
+        "agreement_cluster_v0": {
+          "abstainCount": 0,
+          "falseConfidentCount": 15,
+          "meanSelectedErrorPx": 69.6526,
+          "medianSelectedErrorPx": 64.25,
+          "plausibleCount": 8,
+          "selectedCount": 23,
+          "strictReadyCount": 4
+        },
+        "oracle_best_candidate": {
+          "abstainCount": 0,
+          "falseConfidentCount": 11,
+          "meanSelectedErrorPx": 58.2057,
+          "medianSelectedErrorPx": 47.65,
+          "plausibleCount": 12,
+          "selectedCount": 23,
+          "strictReadyCount": 6
+        },
+        "source_priority_top1_v0": {
+          "abstainCount": 0,
+          "falseConfidentCount": 14,
+          "meanSelectedErrorPx": 72.1591,
+          "medianSelectedErrorPx": 56.51,
+          "plausibleCount": 9,
+          "selectedCount": 23,
+          "strictReadyCount": 6
+        },
+        "strict_agreement_cluster_v0": {
+          "abstainCount": 0,
+          "falseConfidentCount": 16,
+          "meanSelectedErrorPx": 70.473,
+          "medianSelectedErrorPx": 64.25,
+          "plausibleCount": 7,
+          "selectedCount": 23,
+          "strictReadyCount": 4
+        }
+      },
+      "rowCount": 23,
+      "rows": [
+        {
+          "candidateCount": 5,
+          "key": "12_B",
+          "oracleBestCandidate": {
+            "errorPx": 22.97,
+            "family": "derived_pair",
+            "point": [
+              1558.78,
+              2025.51
+            ],
+            "rank": 1,
+            "source": "inverse_residual_weighted",
+            "status": "strict_ready"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 22.72,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 50.0
+              },
+              "errorPx": 23.83,
+              "point": [
+                1555.21,
+                2022.7
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "strict_ready"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 22.98,
+              "point": [
+                1558.78,
+                2025.51
+              ],
+              "selection": "inverse_residual_weighted",
+              "selectionType": "candidate_oracle",
+              "status": "strict_ready"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 26.43,
+              "point": [
+                1570.86,
+                2035.03
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate",
+              "status": "strict_ready"
+            },
+            "strict_agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 14.25,
+                "memberCount": 4,
+                "minDistinctSources": 2,
+                "radiusPx": 20.0
+              },
+              "errorPx": 22.89,
+              "point": [
+                1559.67,
+                2026.22
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "strict_ready"
+            }
+          }
+        },
+        {
+          "candidateCount": 5,
+          "key": "14_B",
+          "oracleBestCandidate": {
+            "errorPx": 16.19,
+            "family": "whole_cube_fit",
+            "point": [
+              1462.66,
+              1818.62
+            ],
+            "rank": 1,
+            "source": "sam3",
+            "status": "strict_ready"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 16.83,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 50.0
+              },
+              "errorPx": 19.85,
+              "point": [
+                1479.31,
+                1816.35
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "strict_ready"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 16.19,
+              "point": [
+                1462.66,
+                1818.62
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate_oracle",
+              "status": "strict_ready"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 16.19,
+              "point": [
+                1462.66,
+                1818.62
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate",
+              "status": "strict_ready"
+            },
+            "strict_agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 16.83,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 20.0
+              },
+              "errorPx": 19.85,
+              "point": [
+                1479.31,
+                1816.35
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "strict_ready"
+            }
+          }
+        },
+        {
+          "candidateCount": 5,
+          "key": "15_A",
+          "oracleBestCandidate": {
+            "errorPx": 47.29,
+            "family": "whole_cube_fit",
+            "point": [
+              1461.38,
+              2030.47
+            ],
+            "rank": 1,
+            "source": "sam3",
+            "status": "plausible"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 15.74,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 50.0
+              },
+              "errorPx": 53.76,
+              "point": [
+                1472.97,
+                2019.82
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 47.29,
+              "point": [
+                1461.38,
+                2030.47
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate_oracle",
+              "status": "plausible"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 47.29,
+              "point": [
+                1461.38,
+                2030.47
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate",
+              "status": "plausible"
+            },
+            "strict_agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 15.74,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 20.0
+              },
+              "errorPx": 53.76,
+              "point": [
+                1472.97,
+                2019.82
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            }
+          }
+        },
+        {
+          "candidateCount": 5,
+          "key": "15_B",
+          "oracleBestCandidate": {
+            "errorPx": 46.08,
+            "family": "derived_pair",
+            "point": [
+              1519.76,
+              1965.16
+            ],
+            "rank": 1,
+            "source": "inverse_residual_weighted",
+            "status": "plausible"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 44.16,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 50.0
+              },
+              "errorPx": 46.81,
+              "point": [
+                1517.75,
+                1967.89
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "plausible"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 46.07,
+              "point": [
+                1519.76,
+                1965.16
+              ],
+              "selection": "inverse_residual_weighted",
+              "selectionType": "candidate_oracle",
+              "status": "plausible"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 54.43,
+              "point": [
+                1542.65,
+                1934.13
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint"
+                ],
+                "maxDistanceToCenterPx": 2.66,
+                "memberCount": 3,
+                "minDistinctSources": 2,
+                "radiusPx": 20.0
+              },
+              "errorPx": 46.63,
+              "point": [
+                1518.18,
+                1967.3
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "plausible"
+            }
+          }
+        },
+        {
+          "candidateCount": 5,
+          "key": "17_B",
+          "oracleBestCandidate": {
+            "errorPx": 109.96,
+            "family": "whole_cube_fit",
+            "point": [
+              1479.79,
+              1934.83
+            ],
+            "rank": 1,
+            "source": "rembg",
+            "status": "false_confident"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 15.26,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 50.0
+              },
+              "errorPx": 122.49,
+              "point": [
+                1469.83,
+                1943.75
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 109.96,
+              "point": [
+                1479.79,
+                1934.83
+              ],
+              "selection": "rembg",
+              "selectionType": "candidate_oracle",
+              "status": "false_confident"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 136.99,
+              "point": [
+                1458.47,
+                1953.94
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 15.26,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 20.0
+              },
+              "errorPx": 122.49,
+              "point": [
+                1469.83,
+                1943.75
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            }
+          }
+        },
+        {
+          "candidateCount": 5,
+          "key": "21_A",
+          "oracleBestCandidate": {
+            "errorPx": 38.72,
+            "family": "whole_cube_fit",
+            "point": [
+              1362.39,
+              1964.47
+            ],
+            "rank": 1,
+            "source": "rembg",
+            "status": "plausible"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 20.79,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 50.0
+              },
+              "errorPx": 44.08,
+              "point": [
+                1382.56,
+                1959.43
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "plausible"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 38.72,
+              "point": [
+                1362.39,
+                1964.47
+              ],
+              "selection": "rembg",
+              "selectionType": "candidate_oracle",
+              "status": "plausible"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 56.43,
+              "point": [
+                1401.94,
+                1954.58
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 14.78,
+                "memberCount": 4,
+                "minDistinctSources": 2,
+                "radiusPx": 20.0
+              },
+              "errorPx": 46.79,
+              "point": [
+                1387.6,
+                1958.17
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "plausible"
+            }
+          }
+        },
+        {
+          "candidateCount": 5,
+          "key": "21_B",
+          "oracleBestCandidate": {
+            "errorPx": 75.69,
+            "family": "whole_cube_fit",
+            "point": [
+              1529.0,
+              2073.0
+            ],
+            "rank": 1,
+            "source": "rembg",
+            "status": "false_confident"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 33.99,
+                "memberCount": 4,
+                "minDistinctSources": 2,
+                "radiusPx": 50.0
+              },
+              "errorPx": 94.27,
+              "point": [
+                1514.5,
+                2004.22
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 75.69,
+              "point": [
+                1529.0,
+                2073.0
+              ],
+              "selection": "rembg",
+              "selectionType": "candidate_oracle",
+              "status": "false_confident"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 118.16,
+              "point": [
+                1507.48,
+                1970.96
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint"
+                ],
+                "maxDistanceToCenterPx": 10.3,
+                "memberCount": 3,
+                "minDistinctSources": 2,
+                "radiusPx": 20.0
+              },
+              "errorPx": 87.81,
+              "point": [
+                1516.83,
+                2015.31
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            }
+          }
+        },
+        {
+          "candidateCount": 5,
+          "key": "24_A",
+          "oracleBestCandidate": {
+            "errorPx": 86.37,
+            "family": "whole_cube_fit",
+            "point": [
+              1628.84,
+              1983.94
+            ],
+            "rank": 1,
+            "source": "sam3",
+            "status": "false_confident"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 7.26,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 50.0
+              },
+              "errorPx": 86.67,
+              "point": [
+                1632.5,
+                1990.12
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 86.37,
+              "point": [
+                1628.84,
+                1983.94
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate_oracle",
+              "status": "false_confident"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 86.37,
+              "point": [
+                1628.84,
+                1983.94
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 7.26,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 20.0
+              },
+              "errorPx": 86.67,
+              "point": [
+                1632.5,
+                1990.12
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            }
+          }
+        },
+        {
+          "candidateCount": 5,
+          "key": "26_A",
+          "oracleBestCandidate": {
+            "errorPx": 72.54,
+            "family": "whole_cube_fit",
+            "point": [
+              1471.0,
+              2003.0
+            ],
+            "rank": 1,
+            "source": "rembg",
+            "status": "false_confident"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 50.04,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 50.0
+              },
+              "errorPx": 86.21,
+              "point": [
+                1514.14,
+                2006.71
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 72.54,
+              "point": [
+                1471.0,
+                2003.0
+              ],
+              "selection": "rembg",
+              "selectionType": "candidate_oracle",
+              "status": "false_confident"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 120.87,
+              "point": [
+                1564.0,
+                2011.0
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint"
+                ],
+                "maxDistanceToCenterPx": 9.15,
+                "memberCount": 3,
+                "minDistinctSources": 2,
+                "radiusPx": 20.0
+              },
+              "errorPx": 85.01,
+              "point": [
+                1511.91,
+                2006.52
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            }
+          }
+        },
+        {
+          "candidateCount": 5,
+          "key": "26_B",
+          "oracleBestCandidate": {
+            "errorPx": 24.1,
+            "family": "whole_cube_fit",
+            "point": [
+              1460.0,
+              2116.0
+            ],
+            "rank": 1,
+            "source": "sam3",
+            "status": "strict_ready"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 36.32,
+                "memberCount": 4,
+                "minDistinctSources": 2,
+                "radiusPx": 50.0
+              },
+              "errorPx": 19.41,
+              "point": [
+                1453.76,
+                2080.22
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "strict_ready"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 24.1,
+              "point": [
+                1460.0,
+                2116.0
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate_oracle",
+              "status": "strict_ready"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 24.1,
+              "point": [
+                1460.0,
+                2116.0
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate",
+              "status": "strict_ready"
+            },
+            "strict_agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint"
+                ],
+                "maxDistanceToCenterPx": 3.47,
+                "memberCount": 3,
+                "minDistinctSources": 2,
+                "radiusPx": 20.0
+              },
+              "errorPx": 29.92,
+              "point": [
+                1451.67,
+                2068.29
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "strict_ready"
+            }
+          }
+        },
+        {
+          "candidateCount": 5,
+          "key": "28_A",
+          "oracleBestCandidate": {
+            "errorPx": 78.49,
+            "family": "whole_cube_fit",
+            "point": [
+              1479.18,
+              1908.84
+            ],
+            "rank": 1,
+            "source": "sam3",
+            "status": "false_confident"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 40.72,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 50.0
+              },
+              "errorPx": 95.44,
+              "point": [
+                1513.23,
+                1926.94
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 78.49,
+              "point": [
+                1479.18,
+                1908.84
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate_oracle",
+              "status": "false_confident"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 78.49,
+              "point": [
+                1479.18,
+                1908.84
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint"
+                ],
+                "maxDistanceToCenterPx": 3.02,
+                "memberCount": 3,
+                "minDistinctSources": 2,
+                "radiusPx": 20.0
+              },
+              "errorPx": 95.01,
+              "point": [
+                1512.6,
+                1926.6
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            }
+          }
+        },
+        {
+          "candidateCount": 5,
+          "key": "28_B",
+          "oracleBestCandidate": {
+            "errorPx": 102.57,
+            "family": "whole_cube_fit",
+            "point": [
+              1477.34,
+              1934.2
+            ],
+            "rank": 1,
+            "source": "rembg",
+            "status": "false_confident"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 6.97,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 50.0
+              },
+              "errorPx": 104.08,
+              "point": [
+                1472.98,
+                1928.76
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 102.57,
+              "point": [
+                1477.34,
+                1934.2
+              ],
+              "selection": "rembg",
+              "selectionType": "candidate_oracle",
+              "status": "false_confident"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 105.89,
+              "point": [
+                1468.87,
+                1923.65
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 6.97,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 20.0
+              },
+              "errorPx": 104.08,
+              "point": [
+                1472.98,
+                1928.76
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            }
+          }
+        },
+        {
+          "candidateCount": 5,
+          "key": "29_A",
+          "oracleBestCandidate": {
+            "errorPx": 45.3,
+            "family": "whole_cube_fit",
+            "point": [
+              1467.48,
+              2062.99
+            ],
+            "rank": 1,
+            "source": "sam3",
+            "status": "plausible"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 11.76,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 50.0
+              },
+              "errorPx": 50.22,
+              "point": [
+                1456.72,
+                2065.0
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 45.3,
+              "point": [
+                1467.48,
+                2062.99
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate_oracle",
+              "status": "plausible"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 45.3,
+              "point": [
+                1467.48,
+                2062.99
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate",
+              "status": "plausible"
+            },
+            "strict_agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 11.76,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 20.0
+              },
+              "errorPx": 50.22,
+              "point": [
+                1456.72,
+                2065.0
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            }
+          }
+        },
+        {
+          "candidateCount": 5,
+          "key": "30_A",
+          "oracleBestCandidate": {
+            "errorPx": 20.03,
+            "family": "whole_cube_fit",
+            "point": [
+              1456.84,
+              2231.85
+            ],
+            "rank": 1,
+            "source": "sam3",
+            "status": "strict_ready"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 12.56,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 50.0
+              },
+              "errorPx": 27.65,
+              "point": [
+                1460.85,
+                2239.09
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "strict_ready"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 20.03,
+              "point": [
+                1456.84,
+                2231.85
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate_oracle",
+              "status": "strict_ready"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 20.03,
+              "point": [
+                1456.84,
+                2231.85
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate",
+              "status": "strict_ready"
+            },
+            "strict_agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 12.56,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 20.0
+              },
+              "errorPx": 27.65,
+              "point": [
+                1460.85,
+                2239.09
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "strict_ready"
+            }
+          }
+        },
+        {
+          "candidateCount": 5,
+          "key": "31_A",
+          "oracleBestCandidate": {
+            "errorPx": 47.18,
+            "family": "whole_cube_fit",
+            "point": [
+              1391.46,
+              1974.52
+            ],
+            "rank": 1,
+            "source": "rembg",
+            "status": "plausible"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 27.96,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 50.0
+              },
+              "errorPx": 66.98,
+              "point": [
+                1364.96,
+                1974.27
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 47.18,
+              "point": [
+                1391.46,
+                1974.52
+              ],
+              "selection": "rembg",
+              "selectionType": "candidate_oracle",
+              "status": "plausible"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 91.62,
+              "point": [
+                1337.0,
+                1974.0
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint"
+                ],
+                "maxDistanceToCenterPx": 1.78,
+                "memberCount": 3,
+                "minDistinctSources": 2,
+                "radiusPx": 20.0
+              },
+              "errorPx": 66.57,
+              "point": [
+                1365.45,
+                1974.27
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            }
+          }
+        },
+        {
+          "candidateCount": 5,
+          "key": "32_A",
+          "oracleBestCandidate": {
+            "errorPx": 56.51,
+            "family": "whole_cube_fit",
+            "point": [
+              1547.11,
+              1982.01
+            ],
+            "rank": 1,
+            "source": "sam3",
+            "status": "false_confident"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 8.26,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 50.0
+              },
+              "errorPx": 64.25,
+              "point": [
+                1540.14,
+                1985.85
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 56.51,
+              "point": [
+                1547.11,
+                1982.01
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate_oracle",
+              "status": "false_confident"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 56.51,
+              "point": [
+                1547.11,
+                1982.01
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 8.26,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 20.0
+              },
+              "errorPx": 64.25,
+              "point": [
+                1540.14,
+                1985.85
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            }
+          }
+        },
+        {
+          "candidateCount": 5,
+          "key": "32_B",
+          "oracleBestCandidate": {
+            "errorPx": 47.65,
+            "family": "whole_cube_fit",
+            "point": [
+              1402.8,
+              1858.64
+            ],
+            "rank": 1,
+            "source": "sam3",
+            "status": "plausible"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 24.3,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 50.0
+              },
+              "errorPx": 55.19,
+              "point": [
+                1384.84,
+                1842.27
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 47.65,
+              "point": [
+                1402.8,
+                1858.64
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate_oracle",
+              "status": "plausible"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 47.65,
+              "point": [
+                1402.8,
+                1858.64
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate",
+              "status": "plausible"
+            },
+            "strict_agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint"
+                ],
+                "maxDistanceToCenterPx": 0.21,
+                "memberCount": 3,
+                "minDistinctSources": 2,
+                "radiusPx": 20.0
+              },
+              "errorPx": 55.22,
+              "point": [
+                1384.81,
+                1842.23
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            }
+          }
+        },
+        {
+          "candidateCount": 5,
+          "key": "36_B",
+          "oracleBestCandidate": {
+            "errorPx": 69.62,
+            "family": "whole_cube_fit",
+            "point": [
+              1314.84,
+              1871.04
+            ],
+            "rank": 1,
+            "source": "sam3",
+            "status": "false_confident"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 19.81,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 50.0
+              },
+              "errorPx": 85.29,
+              "point": [
+                1302.15,
+                1857.17
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 69.62,
+              "point": [
+                1314.84,
+                1871.04
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate_oracle",
+              "status": "false_confident"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 69.62,
+              "point": [
+                1314.84,
+                1871.04
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 19.81,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 20.0
+              },
+              "errorPx": 85.29,
+              "point": [
+                1302.15,
+                1857.17
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            }
+          }
+        },
+        {
+          "candidateCount": 5,
+          "key": "42_B",
+          "oracleBestCandidate": {
+            "errorPx": 89.25,
+            "family": "whole_cube_fit",
+            "point": [
+              1508.0,
+              1917.0
+            ],
+            "rank": 1,
+            "source": "rembg",
+            "status": "false_confident"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint"
+                ],
+                "maxDistanceToCenterPx": 0.27,
+                "memberCount": 3,
+                "minDistinctSources": 2,
+                "radiusPx": 50.0
+              },
+              "errorPx": 136.14,
+              "point": [
+                1504.02,
+                1968.73
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 89.25,
+              "point": [
+                1508.0,
+                1917.0
+              ],
+              "selection": "rembg",
+              "selectionType": "candidate_oracle",
+              "status": "false_confident"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 186.24,
+              "point": [
+                1500.0,
+                2021.0
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint"
+                ],
+                "maxDistanceToCenterPx": 0.27,
+                "memberCount": 3,
+                "minDistinctSources": 2,
+                "radiusPx": 20.0
+              },
+              "errorPx": 136.14,
+              "point": [
+                1504.02,
+                1968.73
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            }
+          }
+        },
+        {
+          "candidateCount": 5,
+          "key": "44_A",
+          "oracleBestCandidate": {
+            "errorPx": 148.34,
+            "family": "whole_cube_fit",
+            "point": [
+              1505.0,
+              1934.0
+            ],
+            "rank": 1,
+            "source": "sam3",
+            "status": "false_confident"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 38.3,
+                "memberCount": 4,
+                "minDistinctSources": 2,
+                "radiusPx": 50.0
+              },
+              "errorPx": 152.83,
+              "point": [
+                1493.81,
+                1897.37
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 148.34,
+              "point": [
+                1505.0,
+                1934.0
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate_oracle",
+              "status": "false_confident"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 148.34,
+              "point": [
+                1505.0,
+                1934.0
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint"
+                ],
+                "maxDistanceToCenterPx": 8.32,
+                "memberCount": 3,
+                "minDistinctSources": 2,
+                "radiusPx": 20.0
+              },
+              "errorPx": 156.4,
+              "point": [
+                1490.08,
+                1885.16
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            }
+          }
+        },
+        {
+          "candidateCount": 5,
+          "key": "44_B",
+          "oracleBestCandidate": {
+            "errorPx": 14.96,
+            "family": "whole_cube_fit",
+            "point": [
+              1509.0,
+              1997.0
+            ],
+            "rank": 1,
+            "source": "sam3",
+            "status": "strict_ready"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 36.17,
+                "memberCount": 4,
+                "minDistinctSources": 2,
+                "radiusPx": 50.0
+              },
+              "errorPx": 48.04,
+              "point": [
+                1545.04,
+                1993.94
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "plausible"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 14.96,
+              "point": [
+                1509.0,
+                1997.0
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate_oracle",
+              "status": "strict_ready"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 14.96,
+              "point": [
+                1509.0,
+                1997.0
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate",
+              "status": "strict_ready"
+            },
+            "strict_agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint"
+                ],
+                "maxDistanceToCenterPx": 7.78,
+                "memberCount": 3,
+                "minDistinctSources": 2,
+                "radiusPx": 20.0
+              },
+              "errorPx": 59.87,
+              "point": [
+                1557.06,
+                1992.92
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            }
+          }
+        },
+        {
+          "candidateCount": 5,
+          "key": "61_A",
+          "oracleBestCandidate": {
+            "errorPx": 18.88,
+            "family": "whole_cube_fit",
+            "point": [
+              1514.0,
+              1957.82
+            ],
+            "rank": 1,
+            "source": "sam3",
+            "status": "strict_ready"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 26.68,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 50.0
+              },
+              "errorPx": 44.28,
+              "point": [
+                1536.24,
+                1971.7
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "plausible"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 18.88,
+              "point": [
+                1514.0,
+                1957.82
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate_oracle",
+              "status": "strict_ready"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 18.88,
+              "point": [
+                1514.0,
+                1957.82
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate",
+              "status": "strict_ready"
+            },
+            "strict_agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint"
+                ],
+                "maxDistanceToCenterPx": 0.53,
+                "memberCount": 3,
+                "minDistinctSources": 2,
+                "radiusPx": 20.0
+              },
+              "errorPx": 44.12,
+              "point": [
+                1536.11,
+                1971.62
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "plausible"
+            }
+          }
+        },
+        {
+          "candidateCount": 5,
+          "key": "61_B",
+          "oracleBestCandidate": {
+            "errorPx": 60.04,
+            "family": "whole_cube_fit",
+            "point": [
+              1367.73,
+              1888.78
+            ],
+            "rank": 1,
+            "source": "rembg",
+            "status": "false_confident"
+          },
+          "policyResults": {
+            "agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 16.06,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 50.0
+              },
+              "errorPx": 74.24,
+              "point": [
+                1377.26,
+                1901.7
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            },
+            "oracle_best_candidate": {
+              "details": {
+                "rank": 1,
+                "reason": "label_oracle"
+              },
+              "errorPx": 60.04,
+              "point": [
+                1367.73,
+                1888.78
+              ],
+              "selection": "rembg",
+              "selectionType": "candidate_oracle",
+              "status": "false_confident"
+            },
+            "source_priority_top1_v0": {
+              "details": {
+                "rank": 1,
+                "reason": "first_available_source_priority"
+              },
+              "errorPx": 88.87,
+              "point": [
+                1386.66,
+                1914.44
+              ],
+              "selection": "sam3",
+              "selectionType": "candidate",
+              "status": "false_confident"
+            },
+            "strict_agreement_cluster_v0": {
+              "details": {
+                "avgRank": 1.0,
+                "distinctSources": [
+                  "fit_quality_weighted",
+                  "inverse_residual_weighted",
+                  "midpoint",
+                  "rembg",
+                  "sam3"
+                ],
+                "maxDistanceToCenterPx": 16.06,
+                "memberCount": 5,
+                "minDistinctSources": 2,
+                "radiusPx": 20.0
+              },
+              "errorPx": 74.24,
+              "point": [
+                1377.26,
+                1901.7
+              ],
+              "selection": "agreement_cluster",
+              "selectionType": "cluster_center",
+              "status": "false_confident"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "policyOrder": [
+    "source_priority_top1_v0",
+    "agreement_cluster_v0",
+    "strict_agreement_cluster_v0",
+    "oracle_best_candidate"
+  ],
+  "probe": "vertex_hypothesis_ensemble_v0",
+  "schemaVersion": 1,
+  "sourceFeedback": "/private/tmp/cube-vertex-hypothesis-ensemble/tests/fixtures/vertex_axis_feedback_v0.json"
+}

@@ -57,7 +57,7 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 | Owner | Branch | PR | What | Touches | ETA |
 |---|---|---|---|---|---|
-| Codex | `codex/vertex-source-selection` | #198 | Diagnostics/data-only vertex/axis source-selection confidence probe; compares rembg/SAM3/global-model policies and abstention. | `tools/vertex_axis_source_selection_v0.py`, `tools/VERTEX_AXIS_SOURCE_SELECTION_V0_REPORT.md`, `tests/fixtures/vertex_axis_source_selection_v0_summary.json`, `tests/test_vertex_axis_source_selection_v0.py` | ready for audit |
+| Codex | `codex/vertex-hypothesis-ensemble` | #199 | Diagnostics/data-only canonical vertex feedback + expanded hypothesis agreement probe; concludes agreement is not yet safe for wiring. | `tools/vertex_hypothesis_ensemble_v0.py`, `tools/VERTEX_HYPOTHESIS_ENSEMBLE_V0_REPORT.md`, `tests/fixtures/vertex_axis_feedback_v0.json`, `tests/fixtures/vertex_hypothesis_ensemble_v0_summary.json`, `tests/test_vertex_hypothesis_ensemble_v0.py` | ready for audit |
 | Codex | `codex/bezel-discontinuity-mining` | #179 | Diagnostics-only slot/cell join of #175 cell-discontinuity with #178 interior-bezel per-line crossings on the human-reviewed hybrid overlay quads. | `tools/probe_bezel_discontinuity_join.py`, `tools/BEZEL_DISCONTINUITY_JOIN_REPORT.md`, `tests/fixtures/hard_case_visual_feedback_bezel_join.json`, `tests/test_bezel_discontinuity_join.py` | ready for audit |
 
 *(Codex: please populate your row when you start something.)*
@@ -82,6 +82,7 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 ### Codex
 
+- **#198** — Vertex/axis source-selection confidence diagnostics. Existing fit-quality selection picks the lower-error source 17/23 times but still makes 15 false-confident selections; confidence/source selection remains the blocker.
 - **#197** — Geometry-first face split diagnostics. Generated face quads/cells are nondegenerate on paired rows; upstream vertex/axis confidence remains the blocker.
 - **#196** — SAM3 whole-cube silhouette bakeoff diagnostics. Whole-cube masks beat rembg on mean/median vertex error but have a regression tail; use as alternate hypothesis/cross-check only.
 - **#195** — SAM3 box-guided prompt bakeoff diagnostics. 7-anchor geometry boxes make SAM3 produce face masks, but vertex recall remains 0/16 top-3; do not wire box-guided face masks.

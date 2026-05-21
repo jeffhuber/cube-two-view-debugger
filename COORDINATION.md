@@ -57,7 +57,7 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 | Owner | Branch | PR | What | Touches | ETA |
 |---|---|---|---|---|---|
-| Codex | `codex/sam3-silhouette-bakeoff` | #196 | Diagnostics/data-only SAM3 whole-cube silhouette vs rembg bakeoff; preserves paired refined-model vertex-error comparison. | `tools/sam3_whole_cube_silhouette_bakeoff_v0.py`, `tools/SAM3_WHOLE_CUBE_SILHOUETTE_BAKEOFF_V0_REPORT.md`, `tests/fixtures/sam3_whole_cube_silhouette_bakeoff_v0_summary.json`, `tests/test_sam3_whole_cube_silhouette_bakeoff_v0.py` | ready for audit |
+| Codex | `codex/geometry-first-face-split` | #197 | Diagnostics/data-only geometry-first face split probe; verifies generated face quads/cells are mechanically viable and vertex accuracy is the blocker. | `tools/geometry_first_face_split_v0.py`, `tools/GEOMETRY_FIRST_FACE_SPLIT_V0_REPORT.md`, `tests/fixtures/geometry_first_face_split_v0_summary.json`, `tests/test_geometry_first_face_split_v0.py` | ready for audit |
 | Codex | `codex/bezel-discontinuity-mining` | #179 | Diagnostics-only slot/cell join of #175 cell-discontinuity with #178 interior-bezel per-line crossings on the human-reviewed hybrid overlay quads. | `tools/probe_bezel_discontinuity_join.py`, `tools/BEZEL_DISCONTINUITY_JOIN_REPORT.md`, `tests/fixtures/hard_case_visual_feedback_bezel_join.json`, `tests/test_bezel_discontinuity_join.py` | ready for audit |
 
 *(Codex: please populate your row when you start something.)*
@@ -82,6 +82,7 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 ### Codex
 
+- **#196** — SAM3 whole-cube silhouette bakeoff diagnostics. Whole-cube masks beat rembg on mean/median vertex error but have a regression tail; use as alternate hypothesis/cross-check only.
 - **#195** — SAM3 box-guided prompt bakeoff diagnostics. 7-anchor geometry boxes make SAM3 produce face masks, but vertex recall remains 0/16 top-3; do not wire box-guided face masks.
 - **#194** — SAM3 current-prompt bakeoff diagnostics. Plain text face prompts produce masks/candidates on all easy rows but 0/16 top-3 vertex recall; do not wire current face prompts.
 - **#193** — MLX SAM3 mask export diagnostics. Preserves Claude's cached whole-cube masks, proves the MLX bridge can run on this Mac without re-downloading weights, and keeps SAM3 outputs in the #192 external-mask schema.

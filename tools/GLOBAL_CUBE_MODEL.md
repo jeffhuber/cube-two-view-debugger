@@ -5,11 +5,17 @@ so that all 27 sticker quads come from one coherent geometry. This is
 the post-pivot Tier 2 work (per Decision Log entry **2026-05-20** in
 `COORDINATION.md`).
 
-**Status:** prototype validated against 27-case user ground truth
-(`tests/fixtures/gcm_vertex_ground_truth.json`). **Median vertex error
-77 px, p95 120 px, 11/27 cases within 50 px.** Not the "17/18 strong"
-claim from earlier iterations of this doc — that was overconfident
-visual spot-checking before ground truth landed.
+**Status:** prototype validated against user ground truth committed in
+`tests/fixtures/gcm_vertex_ground_truth.json` (28 cases, 23 with
+user-clicked `true_vertex`). **Median vertex error 72 px, p95 124 px,
+max 186 px. 5/23 within 50 px, 13/23 within 75 px, 17/23 within 100 px,
+6/23 > 100 px.** All numbers derived directly from the committed
+fixture's `current_vertex` (= the vertex shown to the user at labeling
+time, from the rembg + mean3 + score-gated-refinement pipeline) vs
+`true_vertex` (user's marked truth).
+
+Not the "17/18 strong" claim from earlier iterations of this doc —
+that was visual spot-checking before ground truth landed.
 
 ## Motivation
 
@@ -55,10 +61,11 @@ with the mean of three independent estimates:
 - **Bezel-detected vertex** — from `interior_bezel_detection.py` Hough line intersection
 - **Hexagon centroid** — mean of the 6 detected hexagon corners
 
-On the 27-case ground truth, this ensemble has mean error 77 px vs
-99 px for any single method alone (-22%). PnP's axes are kept; only
-the vertex (and derived geometry, shifted by the same delta) is
-overridden.
+Against the user ground truth, the ensemble improves median vertex
+error from the single-method baselines. (Single-method numbers from
+intermediate pipeline runs, not from the committed fixture which is
+post-refinement output.) PnP's axes are kept; only the vertex (and
+derived geometry, shifted by the same delta) is overridden.
 
 Rationale: each method has semi-independent error sources (PnP from
 silhouette noise propagation, bezel from Hough line uncertainty, hex
@@ -79,34 +86,43 @@ below threshold (default 200). High-score cases mean the ensemble is
 already at a real junction; refinement on them tends to drift to
 nearby sticker corners with marginally higher local score.
 
-On the 27-case ground truth this lowers mean error 77 → 71 px (8%),
-median 77 → 69 px (-10%), and helps the worst cases substantially
-(42_B 161 → 78 px, 32_B 158 → 36 px). One small regression on a
-borderline case (31_B 26 → 34 px). Doesn't fix the truly bad cases
-(44_A stayed at 186 px) — those are silhouette-input failures, not
-refinement-window failures.
+Refinement helps the worst cases substantially (42_B 161 → 78 px,
+32_B 158 → 36 px in probe runs) but doesn't fix the truly bad cases
+(44_A stayed at ~186 px in the fixture) — those are silhouette-input
+failures where the ensemble starting point is >40 px from truth so
+the search window can't reach truth. One small regression on a
+borderline case (31_B). Net effect on the committed fixture: median
+72 px, p95 124 px, max 186 px.
 
 ## Ground-truth-validated stats
 
+Computed directly from the committed fixture
+`tests/fixtures/gcm_vertex_ground_truth.json` (28 cases total; 23
+have user-clicked `true_vertex`). All numbers are
+`norm(current_vertex - true_vertex)` per case.
+
 | metric | rembg + mean3 + refinement |
 |---|---|
-| n cases evaluated | 23 (with user-marked true_vertex) |
-| mean vertex error | 77 px |
-| median | 76 px |
-| p95 | 120 px |
-| max | 161 px |
-| within 30 px | 5 |
-| within 50 px | 9 |
+| n cases evaluated | 23 |
+| mean vertex error | 78.7 px |
+| median | 72.3 px |
+| p95 | 123.6 px |
+| max | 185.5 px |
+| within 30 px | 0 |
+| within 50 px | 5 |
 | within 75 px | 13 |
 | within 100 px | 17 |
+| > 100 px | 6 |
 
-User's "correct" threshold: ~75 px in this round. By that bar, 13/23
-cases pass (57%), 17/23 (74%) are within 100 px (close enough for
-sticker sampling given 200-300 px cell width), and 2 cases (44_A,
-44_B) are >100 px.
+User's binary "correct" judgment in this round: 9/28 correct, 19/28
+wrong (most "wrong" cases are annotated "but close" — see fixture
+notes). 17/23 (74%) are within 100 px (close enough for sticker
+sampling given 200-300 px cell width). 6 cases > 100 px:
+44_A (185.5), 17_B (109.9), 28_A (124.4), 36_B (102.9), 28_B (102.5),
+44_B (117.6).
 
-Per-case details and the user's true_vertex marks are in
-`tests/fixtures/gcm_vertex_ground_truth.json`.
+Per-case details and the user's true_vertex marks are in the
+committed fixture.
 
 ## Why 44_A doesn't fix
 

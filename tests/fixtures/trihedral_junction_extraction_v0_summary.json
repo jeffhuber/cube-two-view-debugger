@@ -1,0 +1,3957 @@
+{
+  "config": {
+    "angleSearchDeg": [
+      -12.0,
+      -8.0,
+      -4.0,
+      0.0,
+      4.0,
+      8.0,
+      12.0
+    ],
+    "axisGoodDeg": 15.0,
+    "lineExtentPx": 260.0,
+    "lineHalfWidthPx": 2.0,
+    "lineSampleCount": 49,
+    "maxIntersectionSpreadPx": 55.0,
+    "maxMovePx": 190.0,
+    "minLineContrast": 0.03,
+    "minLineScore": 0.7,
+    "offsetRadiusPx": 180.0,
+    "offsetStepPx": 12.0,
+    "plausibleVertexPx": 50.0,
+    "sideOffsetPx": 16.0,
+    "strictVertexPx": 30.0
+  },
+  "description": "Diagnostics-only explicit dark-line extraction for visible trihedral junction candidates.",
+  "probe": "trihedral_junction_extraction_v0",
+  "rows": [
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1537.36,
+        2008.64
+      ],
+      "baselineVertexErrorPx": 26.85,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.331664,
+      "humanAxisOracleGatedAccepted": false,
+      "humanAxisOracleGatedImprovementPx": 0.0,
+      "humanAxisOracleGatedStatus": "strict",
+      "humanAxisOracleGatedVertex": [
+        1537.36,
+        2008.64
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 26.85,
+      "humanAxisOracleImprovementPx": -47.74,
+      "humanAxisOracleVertex": [
+        1489.32,
+        1986.3
+      ],
+      "humanAxisOracleVertexErrorPx": 74.59,
+      "humanVertex": [
+        1546.87,
+        2033.75
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 12 - B - white up IMG_6702.JPG",
+      "key": "12_B",
+      "modelAxisMaxAngleErrorDeg": 60.81,
+      "modelJunction": {
+        "intersectionSpreadPx": 51.2,
+        "lines": [
+          {
+            "anchor": [
+              1531.83,
+              1997.99
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              -0.89,
+              0.46
+            ],
+            "meanContrast": 0.100817,
+            "meanDarkness": 0.743812,
+            "normal": [
+              -0.46,
+              -0.89
+            ],
+            "offsetFromStartPx": 12.0,
+            "score": 0.892311,
+            "status": "ok",
+            "supportFraction": 0.571429,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1477.93,
+              2016.88
+            ],
+            "angleDeltaDeg": -8.0,
+            "direction": [
+              -0.14,
+              -0.99
+            ],
+            "meanContrast": 0.037911,
+            "meanDarkness": 0.687915,
+            "normal": [
+              0.99,
+              -0.14
+            ],
+            "offsetFromStartPx": -60.0,
+            "score": 0.7353,
+            "status": "ok",
+            "supportFraction": 0.489796,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1547.66,
+              1986.96
+            ],
+            "angleDeltaDeg": -4.0,
+            "direction": [
+              0.9,
+              0.43
+            ],
+            "meanContrast": 0.108492,
+            "meanDarkness": 0.830552,
+            "normal": [
+              -0.43,
+              0.9
+            ],
+            "offsetFromStartPx": -24.0,
+            "score": 0.921547,
+            "status": "ok",
+            "supportFraction": 0.673469,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.849719,
+        "minLineContrast": 0.037911,
+        "minLineScore": 0.7353,
+        "movePx": 43.49,
+        "pairwiseIntersections": [
+          [
+            1479.11,
+            2025.24
+          ],
+          [
+            1550.52,
+            1988.33
+          ],
+          [
+            1468.34,
+            1949.06
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.37338,
+      "modelJunctionGatedAccepted": true,
+      "modelJunctionGatedImprovementPx": -39.45,
+      "modelJunctionGatedStatus": "blocked",
+      "modelJunctionGatedVertex": [
+        1499.33,
+        1987.54
+      ],
+      "modelJunctionGatedVertexErrorPx": 66.3,
+      "modelJunctionImprovementPx": -39.45,
+      "modelJunctionVertex": [
+        1499.33,
+        1987.54
+      ],
+      "modelJunctionVertexErrorPx": 66.3,
+      "setId": "12",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1495.99,
+        1814.07
+      ],
+      "baselineVertexErrorPx": 53.9,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.805726,
+      "humanAxisOracleGatedAccepted": true,
+      "humanAxisOracleGatedImprovementPx": -17.95,
+      "humanAxisOracleGatedStatus": "blocked",
+      "humanAxisOracleGatedVertex": [
+        1474.44,
+        1729.64
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 71.85,
+      "humanAxisOracleImprovementPx": -17.95,
+      "humanAxisOracleVertex": [
+        1474.44,
+        1729.64
+      ],
+      "humanAxisOracleVertexErrorPx": 71.85,
+      "humanVertex": [
+        1445.43,
+        1795.38
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 14 - B - white up IMG_6706.JPG",
+      "key": "14_B",
+      "modelAxisMaxAngleErrorDeg": 62.48,
+      "modelJunction": {
+        "intersectionSpreadPx": 12.12,
+        "lines": [
+          {
+            "anchor": [
+              1454.6,
+              1740.97
+            ],
+            "angleDeltaDeg": 0.0,
+            "direction": [
+              -0.87,
+              0.49
+            ],
+            "meanContrast": 0.177986,
+            "meanDarkness": 0.854673,
+            "normal": [
+              -0.49,
+              -0.87
+            ],
+            "offsetFromStartPx": 84.0,
+            "score": 1.064465,
+            "status": "ok",
+            "supportFraction": 0.693878,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1484.05,
+              1812.89
+            ],
+            "angleDeltaDeg": 8.0,
+            "direction": [
+              0.1,
+              -1.0
+            ],
+            "meanContrast": 0.031224,
+            "meanDarkness": 0.717713,
+            "normal": [
+              1.0,
+              0.1
+            ],
+            "offsetFromStartPx": -12.0,
+            "score": 0.79458,
+            "status": "ok",
+            "supportFraction": 0.571429,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1520.68,
+              1746.43
+            ],
+            "angleDeltaDeg": -8.0,
+            "direction": [
+              0.94,
+              0.34
+            ],
+            "meanContrast": 0.080179,
+            "meanDarkness": 0.789375,
+            "normal": [
+              -0.34,
+              0.94
+            ],
+            "offsetFromStartPx": -72.0,
+            "score": 0.877618,
+            "status": "ok",
+            "supportFraction": 0.469388,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.912221,
+        "minLineContrast": 0.031224,
+        "minLineScore": 0.79458,
+        "movePx": 86.32,
+        "pairwiseIntersections": [
+          [
+            1493.43,
+            1719.1
+          ],
+          [
+            1474.54,
+            1729.74
+          ],
+          [
+            1491.74,
+            1735.96
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.71538,
+      "modelJunctionGatedAccepted": true,
+      "modelJunctionGatedImprovementPx": -24.81,
+      "modelJunctionGatedStatus": "blocked",
+      "modelJunctionGatedVertex": [
+        1486.57,
+        1728.27
+      ],
+      "modelJunctionGatedVertexErrorPx": 78.72,
+      "modelJunctionImprovementPx": -24.81,
+      "modelJunctionVertex": [
+        1486.57,
+        1728.27
+      ],
+      "modelJunctionVertexErrorPx": 78.72,
+      "setId": "14",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1484.51,
+        2009.22
+      ],
+      "baselineVertexErrorPx": 63.51,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.298773,
+      "humanAxisOracleGatedAccepted": false,
+      "humanAxisOracleGatedImprovementPx": 0.0,
+      "humanAxisOracleGatedStatus": "blocked",
+      "humanAxisOracleGatedVertex": [
+        1484.51,
+        2009.22
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 63.51,
+      "humanAxisOracleImprovementPx": 33.09,
+      "humanAxisOracleVertex": [
+        1391.17,
+        2000.27
+      ],
+      "humanAxisOracleVertexErrorPx": 30.41,
+      "humanVertex": [
+        1421.1,
+        2005.7
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 15 - A - white up IMG_6707.JPG",
+      "key": "15_A",
+      "modelAxisMaxAngleErrorDeg": 6.53,
+      "modelJunction": {
+        "intersectionSpreadPx": 86.06,
+        "lines": [
+          {
+            "anchor": [
+              1436.69,
+              2005.08
+            ],
+            "angleDeltaDeg": 8.0,
+            "direction": [
+              -0.09,
+              1.0
+            ],
+            "meanContrast": 0.024724,
+            "meanDarkness": 0.794225,
+            "normal": [
+              -1.0,
+              -0.09
+            ],
+            "offsetFromStartPx": 48.0,
+            "score": 0.78132,
+            "status": "ok",
+            "supportFraction": 0.530612,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1424.67,
+              2084.29
+            ],
+            "angleDeltaDeg": 12.0,
+            "direction": [
+              -0.78,
+              -0.62
+            ],
+            "meanContrast": 0.038302,
+            "meanDarkness": 0.83141,
+            "normal": [
+              0.62,
+              -0.78
+            ],
+            "offsetFromStartPx": -96.0,
+            "score": 0.787079,
+            "status": "ok",
+            "supportFraction": 0.489796,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1445.57,
+              1934.79
+            ],
+            "angleDeltaDeg": 0.0,
+            "direction": [
+              0.89,
+              -0.46
+            ],
+            "meanContrast": 0.067369,
+            "meanDarkness": 0.82165,
+            "normal": [
+              0.46,
+              0.89
+            ],
+            "offsetFromStartPx": -84.0,
+            "score": 0.871119,
+            "status": "ok",
+            "supportFraction": 0.673469,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.813173,
+        "minLineContrast": 0.024724,
+        "minLineScore": 0.78132,
+        "movePx": 87.5,
+        "pairwiseIntersections": [
+          [
+            1429.23,
+            2087.92
+          ],
+          [
+            1442.89,
+            1936.17
+          ],
+          [
+            1318.93,
+            2000.24
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.298305,
+      "modelJunctionGatedAccepted": false,
+      "modelJunctionGatedImprovementPx": 0.0,
+      "modelJunctionGatedStatus": "blocked",
+      "modelJunctionGatedVertex": [
+        1484.51,
+        2009.22
+      ],
+      "modelJunctionGatedVertexErrorPx": 63.51,
+      "modelJunctionImprovementPx": 39.31,
+      "modelJunctionVertex": [
+        1397.02,
+        2008.11
+      ],
+      "modelJunctionVertexErrorPx": 24.2,
+      "setId": "15",
+      "side": "A"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1491.53,
+        2003.42
+      ],
+      "baselineVertexErrorPx": 71.99,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.342446,
+      "humanAxisOracleGatedAccepted": true,
+      "humanAxisOracleGatedImprovementPx": 10.74,
+      "humanAxisOracleGatedStatus": "blocked",
+      "humanAxisOracleGatedVertex": [
+        1598.7,
+        1936.87
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 61.25,
+      "humanAxisOracleImprovementPx": 10.74,
+      "humanAxisOracleVertex": [
+        1598.7,
+        1936.87
+      ],
+      "humanAxisOracleVertexErrorPx": 61.25,
+      "humanVertex": [
+        1561.2,
+        1985.3
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 15 - B - white up IMG_6708.JPG",
+      "key": "15_B",
+      "modelAxisMaxAngleErrorDeg": 4.06,
+      "modelJunction": {
+        "intersectionSpreadPx": 36.37,
+        "lines": [
+          {
+            "anchor": [
+              1478.59,
+              1983.21
+            ],
+            "angleDeltaDeg": -4.0,
+            "direction": [
+              0.84,
+              -0.54
+            ],
+            "meanContrast": 0.067812,
+            "meanDarkness": 0.810217,
+            "normal": [
+              0.54,
+              0.84
+            ],
+            "offsetFromStartPx": -24.0,
+            "score": 0.848146,
+            "status": "ok",
+            "supportFraction": 0.428571,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1541.37,
+              1907.61
+            ],
+            "angleDeltaDeg": -4.0,
+            "direction": [
+              -0.89,
+              -0.46
+            ],
+            "meanContrast": 0.12044,
+            "meanDarkness": 0.826806,
+            "normal": [
+              0.46,
+              -0.89
+            ],
+            "offsetFromStartPx": 108.0,
+            "score": 0.91564,
+            "status": "ok",
+            "supportFraction": 0.653061,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1623.52,
+              2005.05
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              -0.01,
+              1.0
+            ],
+            "meanContrast": 0.048161,
+            "meanDarkness": 0.746347,
+            "normal": [
+              -1.0,
+              -0.01
+            ],
+            "offsetFromStartPx": -132.0,
+            "score": 0.807995,
+            "status": "ok",
+            "supportFraction": 0.591837,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.85726,
+        "minLineContrast": 0.048161,
+        "minLineScore": 0.807995,
+        "movePx": 141.74,
+        "pairwiseIntersections": [
+          [
+            1571.76,
+            1923.32
+          ],
+          [
+            1624.68,
+            1889.3
+          ],
+          [
+            1624.07,
+            1950.35
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.461742,
+      "modelJunctionGatedAccepted": true,
+      "modelJunctionGatedImprovementPx": -6.87,
+      "modelJunctionGatedStatus": "blocked",
+      "modelJunctionGatedVertex": [
+        1606.83,
+        1920.99
+      ],
+      "modelJunctionGatedVertexErrorPx": 78.86,
+      "modelJunctionImprovementPx": -6.87,
+      "modelJunctionVertex": [
+        1606.83,
+        1920.99
+      ],
+      "modelJunctionVertexErrorPx": 78.86,
+      "setId": "15",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1479.79,
+        1934.83
+      ],
+      "baselineVertexErrorPx": 107.18,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.440849,
+      "humanAxisOracleGatedAccepted": true,
+      "humanAxisOracleGatedImprovementPx": 26.37,
+      "humanAxisOracleGatedStatus": "blocked",
+      "humanAxisOracleGatedVertex": [
+        1571.01,
+        1770.45
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 80.81,
+      "humanAxisOracleImprovementPx": 26.37,
+      "humanAxisOracleVertex": [
+        1571.01,
+        1770.45
+      ],
+      "humanAxisOracleVertexErrorPx": 80.81,
+      "humanVertex": [
+        1531.65,
+        1841.03
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 17 - B - white up.JPG",
+      "key": "17_B",
+      "modelAxisMaxAngleErrorDeg": 5.15,
+      "modelJunction": {
+        "intersectionSpreadPx": 60.59,
+        "lines": [
+          {
+            "anchor": [
+              1587.35,
+              1944.61
+            ],
+            "angleDeltaDeg": 8.0,
+            "direction": [
+              -0.09,
+              1.0
+            ],
+            "meanContrast": 0.091101,
+            "meanDarkness": 0.754426,
+            "normal": [
+              -1.0,
+              -0.09
+            ],
+            "offsetFromStartPx": -108.0,
+            "score": 0.875129,
+            "status": "ok",
+            "supportFraction": 0.714286,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1426.75,
+              1813.96
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              0.92,
+              -0.4
+            ],
+            "meanContrast": 0.144041,
+            "meanDarkness": 0.883,
+            "normal": [
+              0.4,
+              0.92
+            ],
+            "offsetFromStartPx": -132.0,
+            "score": 1.035266,
+            "status": "ok",
+            "supportFraction": 0.408163,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1546.38,
+              1793.76
+            ],
+            "angleDeltaDeg": 0.0,
+            "direction": [
+              -0.9,
+              -0.43
+            ],
+            "meanContrast": 0.150352,
+            "meanDarkness": 0.761159,
+            "normal": [
+              0.43,
+              -0.9
+            ],
+            "offsetFromStartPx": 156.0,
+            "score": 0.998184,
+            "status": "ok",
+            "supportFraction": 0.571429,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.969526,
+        "minLineContrast": 0.091101,
+        "minLineScore": 0.875129,
+        "movePx": 182.61,
+        "pairwiseIntersections": [
+          [
+            1606.13,
+            1735.97
+          ],
+          [
+            1598.68,
+            1818.75
+          ],
+          [
+            1511.52,
+            1777.1
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.401207,
+      "modelJunctionGatedAccepted": false,
+      "modelJunctionGatedImprovementPx": 0.0,
+      "modelJunctionGatedStatus": "blocked",
+      "modelJunctionGatedVertex": [
+        1479.79,
+        1934.83
+      ],
+      "modelJunctionGatedVertexErrorPx": 107.18,
+      "modelJunctionImprovementPx": 31.67,
+      "modelJunctionVertex": [
+        1572.11,
+        1777.27
+      ],
+      "modelJunctionVertexErrorPx": 75.51,
+      "setId": "17",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1362.39,
+        1964.47
+      ],
+      "baselineVertexErrorPx": 38.72,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.520345,
+      "humanAxisOracleGatedAccepted": false,
+      "humanAxisOracleGatedImprovementPx": 0.0,
+      "humanAxisOracleGatedStatus": "plausible",
+      "humanAxisOracleGatedVertex": [
+        1362.39,
+        1964.47
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 38.72,
+      "humanAxisOracleImprovementPx": -41.11,
+      "humanAxisOracleVertex": [
+        1424.54,
+        1942.44
+      ],
+      "humanAxisOracleVertexErrorPx": 79.83,
+      "humanVertex": [
+        1371.5,
+        2002.1
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 21 - A - white up.JPG",
+      "key": "21_A",
+      "modelAxisMaxAngleErrorDeg": 5.08,
+      "modelJunction": {
+        "intersectionSpreadPx": 48.32,
+        "lines": [
+          {
+            "anchor": [
+              1380.33,
+              1933.26
+            ],
+            "angleDeltaDeg": -4.0,
+            "direction": [
+              -0.87,
+              -0.5
+            ],
+            "meanContrast": 0.133621,
+            "meanDarkness": 0.886561,
+            "normal": [
+              0.5,
+              -0.87
+            ],
+            "offsetFromStartPx": 36.0,
+            "score": 0.92569,
+            "status": "ok",
+            "supportFraction": 0.591837,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1362.39,
+              1964.47
+            ],
+            "angleDeltaDeg": 0.0,
+            "direction": [
+              0.88,
+              -0.47
+            ],
+            "meanContrast": 0.087094,
+            "meanDarkness": 0.823978,
+            "normal": [
+              0.47,
+              0.88
+            ],
+            "offsetFromStartPx": 0.0,
+            "score": 0.862718,
+            "status": "ok",
+            "supportFraction": 0.489796,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1338.78,
+              1968.79
+            ],
+            "angleDeltaDeg": -4.0,
+            "direction": [
+              0.18,
+              0.98
+            ],
+            "meanContrast": 0.010159,
+            "meanDarkness": 0.737334,
+            "normal": [
+              -0.98,
+              0.18
+            ],
+            "offsetFromStartPx": 24.0,
+            "score": 0.739981,
+            "status": "ok",
+            "supportFraction": 0.469388,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.842796,
+        "minLineContrast": 0.010159,
+        "minLineScore": 0.739981,
+        "movePx": 24.4,
+        "pairwiseIntersections": [
+          [
+            1399.84,
+            1944.47
+          ],
+          [
+            1326.58,
+            1902.37
+          ],
+          [
+            1340.17,
+            1976.34
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.389538,
+      "modelJunctionGatedAccepted": false,
+      "modelJunctionGatedImprovementPx": 0.0,
+      "modelJunctionGatedStatus": "plausible",
+      "modelJunctionGatedVertex": [
+        1362.39,
+        1964.47
+      ],
+      "modelJunctionGatedVertexErrorPx": 38.72,
+      "modelJunctionImprovementPx": -24.38,
+      "modelJunctionVertex": [
+        1355.53,
+        1941.06
+      ],
+      "modelJunctionVertexErrorPx": 63.1,
+      "setId": "21",
+      "side": "A"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1529.0,
+        2073.0
+      ],
+      "baselineVertexErrorPx": 75.69,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.312744,
+      "humanAxisOracleGatedAccepted": false,
+      "humanAxisOracleGatedImprovementPx": 0.0,
+      "humanAxisOracleGatedStatus": "blocked",
+      "humanAxisOracleGatedVertex": [
+        1529.0,
+        2073.0
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 75.69,
+      "humanAxisOracleImprovementPx": -18.72,
+      "humanAxisOracleVertex": [
+        1628.74,
+        1955.46
+      ],
+      "humanAxisOracleVertexErrorPx": 94.41,
+      "humanVertex": [
+        1599.4,
+        2045.2
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 21 - B - white up.JPG",
+      "key": "21_B",
+      "modelAxisMaxAngleErrorDeg": 5.12,
+      "modelJunction": {
+        "intersectionSpreadPx": 92.56,
+        "lines": [
+          {
+            "anchor": [
+              1618.04,
+              2153.45
+            ],
+            "angleDeltaDeg": -12.0,
+            "direction": [
+              0.67,
+              -0.74
+            ],
+            "meanContrast": 0.024582,
+            "meanDarkness": 0.798471,
+            "normal": [
+              0.74,
+              0.67
+            ],
+            "offsetFromStartPx": 120.0,
+            "score": 0.745555,
+            "status": "ok",
+            "supportFraction": 0.469388,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1636.63,
+              2081.95
+            ],
+            "angleDeltaDeg": 8.0,
+            "direction": [
+              -0.08,
+              1.0
+            ],
+            "meanContrast": 0.027172,
+            "meanDarkness": 0.91892,
+            "normal": [
+              -1.0,
+              -0.08
+            ],
+            "offsetFromStartPx": -108.0,
+            "score": 0.804126,
+            "status": "ok",
+            "supportFraction": 0.632653,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1593.15,
+              1957.64
+            ],
+            "angleDeltaDeg": -4.0,
+            "direction": [
+              -0.87,
+              -0.49
+            ],
+            "meanContrast": 0.086863,
+            "meanDarkness": 0.847654,
+            "normal": [
+              0.49,
+              -0.87
+            ],
+            "offsetFromStartPx": 132.0,
+            "score": 0.876793,
+            "status": "ok",
+            "supportFraction": 0.632653,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.808825,
+        "minLineContrast": 0.024582,
+        "minLineScore": 0.745555,
+        "movePx": 140.34,
+        "pairwiseIntersections": [
+          [
+            1632.16,
+            2137.86
+          ],
+          [
+            1727.05,
+            2033.05
+          ],
+          [
+            1644.27,
+            1986.43
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.237996,
+      "modelJunctionGatedAccepted": false,
+      "modelJunctionGatedImprovementPx": 0.0,
+      "modelJunctionGatedStatus": "blocked",
+      "modelJunctionGatedVertex": [
+        1529.0,
+        2073.0
+      ],
+      "modelJunctionGatedVertexErrorPx": 75.69,
+      "modelJunctionImprovementPx": 6.88,
+      "modelJunctionVertex": [
+        1667.83,
+        2052.45
+      ],
+      "modelJunctionVertexErrorPx": 68.81,
+      "setId": "21",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1636.2,
+        1996.37
+      ],
+      "baselineVertexErrorPx": 87.57,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.487014,
+      "humanAxisOracleGatedAccepted": false,
+      "humanAxisOracleGatedImprovementPx": 0.0,
+      "humanAxisOracleGatedStatus": "blocked",
+      "humanAxisOracleGatedVertex": [
+        1636.2,
+        1996.37
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 87.57,
+      "humanAxisOracleImprovementPx": 11.18,
+      "humanAxisOracleVertex": [
+        1598.91,
+        1965.74
+      ],
+      "humanAxisOracleVertexErrorPx": 76.39,
+      "humanVertex": [
+        1554.5,
+        2027.9
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 24 - A - white up IMG_6769.JPG",
+      "key": "24_A",
+      "modelAxisMaxAngleErrorDeg": 61.72,
+      "modelJunction": {
+        "intersectionSpreadPx": 55.72,
+        "lines": [
+          {
+            "anchor": [
+              1622.39,
+              2016.0
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              0.82,
+              0.58
+            ],
+            "meanContrast": 0.114149,
+            "meanDarkness": 0.64287,
+            "normal": [
+              -0.58,
+              0.82
+            ],
+            "offsetFromStartPx": 24.0,
+            "score": 0.953987,
+            "status": "ok",
+            "supportFraction": 0.428571,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1624.23,
+              1995.59
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              0.06,
+              -1.0
+            ],
+            "meanContrast": 0.089055,
+            "meanDarkness": 0.71515,
+            "normal": [
+              1.0,
+              0.06
+            ],
+            "offsetFromStartPx": -12.0,
+            "score": 0.848408,
+            "status": "ok",
+            "supportFraction": 0.469388,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1602.23,
+              1932.89
+            ],
+            "angleDeltaDeg": 0.0,
+            "direction": [
+              -0.88,
+              0.47
+            ],
+            "meanContrast": 0.166454,
+            "meanDarkness": 0.846769,
+            "normal": [
+              -0.47,
+              -0.88
+            ],
+            "offsetFromStartPx": 72.0,
+            "score": 1.045126,
+            "status": "ok",
+            "supportFraction": 0.795918,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.949174,
+        "minLineContrast": 0.089055,
+        "minLineScore": 0.848408,
+        "movePx": 47.7,
+        "pairwiseIntersections": [
+          [
+            1622.98,
+            2016.42
+          ],
+          [
+            1546.77,
+            1962.51
+          ],
+          [
+            1628.84,
+            1918.68
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.482965,
+      "modelJunctionGatedAccepted": false,
+      "modelJunctionGatedImprovementPx": 0.0,
+      "modelJunctionGatedStatus": "blocked",
+      "modelJunctionGatedVertex": [
+        1636.2,
+        1996.37
+      ],
+      "modelJunctionGatedVertexErrorPx": 87.57,
+      "modelJunctionImprovementPx": 10.92,
+      "modelJunctionVertex": [
+        1599.53,
+        1965.87
+      ],
+      "modelJunctionVertexErrorPx": 76.65,
+      "setId": "24",
+      "side": "A"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1471.0,
+        2003.0
+      ],
+      "baselineVertexErrorPx": 72.54,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.396365,
+      "humanAxisOracleGatedAccepted": false,
+      "humanAxisOracleGatedImprovementPx": 0.0,
+      "humanAxisOracleGatedStatus": "blocked",
+      "humanAxisOracleGatedVertex": [
+        1471.0,
+        2003.0
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 72.54,
+      "humanAxisOracleImprovementPx": 50.41,
+      "humanAxisOracleVertex": [
+        1483.48,
+        2073.37
+      ],
+      "humanAxisOracleVertexErrorPx": 22.13,
+      "humanVertex": [
+        1461.4,
+        2074.9
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 26 - A - white up IMG_6773.JPG",
+      "key": "26_A",
+      "modelAxisMaxAngleErrorDeg": 2.99,
+      "modelJunction": {
+        "intersectionSpreadPx": 50.86,
+        "lines": [
+          {
+            "anchor": [
+              1530.93,
+              2005.85
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              -0.05,
+              1.0
+            ],
+            "meanContrast": 0.065799,
+            "meanDarkness": 0.682926,
+            "normal": [
+              -1.0,
+              -0.05
+            ],
+            "offsetFromStartPx": -60.0,
+            "score": 0.786367,
+            "status": "ok",
+            "supportFraction": 0.367347,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1457.81,
+              2023.05
+            ],
+            "angleDeltaDeg": 0.0,
+            "direction": [
+              -0.84,
+              -0.55
+            ],
+            "meanContrast": 0.144868,
+            "meanDarkness": 0.769212,
+            "normal": [
+              0.55,
+              -0.84
+            ],
+            "offsetFromStartPx": -24.0,
+            "score": 0.969038,
+            "status": "ok",
+            "supportFraction": 0.612245,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1477.08,
+              2013.35
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              0.86,
+              -0.51
+            ],
+            "meanContrast": 0.142844,
+            "meanDarkness": 0.789484,
+            "normal": [
+              0.51,
+              0.86
+            ],
+            "offsetFromStartPx": 12.0,
+            "score": 0.99427,
+            "status": "ok",
+            "supportFraction": 0.673469,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.916558,
+        "minLineContrast": 0.065799,
+        "minLineScore": 0.786367,
+        "movePx": 41.41,
+        "pairwiseIntersections": [
+          [
+            1527.78,
+            2068.86
+          ],
+          [
+            1532.19,
+            1980.67
+          ],
+          [
+            1459.19,
+            2023.96
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.458522,
+      "modelJunctionGatedAccepted": true,
+      "modelJunctionGatedImprovementPx": 4.98,
+      "modelJunctionGatedStatus": "blocked",
+      "modelJunctionGatedVertex": [
+        1506.39,
+        2024.5
+      ],
+      "modelJunctionGatedVertexErrorPx": 67.56,
+      "modelJunctionImprovementPx": 4.98,
+      "modelJunctionVertex": [
+        1506.39,
+        2024.5
+      ],
+      "modelJunctionVertexErrorPx": 67.56,
+      "setId": "26",
+      "side": "A"
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1442.64,
+        2016.51
+      ],
+      "baselineVertexErrorPx": 80.9,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.38498,
+      "humanAxisOracleGatedAccepted": false,
+      "humanAxisOracleGatedImprovementPx": 0.0,
+      "humanAxisOracleGatedStatus": "blocked",
+      "humanAxisOracleGatedVertex": [
+        1442.64,
+        2016.51
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 80.9,
+      "humanAxisOracleImprovementPx": 56.94,
+      "humanAxisOracleVertex": [
+        1491.95,
+        2095.55
+      ],
+      "humanAxisOracleVertexErrorPx": 23.96,
+      "humanVertex": [
+        1468.1,
+        2093.3
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 26 - B - white up IMG_6774.JPG",
+      "key": "26_B",
+      "modelAxisMaxAngleErrorDeg": 64.04,
+      "modelJunction": {
+        "intersectionSpreadPx": 126.43,
+        "lines": [
+          {
+            "anchor": [
+              1383.75,
+              2107.04
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              0.84,
+              0.55
+            ],
+            "meanContrast": 0.183178,
+            "meanDarkness": 0.809228,
+            "normal": [
+              -0.55,
+              0.84
+            ],
+            "offsetFromStartPx": 108.0,
+            "score": 1.067666,
+            "status": "ok",
+            "supportFraction": 0.693878,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1460.99,
+              2047.48
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              -0.86,
+              0.51
+            ],
+            "meanContrast": 0.071492,
+            "meanDarkness": 0.780217,
+            "normal": [
+              -0.51,
+              -0.86
+            ],
+            "offsetFromStartPx": -36.0,
+            "score": 0.87294,
+            "status": "ok",
+            "supportFraction": 0.55102,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1549.84,
+              2029.64
+            ],
+            "angleDeltaDeg": 8.0,
+            "direction": [
+              0.12,
+              -0.99
+            ],
+            "meanContrast": 0.054496,
+            "meanDarkness": 0.800275,
+            "normal": [
+              0.99,
+              0.12
+            ],
+            "offsetFromStartPx": 108.0,
+            "score": 0.800016,
+            "status": "ok",
+            "supportFraction": 0.428571,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.913541,
+        "minLineContrast": 0.054496,
+        "minLineScore": 0.800016,
+        "movePx": 92.01,
+        "pairwiseIntersections": [
+          [
+            1372.73,
+            2099.82
+          ],
+          [
+            1528.94,
+            2202.1
+          ],
+          [
+            1554.39,
+            1992.09
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.380688,
+      "modelJunctionGatedAccepted": false,
+      "modelJunctionGatedImprovementPx": 0.0,
+      "modelJunctionGatedStatus": "blocked",
+      "modelJunctionGatedVertex": [
+        1442.64,
+        2016.51
+      ],
+      "modelJunctionGatedVertexErrorPx": 80.9,
+      "modelJunctionImprovementPx": 63.02,
+      "modelJunctionVertex": [
+        1485.35,
+        2098.01
+      ],
+      "modelJunctionVertexErrorPx": 17.88,
+      "setId": "26",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1525.97,
+        1947.84
+      ],
+      "baselineVertexErrorPx": 6.99,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.744898,
+      "humanAxisOracleGatedAccepted": true,
+      "humanAxisOracleGatedImprovementPx": -81.72,
+      "humanAxisOracleGatedStatus": "blocked",
+      "humanAxisOracleGatedVertex": [
+        1477.3,
+        1865.56
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 88.7,
+      "humanAxisOracleImprovementPx": -81.72,
+      "humanAxisOracleVertex": [
+        1477.3,
+        1865.56
+      ],
+      "humanAxisOracleVertexErrorPx": 88.7,
+      "humanVertex": [
+        1521.51,
+        1942.46
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 27 - B - white up IMG_6776.JPG",
+      "key": "27_B",
+      "modelAxisMaxAngleErrorDeg": 3.4,
+      "modelJunction": {
+        "intersectionSpreadPx": 24.7,
+        "lines": [
+          {
+            "anchor": [
+              1492.21,
+              1870.92
+            ],
+            "angleDeltaDeg": 8.0,
+            "direction": [
+              0.92,
+              -0.4
+            ],
+            "meanContrast": 0.113536,
+            "meanDarkness": 0.674515,
+            "normal": [
+              0.4,
+              0.92
+            ],
+            "offsetFromStartPx": -84.0,
+            "score": 0.983276,
+            "status": "ok",
+            "supportFraction": 0.591837,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1465.98,
+              1948.97
+            ],
+            "angleDeltaDeg": -4.0,
+            "direction": [
+              0.02,
+              1.0
+            ],
+            "meanContrast": 0.124054,
+            "meanDarkness": 0.714983,
+            "normal": [
+              -1.0,
+              0.02
+            ],
+            "offsetFromStartPx": 60.0,
+            "score": 0.916806,
+            "status": "ok",
+            "supportFraction": 0.591837,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1553.9,
+              1894.74
+            ],
+            "angleDeltaDeg": 0.0,
+            "direction": [
+              -0.89,
+              -0.47
+            ],
+            "meanContrast": 0.163711,
+            "meanDarkness": 0.862686,
+            "normal": [
+              0.47,
+              -0.89
+            ],
+            "offsetFromStartPx": 60.0,
+            "score": 1.049554,
+            "status": "ok",
+            "supportFraction": 0.55102,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.983212,
+        "minLineContrast": 0.113536,
+        "minLineScore": 0.916806,
+        "movePx": 95.82,
+        "pairwiseIntersections": [
+          [
+            1464.66,
+            1882.9
+          ],
+          [
+            1501.31,
+            1866.97
+          ],
+          [
+            1463.95,
+            1847.24
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.760734,
+      "modelJunctionGatedAccepted": true,
+      "modelJunctionGatedImprovementPx": -81.93,
+      "modelJunctionGatedStatus": "blocked",
+      "modelJunctionGatedVertex": [
+        1476.64,
+        1865.7
+      ],
+      "modelJunctionGatedVertexErrorPx": 88.91,
+      "modelJunctionImprovementPx": -81.93,
+      "modelJunctionVertex": [
+        1476.64,
+        1865.7
+      ],
+      "modelJunctionVertexErrorPx": 88.91,
+      "setId": "27",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1549.19,
+        1946.05
+      ],
+      "baselineVertexErrorPx": 124.3,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.477789,
+      "humanAxisOracleGatedAccepted": true,
+      "humanAxisOracleGatedImprovementPx": 37.41,
+      "humanAxisOracleGatedStatus": "blocked",
+      "humanAxisOracleGatedVertex": [
+        1513.6,
+        1966.76
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 86.9,
+      "humanAxisOracleImprovementPx": 37.41,
+      "humanAxisOracleVertex": [
+        1513.6,
+        1966.76
+      ],
+      "humanAxisOracleVertexErrorPx": 86.9,
+      "humanVertex": [
+        1426.7,
+        1967.2
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 28 - A - white up IMG_6777.JPG",
+      "key": "28_A",
+      "modelAxisMaxAngleErrorDeg": 4.91,
+      "modelJunction": {
+        "intersectionSpreadPx": 116.4,
+        "lines": [
+          {
+            "anchor": [
+              1503.85,
+              1861.43
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              0.88,
+              -0.47
+            ],
+            "meanContrast": 0.125912,
+            "meanDarkness": 0.865721,
+            "normal": [
+              0.47,
+              0.88
+            ],
+            "offsetFromStartPx": -96.0,
+            "score": 0.967547,
+            "status": "ok",
+            "supportFraction": 0.77551,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1489.19,
+              1946.75
+            ],
+            "angleDeltaDeg": -4.0,
+            "direction": [
+              0.01,
+              1.0
+            ],
+            "meanContrast": 0.085624,
+            "meanDarkness": 0.818226,
+            "normal": [
+              -1.0,
+              0.01
+            ],
+            "offsetFromStartPx": 60.0,
+            "score": 0.838877,
+            "status": "ok",
+            "supportFraction": 0.44898,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1471.74,
+              2052.94
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              -0.81,
+              -0.59
+            ],
+            "meanContrast": 0.113655,
+            "meanDarkness": 0.59745,
+            "normal": [
+              0.59,
+              -0.81
+            ],
+            "offsetFromStartPx": -132.0,
+            "score": 0.914902,
+            "status": "ok",
+            "supportFraction": 0.367347,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.907109,
+        "minLineContrast": 0.085624,
+        "minLineScore": 0.838877,
+        "movePx": 112.97,
+        "pairwiseIntersections": [
+          [
+            1488.42,
+            1869.67
+          ],
+          [
+            1333.63,
+            1952.34
+          ],
+          [
+            1490.39,
+            2066.52
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.401439,
+      "modelJunctionGatedAccepted": false,
+      "modelJunctionGatedImprovementPx": 0.0,
+      "modelJunctionGatedStatus": "blocked",
+      "modelJunctionGatedVertex": [
+        1549.19,
+        1946.05
+      ],
+      "modelJunctionGatedVertexErrorPx": 124.3,
+      "modelJunctionImprovementPx": 112.68,
+      "modelJunctionVertex": [
+        1437.48,
+        1962.85
+      ],
+      "modelJunctionVertexErrorPx": 11.63,
+      "setId": "28",
+      "side": "A"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1477.34,
+        1934.2
+      ],
+      "baselineVertexErrorPx": 102.57,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.434242,
+      "humanAxisOracleGatedAccepted": false,
+      "humanAxisOracleGatedImprovementPx": 0.0,
+      "humanAxisOracleGatedStatus": "blocked",
+      "humanAxisOracleGatedVertex": [
+        1477.34,
+        1934.2
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 102.57,
+      "humanAxisOracleImprovementPx": 30.29,
+      "humanAxisOracleVertex": [
+        1461.26,
+        1960.55
+      ],
+      "humanAxisOracleVertexErrorPx": 72.27,
+      "humanVertex": [
+        1410.5,
+        2012.0
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 28 - B - white up IMG_6778.JPG",
+      "key": "28_B",
+      "modelAxisMaxAngleErrorDeg": 2.91,
+      "modelJunction": {
+        "intersectionSpreadPx": 77.2,
+        "lines": [
+          {
+            "anchor": [
+              1471.27,
+              1923.85
+            ],
+            "angleDeltaDeg": 0.0,
+            "direction": [
+              0.86,
+              -0.51
+            ],
+            "meanContrast": 0.148643,
+            "meanDarkness": 0.837136,
+            "normal": [
+              0.51,
+              0.86
+            ],
+            "offsetFromStartPx": -12.0,
+            "score": 0.990281,
+            "status": "ok",
+            "supportFraction": 0.714286,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1451.74,
+              1974.8
+            ],
+            "angleDeltaDeg": 0.0,
+            "direction": [
+              -0.85,
+              -0.53
+            ],
+            "meanContrast": 0.131696,
+            "meanDarkness": 0.718991,
+            "normal": [
+              0.53,
+              -0.85
+            ],
+            "offsetFromStartPx": -48.0,
+            "score": 0.94217,
+            "status": "ok",
+            "supportFraction": 0.510204,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1324.24,
+              1964.13
+            ],
+            "angleDeltaDeg": -12.0,
+            "direction": [
+              0.19,
+              0.98
+            ],
+            "meanContrast": 0.04049,
+            "meanDarkness": 0.6823,
+            "normal": [
+              -0.98,
+              0.19
+            ],
+            "offsetFromStartPx": 156.0,
+            "score": 0.754804,
+            "status": "ok",
+            "supportFraction": 0.510204,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.895752,
+        "minLineContrast": 0.04049,
+        "minLineScore": 0.754804,
+        "movePx": 124.6,
+        "pairwiseIntersections": [
+          [
+            1419.38,
+            1954.62
+          ],
+          [
+            1332.4,
+            2006.2
+          ],
+          [
+            1309.06,
+            1885.84
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.314327,
+      "modelJunctionGatedAccepted": false,
+      "modelJunctionGatedImprovementPx": 0.0,
+      "modelJunctionGatedStatus": "blocked",
+      "modelJunctionGatedVertex": [
+        1477.34,
+        1934.2
+      ],
+      "modelJunctionGatedVertexErrorPx": 102.57,
+      "modelJunctionImprovementPx": 17.6,
+      "modelJunctionVertex": [
+        1353.61,
+        1948.89
+      ],
+      "modelJunctionVertexErrorPx": 84.97,
+      "setId": "28",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1445.16,
+        2067.17
+      ],
+      "baselineVertexErrorPx": 57.39,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.416051,
+      "humanAxisOracleGatedAccepted": false,
+      "humanAxisOracleGatedImprovementPx": 0.0,
+      "humanAxisOracleGatedStatus": "blocked",
+      "humanAxisOracleGatedVertex": [
+        1445.16,
+        2067.17
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 57.39,
+      "humanAxisOracleImprovementPx": 5.12,
+      "humanAxisOracleVertex": [
+        1526.34,
+        2063.19
+      ],
+      "humanAxisOracleVertexErrorPx": 52.27,
+      "humanVertex": [
+        1491.0,
+        2101.7
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 29 - A - white up IMG_6779.JPG",
+      "key": "29_A",
+      "modelAxisMaxAngleErrorDeg": 60.57,
+      "modelJunction": {
+        "intersectionSpreadPx": 59.11,
+        "lines": [
+          {
+            "anchor": [
+              1439.16,
+              2056.78
+            ],
+            "angleDeltaDeg": 0.0,
+            "direction": [
+              -0.87,
+              0.5
+            ],
+            "meanContrast": 0.125869,
+            "meanDarkness": 0.757814,
+            "normal": [
+              -0.5,
+              -0.87
+            ],
+            "offsetFromStartPx": 12.0,
+            "score": 0.965502,
+            "status": "ok",
+            "supportFraction": 0.55102,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1564.84,
+              2075.97
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              0.07,
+              -1.0
+            ],
+            "meanContrast": 0.091139,
+            "meanDarkness": 0.714806,
+            "normal": [
+              1.0,
+              0.07
+            ],
+            "offsetFromStartPx": 120.0,
+            "score": 0.839691,
+            "status": "ok",
+            "supportFraction": 0.44898,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1468.25,
+              2025.09
+            ],
+            "angleDeltaDeg": 0.0,
+            "direction": [
+              0.88,
+              0.48
+            ],
+            "meanContrast": 0.198036,
+            "meanDarkness": 0.806546,
+            "normal": [
+              -0.48,
+              0.88
+            ],
+            "offsetFromStartPx": -48.0,
+            "score": 1.046211,
+            "status": "ok",
+            "supportFraction": 0.591837,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.950468,
+        "minLineContrast": 0.091139,
+        "minLineScore": 0.839691,
+        "movePx": 101.1,
+        "pairwiseIntersections": [
+          [
+            1571.51,
+            1980.72
+          ],
+          [
+            1481.62,
+            2032.38
+          ],
+          [
+            1564.72,
+            2077.71
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.43916,
+      "modelJunctionGatedAccepted": false,
+      "modelJunctionGatedImprovementPx": 0.0,
+      "modelJunctionGatedStatus": "blocked",
+      "modelJunctionGatedVertex": [
+        1445.16,
+        2067.17
+      ],
+      "modelJunctionGatedVertexErrorPx": 57.39,
+      "modelJunctionImprovementPx": -28.83,
+      "modelJunctionVertex": [
+        1539.28,
+        2030.27
+      ],
+      "modelJunctionVertexErrorPx": 86.22,
+      "setId": "29",
+      "side": "A"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1435.41,
+        1957.79
+      ],
+      "baselineVertexErrorPx": 25.39,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.440756,
+      "humanAxisOracleGatedAccepted": true,
+      "humanAxisOracleGatedImprovementPx": -52.92,
+      "humanAxisOracleGatedStatus": "blocked",
+      "humanAxisOracleGatedVertex": [
+        1474.37,
+        1921.82
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 78.31,
+      "humanAxisOracleImprovementPx": -52.92,
+      "humanAxisOracleVertex": [
+        1474.37,
+        1921.82
+      ],
+      "humanAxisOracleVertexErrorPx": 78.31,
+      "humanVertex": [
+        1415.0,
+        1972.89
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 29 - B - white up IMG_6780.JPG",
+      "key": "29_B",
+      "modelAxisMaxAngleErrorDeg": 1.5,
+      "modelJunction": {
+        "intersectionSpreadPx": 52.36,
+        "lines": [
+          {
+            "anchor": [
+              1448.04,
+              1937.38
+            ],
+            "angleDeltaDeg": 0.0,
+            "direction": [
+              -0.85,
+              -0.53
+            ],
+            "meanContrast": 0.147168,
+            "meanDarkness": 0.71758,
+            "normal": [
+              0.53,
+              -0.85
+            ],
+            "offsetFromStartPx": 24.0,
+            "score": 0.983002,
+            "status": "ok",
+            "supportFraction": 0.530612,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1417.24,
+              1926.71
+            ],
+            "angleDeltaDeg": 0.0,
+            "direction": [
+              0.86,
+              -0.5
+            ],
+            "meanContrast": 0.10889,
+            "meanDarkness": 0.835647,
+            "normal": [
+              0.5,
+              0.86
+            ],
+            "offsetFromStartPx": -36.0,
+            "score": 0.926081,
+            "status": "ok",
+            "supportFraction": 0.591837,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1495.24,
+              1962.25
+            ],
+            "angleDeltaDeg": 8.0,
+            "direction": [
+              -0.07,
+              1.0
+            ],
+            "meanContrast": 0.09871,
+            "meanDarkness": 0.813572,
+            "normal": [
+              -1.0,
+              -0.07
+            ],
+            "offsetFromStartPx": -60.0,
+            "score": 0.869249,
+            "status": "ok",
+            "supportFraction": 0.530612,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.926111,
+        "minLineContrast": 0.09871,
+        "minLineScore": 0.869249,
+        "movePx": 51.98,
+        "pairwiseIntersections": [
+          [
+            1424.32,
+            1922.59
+          ],
+          [
+            1494.93,
+            1966.62
+          ],
+          [
+            1501.14,
+            1877.93
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.505096,
+      "modelJunctionGatedAccepted": true,
+      "modelJunctionGatedImprovementPx": -51.87,
+      "modelJunctionGatedStatus": "blocked",
+      "modelJunctionGatedVertex": [
+        1473.47,
+        1922.38
+      ],
+      "modelJunctionGatedVertexErrorPx": 77.26,
+      "modelJunctionImprovementPx": -51.87,
+      "modelJunctionVertex": [
+        1473.47,
+        1922.38
+      ],
+      "modelJunctionVertexErrorPx": 77.26,
+      "setId": "29",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1466.93,
+        2250.07
+      ],
+      "baselineVertexErrorPx": 39.71,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.818164,
+      "humanAxisOracleGatedAccepted": true,
+      "humanAxisOracleGatedImprovementPx": -39.65,
+      "humanAxisOracleGatedStatus": "blocked",
+      "humanAxisOracleGatedVertex": [
+        1467.46,
+        2295.23
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 79.36,
+      "humanAxisOracleImprovementPx": -39.65,
+      "humanAxisOracleVertex": [
+        1467.46,
+        2295.23
+      ],
+      "humanAxisOracleVertexErrorPx": 79.36,
+      "humanVertex": [
+        1440.2,
+        2220.7
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 30 - A - white up IMG_7100.JPG",
+      "key": "30_A",
+      "modelAxisMaxAngleErrorDeg": 7.45,
+      "modelJunction": {
+        "intersectionSpreadPx": 17.97,
+        "lines": [
+          {
+            "anchor": [
+              1479.54,
+              2270.49
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              0.85,
+              -0.53
+            ],
+            "meanContrast": 0.158221,
+            "meanDarkness": 0.779009,
+            "normal": [
+              0.53,
+              0.85
+            ],
+            "offsetFromStartPx": 24.0,
+            "score": 1.038003,
+            "status": "ok",
+            "supportFraction": 0.571429,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1444.77,
+              2278.44
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              -0.79,
+              -0.62
+            ],
+            "meanContrast": 0.163937,
+            "meanDarkness": 0.653007,
+            "normal": [
+              0.62,
+              -0.79
+            ],
+            "offsetFromStartPx": -36.0,
+            "score": 0.994147,
+            "status": "ok",
+            "supportFraction": 0.489796,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1478.92,
+              2250.51
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              -0.04,
+              1.0
+            ],
+            "meanContrast": 0.172042,
+            "meanDarkness": 0.748088,
+            "normal": [
+              -1.0,
+              -0.04
+            ],
+            "offsetFromStartPx": -12.0,
+            "score": 1.003708,
+            "status": "ok",
+            "supportFraction": 0.571429,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 1.011953,
+        "minLineContrast": 0.158221,
+        "minLineScore": 0.994147,
+        "movePx": 37.06,
+        "pairwiseIntersections": [
+          [
+            1454.52,
+            2286.09
+          ],
+          [
+            1478.08,
+            2271.4
+          ],
+          [
+            1476.8,
+            2303.58
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.946302,
+      "modelJunctionGatedAccepted": true,
+      "modelJunctionGatedImprovementPx": -32.91,
+      "modelJunctionGatedStatus": "blocked",
+      "modelJunctionGatedVertex": [
+        1469.8,
+        2287.02
+      ],
+      "modelJunctionGatedVertexErrorPx": 72.63,
+      "modelJunctionImprovementPx": -32.91,
+      "modelJunctionVertex": [
+        1469.8,
+        2287.02
+      ],
+      "modelJunctionVertexErrorPx": 72.63,
+      "setId": "30",
+      "side": "A"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1613.57,
+        1931.2
+      ],
+      "baselineVertexErrorPx": 10.0,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.677318,
+      "humanAxisOracleGatedAccepted": true,
+      "humanAxisOracleGatedImprovementPx": -51.09,
+      "humanAxisOracleGatedStatus": "blocked",
+      "humanAxisOracleGatedVertex": [
+        1644.73,
+        1977.04
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 61.09,
+      "humanAxisOracleImprovementPx": -51.09,
+      "humanAxisOracleVertex": [
+        1644.73,
+        1977.04
+      ],
+      "humanAxisOracleVertexErrorPx": 61.09,
+      "humanVertex": [
+        1617.87,
+        1922.17
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 30 - B - white up IMG_7101.JPG",
+      "key": "30_B",
+      "modelAxisMaxAngleErrorDeg": 3.89,
+      "modelJunction": {
+        "intersectionSpreadPx": 47.27,
+        "lines": [
+          {
+            "anchor": [
+              1594.01,
+              1961.42
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              -0.84,
+              -0.54
+            ],
+            "meanContrast": 0.129662,
+            "meanDarkness": 0.741592,
+            "normal": [
+              0.54,
+              -0.84
+            ],
+            "offsetFromStartPx": -36.0,
+            "score": 0.918646,
+            "status": "ok",
+            "supportFraction": 0.55102,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1629.24,
+              1963.61
+            ],
+            "angleDeltaDeg": 8.0,
+            "direction": [
+              0.9,
+              -0.44
+            ],
+            "meanContrast": 0.108346,
+            "meanDarkness": 0.834682,
+            "normal": [
+              0.44,
+              0.9
+            ],
+            "offsetFromStartPx": 36.0,
+            "score": 0.967049,
+            "status": "ok",
+            "supportFraction": 0.510204,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1685.09,
+              1939.52
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              -0.12,
+              0.99
+            ],
+            "meanContrast": 0.136378,
+            "meanDarkness": 0.797824,
+            "normal": [
+              -0.99,
+              -0.12
+            ],
+            "offsetFromStartPx": -72.0,
+            "score": 0.997036,
+            "status": "ok",
+            "supportFraction": 0.591837,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.96091,
+        "minLineContrast": 0.108346,
+        "minLineScore": 0.918646,
+        "movePx": 61.55,
+        "pairwiseIntersections": [
+          [
+            1611.16,
+            1972.45
+          ],
+          [
+            1676.04,
+            2014.16
+          ],
+          [
+            1685.5,
+            1936.1
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.587814,
+      "modelJunctionGatedAccepted": true,
+      "modelJunctionGatedImprovementPx": -55.47,
+      "modelJunctionGatedStatus": "blocked",
+      "modelJunctionGatedVertex": [
+        1657.57,
+        1974.24
+      ],
+      "modelJunctionGatedVertexErrorPx": 65.47,
+      "modelJunctionImprovementPx": -55.47,
+      "modelJunctionVertex": [
+        1657.57,
+        1974.24
+      ],
+      "modelJunctionVertexErrorPx": 65.47,
+      "setId": "30",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1391.46,
+        1974.52
+      ],
+      "baselineVertexErrorPx": 47.18,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.609471,
+      "humanAxisOracleGatedAccepted": true,
+      "humanAxisOracleGatedImprovementPx": -22.5,
+      "humanAxisOracleGatedStatus": "blocked",
+      "humanAxisOracleGatedVertex": [
+        1452.86,
+        2073.41
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 69.68,
+      "humanAxisOracleImprovementPx": -22.5,
+      "humanAxisOracleVertex": [
+        1452.86,
+        2073.41
+      ],
+      "humanAxisOracleVertexErrorPx": 69.68,
+      "humanVertex": [
+        1420.5,
+        2011.7
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 31 - A - white up IMG_7102.JPG",
+      "key": "31_A",
+      "modelAxisMaxAngleErrorDeg": 2.32,
+      "modelJunction": {
+        "intersectionSpreadPx": 35.25,
+        "lines": [
+          {
+            "anchor": [
+              1456.69,
+              2060.6
+            ],
+            "angleDeltaDeg": -4.0,
+            "direction": [
+              0.8,
+              -0.6
+            ],
+            "meanContrast": 0.199508,
+            "meanDarkness": 0.860199,
+            "normal": [
+              0.6,
+              0.8
+            ],
+            "offsetFromStartPx": 108.0,
+            "score": 1.039388,
+            "status": "ok",
+            "supportFraction": 0.530612,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1352.72,
+              2035.21
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              -0.84,
+              -0.54
+            ],
+            "meanContrast": 0.138388,
+            "meanDarkness": 0.807385,
+            "normal": [
+              0.54,
+              -0.84
+            ],
+            "offsetFromStartPx": -72.0,
+            "score": 0.956166,
+            "status": "ok",
+            "supportFraction": 0.591837,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1475.37,
+              1978.37
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              -0.05,
+              1.0
+            ],
+            "meanContrast": 0.12409,
+            "meanDarkness": 0.686938,
+            "normal": [
+              -1.0,
+              -0.05
+            ],
+            "offsetFromStartPx": -84.0,
+            "score": 0.945253,
+            "status": "ok",
+            "supportFraction": 0.489796,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.980269,
+        "minLineContrast": 0.12409,
+        "minLineScore": 0.945253,
+        "movePx": 124.15,
+        "pairwiseIntersections": [
+          [
+            1426.93,
+            2082.92
+          ],
+          [
+            1471.83,
+            2049.25
+          ],
+          [
+            1468.8,
+            2109.83
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.671194,
+      "modelJunctionGatedAccepted": true,
+      "modelJunctionGatedImprovementPx": -30.32,
+      "modelJunctionGatedStatus": "blocked",
+      "modelJunctionGatedVertex": [
+        1455.85,
+        2080.67
+      ],
+      "modelJunctionGatedVertexErrorPx": 77.5,
+      "modelJunctionImprovementPx": -30.32,
+      "modelJunctionVertex": [
+        1455.85,
+        2080.67
+      ],
+      "modelJunctionVertexErrorPx": 77.5,
+      "setId": "31",
+      "side": "A"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1327.0,
+        1939.0
+      ],
+      "baselineVertexErrorPx": 7.68,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.644516,
+      "humanAxisOracleGatedAccepted": true,
+      "humanAxisOracleGatedImprovementPx": -62.05,
+      "humanAxisOracleGatedStatus": "blocked",
+      "humanAxisOracleGatedVertex": [
+        1371.83,
+        2000.95
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 69.73,
+      "humanAxisOracleImprovementPx": -62.05,
+      "humanAxisOracleVertex": [
+        1371.83,
+        2000.95
+      ],
+      "humanAxisOracleVertexErrorPx": 69.73,
+      "humanVertex": [
+        1333.86,
+        1942.46
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 31 - B - white up IMG_7103.JPG",
+      "key": "31_B",
+      "modelAxisMaxAngleErrorDeg": 2.67,
+      "modelJunction": {
+        "intersectionSpreadPx": 32.69,
+        "lines": [
+          {
+            "anchor": [
+              1386.99,
+              1938.19
+            ],
+            "angleDeltaDeg": 0.0,
+            "direction": [
+              0.01,
+              1.0
+            ],
+            "meanContrast": 0.141217,
+            "meanDarkness": 0.686095,
+            "normal": [
+              -1.0,
+              0.01
+            ],
+            "offsetFromStartPx": -60.0,
+            "score": 0.942394,
+            "status": "ok",
+            "supportFraction": 0.571429,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1355.6,
+              1977.55
+            ],
+            "angleDeltaDeg": 0.0,
+            "direction": [
+              0.8,
+              -0.6
+            ],
+            "meanContrast": 0.176662,
+            "meanDarkness": 0.81034,
+            "normal": [
+              0.6,
+              0.8
+            ],
+            "offsetFromStartPx": 48.0,
+            "score": 1.031616,
+            "status": "ok",
+            "supportFraction": 0.530612,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1311.25,
+              1971.37
+            ],
+            "angleDeltaDeg": 0.0,
+            "direction": [
+              -0.9,
+              -0.44
+            ],
+            "meanContrast": 0.118092,
+            "meanDarkness": 0.719507,
+            "normal": [
+              0.44,
+              -0.9
+            ],
+            "offsetFromStartPx": -36.0,
+            "score": 0.961167,
+            "status": "ok",
+            "supportFraction": 0.571429,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.978392,
+        "minLineContrast": 0.118092,
+        "minLineScore": 0.942394,
+        "movePx": 63.53,
+        "pairwiseIntersections": [
+          [
+            1387.15,
+            1953.89
+          ],
+          [
+            1387.7,
+            2008.74
+          ],
+          [
+            1343.09,
+            1986.93
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.73312,
+      "modelJunctionGatedAccepted": true,
+      "modelJunctionGatedImprovementPx": -48.56,
+      "modelJunctionGatedStatus": "blocked",
+      "modelJunctionGatedVertex": [
+        1372.64,
+        1983.19
+      ],
+      "modelJunctionGatedVertexErrorPx": 56.24,
+      "modelJunctionImprovementPx": -48.56,
+      "modelJunctionVertex": [
+        1372.64,
+        1983.19
+      ],
+      "modelJunctionVertexErrorPx": 56.24,
+      "setId": "31",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1532.91,
+        1989.84
+      ],
+      "baselineVertexErrorPx": 72.33,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.813098,
+      "humanAxisOracleGatedAccepted": true,
+      "humanAxisOracleGatedImprovementPx": 3.61,
+      "humanAxisOracleGatedStatus": "blocked",
+      "humanAxisOracleGatedVertex": [
+        1661.78,
+        1934.25
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 68.72,
+      "humanAxisOracleImprovementPx": 3.61,
+      "humanAxisOracleVertex": [
+        1661.78,
+        1934.25
+      ],
+      "humanAxisOracleVertexErrorPx": 68.72,
+      "humanVertex": [
+        1601.8,
+        1967.8
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 32 - A - white up IMG_7143.JPG",
+      "key": "32_A",
+      "modelAxisMaxAngleErrorDeg": 59.88,
+      "modelJunction": {
+        "intersectionSpreadPx": 10.11,
+        "lines": [
+          {
+            "anchor": [
+              1575.88,
+              1890.76
+            ],
+            "angleDeltaDeg": -4.0,
+            "direction": [
+              0.92,
+              0.4
+            ],
+            "meanContrast": 0.080211,
+            "meanDarkness": 0.772322,
+            "normal": [
+              -0.4,
+              0.92
+            ],
+            "offsetFromStartPx": -108.0,
+            "score": 0.913123,
+            "status": "ok",
+            "supportFraction": 0.632653,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1545.6,
+              2010.21
+            ],
+            "angleDeltaDeg": 0.0,
+            "direction": [
+              -0.85,
+              0.53
+            ],
+            "meanContrast": 0.112405,
+            "meanDarkness": 0.821946,
+            "normal": [
+              -0.53,
+              -0.85
+            ],
+            "offsetFromStartPx": -24.0,
+            "score": 0.90706,
+            "status": "ok",
+            "supportFraction": 0.428571,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1652.79,
+              1995.26
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              0.05,
+              -1.0
+            ],
+            "meanContrast": 0.130113,
+            "meanDarkness": 0.703138,
+            "normal": [
+              1.0,
+              0.05
+            ],
+            "offsetFromStartPx": 120.0,
+            "score": 0.873367,
+            "status": "ok",
+            "supportFraction": 0.632653,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.89785,
+        "minLineContrast": 0.080211,
+        "minLineScore": 0.873367,
+        "movePx": 139.96,
+        "pairwiseIntersections": [
+          [
+            1670.91,
+            1932.08
+          ],
+          [
+            1656.27,
+            1925.71
+          ],
+          [
+            1655.47,
+            1941.7
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.753767,
+      "modelJunctionGatedAccepted": true,
+      "modelJunctionGatedImprovementPx": 3.84,
+      "modelJunctionGatedStatus": "blocked",
+      "modelJunctionGatedVertex": [
+        1660.88,
+        1933.16
+      ],
+      "modelJunctionGatedVertexErrorPx": 68.49,
+      "modelJunctionImprovementPx": 3.84,
+      "modelJunctionVertex": [
+        1660.88,
+        1933.16
+      ],
+      "modelJunctionVertexErrorPx": 68.49,
+      "setId": "32",
+      "side": "A"
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1367.0,
+        1826.0
+      ],
+      "baselineVertexErrorPx": 70.61,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.409988,
+      "humanAxisOracleGatedAccepted": true,
+      "humanAxisOracleGatedImprovementPx": -1.9,
+      "humanAxisOracleGatedStatus": "blocked",
+      "humanAxisOracleGatedVertex": [
+        1414.77,
+        1836.62
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 72.51,
+      "humanAxisOracleImprovementPx": -1.9,
+      "humanAxisOracleVertex": [
+        1414.77,
+        1836.62
+      ],
+      "humanAxisOracleVertexErrorPx": 72.51,
+      "humanVertex": [
+        1373.6,
+        1896.3
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 32 - B - white up IMG_7144.JPG",
+      "key": "32_B",
+      "modelAxisMaxAngleErrorDeg": 62.97,
+      "modelJunction": {
+        "intersectionSpreadPx": 40.08,
+        "lines": [
+          {
+            "anchor": [
+              1426.89,
+              1829.58
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              0.06,
+              -1.0
+            ],
+            "meanContrast": 0.041211,
+            "meanDarkness": 0.600473,
+            "normal": [
+              1.0,
+              0.06
+            ],
+            "offsetFromStartPx": 60.0,
+            "score": 0.717393,
+            "status": "ok",
+            "supportFraction": 0.428571,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1361.55,
+              1836.69
+            ],
+            "angleDeltaDeg": -4.0,
+            "direction": [
+              0.89,
+              0.45
+            ],
+            "meanContrast": 0.108212,
+            "meanDarkness": 0.812124,
+            "normal": [
+              -0.45,
+              0.89
+            ],
+            "offsetFromStartPx": 12.0,
+            "score": 0.952575,
+            "status": "ok",
+            "supportFraction": 0.571429,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1373.14,
+              1836.31
+            ],
+            "angleDeltaDeg": 0.0,
+            "direction": [
+              -0.86,
+              0.51
+            ],
+            "meanContrast": 0.187533,
+            "meanDarkness": 0.932445,
+            "normal": [
+              -0.51,
+              -0.86
+            ],
+            "offsetFromStartPx": -12.0,
+            "score": 1.030643,
+            "status": "ok",
+            "supportFraction": 0.591837,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.900204,
+        "minLineContrast": 0.041211,
+        "minLineScore": 0.717393,
+        "movePx": 41.38,
+        "pairwiseIntersections": [
+          [
+            1424.55,
+            1868.54
+          ],
+          [
+            1428.45,
+            1803.51
+          ],
+          [
+            1367.46,
+            1839.68
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.488285,
+      "modelJunctionGatedAccepted": true,
+      "modelJunctionGatedImprovementPx": 2.85,
+      "modelJunctionGatedStatus": "blocked",
+      "modelJunctionGatedVertex": [
+        1406.82,
+        1837.24
+      ],
+      "modelJunctionGatedVertexErrorPx": 67.76,
+      "modelJunctionImprovementPx": 2.85,
+      "modelJunctionVertex": [
+        1406.82,
+        1837.24
+      ],
+      "modelJunctionVertexErrorPx": 67.76,
+      "setId": "32",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1288.77,
+        1842.56
+      ],
+      "baselineVertexErrorPx": 102.95,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.532134,
+      "humanAxisOracleGatedAccepted": true,
+      "humanAxisOracleGatedImprovementPx": 25.07,
+      "humanAxisOracleGatedStatus": "blocked",
+      "humanAxisOracleGatedVertex": [
+        1290.64,
+        2012.2
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 77.88,
+      "humanAxisOracleImprovementPx": 25.07,
+      "humanAxisOracleVertex": [
+        1290.64,
+        2012.2
+      ],
+      "humanAxisOracleVertexErrorPx": 77.88,
+      "humanVertex": [
+        1320.8,
+        1940.4
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 36 - B - white up IMG_7152.JPG",
+      "key": "36_B",
+      "modelAxisMaxAngleErrorDeg": 1.79,
+      "modelJunction": {
+        "intersectionSpreadPx": 25.04,
+        "lines": [
+          {
+            "anchor": [
+              1211.57,
+              1934.43
+            ],
+            "angleDeltaDeg": 8.0,
+            "direction": [
+              -0.77,
+              -0.64
+            ],
+            "meanContrast": 0.095501,
+            "meanDarkness": 0.845395,
+            "normal": [
+              0.64,
+              -0.77
+            ],
+            "offsetFromStartPx": -120.0,
+            "score": 0.906981,
+            "status": "ok",
+            "supportFraction": 0.693878,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1264.84,
+              1844.35
+            ],
+            "angleDeltaDeg": 0.0,
+            "direction": [
+              0.07,
+              1.0
+            ],
+            "meanContrast": 0.053044,
+            "meanDarkness": 0.850228,
+            "normal": [
+              -1.0,
+              0.07
+            ],
+            "offsetFromStartPx": 24.0,
+            "score": 0.78108,
+            "status": "ok",
+            "supportFraction": 0.367347,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1375.72,
+              1957.34
+            ],
+            "angleDeltaDeg": -4.0,
+            "direction": [
+              0.8,
+              -0.6
+            ],
+            "meanContrast": 0.048926,
+            "meanDarkness": 0.777603,
+            "normal": [
+              0.6,
+              0.8
+            ],
+            "offsetFromStartPx": 144.0,
+            "score": 0.841477,
+            "status": "ok",
+            "supportFraction": 0.632653,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.843179,
+        "minLineContrast": 0.048926,
+        "minLineScore": 0.78108,
+        "movePx": 167.11,
+        "pairwiseIntersections": [
+          [
+            1274.83,
+            1987.01
+          ],
+          [
+            1303.92,
+            2011.19
+          ],
+          [
+            1277.89,
+            2030.72
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.515124,
+      "modelJunctionGatedAccepted": true,
+      "modelJunctionGatedImprovementPx": 25.25,
+      "modelJunctionGatedStatus": "blocked",
+      "modelJunctionGatedVertex": [
+        1285.54,
+        2009.64
+      ],
+      "modelJunctionGatedVertexErrorPx": 77.7,
+      "modelJunctionImprovementPx": 25.25,
+      "modelJunctionVertex": [
+        1285.54,
+        2009.64
+      ],
+      "modelJunctionVertexErrorPx": 77.7,
+      "setId": "36",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1508.0,
+        1917.0
+      ],
+      "baselineVertexErrorPx": 91.97,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.464026,
+      "humanAxisOracleGatedAccepted": true,
+      "humanAxisOracleGatedImprovementPx": 41.11,
+      "humanAxisOracleGatedStatus": "blocked",
+      "humanAxisOracleGatedVertex": [
+        1528.6,
+        1877.31
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 50.86,
+      "humanAxisOracleImprovementPx": 41.11,
+      "humanAxisOracleVertex": [
+        1528.6,
+        1877.31
+      ],
+      "humanAxisOracleVertexErrorPx": 50.86,
+      "humanVertex": [
+        1572.23,
+        1851.17
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 42 - B - white up IMG_7164.JPG",
+      "key": "42_B",
+      "modelAxisMaxAngleErrorDeg": 64.06,
+      "modelJunction": {
+        "intersectionSpreadPx": 20.46,
+        "lines": [
+          {
+            "anchor": [
+              1519.98,
+              1917.68
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              0.06,
+              -1.0
+            ],
+            "meanContrast": 0.130979,
+            "meanDarkness": 0.824119,
+            "normal": [
+              1.0,
+              0.06
+            ],
+            "offsetFromStartPx": 12.0,
+            "score": 0.943224,
+            "status": "ok",
+            "supportFraction": 0.653061,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1524.82,
+              1872.04
+            ],
+            "angleDeltaDeg": -8.0,
+            "direction": [
+              0.94,
+              0.35
+            ],
+            "meanContrast": 0.100841,
+            "meanDarkness": 0.818487,
+            "normal": [
+              -0.35,
+              0.94
+            ],
+            "offsetFromStartPx": -48.0,
+            "score": 0.903725,
+            "status": "ok",
+            "supportFraction": 0.55102,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1502.79,
+              1906.19
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              -0.9,
+              0.43
+            ],
+            "meanContrast": 0.037112,
+            "meanDarkness": 0.650284,
+            "normal": [
+              -0.43,
+              -0.9
+            ],
+            "offsetFromStartPx": 12.0,
+            "score": 0.765974,
+            "status": "ok",
+            "supportFraction": 0.387755,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.870974,
+        "minLineContrast": 0.037112,
+        "minLineScore": 0.765974,
+        "movePx": 41.17,
+        "pairwiseIntersections": [
+          [
+            1522.76,
+            1871.27
+          ],
+          [
+            1521.2,
+            1897.4
+          ],
+          [
+            1552.61,
+            1882.39
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.65165,
+      "modelJunctionGatedAccepted": true,
+      "modelJunctionGatedImprovementPx": 40.39,
+      "modelJunctionGatedStatus": "blocked",
+      "modelJunctionGatedVertex": [
+        1532.19,
+        1883.69
+      ],
+      "modelJunctionGatedVertexErrorPx": 51.58,
+      "modelJunctionImprovementPx": 40.39,
+      "modelJunctionVertex": [
+        1532.19,
+        1883.69
+      ],
+      "modelJunctionVertexErrorPx": 51.58,
+      "setId": "42",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1472.0,
+        1826.0
+      ],
+      "baselineVertexErrorPx": 185.52,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.157223,
+      "humanAxisOracleGatedAccepted": false,
+      "humanAxisOracleGatedImprovementPx": 0.0,
+      "humanAxisOracleGatedStatus": "blocked",
+      "humanAxisOracleGatedVertex": [
+        1472.0,
+        1826.0
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 185.52,
+      "humanAxisOracleImprovementPx": 162.2,
+      "humanAxisOracleVertex": [
+        1365.1,
+        1999.1
+      ],
+      "humanAxisOracleVertexErrorPx": 23.32,
+      "humanVertex": [
+        1362.7,
+        1975.9
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 44 - A - white up IMG_7167.JPG",
+      "key": "44_A",
+      "modelAxisMaxAngleErrorDeg": 62.49,
+      "modelJunction": {
+        "intersectionSpreadPx": 23.52,
+        "lines": [
+          {
+            "anchor": [
+              1340.83,
+              1840.81
+            ],
+            "angleDeltaDeg": -4.0,
+            "direction": [
+              -0.11,
+              -0.99
+            ],
+            "meanContrast": 0.009886,
+            "meanDarkness": 0.727835,
+            "normal": [
+              0.99,
+              -0.11
+            ],
+            "offsetFromStartPx": -132.0,
+            "score": 0.658879,
+            "status": "ok",
+            "supportFraction": 0.265306,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1518.63,
+              1895.87
+            ],
+            "angleDeltaDeg": 0.0,
+            "direction": [
+              -0.83,
+              0.56
+            ],
+            "meanContrast": 0.160278,
+            "meanDarkness": 0.939917,
+            "normal": [
+              -0.56,
+              -0.83
+            ],
+            "offsetFromStartPx": -84.0,
+            "score": 1.039943,
+            "status": "ok",
+            "supportFraction": 0.877551,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1372.14,
+              1975.76
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              0.83,
+              0.55
+            ],
+            "meanContrast": 0.052126,
+            "meanDarkness": 0.718953,
+            "normal": [
+              -0.55,
+              0.83
+            ],
+            "offsetFromStartPx": 180.0,
+            "score": 0.83053,
+            "status": "ok",
+            "supportFraction": 0.530612,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.843117,
+        "minLineContrast": 0.009886,
+        "minLineScore": 0.658879,
+        "movePx": 190.18,
+        "pairwiseIntersections": [
+          [
+            1358.92,
+            2003.63
+          ],
+          [
+            1354.53,
+            1964.09
+          ],
+          [
+            1386.31,
+            1985.15
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.425159,
+      "modelJunctionGatedAccepted": false,
+      "modelJunctionGatedImprovementPx": 0.0,
+      "modelJunctionGatedStatus": "blocked",
+      "modelJunctionGatedVertex": [
+        1472.0,
+        1826.0
+      ],
+      "modelJunctionGatedVertexErrorPx": 185.52,
+      "modelJunctionImprovementPx": 176.27,
+      "modelJunctionVertex": [
+        1366.59,
+        1984.29
+      ],
+      "modelJunctionVertexErrorPx": 9.24,
+      "setId": "44",
+      "side": "A"
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1615.0,
+        1988.0
+      ],
+      "baselineVertexErrorPx": 117.57,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.444793,
+      "humanAxisOracleGatedAccepted": false,
+      "humanAxisOracleGatedImprovementPx": 0.0,
+      "humanAxisOracleGatedStatus": "blocked",
+      "humanAxisOracleGatedVertex": [
+        1615.0,
+        1988.0
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 117.57,
+      "humanAxisOracleImprovementPx": 73.15,
+      "humanAxisOracleVertex": [
+        1480.61,
+        1967.96
+      ],
+      "humanAxisOracleVertexErrorPx": 44.42,
+      "humanVertex": [
+        1499.2,
+        2008.3
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 44 - B - white up IMG_7168.JPG",
+      "key": "44_B",
+      "modelAxisMaxAngleErrorDeg": 62.18,
+      "modelJunction": {
+        "intersectionSpreadPx": 33.25,
+        "lines": [
+          {
+            "anchor": [
+              1574.25,
+              2047.36
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              0.82,
+              0.57
+            ],
+            "meanContrast": 0.025947,
+            "meanDarkness": 0.71597,
+            "normal": [
+              -0.57,
+              0.82
+            ],
+            "offsetFromStartPx": 72.0,
+            "score": 0.746468,
+            "status": "ok",
+            "supportFraction": 0.428571,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1495.15,
+              1993.91
+            ],
+            "angleDeltaDeg": -4.0,
+            "direction": [
+              -0.05,
+              -1.0
+            ],
+            "meanContrast": 0.018786,
+            "meanDarkness": 0.624911,
+            "normal": [
+              1.0,
+              -0.05
+            ],
+            "offsetFromStartPx": -120.0,
+            "score": 0.725367,
+            "status": "ok",
+            "supportFraction": 0.428571,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1574.43,
+              1900.99
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              -0.91,
+              0.42
+            ],
+            "meanContrast": 0.16571,
+            "meanDarkness": 0.732259,
+            "normal": [
+              -0.42,
+              -0.91
+            ],
+            "offsetFromStartPx": 96.0,
+            "score": 0.967391,
+            "status": "ok",
+            "supportFraction": 0.755102,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.813075,
+        "minLineContrast": 0.018786,
+        "minLineScore": 0.725367,
+        "movePx": 138.76,
+        "pairwiseIntersections": [
+          [
+            1495.07,
+            1992.32
+          ],
+          [
+            1447.78,
+            1959.45
+          ],
+          [
+            1492.4,
+            1938.85
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.406077,
+      "modelJunctionGatedAccepted": false,
+      "modelJunctionGatedImprovementPx": 0.0,
+      "modelJunctionGatedStatus": "blocked",
+      "modelJunctionGatedVertex": [
+        1615.0,
+        1988.0
+      ],
+      "modelJunctionGatedVertexErrorPx": 117.57,
+      "modelJunctionImprovementPx": 68.21,
+      "modelJunctionVertex": [
+        1478.41,
+        1963.54
+      ],
+      "modelJunctionVertexErrorPx": 49.35,
+      "setId": "44",
+      "side": "B"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1423.84,
+        2163.77
+      ],
+      "baselineVertexErrorPx": 4.96,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.44468,
+      "humanAxisOracleGatedAccepted": true,
+      "humanAxisOracleGatedImprovementPx": -73.87,
+      "humanAxisOracleGatedStatus": "blocked",
+      "humanAxisOracleGatedVertex": [
+        1376.83,
+        2226.44
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 78.83,
+      "humanAxisOracleImprovementPx": -73.87,
+      "humanAxisOracleVertex": [
+        1376.83,
+        2226.44
+      ],
+      "humanAxisOracleVertexErrorPx": 78.83,
+      "humanVertex": [
+        1420.08,
+        2160.54
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 57 - A - white-up IMG_7510.JPG",
+      "key": "57_A",
+      "modelAxisMaxAngleErrorDeg": 8.6,
+      "modelJunction": {
+        "intersectionSpreadPx": 63.7,
+        "lines": [
+          {
+            "anchor": [
+              1379.56,
+              2220.54
+            ],
+            "angleDeltaDeg": 0.0,
+            "direction": [
+              -0.79,
+              -0.62
+            ],
+            "meanContrast": 0.057305,
+            "meanDarkness": 0.721348,
+            "normal": [
+              0.62,
+              -0.79
+            ],
+            "offsetFromStartPx": -72.0,
+            "score": 0.778718,
+            "status": "ok",
+            "supportFraction": 0.510204,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1462.11,
+              2209.98
+            ],
+            "angleDeltaDeg": -4.0,
+            "direction": [
+              0.77,
+              -0.64
+            ],
+            "meanContrast": 0.07424,
+            "meanDarkness": 0.71093,
+            "normal": [
+              0.64,
+              0.77
+            ],
+            "offsetFromStartPx": 60.0,
+            "score": 0.805033,
+            "status": "ok",
+            "supportFraction": 0.489796,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1483.8,
+              2161.57
+            ],
+            "angleDeltaDeg": 4.0,
+            "direction": [
+              0.04,
+              1.0
+            ],
+            "meanContrast": 0.085392,
+            "meanDarkness": 0.835921,
+            "normal": [
+              -1.0,
+              0.04
+            ],
+            "offsetFromStartPx": -60.0,
+            "score": 0.846187,
+            "status": "ok",
+            "supportFraction": 0.612245,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.809979,
+        "minLineContrast": 0.057305,
+        "minLineScore": 0.778718,
+        "movePx": 93.83,
+        "pairwiseIntersections": [
+          [
+            1415.48,
+            2248.73
+          ],
+          [
+            1489.61,
+            2306.91
+          ],
+          [
+            1484.98,
+            2190.97
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.314814,
+      "modelJunctionGatedAccepted": false,
+      "modelJunctionGatedImprovementPx": 0.0,
+      "modelJunctionGatedStatus": "strict",
+      "modelJunctionGatedVertex": [
+        1423.84,
+        2163.77
+      ],
+      "modelJunctionGatedVertexErrorPx": 4.96,
+      "modelJunctionImprovementPx": -93.41,
+      "modelJunctionVertex": [
+        1463.36,
+        2248.87
+      ],
+      "modelJunctionVertexErrorPx": 98.37,
+      "setId": "57",
+      "side": "A"
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1558.87,
+        1985.83
+      ],
+      "baselineVertexErrorPx": 70.74,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.349002,
+      "humanAxisOracleGatedAccepted": false,
+      "humanAxisOracleGatedImprovementPx": 0.0,
+      "humanAxisOracleGatedStatus": "blocked",
+      "humanAxisOracleGatedVertex": [
+        1558.87,
+        1985.83
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 70.74,
+      "humanAxisOracleImprovementPx": 22.88,
+      "humanAxisOracleVertex": [
+        1474.94,
+        1911.34
+      ],
+      "humanAxisOracleVertexErrorPx": 47.86,
+      "humanVertex": [
+        1495.4,
+        1954.6
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 61 - A - white-up IMG_7518.JPG",
+      "key": "61_A",
+      "modelAxisMaxAngleErrorDeg": 61.3,
+      "modelJunction": {
+        "intersectionSpreadPx": 61.33,
+        "lines": [
+          {
+            "anchor": [
+              1508.83,
+              1903.9
+            ],
+            "angleDeltaDeg": -4.0,
+            "direction": [
+              -0.85,
+              0.52
+            ],
+            "meanContrast": 0.136962,
+            "meanDarkness": 0.737823,
+            "normal": [
+              -0.52,
+              -0.85
+            ],
+            "offsetFromStartPx": 96.0,
+            "score": 0.941292,
+            "status": "ok",
+            "supportFraction": 0.530612,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1584.8,
+              1918.66
+            ],
+            "angleDeltaDeg": -8.0,
+            "direction": [
+              0.93,
+              0.36
+            ],
+            "meanContrast": 0.06549,
+            "meanDarkness": 0.855793,
+            "normal": [
+              -0.36,
+              0.93
+            ],
+            "offsetFromStartPx": -72.0,
+            "score": 0.822902,
+            "status": "ok",
+            "supportFraction": 0.489796,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1439.28,
+              1995.69
+            ],
+            "angleDeltaDeg": -4.0,
+            "direction": [
+              -0.08,
+              -1.0
+            ],
+            "meanContrast": 0.067697,
+            "meanDarkness": 0.738103,
+            "normal": [
+              1.0,
+              -0.08
+            ],
+            "offsetFromStartPx": -120.0,
+            "score": 0.806864,
+            "status": "ok",
+            "supportFraction": 0.571429,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.857019,
+        "minLineContrast": 0.06549,
+        "minLineScore": 0.806864,
+        "movePx": 128.72,
+        "pairwiseIntersections": [
+          [
+            1523.49,
+            1894.93
+          ],
+          [
+            1435.52,
+            1948.75
+          ],
+          [
+            1428.27,
+            1858.07
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.331948,
+      "modelJunctionGatedAccepted": false,
+      "modelJunctionGatedImprovementPx": 0.0,
+      "modelJunctionGatedStatus": "blocked",
+      "modelJunctionGatedVertex": [
+        1558.87,
+        1985.83
+      ],
+      "modelJunctionGatedVertexErrorPx": 70.74,
+      "modelJunctionImprovementPx": 7.45,
+      "modelJunctionVertex": [
+        1462.43,
+        1900.58
+      ],
+      "modelJunctionVertexErrorPx": 63.29,
+      "setId": "61",
+      "side": "A"
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1367.73,
+        1888.78
+      ],
+      "baselineVertexErrorPx": 60.04,
+      "evaluationStatus": "ok",
+      "humanAxisOracleConfidence": 0.441589,
+      "humanAxisOracleGatedAccepted": false,
+      "humanAxisOracleGatedImprovementPx": 0.0,
+      "humanAxisOracleGatedStatus": "blocked",
+      "humanAxisOracleGatedVertex": [
+        1367.73,
+        1888.78
+      ],
+      "humanAxisOracleGatedVertexErrorPx": 60.04,
+      "humanAxisOracleImprovementPx": 28.69,
+      "humanAxisOracleVertex": [
+        1363.37,
+        1797.67
+      ],
+      "humanAxisOracleVertexErrorPx": 31.35,
+      "humanVertex": [
+        1362.2,
+        1829.0
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 61 - B - white-up IMG_7519.JPG",
+      "key": "61_B",
+      "modelAxisMaxAngleErrorDeg": 4.09,
+      "modelJunction": {
+        "intersectionSpreadPx": 36.99,
+        "lines": [
+          {
+            "anchor": [
+              1331.77,
+              1890.37
+            ],
+            "angleDeltaDeg": 0.0,
+            "direction": [
+              0.04,
+              1.0
+            ],
+            "meanContrast": 0.107307,
+            "meanDarkness": 0.724331,
+            "normal": [
+              -1.0,
+              0.04
+            ],
+            "offsetFromStartPx": 36.0,
+            "score": 0.87792,
+            "status": "ok",
+            "supportFraction": 0.632653,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1330.64,
+              1800.23
+            ],
+            "angleDeltaDeg": 0.0,
+            "direction": [
+              0.92,
+              -0.39
+            ],
+            "meanContrast": 0.203693,
+            "meanDarkness": 0.730822,
+            "normal": [
+              0.39,
+              0.92
+            ],
+            "offsetFromStartPx": -96.0,
+            "score": 1.035601,
+            "status": "ok",
+            "supportFraction": 0.469388,
+            "validSampleCount": 49
+          },
+          {
+            "anchor": [
+              1408.82,
+              1788.9
+            ],
+            "angleDeltaDeg": -8.0,
+            "direction": [
+              -0.92,
+              -0.38
+            ],
+            "meanContrast": 0.105019,
+            "meanDarkness": 0.799463,
+            "normal": [
+              0.38,
+              -0.92
+            ],
+            "offsetFromStartPx": 108.0,
+            "score": 0.907205,
+            "status": "ok",
+            "supportFraction": 0.591837,
+            "validSampleCount": 49
+          }
+        ],
+        "meanLineScore": 0.940242,
+        "minLineContrast": 0.105019,
+        "minLineScore": 0.87792,
+        "movePx": 112.86,
+        "pairwiseIntersections": [
+          [
+            1328.21,
+            1801.26
+          ],
+          [
+            1326.35,
+            1754.84
+          ],
+          [
+            1382.76,
+            1778.14
+          ]
+        ],
+        "status": "ok"
+      },
+      "modelJunctionConfidence": 0.599231,
+      "modelJunctionGatedAccepted": true,
+      "modelJunctionGatedImprovementPx": 6.53,
+      "modelJunctionGatedStatus": "blocked",
+      "modelJunctionGatedVertex": [
+        1345.77,
+        1778.08
+      ],
+      "modelJunctionGatedVertexErrorPx": 53.51,
+      "modelJunctionImprovementPx": 6.53,
+      "modelJunctionVertex": [
+        1345.77,
+        1778.08
+      ],
+      "modelJunctionVertexErrorPx": 53.51,
+      "setId": "61",
+      "side": "B"
+    }
+  ],
+  "schemaVersion": 1,
+  "sourceFeedback": "/private/tmp/cube-trihedral-junction-v0/tests/fixtures/vertex_axis_human_feedback_v0.json",
+  "summary": {
+    "axisBlockedRowCount": 11,
+    "axisGoodBaselineStrictCount": 5,
+    "axisGoodModelGatedStrictCount": 1,
+    "axisGoodRowCount": 17,
+    "baselinePlausibleCount": 9,
+    "baselineStrictCount": 6,
+    "evaluatedRowCount": 28,
+    "humanAxisOracleGatedAcceptedCount": 15,
+    "humanAxisOracleGatedImprovedRowCount": 5,
+    "humanAxisOracleGatedPlausibleCount": 2,
+    "humanAxisOracleGatedStrictCount": 1,
+    "humanAxisOracleGatedWorsenedRowCount": 8,
+    "humanAxisOraclePlausibleCount": 7,
+    "humanAxisOracleStrictCount": 3,
+    "meanBaselineVertexErrorPx": 67.0268,
+    "meanHumanAxisOracleGatedVertexErrorPx": 76.2889,
+    "meanModelJunctionGatedVertexErrorPx": 77.3254,
+    "medianBaselineVertexErrorPx": 70.675,
+    "medianHumanAxisOracleGatedVertexErrorPx": 72.525,
+    "medianModelJunctionGatedVertexErrorPx": 74.16,
+    "modelJunctionGatedAcceptedCount": 15,
+    "modelJunctionGatedImprovedRowCount": 3,
+    "modelJunctionGatedPlausibleCount": 2,
+    "modelJunctionGatedStrictCount": 1,
+    "modelJunctionGatedWorsenedRowCount": 9,
+    "modelJunctionPlausibleCount": 5,
+    "modelJunctionStrictCount": 4,
+    "modelJunctionThresholdSweep": {
+      "bestNonEmptyAtMostTwoWorsens": {
+        "acceptedCount": 2,
+        "improvedCount": 0,
+        "meanVertexErrorPx": 68.0654,
+        "plausibleCount": 8,
+        "strictCount": 6,
+        "thresholds": {
+          "maxMovePx": 160.0,
+          "maxSpreadPx": 20.0,
+          "minLineContrast": 0.05,
+          "minLineScore": 0.45
+        },
+        "worsenedCount": 1
+      },
+      "bestNonEmptyLowWorsen": {
+        "acceptedCount": 2,
+        "improvedCount": 0,
+        "meanVertexErrorPx": 68.0654,
+        "plausibleCount": 8,
+        "strictCount": 6,
+        "thresholds": {
+          "maxMovePx": 160.0,
+          "maxSpreadPx": 20.0,
+          "minLineContrast": 0.05,
+          "minLineScore": 0.45
+        },
+        "worsenedCount": 1
+      },
+      "evaluatedNonEmptyGateCount": 1050
+    },
+    "rowCount": 28
+  }
+}

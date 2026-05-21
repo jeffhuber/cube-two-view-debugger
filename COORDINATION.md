@@ -18,6 +18,13 @@ edit any section. To minimize edit conflicts, keep entries terse
 Strict ownership boundaries. Avoid touching anything outside your lane
 without coordinating in this doc first.
 
+**Current posture (2026-05-21):** Claude and Codex are mostly working on
+independent prototyping efforts rather than the earlier tight frontend/backend
+split. Close step-by-step coordination is not required unless a PR touches
+the same files, production recognizer behavior, or shared labeled fixtures.
+Keep this doc current, but prefer lightweight status updates over blocking
+each other.
+
 ### Codex owns (production recognizer)
 
 - `rubik_recognizer/*` — production color classifier, recognizer, image pipeline
@@ -57,8 +64,7 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 | Owner | Branch | PR | What | Touches | ETA |
 |---|---|---|---|---|---|
-| Codex | `codex/vertex-hypothesis-ensemble` | #199 | Diagnostics/data-only canonical vertex feedback + expanded hypothesis agreement probe; concludes agreement is not yet safe for wiring. | `tools/vertex_hypothesis_ensemble_v0.py`, `tools/VERTEX_HYPOTHESIS_ENSEMBLE_V0_REPORT.md`, `tests/fixtures/vertex_axis_feedback_v0.json`, `tests/fixtures/vertex_hypothesis_ensemble_v0_summary.json`, `tests/test_vertex_hypothesis_ensemble_v0.py` | ready for audit |
-| Codex | `codex/bezel-discontinuity-mining` | #179 | Diagnostics-only slot/cell join of #175 cell-discontinuity with #178 interior-bezel per-line crossings on the human-reviewed hybrid overlay quads. | `tools/probe_bezel_discontinuity_join.py`, `tools/BEZEL_DISCONTINUITY_JOIN_REPORT.md`, `tests/fixtures/hard_case_visual_feedback_bezel_join.json`, `tests/test_bezel_discontinuity_join.py` | ready for audit |
+| Codex | `codex/trihedral-axis-labeler` | #201 | Diagnostics/data-only vertex+axis human label scaffold plus trihedral-axis scorer; no production wiring. | `tools/vertex_axis_feedback.py`, `tools/vertex_axis_label_server.py`, `tools/trihedral_axis_fit_v0.py`, new vertex/axis fixtures and reports | ready for audit |
 
 *(Codex: please populate your row when you start something.)*
 
@@ -70,6 +76,7 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 ### Claude
 
+- **#182** — Global cube model, ground-truth-validated pipeline. Lands PnP/mean3/refinement prototype and durable `gcm_vertex_ground_truth.json`; still diagnostics-only, with median vertex error ~72 px.
 - **#178** — Iterative interior-bezel refinement + per-line quality + slot/cell join helper. Exposes `crosses_high_quality_bezel`; still diagnostics-only.
 - **#177** — Interior bezel-line detection probe + human-review fixture. Single-pass detector showed 5/18 honest pass rate and motivated per-line quality.
 - **#176** — Hex-fitter failure taxonomy + walkthrough generator (diagnostics-only). 12/18 worst-pair hexagons are degenerate (min_edge < 20 px); structural finding that h1/h3/h5 are interior to silhouette on yawed cubes — bounds what hull-based fitters can achieve.
@@ -82,6 +89,8 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 ### Codex
 
+- **#200** — Two-view geometry consistency signal (diagnostics-only). Adds CV-local provenance diagnostics in the recognizer and evaluator; no production promotion path yet.
+- **#199** — Vertex hypothesis ensemble diagnostics. Canonicalizes vertex feedback and expands hypothesis pools, but agreement policies still make false-confident selections; do not wire.
 - **#198** — Vertex/axis source-selection confidence diagnostics. Existing fit-quality selection picks the lower-error source 17/23 times but still makes 15 false-confident selections; confidence/source selection remains the blocker.
 - **#197** — Geometry-first face split diagnostics. Generated face quads/cells are nondegenerate on paired rows; upstream vertex/axis confidence remains the blocker.
 - **#196** — SAM3 whole-cube silhouette bakeoff diagnostics. Whole-cube masks beat rembg on mean/median vertex error but have a regression tail; use as alternate hypothesis/cross-check only.

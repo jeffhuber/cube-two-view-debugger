@@ -1,0 +1,1717 @@
+{
+  "artifact": "trihedral_model_candidates_v0",
+  "description": "Diagnostics/data-only snapshot of current global-cube-model trihedral vertex and axis hypotheses used by the axis labeler.",
+  "rows": [
+    {
+      "axes": [
+        {
+          "angleDeg": 148.56,
+          "endpoint": [
+            734.62,
+            2499.45
+          ],
+          "lengthPx": 940.89,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            -802.74,
+            490.81
+          ]
+        },
+        {
+          "angleDeg": -89.9,
+          "endpoint": [
+            1539.09,
+            1065.17
+          ],
+          "lengthPx": 943.47,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            1.73,
+            -943.47
+          ]
+        },
+        {
+          "angleDeg": 29.42,
+          "endpoint": [
+            2369.48,
+            2477.89
+          ],
+          "lengthPx": 955.31,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            832.12,
+            469.25
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble",
+        "fitResidualRmsPx": 38.24,
+        "refinement": "skipped_high_base_score"
+      },
+      "fitLoss": 1462.027,
+      "fitQuality": 0.809,
+      "key": "12_B",
+      "modelPath": "/tmp/gcm_refined/set_12_B_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1537.36,
+        2008.64
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": 150.48,
+          "endpoint": [
+            607.7,
+            2317.03
+          ],
+          "lengthPx": 1020.8,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            -888.29,
+            502.95
+          ]
+        },
+        {
+          "angleDeg": -92.33,
+          "endpoint": [
+            1453.08,
+            761.17
+          ],
+          "lengthPx": 1053.78,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            -42.91,
+            -1052.9
+          ]
+        },
+        {
+          "angleDeg": 28.05,
+          "endpoint": [
+            2378.55,
+            2284.35
+          ],
+          "lengthPx": 1000.03,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            882.56,
+            470.28
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble",
+        "fitResidualRmsPx": 48.91,
+        "refinement": "skipped_high_base_score"
+      },
+      "fitLoss": 2392.5578,
+      "fitQuality": 0.755,
+      "key": "14_B",
+      "modelPath": "/tmp/gcm_refined/set_14_B_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1495.99,
+        1814.07
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": 86.95,
+          "endpoint": [
+            1556.56,
+            3362.9
+          ],
+          "lengthPx": 1355.6,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            72.05,
+            1353.68
+          ]
+        },
+        {
+          "angleDeg": -153.44,
+          "endpoint": [
+            438.73,
+            1486.5
+          ],
+          "lengthPx": 1169.14,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            -1045.78,
+            -522.72
+          ]
+        },
+        {
+          "angleDeg": -27.62,
+          "endpoint": [
+            2607.96,
+            1421.48
+          ],
+          "lengthPx": 1267.9,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            1123.45,
+            -587.74
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble",
+        "fitResidualRmsPx": 37.23,
+        "refinement": "skipped_high_base_score"
+      },
+      "fitLoss": 1386.2569,
+      "fitQuality": 0.814,
+      "key": "15_A",
+      "modelPath": "/tmp/gcm_refined/set_15_A_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1484.51,
+        2009.22
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": -28.62,
+          "endpoint": [
+            2688.55,
+            1350.26
+          ],
+          "lengthPx": 1363.63,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            1197.02,
+            -653.16
+          ]
+        },
+        {
+          "angleDeg": -148.51,
+          "endpoint": [
+            466.54,
+            1375.66
+          ],
+          "lengthPx": 1201.95,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            -1024.99,
+            -627.76
+          ]
+        },
+        {
+          "angleDeg": 86.71,
+          "endpoint": [
+            1564.97,
+            3279.12
+          ],
+          "lengthPx": 1277.81,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            73.43,
+            1275.7
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble",
+        "fitResidualRmsPx": 41.03,
+        "refinement": "skipped_high_base_score"
+      },
+      "fitLoss": 1683.6716,
+      "fitQuality": 0.795,
+      "key": "15_B",
+      "modelPath": "/tmp/gcm_refined/set_15_B_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1491.53,
+        2003.42
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": 87.19,
+          "endpoint": [
+            1545.83,
+            3281.9
+          ],
+          "lengthPx": 1348.69,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            66.04,
+            1347.07
+          ]
+        },
+        {
+          "angleDeg": -27.69,
+          "endpoint": [
+            2564.23,
+            1365.62
+          ],
+          "lengthPx": 1224.75,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            1084.44,
+            -569.2
+          ]
+        },
+        {
+          "angleDeg": -154.73,
+          "endpoint": [
+            425.0,
+            1436.9
+          ],
+          "lengthPx": 1166.41,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            -1054.79,
+            -497.93
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble",
+        "fitResidualRmsPx": 13.42,
+        "refinement": "skipped_high_base_score"
+      },
+      "fitLoss": 180.2287,
+      "fitQuality": 0.933,
+      "key": "17_B",
+      "modelPath": "/tmp/gcm_refined/set_17_B_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1479.79,
+        1934.83
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": -146.12,
+          "endpoint": [
+            412.26,
+            1326.42
+          ],
+          "lengthPx": 1144.49,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            -950.13,
+            -638.05
+          ]
+        },
+        {
+          "angleDeg": -27.93,
+          "endpoint": [
+            2628.55,
+            1293.14
+          ],
+          "lengthPx": 1433.12,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            1266.16,
+            -671.33
+          ]
+        },
+        {
+          "angleDeg": 83.64,
+          "endpoint": [
+            1502.39,
+            3220.81
+          ],
+          "lengthPx": 1264.12,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            140.0,
+            1256.35
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble",
+        "fitResidualRmsPx": 23.56,
+        "refinement": "skipped_high_base_score"
+      },
+      "fitLoss": 554.9754,
+      "fitQuality": 0.882,
+      "key": "21_A",
+      "modelPath": "/tmp/gcm_refined/set_21_A_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1362.39,
+        1964.47
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": -35.9,
+          "endpoint": [
+            2668.99,
+            1247.78
+          ],
+          "lengthPx": 1407.32,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            1139.99,
+            -825.22
+          ]
+        },
+        {
+          "angleDeg": 86.75,
+          "endpoint": [
+            1592.41,
+            3190.05
+          ],
+          "lengthPx": 1118.85,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            63.41,
+            1117.05
+          ]
+        },
+        {
+          "angleDeg": -146.92,
+          "endpoint": [
+            393.04,
+            1333.09
+          ],
+          "lengthPx": 1355.69,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            -1135.96,
+            -739.91
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble+image_refined",
+        "fitResidualRmsPx": 43.21,
+        "refinement": "applied"
+      },
+      "fitLoss": 1866.9738,
+      "fitQuality": 0.784,
+      "key": "21_B",
+      "modelPath": "/tmp/gcm_refined/set_21_B_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1529.0,
+        2073.0
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": 31.14,
+          "endpoint": [
+            2462.28,
+            2495.48
+          ],
+          "lengthPx": 965.15,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            826.08,
+            499.11
+          ]
+        },
+        {
+          "angleDeg": -90.29,
+          "endpoint": [
+            1631.3,
+            1016.91
+          ],
+          "lengthPx": 979.48,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            -4.9,
+            -979.47
+          ]
+        },
+        {
+          "angleDeg": 151.84,
+          "endpoint": [
+            783.55,
+            2452.73
+          ],
+          "lengthPx": 967.1,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            -852.66,
+            456.35
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble",
+        "fitResidualRmsPx": 33.76,
+        "refinement": "skipped_high_base_score"
+      },
+      "fitLoss": 1139.5693,
+      "fitQuality": 0.831,
+      "key": "24_A",
+      "modelPath": "/tmp/gcm_refined/set_24_A_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1636.2,
+        1996.37
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": 88.72,
+          "endpoint": [
+            1494.19,
+            3044.12
+          ],
+          "lengthPx": 1041.38,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            23.19,
+            1041.12
+          ]
+        },
+        {
+          "angleDeg": -146.65,
+          "endpoint": [
+            426.52,
+            1315.57
+          ],
+          "lengthPx": 1250.4,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            -1044.48,
+            -687.43
+          ]
+        },
+        {
+          "angleDeg": -34.44,
+          "endpoint": [
+            2520.57,
+            1283.32
+          ],
+          "lengthPx": 1272.61,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            1049.57,
+            -719.68
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble+image_refined",
+        "fitResidualRmsPx": 16.69,
+        "refinement": "applied"
+      },
+      "fitLoss": 278.7113,
+      "fitQuality": 0.917,
+      "key": "26_A",
+      "modelPath": "/tmp/gcm_refined/set_26_A_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1471.0,
+        2003.0
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": 29.04,
+          "endpoint": [
+            2315.22,
+            2501.05
+          ],
+          "lengthPx": 998.09,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            872.59,
+            484.54
+          ]
+        },
+        {
+          "angleDeg": 145.36,
+          "endpoint": [
+            624.83,
+            2581.61
+          ],
+          "lengthPx": 994.06,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            -817.8,
+            565.11
+          ]
+        },
+        {
+          "angleDeg": -91.02,
+          "endpoint": [
+            1425.5,
+            1050.45
+          ],
+          "lengthPx": 966.21,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            -17.14,
+            -966.06
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble",
+        "fitResidualRmsPx": 23.83,
+        "refinement": "skipped_high_base_score"
+      },
+      "fitLoss": 567.9386,
+      "fitQuality": 0.881,
+      "key": "26_B",
+      "modelPath": "/tmp/gcm_refined/set_26_B_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1442.64,
+        2016.51
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": -31.7,
+          "endpoint": [
+            2453.28,
+            1375.15
+          ],
+          "lengthPx": 1089.9,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            927.31,
+            -572.69
+          ]
+        },
+        {
+          "angleDeg": 92.92,
+          "endpoint": [
+            1465.81,
+            3126.85
+          ],
+          "lengthPx": 1180.54,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            -60.15,
+            1179.01
+          ]
+        },
+        {
+          "angleDeg": -152.26,
+          "endpoint": [
+            423.52,
+            1367.98
+          ],
+          "lengthPx": 1245.64,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            -1102.45,
+            -579.86
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble",
+        "fitResidualRmsPx": 30.54,
+        "refinement": "skipped_high_base_score"
+      },
+      "fitLoss": 932.4923,
+      "fitQuality": 0.847,
+      "key": "27_B",
+      "modelPath": "/tmp/gcm_refined/set_27_B_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1525.97,
+        1947.84
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": -32.18,
+          "endpoint": [
+            2621.02,
+            1271.6
+          ],
+          "lengthPx": 1266.37,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            1071.83,
+            -674.45
+          ]
+        },
+        {
+          "angleDeg": 93.33,
+          "endpoint": [
+            1479.88,
+            3135.54
+          ],
+          "lengthPx": 1191.51,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            -69.31,
+            1189.49
+          ]
+        },
+        {
+          "angleDeg": -148.07,
+          "endpoint": [
+            379.05,
+            1216.9
+          ],
+          "lengthPx": 1378.72,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            -1170.14,
+            -729.14
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble",
+        "fitResidualRmsPx": 24.08,
+        "refinement": "skipped_high_base_score"
+      },
+      "fitLoss": 579.7691,
+      "fitQuality": 0.88,
+      "key": "28_A",
+      "modelPath": "/tmp/gcm_refined/set_28_A_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1549.19,
+        1946.05
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": -30.41,
+          "endpoint": [
+            2539.0,
+            1310.98
+          ],
+          "lengthPx": 1231.06,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            1061.66,
+            -623.22
+          ]
+        },
+        {
+          "angleDeg": -147.77,
+          "endpoint": [
+            429.86,
+            1273.75
+          ],
+          "lengthPx": 1238.31,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            -1047.48,
+            -660.45
+          ]
+        },
+        {
+          "angleDeg": 90.94,
+          "endpoint": [
+            1458.52,
+            3083.85
+          ],
+          "lengthPx": 1149.81,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            -18.82,
+            1149.65
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble",
+        "fitResidualRmsPx": 32.99,
+        "refinement": "skipped_high_base_score"
+      },
+      "fitLoss": 1088.0288,
+      "fitQuality": 0.835,
+      "key": "28_B",
+      "modelPath": "/tmp/gcm_refined/set_28_B_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1477.34,
+        1934.2
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": 149.98,
+          "endpoint": [
+            573.3,
+            2571.0
+          ],
+          "lengthPx": 1006.96,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            -871.86,
+            503.83
+          ]
+        },
+        {
+          "angleDeg": -89.8,
+          "endpoint": [
+            1448.73,
+            1057.54
+          ],
+          "lengthPx": 1009.64,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            3.58,
+            -1009.63
+          ]
+        },
+        {
+          "angleDeg": 28.76,
+          "endpoint": [
+            2328.57,
+            2551.97
+          ],
+          "lengthPx": 1007.7,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            883.42,
+            484.8
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble",
+        "fitResidualRmsPx": 36.12,
+        "refinement": "skipped_high_base_score"
+      },
+      "fitLoss": 1304.3729,
+      "fitQuality": 0.819,
+      "key": "29_A",
+      "modelPath": "/tmp/gcm_refined/set_29_A_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1445.16,
+        2067.17
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": -148.25,
+          "endpoint": [
+            460.75,
+            1354.76
+          ],
+          "lengthPx": 1146.13,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            -974.66,
+            -603.03
+          ]
+        },
+        {
+          "angleDeg": -30.31,
+          "endpoint": [
+            2532.29,
+            1316.49
+          ],
+          "lengthPx": 1270.6,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            1096.89,
+            -641.3
+          ]
+        },
+        {
+          "angleDeg": 86.26,
+          "endpoint": [
+            1510.5,
+            3106.63
+          ],
+          "lengthPx": 1151.29,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            75.09,
+            1148.83
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble",
+        "fitResidualRmsPx": 28.12,
+        "refinement": "skipped_high_base_score"
+      },
+      "fitLoss": 790.5269,
+      "fitQuality": 0.859,
+      "key": "29_B",
+      "modelPath": "/tmp/gcm_refined/set_29_B_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1435.41,
+        1957.79
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": -35.69,
+          "endpoint": [
+            2307.47,
+            1646.25
+          ],
+          "lengthPx": 1034.95,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            840.54,
+            -603.82
+          ]
+        },
+        {
+          "angleDeg": -146.01,
+          "endpoint": [
+            620.66,
+            1679.48
+          ],
+          "lengthPx": 1020.66,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            -846.28,
+            -570.59
+          ]
+        },
+        {
+          "angleDeg": 88.11,
+          "endpoint": [
+            1494.95,
+            3097.15
+          ],
+          "lengthPx": 847.54,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            28.02,
+            847.07
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble",
+        "fitResidualRmsPx": 103.14,
+        "refinement": "skipped_high_base_score"
+      },
+      "fitLoss": 10637.5562,
+      "fitQuality": 0.484,
+      "key": "30_A",
+      "modelPath": "/tmp/gcm_refined/set_30_A_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1466.93,
+        2250.07
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": -151.09,
+          "endpoint": [
+            674.08,
+            1412.41
+          ],
+          "lengthPx": 1073.21,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            -939.49,
+            -518.79
+          ]
+        },
+        {
+          "angleDeg": -33.81,
+          "endpoint": [
+            2417.73,
+            1392.68
+          ],
+          "lengthPx": 967.82,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            804.16,
+            -538.52
+          ]
+        },
+        {
+          "angleDeg": 92.64,
+          "endpoint": [
+            1569.43,
+            2889.79
+          ],
+          "lengthPx": 959.6,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            -44.15,
+            958.58
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble",
+        "fitResidualRmsPx": 77.13,
+        "refinement": "skipped_high_base_score"
+      },
+      "fitLoss": 5948.4305,
+      "fitQuality": 0.614,
+      "key": "30_B",
+      "modelPath": "/tmp/gcm_refined/set_30_B_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1613.57,
+        1931.2
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": -33.15,
+          "endpoint": [
+            2254.1,
+            1411.03
+          ],
+          "lengthPx": 1030.36,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            862.63,
+            -563.49
+          ]
+        },
+        {
+          "angleDeg": -151.45,
+          "endpoint": [
+            446.78,
+            1460.5
+          ],
+          "lengthPx": 1075.48,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            -944.69,
+            -514.02
+          ]
+        },
+        {
+          "angleDeg": 88.63,
+          "endpoint": [
+            1415.62,
+            2981.04
+          ],
+          "lengthPx": 1006.81,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            24.15,
+            1006.52
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble",
+        "fitResidualRmsPx": 31.85,
+        "refinement": "skipped_high_base_score"
+      },
+      "fitLoss": 1014.4813,
+      "fitQuality": 0.841,
+      "key": "31_A",
+      "modelPath": "/tmp/gcm_refined/set_31_A_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1391.46,
+        1974.52
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": 89.22,
+          "endpoint": [
+            1341.18,
+            2982.86
+          ],
+          "lengthPx": 1043.96,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            14.18,
+            1043.86
+          ]
+        },
+        {
+          "angleDeg": -36.58,
+          "endpoint": [
+            2158.84,
+            1321.72
+          ],
+          "lengthPx": 1035.85,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            831.84,
+            -617.28
+          ]
+        },
+        {
+          "angleDeg": -154.06,
+          "endpoint": [
+            250.45,
+            1415.42
+          ],
+          "lengthPx": 1197.12,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            -1076.55,
+            -523.58
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble+image_refined",
+        "fitResidualRmsPx": 21.04,
+        "refinement": "applied"
+      },
+      "fitLoss": 442.659,
+      "fitQuality": 0.895,
+      "key": "31_B",
+      "modelPath": "/tmp/gcm_refined/set_31_B_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1327.0,
+        1939.0
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": 27.44,
+          "endpoint": [
+            2373.25,
+            2426.26
+          ],
+          "lengthPx": 946.91,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            840.34,
+            436.42
+          ]
+        },
+        {
+          "angleDeg": 148.07,
+          "endpoint": [
+            739.32,
+            2484.32
+          ],
+          "lengthPx": 935.04,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            -793.59,
+            494.48
+          ]
+        },
+        {
+          "angleDeg": -91.41,
+          "endpoint": [
+            1509.55,
+            1041.68
+          ],
+          "lengthPx": 948.45,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            -23.36,
+            -948.16
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble",
+        "fitResidualRmsPx": 31.81,
+        "refinement": "skipped_high_base_score"
+      },
+      "fitLoss": 1011.8404,
+      "fitQuality": 0.841,
+      "key": "32_A",
+      "modelPath": "/tmp/gcm_refined/set_32_A_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1532.91,
+        1989.84
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": -90.58,
+          "endpoint": [
+            1357.37,
+            875.59
+          ],
+          "lengthPx": 950.45,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            -9.63,
+            -950.41
+          ]
+        },
+        {
+          "angleDeg": 31.03,
+          "endpoint": [
+            2160.5,
+            2303.44
+          ],
+          "lengthPx": 926.06,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            793.5,
+            477.44
+          ]
+        },
+        {
+          "angleDeg": 149.25,
+          "endpoint": [
+            554.77,
+            2309.26
+          ],
+          "lengthPx": 945.12,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            -812.23,
+            483.26
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble+image_refined",
+        "fitResidualRmsPx": 24.15,
+        "refinement": "applied"
+      },
+      "fitLoss": 583.2014,
+      "fitQuality": 0.879,
+      "key": "32_B",
+      "modelPath": "/tmp/gcm_refined/set_32_B_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1367.0,
+        1826.0
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": -147.96,
+          "endpoint": [
+            302.94,
+            1225.54
+          ],
+          "lengthPx": 1163.0,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            -985.83,
+            -617.03
+          ]
+        },
+        {
+          "angleDeg": 85.72,
+          "endpoint": [
+            1365.88,
+            2873.02
+          ],
+          "lengthPx": 1033.34,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            77.12,
+            1030.45
+          ]
+        },
+        {
+          "angleDeg": -33.15,
+          "endpoint": [
+            2312.36,
+            1174.14
+          ],
+          "lengthPx": 1222.51,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            1023.6,
+            -668.42
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble",
+        "fitResidualRmsPx": 22.09,
+        "refinement": "skipped_high_base_score"
+      },
+      "fitLoss": 487.9633,
+      "fitQuality": 0.89,
+      "key": "36_B",
+      "modelPath": "/tmp/gcm_refined/set_36_B_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1288.77,
+        1842.56
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": -90.75,
+          "endpoint": [
+            1491.67,
+            661.67
+          ],
+          "lengthPx": 1255.44,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            -16.33,
+            -1255.33
+          ]
+        },
+        {
+          "angleDeg": 28.51,
+          "endpoint": [
+            2643.17,
+            2533.67
+          ],
+          "lengthPx": 1291.85,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            1135.17,
+            616.67
+          ]
+        },
+        {
+          "angleDeg": 150.28,
+          "endpoint": [
+            389.17,
+            2555.67
+          ],
+          "lengthPx": 1288.29,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            -1118.83,
+            638.67
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble+image_refined",
+        "fitResidualRmsPx": 81.69,
+        "refinement": "applied"
+      },
+      "fitLoss": 6672.6111,
+      "fitQuality": 0.592,
+      "key": "42_B",
+      "modelPath": "/tmp/gcm_refined/set_42_B_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1508.0,
+        1917.0
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": -92.44,
+          "endpoint": [
+            1426.21,
+            751.33
+          ],
+          "lengthPx": 1075.64,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            -45.79,
+            -1074.67
+          ]
+        },
+        {
+          "angleDeg": 146.28,
+          "endpoint": [
+            578.2,
+            2422.6
+          ],
+          "lengthPx": 1074.62,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            -893.8,
+            596.6
+          ]
+        },
+        {
+          "angleDeg": 29.7,
+          "endpoint": [
+            2394.72,
+            2352.21
+          ],
+          "lengthPx": 1062.22,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            922.72,
+            526.21
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble+image_refined",
+        "fitResidualRmsPx": 38.06,
+        "refinement": "applied"
+      },
+      "fitLoss": 1448.6222,
+      "fitQuality": 0.81,
+      "key": "44_A",
+      "modelPath": "/tmp/gcm_refined/set_44_A_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1472.0,
+        1826.0
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": 30.47,
+          "endpoint": [
+            2519.95,
+            2520.46
+          ],
+          "lengthPx": 1049.98,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            904.95,
+            532.46
+          ]
+        },
+        {
+          "angleDeg": -88.82,
+          "endpoint": [
+            1636.74,
+            930.48
+          ],
+          "lengthPx": 1057.74,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            21.74,
+            -1057.52
+          ]
+        },
+        {
+          "angleDeg": 151.0,
+          "endpoint": [
+            708.97,
+            2490.17
+          ],
+          "lengthPx": 1035.89,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            -906.03,
+            502.17
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble+image_refined",
+        "fitResidualRmsPx": 35.66,
+        "refinement": "applied"
+      },
+      "fitLoss": 1271.5925,
+      "fitQuality": 0.822,
+      "key": "44_B",
+      "modelPath": "/tmp/gcm_refined/set_44_B_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1615.0,
+        1988.0
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": -142.04,
+          "endpoint": [
+            439.32,
+            1395.8
+          ],
+          "lengthPx": 1248.62,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            -984.52,
+            -767.97
+          ]
+        },
+        {
+          "angleDeg": -35.63,
+          "endpoint": [
+            2557.62,
+            1351.12
+          ],
+          "lengthPx": 1394.94,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            1133.78,
+            -812.65
+          ]
+        },
+        {
+          "angleDeg": 83.9,
+          "endpoint": [
+            1525.53,
+            3114.58
+          ],
+          "lengthPx": 956.24,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            101.69,
+            950.81
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble",
+        "fitResidualRmsPx": 28.86,
+        "refinement": "skipped_high_base_score"
+      },
+      "fitLoss": 833.0851,
+      "fitQuality": 0.856,
+      "key": "57_A",
+      "modelPath": "/tmp/gcm_refined/set_57_A_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1423.84,
+        2163.77
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": 152.58,
+          "endpoint": [
+            667.17,
+            2448.4
+          ],
+          "lengthPx": 1004.53,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            -891.7,
+            462.56
+          ]
+        },
+        {
+          "angleDeg": 29.11,
+          "endpoint": [
+            2425.03,
+            2468.06
+          ],
+          "lengthPx": 991.36,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            866.17,
+            482.23
+          ]
+        },
+        {
+          "angleDeg": -90.72,
+          "endpoint": [
+            1546.14,
+            966.25
+          ],
+          "lengthPx": 1019.66,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            -12.73,
+            -1019.58
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble",
+        "fitResidualRmsPx": 41.51,
+        "refinement": "skipped_high_base_score"
+      },
+      "fitLoss": 1723.4683,
+      "fitQuality": 0.792,
+      "key": "61_A",
+      "modelPath": "/tmp/gcm_refined/set_61_A_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1558.87,
+        1985.83
+      ]
+    },
+    {
+      "axes": [
+        {
+          "angleDeg": 87.47,
+          "endpoint": [
+            1425.9,
+            3203.28
+          ],
+          "lengthPx": 1315.79,
+          "name": "axis_x",
+          "status": "ok",
+          "vector": [
+            58.17,
+            1314.5
+          ]
+        },
+        {
+          "angleDeg": -22.73,
+          "endpoint": [
+            2534.96,
+            1399.84
+          ],
+          "lengthPx": 1265.5,
+          "name": "axis_y",
+          "status": "ok",
+          "vector": [
+            1167.23,
+            -488.94
+          ]
+        },
+        {
+          "angleDeg": -149.64,
+          "endpoint": [
+            471.4,
+            1363.71
+          ],
+          "lengthPx": 1038.8,
+          "name": "axis_z",
+          "status": "ok",
+          "vector": [
+            -896.33,
+            -525.07
+          ]
+        }
+      ],
+      "debug": {
+        "cubeCenterSource": "mean3_ensemble",
+        "fitResidualRmsPx": 38.16,
+        "refinement": "skipped_high_base_score"
+      },
+      "fitLoss": 1456.5424,
+      "fitQuality": 0.809,
+      "key": "61_B",
+      "modelPath": "/tmp/gcm_refined/set_61_B_data.json",
+      "modelSource": "global_cube_model_rembg_refined",
+      "status": "ok",
+      "vertexPoint": [
+        1367.73,
+        1888.78
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "sourceGroundTruth": "/private/tmp/cube-trihedral-axis-labeler/tests/fixtures/gcm_vertex_ground_truth.json",
+  "sourceModelDataDir": "/tmp/gcm_refined"
+}

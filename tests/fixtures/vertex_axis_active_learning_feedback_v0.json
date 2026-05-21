@@ -1,0 +1,2889 @@
+{
+  "allowedStatuses": [
+    "unlabeled",
+    "vertex_labeled_axes_unlabeled",
+    "labeled",
+    "ambiguous",
+    "not_visible",
+    "judgment_only"
+  ],
+  "artifact": "vertex_axis_active_learning_feedback_v0",
+  "description": "Active-learning queue for additional visible-trihedral labels. Rows are unlabeled manifest images not already present as full human vertex+axis labels in vertex_axis_human_feedback_v0.",
+  "labelerCommand": ".venv/bin/python tools/vertex_axis_label_server.py --feedback tests/fixtures/vertex_axis_active_learning_feedback_v0.json --report tools/VERTEX_AXIS_ACTIVE_LEARNING_FEEDBACK_V0_REPORT.md --port 8778",
+  "rows": [
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "easy_corpus",
+        "priority": "tier1_easy_unlabeled",
+        "reasons": [
+          "easy_corpus_unlabeled",
+          "low_silhouette_iou",
+          "paired_with_existing_label"
+        ],
+        "score": 131.424,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": 22.0,
+            "endpoint": [
+              802.46,
+              597.99
+            ],
+            "lengthPx": 312.68,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              289.91,
+              117.13
+            ]
+          },
+          {
+            "angleDeg": 144.0,
+            "endpoint": [
+              259.59,
+              664.65
+            ],
+            "lengthPx": 312.68,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              -252.96,
+              183.79
+            ]
+          },
+          {
+            "angleDeg": -128.0,
+            "endpoint": [
+              320.05,
+              234.47
+            ],
+            "lengthPx": 312.67,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              -192.5,
+              -246.39
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.0445,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 312.679,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.9213,
+          "maskCoverage": 0.6797,
+          "signChoice": [
+            1,
+            1,
+            -1
+          ],
+          "silhouetteIoU": 0.6424,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 1.8981,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          512.55,
+          480.86
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 42 - A - white up IMG_7163.JPG",
+      "key": "42_A",
+      "notes": "",
+      "setId": "42",
+      "side": "A",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "easy_corpus",
+        "priority": "tier1_easy_unlabeled",
+        "reasons": [
+          "easy_corpus_unlabeled",
+          "low_silhouette_iou",
+          "paired_with_existing_label"
+        ],
+        "score": 130.962,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": 28.0,
+            "endpoint": [
+              698.43,
+              418.3
+            ],
+            "lengthPx": 276.84,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              244.43,
+              129.97
+            ]
+          },
+          {
+            "angleDeg": 94.0,
+            "endpoint": [
+              434.69,
+              564.49
+            ],
+            "lengthPx": 276.83,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              -19.31,
+              276.16
+            ]
+          },
+          {
+            "angleDeg": 158.0,
+            "endpoint": [
+              197.32,
+              392.03
+            ],
+            "lengthPx": 276.84,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              -256.68,
+              103.7
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.2339,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 276.837,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.9448,
+          "maskCoverage": 0.6177,
+          "signChoice": [
+            1,
+            1,
+            1
+          ],
+          "silhouetteIoU": 0.5962,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 1.886,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          454.0,
+          288.33
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 36 - A - white up IMG_7151.JPG",
+      "key": "36_A",
+      "notes": "",
+      "setId": "36",
+      "side": "A",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "easy_corpus",
+        "priority": "tier1_easy_unlabeled",
+        "reasons": [
+          "easy_corpus_unlabeled"
+        ],
+        "score": 113.686,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": 32.0,
+            "endpoint": [
+              671.79,
+              715.3
+            ],
+            "lengthPx": 320.02,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              271.39,
+              169.59
+            ]
+          },
+          {
+            "angleDeg": 146.0,
+            "endpoint": [
+              135.09,
+              724.66
+            ],
+            "lengthPx": 320.02,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              -265.31,
+              178.95
+            ]
+          },
+          {
+            "angleDeg": -86.0,
+            "endpoint": [
+              422.72,
+              226.47
+            ],
+            "lengthPx": 320.02,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              22.32,
+              -319.24
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.2341,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 320.023,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.931,
+          "maskCoverage": 0.9284,
+          "signChoice": [
+            1,
+            1,
+            -1
+          ],
+          "silhouetteIoU": 0.8686,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 2.2238,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          400.4,
+          545.71
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 23 - B - white up.JPG",
+      "key": "23_B",
+      "notes": "",
+      "setId": "23",
+      "side": "B",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "easy_corpus",
+        "priority": "tier1_easy_unlabeled",
+        "reasons": [
+          "easy_corpus_unlabeled"
+        ],
+        "score": 113.182,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": -76.0,
+            "endpoint": [
+              473.51,
+              226.86
+            ],
+            "lengthPx": 307.43,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              74.37,
+              -298.3
+            ]
+          },
+          {
+            "angleDeg": 158.0,
+            "endpoint": [
+              114.09,
+              640.33
+            ],
+            "lengthPx": 307.44,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              -285.05,
+              115.17
+            ]
+          },
+          {
+            "angleDeg": 28.0,
+            "endpoint": [
+              670.59,
+              669.49
+            ],
+            "lengthPx": 307.43,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              271.45,
+              144.33
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.0207,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 307.431,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.9715,
+          "maskCoverage": 0.8383,
+          "signChoice": [
+            -1,
+            1,
+            1
+          ],
+          "silhouetteIoU": 0.8182,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 2.1552,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          399.14,
+          525.16
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 37 - A - white up IMG_7153.JPG",
+      "key": "37_A",
+      "notes": "",
+      "setId": "37",
+      "side": "A",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "easy_corpus",
+        "priority": "tier1_easy_unlabeled",
+        "reasons": [
+          "easy_corpus_unlabeled"
+        ],
+        "score": 113.06,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": 28.0,
+            "endpoint": [
+              647.28,
+              670.03
+            ],
+            "lengthPx": 299.47,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              264.42,
+              140.59
+            ]
+          },
+          {
+            "angleDeg": 144.0,
+            "endpoint": [
+              140.58,
+              705.47
+            ],
+            "lengthPx": 299.48,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              -242.28,
+              176.03
+            ]
+          },
+          {
+            "angleDeg": -76.0,
+            "endpoint": [
+              455.31,
+              238.86
+            ],
+            "lengthPx": 299.48,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              72.45,
+              -290.58
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.1024,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 299.474,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.9623,
+          "maskCoverage": 0.8323,
+          "signChoice": [
+            1,
+            1,
+            -1
+          ],
+          "silhouetteIoU": 0.806,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 2.1455,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          382.86,
+          529.44
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 23 - A - white up.JPG",
+      "key": "23_A",
+      "notes": "",
+      "setId": "23",
+      "side": "A",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "easy_corpus",
+        "priority": "tier1_easy_unlabeled",
+        "reasons": [
+          "easy_corpus_unlabeled",
+          "low_silhouette_iou"
+        ],
+        "score": 111.599,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": 162.0,
+            "endpoint": [
+              75.48,
+              650.85
+            ],
+            "lengthPx": 302.73,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              -287.91,
+              93.55
+            ]
+          },
+          {
+            "angleDeg": -56.0,
+            "endpoint": [
+              532.67,
+              306.33
+            ],
+            "lengthPx": 302.72,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              169.28,
+              -250.97
+            ]
+          },
+          {
+            "angleDeg": 24.0,
+            "endpoint": [
+              639.94,
+              680.43
+            ],
+            "lengthPx": 302.72,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              276.55,
+              123.13
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.0188,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 302.723,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.9436,
+          "maskCoverage": 0.687,
+          "signChoice": [
+            1,
+            -1,
+            1
+          ],
+          "silhouetteIoU": 0.6599,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 1.9337,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          363.39,
+          557.3
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 37 - B - white up IMG_7154.JPG",
+      "key": "37_B",
+      "notes": "",
+      "setId": "37",
+      "side": "B",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "corpus_stress",
+        "priority": "tier2_pair_completion",
+        "reasons": [
+          "corpus_stress_unlabeled",
+          "paired_with_existing_label"
+        ],
+        "score": 93.675,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": -148.0,
+            "endpoint": [
+              166.15,
+              421.8
+            ],
+            "lengthPx": 316.45,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              -268.37,
+              -167.69
+            ]
+          },
+          {
+            "angleDeg": 90.0,
+            "endpoint": [
+              434.52,
+              905.94
+            ],
+            "lengthPx": 316.45,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              0.0,
+              316.45
+            ]
+          },
+          {
+            "angleDeg": -28.0,
+            "endpoint": [
+              713.93,
+              440.92
+            ],
+            "lengthPx": 316.45,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              279.41,
+              -148.57
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.1299,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 316.452,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.9567,
+          "maskCoverage": 0.9029,
+          "signChoice": [
+            -1,
+            1,
+            -1
+          ],
+          "silhouetteIoU": 0.8675,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 2.2238,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          434.52,
+          589.49
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 12 - A - white up IMG_6701.JPG",
+      "key": "12_A",
+      "notes": "",
+      "setId": "12",
+      "side": "A",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "corpus_stress",
+        "priority": "tier2_pair_completion",
+        "reasons": [
+          "corpus_stress_unlabeled",
+          "paired_with_existing_label"
+        ],
+        "score": 93.504,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": -152.0,
+            "endpoint": [
+              177.89,
+              378.6
+            ],
+            "lengthPx": 315.97,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              -278.99,
+              -148.34
+            ]
+          },
+          {
+            "angleDeg": -30.0,
+            "endpoint": [
+              730.53,
+              368.95
+            ],
+            "lengthPx": 315.98,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              273.65,
+              -157.99
+            ]
+          },
+          {
+            "angleDeg": 94.0,
+            "endpoint": [
+              434.84,
+              842.15
+            ],
+            "lengthPx": 315.98,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              -22.04,
+              315.21
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.5839,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 315.981,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.9668,
+          "maskCoverage": 0.876,
+          "signChoice": [
+            -1,
+            -1,
+            1
+          ],
+          "silhouetteIoU": 0.8504,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 2.2772,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          456.88,
+          526.94
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 27 - A - white upIMG_6775.JPG",
+      "key": "27_A",
+      "notes": "",
+      "setId": "27",
+      "side": "A",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "corpus_stress",
+        "priority": "tier2_pair_completion",
+        "reasons": [
+          "corpus_stress_unlabeled",
+          "paired_with_existing_label"
+        ],
+        "score": 93.139,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": 32.0,
+            "endpoint": [
+              658.29,
+              689.44
+            ],
+            "lengthPx": 307.35,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              260.65,
+              162.87
+            ]
+          },
+          {
+            "angleDeg": 138.0,
+            "endpoint": [
+              169.23,
+              732.23
+            ],
+            "lengthPx": 307.36,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              -228.41,
+              205.66
+            ]
+          },
+          {
+            "angleDeg": -82.0,
+            "endpoint": [
+              440.42,
+              222.2
+            ],
+            "lengthPx": 307.36,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              42.78,
+              -304.37
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.0,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 307.358,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.9274,
+          "maskCoverage": 0.8693,
+          "signChoice": [
+            1,
+            1,
+            -1
+          ],
+          "silhouetteIoU": 0.8139,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 2.1159,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          397.64,
+          526.57
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 24 - B - white up IMG_6770.JPG",
+      "key": "24_B",
+      "notes": "",
+      "setId": "24",
+      "side": "B",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "corpus_stress",
+        "priority": "tier2_pair_completion",
+        "reasons": [
+          "corpus_stress_unlabeled",
+          "low_silhouette_iou",
+          "low_cell_inside",
+          "paired_with_existing_label"
+        ],
+        "score": 91.2715,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": -30.0,
+            "endpoint": [
+              684.96,
+              333.67
+            ],
+            "lengthPx": 289.53,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              250.74,
+              -144.77
+            ]
+          },
+          {
+            "angleDeg": -156.0,
+            "endpoint": [
+              169.72,
+              360.68
+            ],
+            "lengthPx": 289.53,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              -264.5,
+              -117.76
+            ]
+          },
+          {
+            "angleDeg": 88.0,
+            "endpoint": [
+              444.32,
+              767.8
+            ],
+            "lengthPx": 289.54,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              10.1,
+              289.36
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 0.9259,
+          "detectorSignalQuality": 0.404,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 289.535,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.9118,
+          "maskCoverage": 0.7098,
+          "signChoice": [
+            -1,
+            -1,
+            1
+          ],
+          "silhouetteIoU": 0.6642,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 1.9544,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          434.22,
+          478.44
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 14 - A - white up IMG_6705.JPG",
+      "key": "14_A",
+      "notes": "",
+      "setId": "14",
+      "side": "A",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "hard_case_stress",
+        "priority": "tier2_pair_completion",
+        "reasons": [
+          "hard_case_unlabeled",
+          "paired_with_existing_label"
+        ],
+        "score": 73.071,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": 38.0,
+            "endpoint": [
+              663.58,
+              775.23
+            ],
+            "lengthPx": 320.02,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              252.18,
+              197.03
+            ]
+          },
+          {
+            "angleDeg": -102.0,
+            "endpoint": [
+              344.86,
+              265.17
+            ],
+            "lengthPx": 320.02,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              -66.54,
+              -313.03
+            ]
+          },
+          {
+            "angleDeg": 136.0,
+            "endpoint": [
+              181.2,
+              800.51
+            ],
+            "lengthPx": 320.02,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              -230.2,
+              222.31
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 0.963,
+          "detectorSignalQuality": 0.0969,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 320.023,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.9396,
+          "maskCoverage": 0.8718,
+          "signChoice": [
+            1,
+            -1,
+            1
+          ],
+          "silhouetteIoU": 0.8256,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 2.1445,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          411.4,
+          578.2
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 17 - A - white up.JPG",
+      "key": "17_A",
+      "notes": "",
+      "setId": "17",
+      "side": "A",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "hard_case_stress",
+        "priority": "tier2_pair_completion",
+        "reasons": [
+          "hard_case_unlabeled",
+          "low_silhouette_iou",
+          "low_cell_inside",
+          "paired_with_existing_label"
+        ],
+        "score": 70.1735,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": -30.0,
+            "endpoint": [
+              593.8,
+              274.01
+            ],
+            "lengthPx": 314.11,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              272.03,
+              -157.06
+            ]
+          },
+          {
+            "angleDeg": 28.0,
+            "endpoint": [
+              599.12,
+              578.54
+            ],
+            "lengthPx": 314.12,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              277.35,
+              147.47
+            ]
+          },
+          {
+            "angleDeg": 92.0,
+            "endpoint": [
+              310.81,
+              744.99
+            ],
+            "lengthPx": 314.11,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              -10.96,
+              313.92
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 0.9259,
+          "detectorSignalQuality": 0.0849,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 314.113,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.8653,
+          "maskCoverage": 0.6067,
+          "signChoice": [
+            -1,
+            1,
+            1
+          ],
+          "silhouetteIoU": 0.5544,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 1.6752,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          321.77,
+          431.07
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 57 - B - white-up IMG_7511.JPG",
+      "key": "57_B",
+      "notes": "",
+      "setId": "57",
+      "side": "B",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "hard_case_stress",
+        "priority": "tier3_manifest_stress",
+        "reasons": [
+          "hard_case_unlabeled"
+        ],
+        "score": 53.956,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": -150.0,
+            "endpoint": [
+              96.24,
+              374.66
+            ],
+            "lengthPx": 354.61,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              -307.1,
+              -177.3
+            ]
+          },
+          {
+            "angleDeg": 86.0,
+            "endpoint": [
+              428.08,
+              905.7
+            ],
+            "lengthPx": 354.6,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              24.74,
+              353.74
+            ]
+          },
+          {
+            "angleDeg": -32.0,
+            "endpoint": [
+              704.06,
+              364.05
+            ],
+            "lengthPx": 354.6,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              300.72,
+              -187.91
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.2075,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 354.606,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.9575,
+          "maskCoverage": 0.9326,
+          "signChoice": [
+            -1,
+            1,
+            -1
+          ],
+          "silhouetteIoU": 0.8956,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 2.2716,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          403.34,
+          551.96
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 62 - A - white-up IMG_7521.JPG",
+      "key": "62_A",
+      "notes": "",
+      "setId": "62",
+      "side": "A",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "hard_case_stress",
+        "priority": "tier3_manifest_stress",
+        "reasons": [
+          "hard_case_unlabeled"
+        ],
+        "score": 53.769,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": 156.0,
+            "endpoint": [
+              66.55,
+              695.2
+            ],
+            "lengthPx": 350.71,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              -320.39,
+              142.65
+            ]
+          },
+          {
+            "angleDeg": 22.0,
+            "endpoint": [
+              712.11,
+              683.93
+            ],
+            "lengthPx": 350.71,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              325.17,
+              131.38
+            ]
+          },
+          {
+            "angleDeg": -92.0,
+            "endpoint": [
+              374.7,
+              202.05
+            ],
+            "lengthPx": 350.71,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              -12.24,
+              -350.5
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.0932,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 350.71,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.9503,
+          "maskCoverage": 0.919,
+          "signChoice": [
+            1,
+            1,
+            -1
+          ],
+          "silhouetteIoU": 0.8769,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 2.226,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          386.94,
+          552.55
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 62 - B - white-up IMG_7522.JPG",
+      "key": "62_B",
+      "notes": "",
+      "setId": "62",
+      "side": "B",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "hard_case_stress",
+        "priority": "tier3_manifest_stress",
+        "reasons": [
+          "hard_case_unlabeled"
+        ],
+        "score": 53.622,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": -148.0,
+            "endpoint": [
+              145.48,
+              404.25
+            ],
+            "lengthPx": 293.82,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              -249.17,
+              -155.7
+            ]
+          },
+          {
+            "angleDeg": -34.0,
+            "endpoint": [
+              638.23,
+              395.65
+            ],
+            "lengthPx": 293.81,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              243.58,
+              -164.3
+            ]
+          },
+          {
+            "angleDeg": 88.0,
+            "endpoint": [
+              404.9,
+              853.59
+            ],
+            "lengthPx": 293.82,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              10.25,
+              293.64
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.2408,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 293.815,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.965,
+          "maskCoverage": 0.8901,
+          "signChoice": [
+            -1,
+            -1,
+            1
+          ],
+          "silhouetteIoU": 0.8622,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 2.2393,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          394.65,
+          559.95
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 22 - B - white up.JPG",
+      "key": "22_B",
+      "notes": "",
+      "setId": "22",
+      "side": "B",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "hard_case_stress",
+        "priority": "tier3_manifest_stress",
+        "reasons": [
+          "hard_case_unlabeled"
+        ],
+        "score": 53.518,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": 28.0,
+            "endpoint": [
+              680.12,
+              673.04
+            ],
+            "lengthPx": 296.64,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              261.92,
+              139.26
+            ]
+          },
+          {
+            "angleDeg": -90.0,
+            "endpoint": [
+              418.2,
+              237.14
+            ],
+            "lengthPx": 296.64,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              -0.0,
+              -296.64
+            ]
+          },
+          {
+            "angleDeg": 162.0,
+            "endpoint": [
+              136.08,
+              625.45
+            ],
+            "lengthPx": 296.64,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              -282.12,
+              91.67
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.2514,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 296.642,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.955,
+          "maskCoverage": 0.8874,
+          "signChoice": [
+            1,
+            -1,
+            1
+          ],
+          "silhouetteIoU": 0.8518,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 2.2209,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          418.2,
+          533.78
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 58 - A - white-up IMG_7512.JPG",
+      "key": "58_A",
+      "notes": "",
+      "setId": "58",
+      "side": "A",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "hard_case_stress",
+        "priority": "tier3_manifest_stress",
+        "reasons": [
+          "hard_case_unlabeled"
+        ],
+        "score": 53.499,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": 30.0,
+            "endpoint": [
+              689.87,
+              698.06
+            ],
+            "lengthPx": 301.52,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              261.12,
+              150.76
+            ]
+          },
+          {
+            "angleDeg": -96.0,
+            "endpoint": [
+              397.23,
+              247.44
+            ],
+            "lengthPx": 301.51,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              -31.52,
+              -299.86
+            ]
+          },
+          {
+            "angleDeg": 160.0,
+            "endpoint": [
+              145.42,
+              650.42
+            ],
+            "lengthPx": 301.51,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              -283.33,
+              103.12
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.1242,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 301.513,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.9366,
+          "maskCoverage": 0.9018,
+          "signChoice": [
+            1,
+            -1,
+            1
+          ],
+          "silhouetteIoU": 0.8499,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 2.1868,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          428.75,
+          547.3
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 58 - B - white-up IMG_7513.JPG",
+      "key": "58_B",
+      "notes": "",
+      "setId": "58",
+      "side": "B",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "hard_case_stress",
+        "priority": "tier3_manifest_stress",
+        "reasons": [
+          "hard_case_unlabeled"
+        ],
+        "score": 53.442,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": 38.0,
+            "endpoint": [
+              683.8,
+              738.44
+            ],
+            "lengthPx": 328.69,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              259.01,
+              202.36
+            ]
+          },
+          {
+            "angleDeg": 146.0,
+            "endpoint": [
+              152.3,
+              719.88
+            ],
+            "lengthPx": 328.68,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              -272.49,
+              183.8
+            ]
+          },
+          {
+            "angleDeg": -96.0,
+            "endpoint": [
+              390.43,
+              209.19
+            ],
+            "lengthPx": 328.69,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              -34.36,
+              -326.89
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.0609,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 328.688,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.965,
+          "maskCoverage": 0.8708,
+          "signChoice": [
+            1,
+            1,
+            -1
+          ],
+          "silhouetteIoU": 0.8442,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 2.1895,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          424.79,
+          536.08
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 39 - A - white up IMG_7157.JPG",
+      "key": "39_A",
+      "notes": "",
+      "setId": "39",
+      "side": "A",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "hard_case_stress",
+        "priority": "tier3_manifest_stress",
+        "reasons": [
+          "hard_case_unlabeled"
+        ],
+        "score": 53.433,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": 92.0,
+            "endpoint": [
+              380.47,
+              807.57
+            ],
+            "lengthPx": 298.06,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              -10.4,
+              297.88
+            ]
+          },
+          {
+            "angleDeg": -156.0,
+            "endpoint": [
+              118.58,
+              388.46
+            ],
+            "lengthPx": 298.06,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              -272.29,
+              -121.23
+            ]
+          },
+          {
+            "angleDeg": -28.0,
+            "endpoint": [
+              654.04,
+              369.76
+            ],
+            "lengthPx": 298.06,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              263.17,
+              -139.93
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 0.963,
+          "detectorSignalQuality": 0.1387,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 298.059,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.9572,
+          "maskCoverage": 0.8964,
+          "signChoice": [
+            1,
+            -1,
+            -1
+          ],
+          "silhouetteIoU": 0.8618,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 2.209,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          390.87,
+          509.69
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 47 - A - white up +90 IMG_7381.JPG",
+      "key": "47_A",
+      "notes": "",
+      "setId": "47",
+      "side": "A",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "hard_case_stress",
+        "priority": "tier3_manifest_stress",
+        "reasons": [
+          "hard_case_unlabeled"
+        ],
+        "score": 53.399,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": -28.0,
+            "endpoint": [
+              685.23,
+              394.27
+            ],
+            "lengthPx": 286.9,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              253.32,
+              -134.69
+            ]
+          },
+          {
+            "angleDeg": -156.0,
+            "endpoint": [
+              169.81,
+              412.27
+            ],
+            "lengthPx": 286.9,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              -262.1,
+              -116.69
+            ]
+          },
+          {
+            "angleDeg": 96.0,
+            "endpoint": [
+              401.92,
+              814.29
+            ],
+            "lengthPx": 286.9,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              -29.99,
+              285.33
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.1598,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 286.905,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.9733,
+          "maskCoverage": 0.8597,
+          "signChoice": [
+            -1,
+            -1,
+            1
+          ],
+          "silhouetteIoU": 0.8399,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 2.2047,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          431.91,
+          528.96
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 47 - B - white up +90 IMG_7382.JPG",
+      "key": "47_B",
+      "notes": "",
+      "setId": "47",
+      "side": "B",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "hard_case_stress",
+        "priority": "tier3_manifest_stress",
+        "reasons": [
+          "hard_case_unlabeled"
+        ],
+        "score": 53.386,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": 86.0,
+            "endpoint": [
+              430.43,
+              809.7
+            ],
+            "lengthPx": 308.9,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              21.55,
+              308.15
+            ]
+          },
+          {
+            "angleDeg": -24.0,
+            "endpoint": [
+              691.08,
+              375.91
+            ],
+            "lengthPx": 308.9,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              282.2,
+              -125.64
+            ]
+          },
+          {
+            "angleDeg": -158.0,
+            "endpoint": [
+              122.47,
+              385.83
+            ],
+            "lengthPx": 308.9,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              -286.41,
+              -115.72
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 0.963,
+          "detectorSignalQuality": 0.1547,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 308.906,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.9437,
+          "maskCoverage": 0.9033,
+          "signChoice": [
+            1,
+            -1,
+            -1
+          ],
+          "silhouetteIoU": 0.8571,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 2.1962,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          408.88,
+          501.55
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 49 - A - white up +270 IMG_7385.JPG",
+      "key": "49_A",
+      "notes": "",
+      "setId": "49",
+      "side": "A",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "hard_case_stress",
+        "priority": "tier3_manifest_stress",
+        "reasons": [
+          "hard_case_unlabeled"
+        ],
+        "score": 53.218,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": 94.0,
+            "endpoint": [
+              426.82,
+              827.47
+            ],
+            "lengthPx": 298.06,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              -20.79,
+              297.33
+            ]
+          },
+          {
+            "angleDeg": -30.0,
+            "endpoint": [
+              705.74,
+              381.11
+            ],
+            "lengthPx": 298.06,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              258.13,
+              -149.03
+            ]
+          },
+          {
+            "angleDeg": -156.0,
+            "endpoint": [
+              175.32,
+              408.91
+            ],
+            "lengthPx": 298.06,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              -272.29,
+              -121.23
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 0.963,
+          "detectorSignalQuality": 0.3086,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 298.059,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.9308,
+          "maskCoverage": 0.8963,
+          "signChoice": [
+            1,
+            -1,
+            -1
+          ],
+          "silhouetteIoU": 0.8403,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 2.1891,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          447.61,
+          530.14
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 22 - A - white up.JPG",
+      "key": "22_A",
+      "notes": "",
+      "setId": "22",
+      "side": "A",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "hard_case_stress",
+        "priority": "tier3_manifest_stress",
+        "reasons": [
+          "hard_case_unlabeled"
+        ],
+        "score": 53.022,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": 24.0,
+            "endpoint": [
+              727.65,
+              691.99
+            ],
+            "lengthPx": 311.08,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              284.19,
+              126.53
+            ]
+          },
+          {
+            "angleDeg": -102.0,
+            "endpoint": [
+              378.78,
+              261.18
+            ],
+            "lengthPx": 311.08,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              -64.68,
+              -304.28
+            ]
+          },
+          {
+            "angleDeg": 158.0,
+            "endpoint": [
+              155.03,
+              681.99
+            ],
+            "lengthPx": 311.08,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              -288.43,
+              116.53
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.0415,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 311.08,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.9494,
+          "maskCoverage": 0.838,
+          "signChoice": [
+            1,
+            -1,
+            1
+          ],
+          "silhouetteIoU": 0.8022,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 2.1225,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          443.46,
+          565.46
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 49 - B - white up +270 IMG_7386.JPG",
+      "key": "49_B",
+      "notes": "",
+      "setId": "49",
+      "side": "B",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "hard_case_stress",
+        "priority": "tier3_manifest_stress",
+        "reasons": [
+          "hard_case_unlabeled"
+        ],
+        "score": 52.603,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": 150.0,
+            "endpoint": [
+              117.89,
+              668.28
+            ],
+            "lengthPx": 274.14,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              -237.41,
+              137.07
+            ]
+          },
+          {
+            "angleDeg": 26.0,
+            "endpoint": [
+              601.69,
+              651.38
+            ],
+            "lengthPx": 274.13,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              246.39,
+              120.17
+            ]
+          },
+          {
+            "angleDeg": -68.0,
+            "endpoint": [
+              457.99,
+              277.04
+            ],
+            "lengthPx": 274.13,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              102.69,
+              -254.17
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.0848,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 274.134,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.9576,
+          "maskCoverage": 0.7868,
+          "signChoice": [
+            1,
+            1,
+            -1
+          ],
+          "silhouetteIoU": 0.7603,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 2.0815,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          355.3,
+          531.21
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 48 - B - white up +180 IMG_7384.JPG",
+      "key": "48_B",
+      "notes": "",
+      "setId": "48",
+      "side": "B",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "hard_case_stress",
+        "priority": "tier3_manifest_stress",
+        "reasons": [
+          "hard_case_unlabeled"
+        ],
+        "score": 52.119,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": -144.0,
+            "endpoint": [
+              122.58,
+              408.58
+            ],
+            "lengthPx": 313.82,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              -253.88,
+              -184.46
+            ]
+          },
+          {
+            "angleDeg": -36.0,
+            "endpoint": [
+              630.34,
+              408.58
+            ],
+            "lengthPx": 313.82,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              253.88,
+              -184.46
+            ]
+          },
+          {
+            "angleDeg": 94.0,
+            "endpoint": [
+              354.57,
+              906.09
+            ],
+            "lengthPx": 313.81,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              -21.89,
+              313.05
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.0299,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 313.817,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.9353,
+          "maskCoverage": 0.7487,
+          "signChoice": [
+            -1,
+            -1,
+            1
+          ],
+          "silhouetteIoU": 0.7119,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 1.9953,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          376.46,
+          593.04
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 39 - B - white up IMG_7158.JPG",
+      "key": "39_B",
+      "notes": "",
+      "setId": "39",
+      "side": "B",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "hard_case_stress",
+        "priority": "tier3_manifest_stress",
+        "reasons": [
+          "hard_case_unlabeled"
+        ],
+        "score": 52.092,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": -26.0,
+            "endpoint": [
+              711.84,
+              311.03
+            ],
+            "lengthPx": 295.12,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              265.25,
+              -129.37
+            ]
+          },
+          {
+            "angleDeg": -176.0,
+            "endpoint": [
+              152.19,
+              419.81
+            ],
+            "lengthPx": 295.12,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              -294.4,
+              -20.59
+            ]
+          },
+          {
+            "angleDeg": 90.0,
+            "endpoint": [
+              446.59,
+              735.52
+            ],
+            "lengthPx": 295.12,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              0.0,
+              295.12
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 0.963,
+          "detectorSignalQuality": 0.0659,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 295.115,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.9366,
+          "maskCoverage": 0.7654,
+          "signChoice": [
+            -1,
+            -1,
+            1
+          ],
+          "silhouetteIoU": 0.7277,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 2.0125,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          446.59,
+          440.4
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 46 - B - white up WCA IMG_7380.JPG",
+      "key": "46_B",
+      "notes": "",
+      "setId": "46",
+      "side": "B",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "hard_case_stress",
+        "priority": "tier3_manifest_stress",
+        "reasons": [
+          "hard_case_unlabeled",
+          "low_silhouette_iou"
+        ],
+        "score": 51.173,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": -146.0,
+            "endpoint": [
+              86.75,
+              318.87
+            ],
+            "lengthPx": 302.72,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              -250.96,
+              -169.28
+            ]
+          },
+          {
+            "angleDeg": 84.0,
+            "endpoint": [
+              369.35,
+              789.21
+            ],
+            "lengthPx": 302.72,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              31.64,
+              301.06
+            ]
+          },
+          {
+            "angleDeg": -24.0,
+            "endpoint": [
+              614.25,
+              365.02
+            ],
+            "lengthPx": 302.71,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              276.54,
+              -123.13
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 0.963,
+          "detectorSignalQuality": 0.4308,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 302.715,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.9278,
+          "maskCoverage": 0.6689,
+          "signChoice": [
+            -1,
+            1,
+            -1
+          ],
+          "silhouetteIoU": 0.6358,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 1.9435,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          337.71,
+          488.15
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 25 - B - white up IMG_6772.JPG",
+      "key": "25_B",
+      "notes": "",
+      "setId": "25",
+      "side": "B",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "hard_case_stress",
+        "priority": "tier3_manifest_stress",
+        "reasons": [
+          "hard_case_unlabeled",
+          "low_silhouette_iou"
+        ],
+        "score": 50.86,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": -154.0,
+            "endpoint": [
+              218.33,
+              364.54
+            ],
+            "lengthPx": 235.73,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              -211.87,
+              -103.34
+            ]
+          },
+          {
+            "angleDeg": -30.0,
+            "endpoint": [
+              634.35,
+              350.02
+            ],
+            "lengthPx": 235.73,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              204.15,
+              -117.86
+            ]
+          },
+          {
+            "angleDeg": 108.0,
+            "endpoint": [
+              357.36,
+              692.07
+            ],
+            "lengthPx": 235.73,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              -72.84,
+              224.19
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 1.0,
+          "detectorSignalQuality": 0.3031,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 235.728,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.9596,
+          "maskCoverage": 0.6008,
+          "signChoice": [
+            -1,
+            -1,
+            1
+          ],
+          "silhouetteIoU": 0.586,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 1.8954,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          430.2,
+          467.88
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 48 - A - white up +180 IMG_7383.JPG",
+      "key": "48_A",
+      "notes": "",
+      "setId": "48",
+      "side": "A",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "model_ok",
+        "evaluationTier": "hard_case_stress",
+        "priority": "tier3_manifest_stress",
+        "reasons": [
+          "hard_case_unlabeled",
+          "low_silhouette_iou"
+        ],
+        "score": 50.519,
+        "sourceModelStatus": "ok"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": -156.0,
+            "endpoint": [
+              231.32,
+              273.98
+            ],
+            "lengthPx": 305.9,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              -279.45,
+              -124.42
+            ]
+          },
+          {
+            "angleDeg": 152.0,
+            "endpoint": [
+              240.68,
+              542.01
+            ],
+            "lengthPx": 305.9,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              -270.09,
+              143.61
+            ]
+          },
+          {
+            "angleDeg": 82.0,
+            "endpoint": [
+              553.34,
+              701.32
+            ],
+            "lengthPx": 305.9,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              42.57,
+              302.92
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 0.963,
+          "detectorSignalQuality": 0.1763,
+          "diagnosticDisposition": "model_ok",
+          "edgeLength": 305.897,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.9085,
+          "maskCoverage": 0.6052,
+          "signChoice": [
+            -1,
+            1,
+            1
+          ],
+          "silhouetteIoU": 0.5704,
+          "sourceStatus": "ok"
+        },
+        "fitQuality": 1.7527,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          510.77,
+          398.4
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 46 - A - white up WCA IMG_7379.JPG",
+      "key": "46_A",
+      "notes": "",
+      "setId": "46",
+      "side": "A",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    },
+    {
+      "activeLearning": {
+        "diagnosticDisposition": "geometry_retake_or_segmentation_candidate",
+        "evaluationTier": "hard_case_stress",
+        "priority": "tier4_retake_or_model_boundary",
+        "reasons": [
+          "hard_case_unlabeled",
+          "weak_geometry_or_retake_boundary",
+          "low_silhouette_iou",
+          "low_cell_inside"
+        ],
+        "score": 24.9395,
+        "sourceModelStatus": "low_cell_inside"
+      },
+      "axisLabelQuality": null,
+      "currentModel": {
+        "axes": [
+          {
+            "angleDeg": -152.0,
+            "endpoint": [
+              163.35,
+              232.78
+            ],
+            "lengthPx": 406.01,
+            "name": "axis_0",
+            "status": "ok",
+            "vector": [
+              -358.48,
+              -190.61
+            ]
+          },
+          {
+            "angleDeg": 58.0,
+            "endpoint": [
+              736.98,
+              767.7
+            ],
+            "lengthPx": 406.0,
+            "name": "axis_1",
+            "status": "ok",
+            "vector": [
+              215.15,
+              344.31
+            ]
+          },
+          {
+            "angleDeg": 170.0,
+            "endpoint": [
+              122.0,
+              493.89
+            ],
+            "lengthPx": 406.0,
+            "name": "axis_2",
+            "status": "ok",
+            "vector": [
+              -399.83,
+              70.5
+            ]
+          }
+        ],
+        "debug": {
+          "cellInsideRatio": 0.8519,
+          "detectorSignalQuality": 0.0446,
+          "diagnosticDisposition": "geometry_retake_or_segmentation_candidate",
+          "edgeLength": 406.0,
+          "fitVersion": "v0.1-center-refine",
+          "insideRatio": 0.8271,
+          "maskCoverage": 0.6445,
+          "signChoice": [
+            -1,
+            1,
+            1
+          ],
+          "silhouetteIoU": 0.568,
+          "sourceStatus": "low_cell_inside"
+        },
+        "fitQuality": 1.6393,
+        "modelSource": "global_cube_model_v01_manifest_pool",
+        "status": "ok",
+        "vertexPoint": [
+          521.83,
+          423.39
+        ]
+      },
+      "humanAxisEndpoints": [
+        null,
+        null,
+        null
+      ],
+      "humanVertexPoint": null,
+      "imagePath": "/Users/jhuber/Downloads/Set 25 - A - white up IMG_6771.JPG",
+      "key": "25_A",
+      "notes": "",
+      "setId": "25",
+      "side": "A",
+      "status": "unlabeled",
+      "target": "Mark the true visible trihedral vertex and one endpoint on each of the three outgoing cube-edge rays. Endpoint order does not matter; the scorer uses best ray assignment."
+    }
+  ],
+  "schemaVersion": 1,
+  "sourceExistingFeedback": "/private/tmp/cube-active-vertex-labels-v0/tests/fixtures/vertex_axis_human_feedback_v0.json",
+  "sourceModelSummary": "/private/tmp/cube-active-vertex-labels-v0/tests/fixtures/active_vertex_global_model_v01_summary.json"
+}

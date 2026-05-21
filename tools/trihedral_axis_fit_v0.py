@@ -30,6 +30,8 @@ STRICT_VERTEX_PX = 30.0
 PLAUSIBLE_VERTEX_PX = 50.0
 STRICT_MAX_AXIS_ANGLE_DEG = 8.0
 PLAUSIBLE_MAX_AXIS_ANGLE_DEG = 15.0
+AXIS_GOOD_FOR_TAXONOMY_DEG = PLAUSIBLE_MAX_AXIS_ANGLE_DEG
+VERTEX_GOOD_FOR_TAXONOMY_PX = PLAUSIBLE_VERTEX_PX
 
 Point = Tuple[float, float]
 
@@ -53,6 +55,8 @@ def generate_trihedral_axis_fit_summary(
             "plausibleVertexPx": PLAUSIBLE_VERTEX_PX,
             "strictMaxAxisAngleDeg": STRICT_MAX_AXIS_ANGLE_DEG,
             "plausibleMaxAxisAngleDeg": PLAUSIBLE_MAX_AXIS_ANGLE_DEG,
+            "taxonomyVertexGoodPx": VERTEX_GOOD_FOR_TAXONOMY_PX,
+            "taxonomyAxisGoodDeg": AXIS_GOOD_FOR_TAXONOMY_DEG,
         },
         "summary": summarize_rows(rows),
         "rows": rows,
@@ -101,10 +105,12 @@ def evaluate_row(row: Dict[str, Any]) -> Dict[str, Any]:
     max_axis_error = max(assignment["angleErrorsDeg"])
     mean_axis_error = statistics.mean(assignment["angleErrorsDeg"])
     status = _status(vertex_error, max_axis_error)
+    failure_category = _failure_category(status, vertex_error, max_axis_error)
     return {
         **base,
         "evaluationStatus": "trihedral_labeled",
         "status": status,
+        "failureCategory": failure_category,
         "vertexErrorPx": round(vertex_error, 2),
         "meanAxisAngleErrorDeg": round(mean_axis_error, 2),
         "maxAxisAngleErrorDeg": round(max_axis_error, 2),
@@ -122,6 +128,7 @@ def summarize_rows(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
         for row in trihedral
         if row.get("maxAxisAngleErrorDeg") is not None
     ]
+    failure_categories = _count_by_key(trihedral, "failureCategory")
     return {
         "rowCount": len(rows),
         "trihedralLabeledRowCount": len(trihedral),
@@ -135,6 +142,7 @@ def summarize_rows(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
         "medianVertexErrorPx": _median(vertex_errors),
         "meanMaxAxisAngleErrorDeg": _mean(axis_errors),
         "medianMaxAxisAngleErrorDeg": _median(axis_errors),
+        "failureCategoryCounts": failure_categories,
     }
 
 
@@ -161,15 +169,17 @@ def render_report(document: Dict[str, Any]) -> str:
         f"- Median vertex error: {_fmt(summary['medianVertexErrorPx'], 'px')}",
         f"- Mean max-axis angle error: {_fmt(summary['meanMaxAxisAngleErrorDeg'], 'deg')}",
         f"- Median max-axis angle error: {_fmt(summary['medianMaxAxisAngleErrorDeg'], 'deg')}",
+        "- Failure categories: " + _format_category_counts(summary.get("failureCategoryCounts", {})),
         "",
         "## Rows",
         "",
-        "| Row | Status | Vertex error | Max axis angle | Mean axis angle |",
-        "|---|---|---:|---:|---:|",
+        "| Row | Status | Failure category | Vertex error | Max axis angle | Mean axis angle |",
+        "|---|---|---|---:|---:|---:|",
     ]
     for row in document["rows"]:
         lines.append(
             f"| `{row.get('key')}` | `{row.get('evaluationStatus') if row.get('evaluationStatus') != 'trihedral_labeled' else row.get('status')}` | "
+            f"`{row.get('failureCategory', 'n/a')}` | "
             f"{_fmt(row.get('vertexErrorPx'), 'px')} | "
             f"{_fmt(row.get('maxAxisAngleErrorDeg'), 'deg')} | "
             f"{_fmt(row.get('meanAxisAngleErrorDeg'), 'deg')} |"
@@ -193,6 +203,9 @@ def render_report(document: Dict[str, Any]) -> str:
             [
                 "- Rows are `strict_ready` only when both the vertex and all three axis directions are within the configured thresholds.",
                 "- Axis assignment is order-invariant, so high errors point at geometry, not label ordering.",
+                "- `vertex_localization_blocked` means axis directions are plausible but the visible trihedral vertex is too far from the human label.",
+                "- `axis_correspondence_blocked` means the vertex is plausible but the outgoing axis family is wrong.",
+                "- `both_blocked` means neither the vertex nor the axis family is currently usable.",
             ]
         )
     lines.append("")
@@ -238,6 +251,20 @@ def _status(vertex_error: float, max_axis_error: float) -> str:
     return "blocked"
 
 
+def _failure_category(status: str, vertex_error: float, max_axis_error: float) -> str:
+    if status == "strict_ready":
+        return "strict_ready"
+    if status == "plausible":
+        return "plausible"
+    vertex_good = vertex_error <= VERTEX_GOOD_FOR_TAXONOMY_PX
+    axis_good = max_axis_error <= AXIS_GOOD_FOR_TAXONOMY_DEG
+    if axis_good and not vertex_good:
+        return "vertex_localization_blocked"
+    if vertex_good and not axis_good:
+        return "axis_correspondence_blocked"
+    return "both_blocked"
+
+
 def _point_or_none(value: Any) -> Optional[Point]:
     if not isinstance(value, (list, tuple)) or len(value) < 2:
         return None
@@ -265,6 +292,21 @@ def _median(values: Sequence[float]) -> Optional[float]:
     if len(values) % 2:
         return round(values[mid], 4)
     return round((values[mid - 1] + values[mid]) / 2.0, 4)
+
+
+def _count_by_key(rows: Sequence[Dict[str, Any]], key: str) -> Dict[str, int]:
+    counts: Dict[str, int] = {}
+    for row in rows:
+        value = row.get(key)
+        if isinstance(value, str) and value:
+            counts[value] = counts.get(value, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def _format_category_counts(counts: Dict[str, int]) -> str:
+    if not counts:
+        return "n/a"
+    return ", ".join(f"`{key}` {value}" for key, value in sorted(counts.items()))
 
 
 def _fmt(value: Any, unit: str) -> str:

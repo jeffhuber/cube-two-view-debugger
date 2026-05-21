@@ -7,12 +7,12 @@ This fixture upgrades the vertex-only labels into a scaffold for complete visibl
 ## Summary
 
 - Rows: 28
-- Rows with human vertex labels: 23
-- Rows with all three axis endpoints: 0
-- Full trihedral labels: 0
+- Rows with human vertex labels: 28
+- Rows with all three axis endpoints: 28
+- Full trihedral labels: 28
 - Rows with current model axes attached: 28
-- Mean current-model vertex error: 78.8 px
-- Median current-model vertex error: 72.3 px
+- Mean current-model vertex error: 67.0 px
+- Median current-model vertex error: 70.7 px
 
 ## Labeling Target
 
@@ -28,36 +28,36 @@ Run the labeler with:
 
 | Row | Status | Vertex label | Axis endpoints | Current model vertex error | Notes |
 |---|---|---|---:|---:|---|
-| `12_B` | `vertex_labeled_axes_pending` | yes | 0 | 37.2 px |  |
-| `14_B` | `vertex_labeled_axes_pending` | yes | 0 | 33.0 px |  |
-| `15_A` | `vertex_labeled_axes_pending` | yes | 0 | 63.5 px | but very close! |
-| `15_B` | `vertex_labeled_axes_pending` | yes | 0 | 72.0 px | but very close! |
-| `17_B` | `vertex_labeled_axes_pending` | yes | 0 | 110.0 px | but very close! |
-| `21_A` | `vertex_labeled_axes_pending` | yes | 0 | 38.7 px |  |
-| `21_B` | `vertex_labeled_axes_pending` | yes | 0 | 75.7 px | but very close! |
-| `24_A` | `vertex_labeled_axes_pending` | yes | 0 | 87.6 px | but close! |
-| `26_A` | `vertex_labeled_axes_pending` | yes | 0 | 72.5 px | but very close! |
-| `26_B` | `vertex_labeled_axes_pending` | yes | 0 | 80.9 px | but close! |
-| `27_B` | `judgment_only` | no | 0 |  |  |
-| `28_A` | `vertex_labeled_axes_pending` | yes | 0 | 124.3 px | but close! |
-| `28_B` | `vertex_labeled_axes_pending` | yes | 0 | 102.6 px | but close! |
-| `29_A` | `vertex_labeled_axes_pending` | yes | 0 | 57.4 px | but very close! |
-| `29_B` | `judgment_only` | no | 0 |  |  |
-| `30_A` | `vertex_labeled_axes_pending` | yes | 0 | 39.7 px |  |
-| `30_B` | `judgment_only` | no | 0 |  |  |
-| `31_A` | `vertex_labeled_axes_pending` | yes | 0 | 47.2 px | but very close! |
-| `31_B` | `judgment_only` | no | 0 |  |  |
-| `32_A` | `vertex_labeled_axes_pending` | yes | 0 | 72.3 px | but close! |
-| `32_B` | `vertex_labeled_axes_pending` | yes | 0 | 70.6 px | but close! |
-| `36_B` | `vertex_labeled_axes_pending` | yes | 0 | 103.0 px | but close! |
-| `42_B` | `vertex_labeled_axes_pending` | yes | 0 | 89.2 px | but close! |
-| `44_A` | `vertex_labeled_axes_pending` | yes | 0 | 185.5 px |  |
-| `44_B` | `vertex_labeled_axes_pending` | yes | 0 | 117.6 px |  |
-| `57_A` | `judgment_only` | no | 0 |  |  |
-| `61_A` | `vertex_labeled_axes_pending` | yes | 0 | 70.7 px | but close! |
-| `61_B` | `vertex_labeled_axes_pending` | yes | 0 | 60.0 px | but very close! |
+| `12_B` | `trihedral_labeled` | yes | 3 | 26.9 px |  |
+| `14_B` | `trihedral_labeled` | yes | 3 | 53.9 px |  |
+| `15_A` | `trihedral_labeled` | yes | 3 | 63.5 px | but very close! |
+| `15_B` | `trihedral_labeled` | yes | 3 | 72.0 px | but very close! |
+| `17_B` | `trihedral_labeled` | yes | 3 | 107.2 px | but very close! |
+| `21_A` | `trihedral_labeled` | yes | 3 | 38.7 px |  |
+| `21_B` | `trihedral_labeled` | yes | 3 | 75.7 px | but very close! |
+| `24_A` | `trihedral_labeled` | yes | 3 | 87.6 px | but close! |
+| `26_A` | `trihedral_labeled` | yes | 3 | 72.5 px | but very close! |
+| `26_B` | `trihedral_labeled` | yes | 3 | 80.9 px | but close! |
+| `27_B` | `trihedral_labeled` | yes | 3 | 7.0 px |  |
+| `28_A` | `trihedral_labeled` | yes | 3 | 124.3 px | but close! |
+| `28_B` | `trihedral_labeled` | yes | 3 | 102.6 px | but close! |
+| `29_A` | `trihedral_labeled` | yes | 3 | 57.4 px | but very close! |
+| `29_B` | `trihedral_labeled` | yes | 3 | 25.4 px |  |
+| `30_A` | `trihedral_labeled` | yes | 3 | 39.7 px |  |
+| `30_B` | `trihedral_labeled` | yes | 3 | 10.0 px |  |
+| `31_A` | `trihedral_labeled` | yes | 3 | 47.2 px | but very close! |
+| `31_B` | `trihedral_labeled` | yes | 3 | 7.7 px |  |
+| `32_A` | `trihedral_labeled` | yes | 3 | 72.3 px | but close! |
+| `32_B` | `trihedral_labeled` | yes | 3 | 70.6 px | but close! |
+| `36_B` | `trihedral_labeled` | yes | 3 | 103.0 px | but close! |
+| `42_B` | `trihedral_labeled` | yes | 3 | 92.0 px | but close! |
+| `44_A` | `trihedral_labeled` | yes | 3 | 185.5 px |  |
+| `44_B` | `trihedral_labeled` | yes | 3 | 117.6 px |  |
+| `57_A` | `trihedral_labeled` | yes | 3 | 5.0 px |  |
+| `61_A` | `trihedral_labeled` | yes | 3 | 70.7 px | but close! |
+| `61_B` | `trihedral_labeled` | yes | 3 | 60.0 px | but very close! |
 
 ## Interpretation
 
-- The scaffold is ready for human axis labels, but the committed durable labels are still vertex-only.
-- The next scorer can evaluate current model axes as soon as full trihedral labels exist; until then, axis-quality conclusions should stay pending.
+- The fixture now contains full visible-trihedral labels: human vertex plus all three outgoing cube-edge rays.
+- These labels are input data for trihedral model scoring; recognition behavior remains unchanged.

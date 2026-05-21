@@ -3,291 +3,735 @@
     "plausibleMaxAxisAngleDeg": 15.0,
     "plausibleVertexPx": 50.0,
     "strictMaxAxisAngleDeg": 8.0,
-    "strictVertexPx": 30.0
+    "strictVertexPx": 30.0,
+    "taxonomyAxisGoodDeg": 15.0,
+    "taxonomyVertexGoodPx": 50.0
   },
   "description": "Diagnostics/data-only scorer for the visible trihedral: vertex point plus three outgoing cube-edge rays.",
   "probe": "trihedral_axis_fit_v0",
   "rows": [
     {
-      "axisEndpointCount": 0,
-      "evaluationStatus": "axis_labels_pending",
-      "hasCurrentModel": true,
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          60.51,
+          60.81,
+          58.56
+        ],
+        "candidatePermutation": [
+          1,
+          2,
+          0
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "axis_correspondence_blocked",
       "key": "12_B",
-      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 60.81,
+      "meanAxisAngleErrorDeg": 59.96,
+      "modelFitQuality": 0.809,
       "setId": "12",
       "side": "B",
-      "vertexErrorPx": 37.25
+      "status": "blocked",
+      "vertexErrorPx": 26.85
     },
     {
-      "axisEndpointCount": 0,
-      "evaluationStatus": "axis_labels_pending",
-      "hasCurrentModel": true,
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          61.2,
+          62.48,
+          59.47
+        ],
+        "candidatePermutation": [
+          0,
+          1,
+          2
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "both_blocked",
       "key": "14_B",
-      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 62.48,
+      "meanAxisAngleErrorDeg": 61.05,
+      "modelFitQuality": 0.755,
       "setId": "14",
       "side": "B",
-      "vertexErrorPx": 33.04
+      "status": "blocked",
+      "vertexErrorPx": 53.9
     },
     {
-      "axisEndpointCount": 0,
-      "evaluationStatus": "axis_labels_pending",
-      "hasCurrentModel": true,
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          6.53,
+          1.83,
+          0.04
+        ],
+        "candidatePermutation": [
+          1,
+          2,
+          0
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "vertex_localization_blocked",
       "key": "15_A",
-      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 6.53,
+      "meanAxisAngleErrorDeg": 2.8,
+      "modelFitQuality": 0.814,
       "setId": "15",
       "side": "A",
+      "status": "blocked",
       "vertexErrorPx": 63.51
     },
     {
-      "axisEndpointCount": 0,
-      "evaluationStatus": "axis_labels_pending",
-      "hasCurrentModel": true,
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          1.61,
+          4.06,
+          3.71
+        ],
+        "candidatePermutation": [
+          1,
+          0,
+          2
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "vertex_localization_blocked",
       "key": "15_B",
-      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 4.06,
+      "meanAxisAngleErrorDeg": 3.13,
+      "modelFitQuality": 0.795,
       "setId": "15",
       "side": "B",
+      "status": "blocked",
       "vertexErrorPx": 71.99
     },
     {
-      "axisEndpointCount": 0,
-      "evaluationStatus": "axis_labels_pending",
-      "hasCurrentModel": true,
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          0.45,
+          0.02,
+          5.15
+        ],
+        "candidatePermutation": [
+          2,
+          1,
+          0
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "vertex_localization_blocked",
       "key": "17_B",
-      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 5.15,
+      "meanAxisAngleErrorDeg": 1.87,
+      "modelFitQuality": 0.933,
       "setId": "17",
       "side": "B",
-      "vertexErrorPx": 109.96
+      "status": "blocked",
+      "vertexErrorPx": 107.18
     },
     {
-      "axisEndpointCount": 0,
-      "evaluationStatus": "axis_labels_pending",
-      "hasCurrentModel": true,
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          0.16,
+          2.37,
+          5.08
+        ],
+        "candidatePermutation": [
+          0,
+          1,
+          2
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "plausible",
       "key": "21_A",
-      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 5.08,
+      "meanAxisAngleErrorDeg": 2.54,
+      "modelFitQuality": 0.882,
       "setId": "21",
       "side": "A",
+      "status": "plausible",
       "vertexErrorPx": 38.72
     },
     {
-      "axisEndpointCount": 0,
-      "evaluationStatus": "axis_labels_pending",
-      "hasCurrentModel": true,
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          4.59,
+          3.78,
+          5.12
+        ],
+        "candidatePermutation": [
+          2,
+          0,
+          1
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "vertex_localization_blocked",
       "key": "21_B",
-      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 5.12,
+      "meanAxisAngleErrorDeg": 4.5,
+      "modelFitQuality": 0.784,
       "setId": "21",
       "side": "B",
+      "status": "blocked",
       "vertexErrorPx": 75.69
     },
     {
-      "axisEndpointCount": 0,
-      "evaluationStatus": "axis_labels_pending",
-      "hasCurrentModel": true,
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          54.86,
+          61.6,
+          61.72
+        ],
+        "candidatePermutation": [
+          1,
+          0,
+          2
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "both_blocked",
       "key": "24_A",
-      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 61.72,
+      "meanAxisAngleErrorDeg": 59.39,
+      "modelFitQuality": 0.831,
       "setId": "24",
       "side": "A",
+      "status": "blocked",
       "vertexErrorPx": 87.57
     },
     {
-      "axisEndpointCount": 0,
-      "evaluationStatus": "axis_labels_pending",
-      "hasCurrentModel": true,
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          2.99,
+          1.34,
+          1.08
+        ],
+        "candidatePermutation": [
+          1,
+          2,
+          0
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "vertex_localization_blocked",
       "key": "26_A",
-      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 2.99,
+      "meanAxisAngleErrorDeg": 1.8,
+      "modelFitQuality": 0.917,
       "setId": "26",
       "side": "A",
+      "status": "blocked",
       "vertexErrorPx": 72.54
     },
     {
-      "axisEndpointCount": 0,
-      "evaluationStatus": "axis_labels_pending",
-      "hasCurrentModel": true,
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          64.04,
+          55.97,
+          58.94
+        ],
+        "candidatePermutation": [
+          1,
+          2,
+          0
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "both_blocked",
       "key": "26_B",
-      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 64.04,
+      "meanAxisAngleErrorDeg": 59.65,
+      "modelFitQuality": 0.881,
       "setId": "26",
       "side": "B",
+      "status": "blocked",
       "vertexErrorPx": 80.9
     },
     {
-      "evaluationStatus": "missing_human_vertex",
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          0.37,
+          0.34,
+          3.4
+        ],
+        "candidatePermutation": [
+          2,
+          0,
+          1
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "strict_ready",
       "key": "27_B",
-      "labelStatus": "judgment_only",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 3.4,
+      "meanAxisAngleErrorDeg": 1.37,
+      "modelFitQuality": 0.847,
       "setId": "27",
-      "side": "B"
+      "side": "B",
+      "status": "strict_ready",
+      "vertexErrorPx": 6.99
     },
     {
-      "axisEndpointCount": 0,
-      "evaluationStatus": "axis_labels_pending",
-      "hasCurrentModel": true,
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          1.83,
+          1.65,
+          4.91
+        ],
+        "candidatePermutation": [
+          2,
+          0,
+          1
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "vertex_localization_blocked",
       "key": "28_A",
-      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 4.91,
+      "meanAxisAngleErrorDeg": 2.8,
+      "modelFitQuality": 0.88,
       "setId": "28",
       "side": "A",
+      "status": "blocked",
       "vertexErrorPx": 124.3
     },
     {
-      "axisEndpointCount": 0,
-      "evaluationStatus": "axis_labels_pending",
-      "hasCurrentModel": true,
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          1.98,
+          1.28,
+          2.91
+        ],
+        "candidatePermutation": [
+          1,
+          0,
+          2
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "vertex_localization_blocked",
       "key": "28_B",
-      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 2.91,
+      "meanAxisAngleErrorDeg": 2.06,
+      "modelFitQuality": 0.835,
       "setId": "28",
       "side": "B",
+      "status": "blocked",
       "vertexErrorPx": 102.57
     },
     {
-      "axisEndpointCount": 0,
-      "evaluationStatus": "axis_labels_pending",
-      "hasCurrentModel": true,
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          59.93,
+          56.48,
+          60.57
+        ],
+        "candidatePermutation": [
+          0,
+          1,
+          2
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "both_blocked",
       "key": "29_A",
-      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 60.57,
+      "meanAxisAngleErrorDeg": 58.99,
+      "modelFitQuality": 0.819,
       "setId": "29",
       "side": "A",
+      "status": "blocked",
       "vertexErrorPx": 57.39
     },
     {
-      "evaluationStatus": "missing_human_vertex",
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          0.39,
+          0.07,
+          1.5
+        ],
+        "candidatePermutation": [
+          0,
+          1,
+          2
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "strict_ready",
       "key": "29_B",
-      "labelStatus": "judgment_only",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 1.5,
+      "meanAxisAngleErrorDeg": 0.65,
+      "modelFitQuality": 0.859,
       "setId": "29",
-      "side": "B"
+      "side": "B",
+      "status": "strict_ready",
+      "vertexErrorPx": 25.39
     },
     {
-      "axisEndpointCount": 0,
-      "evaluationStatus": "axis_labels_pending",
-      "hasCurrentModel": true,
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          1.18,
+          7.45,
+          1.29
+        ],
+        "candidatePermutation": [
+          1,
+          0,
+          2
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "plausible",
       "key": "30_A",
-      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 7.45,
+      "meanAxisAngleErrorDeg": 3.31,
+      "modelFitQuality": 0.484,
       "setId": "30",
       "side": "A",
+      "status": "plausible",
       "vertexErrorPx": 39.71
     },
     {
-      "evaluationStatus": "missing_human_vertex",
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          2.84,
+          3.89,
+          3.23
+        ],
+        "candidatePermutation": [
+          0,
+          1,
+          2
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "strict_ready",
       "key": "30_B",
-      "labelStatus": "judgment_only",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 3.89,
+      "meanAxisAngleErrorDeg": 3.32,
+      "modelFitQuality": 0.614,
       "setId": "30",
-      "side": "B"
+      "side": "B",
+      "status": "strict_ready",
+      "vertexErrorPx": 10.0
     },
     {
-      "axisEndpointCount": 0,
-      "evaluationStatus": "axis_labels_pending",
-      "hasCurrentModel": true,
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          0.41,
+          2.32,
+          0.35
+        ],
+        "candidatePermutation": [
+          1,
+          0,
+          2
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "plausible",
       "key": "31_A",
-      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 2.32,
+      "meanAxisAngleErrorDeg": 1.03,
+      "modelFitQuality": 0.841,
       "setId": "31",
       "side": "A",
+      "status": "plausible",
       "vertexErrorPx": 47.18
     },
     {
-      "evaluationStatus": "missing_human_vertex",
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          1.64,
+          0.35,
+          2.67
+        ],
+        "candidatePermutation": [
+          2,
+          1,
+          0
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "strict_ready",
       "key": "31_B",
-      "labelStatus": "judgment_only",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 2.67,
+      "meanAxisAngleErrorDeg": 1.55,
+      "modelFitQuality": 0.895,
       "setId": "31",
-      "side": "B"
+      "side": "B",
+      "status": "strict_ready",
+      "vertexErrorPx": 7.68
     },
     {
-      "axisEndpointCount": 0,
-      "evaluationStatus": "axis_labels_pending",
-      "hasCurrentModel": true,
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          59.88,
+          59.4,
+          56.69
+        ],
+        "candidatePermutation": [
+          2,
+          0,
+          1
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "both_blocked",
       "key": "32_A",
-      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 59.88,
+      "meanAxisAngleErrorDeg": 58.66,
+      "modelFitQuality": 0.841,
       "setId": "32",
       "side": "A",
+      "status": "blocked",
       "vertexErrorPx": 72.33
     },
     {
-      "axisEndpointCount": 0,
-      "evaluationStatus": "axis_labels_pending",
-      "hasCurrentModel": true,
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          56.39,
+          62.97,
+          61.95
+        ],
+        "candidatePermutation": [
+          0,
+          1,
+          2
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "both_blocked",
       "key": "32_B",
-      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 62.97,
+      "meanAxisAngleErrorDeg": 60.44,
+      "modelFitQuality": 0.879,
       "setId": "32",
       "side": "B",
+      "status": "blocked",
       "vertexErrorPx": 70.61
     },
     {
-      "axisEndpointCount": 0,
-      "evaluationStatus": "axis_labels_pending",
-      "hasCurrentModel": true,
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          0.06,
+          1.12,
+          1.79
+        ],
+        "candidatePermutation": [
+          0,
+          2,
+          1
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "vertex_localization_blocked",
       "key": "36_B",
-      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 1.79,
+      "meanAxisAngleErrorDeg": 0.99,
+      "modelFitQuality": 0.89,
       "setId": "36",
       "side": "B",
+      "status": "blocked",
       "vertexErrorPx": 102.95
     },
     {
-      "axisEndpointCount": 0,
-      "evaluationStatus": "axis_labels_pending",
-      "hasCurrentModel": true,
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          51.79,
+          61.6,
+          64.06
+        ],
+        "candidatePermutation": [
+          2,
+          0,
+          1
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "both_blocked",
       "key": "42_B",
-      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 64.06,
+      "meanAxisAngleErrorDeg": 59.15,
+      "modelFitQuality": 0.592,
       "setId": "42",
       "side": "B",
-      "vertexErrorPx": 89.25
+      "status": "blocked",
+      "vertexErrorPx": 91.97
     },
     {
-      "axisEndpointCount": 0,
-      "evaluationStatus": "axis_labels_pending",
-      "hasCurrentModel": true,
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          54.02,
+          62.49,
+          61.73
+        ],
+        "candidatePermutation": [
+          0,
+          2,
+          1
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "both_blocked",
       "key": "44_A",
-      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 62.49,
+      "meanAxisAngleErrorDeg": 59.41,
+      "modelFitQuality": 0.81,
       "setId": "44",
       "side": "A",
+      "status": "blocked",
       "vertexErrorPx": 185.52
     },
     {
-      "axisEndpointCount": 0,
-      "evaluationStatus": "axis_labels_pending",
-      "hasCurrentModel": true,
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          56.58,
+          59.17,
+          62.18
+        ],
+        "candidatePermutation": [
+          1,
+          0,
+          2
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "both_blocked",
       "key": "44_B",
-      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 62.18,
+      "meanAxisAngleErrorDeg": 59.31,
+      "modelFitQuality": 0.822,
       "setId": "44",
       "side": "B",
+      "status": "blocked",
       "vertexErrorPx": 117.57
     },
     {
-      "evaluationStatus": "missing_human_vertex",
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          8.6,
+          2.59,
+          3.01
+        ],
+        "candidatePermutation": [
+          0,
+          1,
+          2
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "plausible",
       "key": "57_A",
-      "labelStatus": "judgment_only",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 8.6,
+      "meanAxisAngleErrorDeg": 4.73,
+      "modelFitQuality": 0.856,
       "setId": "57",
-      "side": "A"
+      "side": "A",
+      "status": "plausible",
+      "vertexErrorPx": 4.96
     },
     {
-      "axisEndpointCount": 0,
-      "evaluationStatus": "axis_labels_pending",
-      "hasCurrentModel": true,
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          60.3,
+          56.38,
+          61.3
+        ],
+        "candidatePermutation": [
+          2,
+          1,
+          0
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "both_blocked",
       "key": "61_A",
-      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 61.3,
+      "meanAxisAngleErrorDeg": 59.33,
+      "modelFitQuality": 0.792,
       "setId": "61",
       "side": "A",
+      "status": "blocked",
       "vertexErrorPx": 70.74
     },
     {
-      "axisEndpointCount": 0,
-      "evaluationStatus": "axis_labels_pending",
-      "hasCurrentModel": true,
+      "axisAssignment": {
+        "angleErrorsDeg": [
+          4.09,
+          0.57,
+          2.01
+        ],
+        "candidatePermutation": [
+          2,
+          1,
+          0
+        ]
+      },
+      "evaluationStatus": "trihedral_labeled",
+      "failureCategory": "vertex_localization_blocked",
       "key": "61_B",
-      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "labelStatus": "labeled",
+      "maxAxisAngleErrorDeg": 4.09,
+      "meanAxisAngleErrorDeg": 2.22,
+      "modelFitQuality": 0.809,
       "setId": "61",
       "side": "B",
+      "status": "blocked",
       "vertexErrorPx": 60.04
     }
   ],
   "schemaVersion": 1,
-  "sourceFeedback": "/private/tmp/cube-trihedral-axis-labeler/tests/fixtures/vertex_axis_human_feedback_v0.json",
+  "sourceFeedback": "/private/tmp/cube-axis-feedback-taxonomy/tests/fixtures/vertex_axis_human_feedback_v0.json",
   "summary": {
-    "axisLabelsPendingRowCount": 23,
-    "blockedCount": 0,
-    "meanMaxAxisAngleErrorDeg": null,
-    "meanVertexErrorPx": null,
-    "medianMaxAxisAngleErrorDeg": null,
-    "medianVertexErrorPx": null,
-    "missingHumanVertexRowCount": 5,
+    "axisLabelsPendingRowCount": 0,
+    "blockedCount": 20,
+    "failureCategoryCounts": {
+      "axis_correspondence_blocked": 1,
+      "both_blocked": 10,
+      "plausible": 4,
+      "strict_ready": 4,
+      "vertex_localization_blocked": 9
+    },
+    "meanMaxAxisAngleErrorDeg": 26.9629,
+    "meanVertexErrorPx": 67.0268,
+    "medianMaxAxisAngleErrorDeg": 5.84,
+    "medianVertexErrorPx": 70.675,
+    "missingHumanVertexRowCount": 0,
     "missingModelTrihedralRowCount": 0,
-    "plausibleCount": 0,
+    "plausibleCount": 8,
     "rowCount": 28,
-    "strictReadyCount": 0,
-    "trihedralLabeledRowCount": 0
+    "strictReadyCount": 4,
+    "trihedralLabeledRowCount": 28
   }
 }

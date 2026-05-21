@@ -938,6 +938,95 @@ def _base_recognition_signals(analysis_a: ImageAnalysis, analysis_b: ImageAnalys
         },
         "topVisibleBalancedColorAssignment": _top_visible_face_pair_balanced_assignment_signal(analysis_a, analysis_b),
         "twoViewGeometryConsistency": _two_view_geometry_consistency(analysis_a, analysis_b),
+        "perStickerConfidence": _per_sticker_confidence_signal(analysis_a, analysis_b),
+    }
+
+
+def _collect_sticker_confidences(analysis: ImageAnalysis) -> List[float]:
+    """Flatten per-sticker confidences across all 3 selected face grids in
+    one photo. Each grid contributes its 9 stickers' ColorMatch.confidence.
+
+    Returns an empty list if no grids are available; otherwise typically
+    27 values (3 faces × 9 stickers).
+    """
+    out: List[float] = []
+    for grid in analysis.grids[:3]:
+        for row in grid.stickers:
+            for sticker in row:
+                conf = float(sticker.match.confidence)
+                out.append(conf)
+    return out
+
+
+def _confidence_stats(values: Sequence[float]) -> Dict[str, Any]:
+    """Stats over a list of confidences."""
+    if not values:
+        return {"count": 0, "min": None, "median": None, "max": None}
+    vals = sorted(values)
+    n = len(vals)
+    median = vals[n // 2] if n % 2 == 1 else (vals[n // 2 - 1] + vals[n // 2]) / 2
+    return {
+        "count": n,
+        "min": round(vals[0], 3),
+        "median": round(median, 3),
+        "max": round(vals[-1], 3),
+    }
+
+
+def _per_sticker_confidence_signal(
+    analysis_a: ImageAnalysis,
+    analysis_b: ImageAnalysis,
+) -> Dict[str, Any]:
+    """Emit per-pair summary stats of the underlying per-sticker
+    classification confidences that cv-local already computes.
+
+    Each ColorMatch carries a confidence score in [0.0, 1.0], computed
+    as `(second_distance - first_distance) / second_distance` (the
+    "gap-normalized" margin between the best and second-best color
+    match). Higher = more discriminated; near 0 = the sample was
+    almost equidistant between two colors and the classification is
+    fragile. The signal exposes:
+
+      perPhoto.{imageA, imageB} stats (count, min, median, max)
+      perPair: combined stats across all 54 stickers
+      belowThresholdCount: how many stickers had confidence below
+        the threshold
+
+    Threshold default is 0.10, calibrated empirically against the
+    labeled corpus (2026-05-22): full-match cases have median
+    per-sticker min ~0.24; no-recognition cases have median min
+    ~0.05. 0.10 sits between them, catching the genuinely-ambiguous
+    reads without firing on every photo. Configurable via
+    ``RUBIK_PER_STICKER_CONFIDENCE_THRESHOLD`` env var.
+
+    DIAGNOSTIC-ONLY: no category logic depends on this field. Existing
+    consumers that use min-confidence-across-pair are unaffected; this
+    just exposes the richer distribution so future work (probabilistic
+    state output, axis-aware scorer, retake-prompt tuning) has the
+    data to use. Validation against the labeled corpus shows minConf
+    correlates monotonically with accuracy tier:
+        full-match (n=10):     min_conf median 0.24
+        partial (n=6):         min_conf median 0.19
+        failure (n=4):         min_conf median 0.15
+        no-recognition (n=8):  min_conf median 0.05
+    """
+    threshold_str = os.environ.get("RUBIK_PER_STICKER_CONFIDENCE_THRESHOLD", "0.10")
+    try:
+        threshold = float(threshold_str)
+    except ValueError:
+        threshold = 0.10
+    confs_a = _collect_sticker_confidences(analysis_a)
+    confs_b = _collect_sticker_confidences(analysis_b)
+    combined = confs_a + confs_b
+    below = sum(1 for c in combined if c < threshold)
+    return {
+        "perPhoto": {
+            "imageA": _confidence_stats(confs_a),
+            "imageB": _confidence_stats(confs_b),
+        },
+        "perPair": _confidence_stats(combined),
+        "belowThresholdCount": below,
+        "threshold": threshold,
     }
 
 

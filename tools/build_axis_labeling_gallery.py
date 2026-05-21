@@ -117,10 +117,18 @@ def _global_model_prefill(
 def _crop_around_points(
     img_size: Tuple[int, int],
     points: List[Tuple[float, float]],
-    margin: int = 100,
-    max_dim: int = 1000,
+    margin: int = 350,
+    max_dim: int = 1400,
 ) -> Tuple[Tuple[int, int, int, int], float, Tuple[int, int]]:
-    """Compute crop box around the given points, scale to fit display max_dim."""
+    """Compute crop box around the given points, scale to fit display max_dim.
+
+    Margin (350 px on the original image) is intentionally generous so the
+    user can drag markers past corners that the prefill places too close to
+    the cube edge — especially important when the global model's prefilled
+    near-corners land slightly inside the cube outline rather than on the
+    visible cube edges. max_dim 1400 keeps the rendered cell large enough
+    to click on individual cube corners without zoom.
+    """
     xs = [p[0] for p in points]
     ys = [p[1] for p in points]
     x0 = max(0, int(min(xs)) - margin)

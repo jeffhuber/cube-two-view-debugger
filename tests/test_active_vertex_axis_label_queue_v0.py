@@ -44,7 +44,7 @@ def test_active_queue_excludes_existing_full_labels_and_prioritizes_easy_rows(tm
     assert queue["rows"][0]["currentModel"]["axes"][0]["status"] == "ok"
 
 
-def test_committed_active_queue_is_strict_json_and_has_expected_counts():
+def test_committed_active_queue_is_strict_json_and_has_completed_labels():
     for path in (DEFAULT_MODEL_SUMMARY, DEFAULT_ACTIVE_FEEDBACK):
         text = path.read_text(encoding="utf-8")
         assert "Infinity" not in text
@@ -56,7 +56,16 @@ def test_committed_active_queue_is_strict_json_and_has_expected_counts():
 
     queue = json.loads(DEFAULT_ACTIVE_FEEDBACK.read_text(encoding="utf-8"))
     assert len(queue["rows"]) == 30
-    assert all(row["status"] == "unlabeled" for row in queue["rows"])
+    assert all(row["status"] == "labeled" for row in queue["rows"])
+    assert all(row["humanVertexPoint"] for row in queue["rows"])
+    assert all(
+        sum(1 for point in row["humanAxisEndpoints"] if point) == 3
+        for row in queue["rows"]
+    )
+    assert all(
+        row["currentModel"].get("coordinateSpace") == "source_image_exif_fullres"
+        for row in queue["rows"]
+    )
 
 
 def _model_row(set_id: str, side: str, tier: str, status: str, iou: float) -> dict:

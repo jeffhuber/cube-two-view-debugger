@@ -18,6 +18,8 @@ import math
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
+from PIL import Image, ImageOps
+
 from tools.vertex_axis_feedback import (
     ALLOWED_STATUSES,
     DEFAULT_FEEDBACK,
@@ -31,6 +33,7 @@ DEFAULT_MODEL_SUMMARY = ROOT / "tests" / "fixtures" / "active_vertex_global_mode
 DEFAULT_ACTIVE_FEEDBACK = ROOT / "tests" / "fixtures" / "vertex_axis_active_learning_feedback_v0.json"
 DEFAULT_REPORT = ROOT / "tools" / "VERTEX_AXIS_ACTIVE_LEARNING_QUEUE_V0_REPORT.md"
 DEFAULT_LABEL_REPORT = ROOT / "tools" / "VERTEX_AXIS_ACTIVE_LEARNING_FEEDBACK_V0_REPORT.md"
+PROCESSING_MAX = 1150
 
 Point = Tuple[float, float]
 
@@ -238,22 +241,31 @@ def _current_model_from_global_row(row: Dict[str, Any]) -> Optional[Dict[str, An
     axes = model.get("axes") or []
     if vertex is None or len(axes) != 3:
         return None
+    transform = _processing_to_label_space_transform(row)
+    vertex = _scale_point(vertex, transform)
     axis_items = []
     for idx, axis in enumerate(axes):
         vector = _point_or_none(axis)
         if vector is None:
             return None
+        vector = _scale_vector(vector, transform)
         axis_items.append(_axis_item(f"axis_{idx}", vector, vertex))
     components = model.get("scoreComponents") or {}
     fit_diagnostics = row.get("fitDiagnostics") or {}
     return {
         "status": "ok",
         "modelSource": "global_cube_model_v01_manifest_pool",
+        "coordinateSpace": "source_image_exif_fullres",
         "vertexPoint": _round_point(vertex),
         "axes": axis_items,
         "fitQuality": model.get("score"),
         "debug": {
             "fitVersion": fit_diagnostics.get("fitVersion") or "v0.1-center-refine",
+            "sourceModelCoordinateSpace": "processing_image_max_1150",
+            "labelCoordinateSpace": "source_image_exif_fullres",
+            "processingToLabelScale": [round(transform[0], 6), round(transform[1], 6)],
+            "sourceImageSize": transform[2],
+            "processingImageSize": transform[3],
             "sourceStatus": row.get("status"),
             "diagnosticDisposition": row.get("diagnosticDisposition"),
             "silhouetteIoU": components.get("silhouetteIoU"),
@@ -265,6 +277,38 @@ def _current_model_from_global_row(row: Dict[str, Any]) -> Optional[Dict[str, An
             "signChoice": model.get("signChoice"),
         },
     }
+
+
+def _processing_to_label_space_transform(row: Dict[str, Any]) -> Tuple[float, float, List[int], List[int]]:
+    image_path = Path(str(row.get("imagePath") or ""))
+    if not image_path.exists():
+        return 1.0, 1.0, [], []
+    with Image.open(image_path) as raw:
+        image = ImageOps.exif_transpose(raw).convert("RGB")
+    source_width, source_height = image.size
+    natural_max = max(source_width, source_height)
+    if natural_max > PROCESSING_MAX:
+        processing_scale = PROCESSING_MAX / float(natural_max)
+    else:
+        processing_scale = 1.0
+    processing_width = int(source_width * processing_scale)
+    processing_height = int(source_height * processing_scale)
+    if processing_width <= 0 or processing_height <= 0:
+        return 1.0, 1.0, [source_width, source_height], [processing_width, processing_height]
+    return (
+        source_width / float(processing_width),
+        source_height / float(processing_height),
+        [source_width, source_height],
+        [processing_width, processing_height],
+    )
+
+
+def _scale_point(point: Point, transform: Tuple[float, float, List[int], List[int]]) -> Point:
+    return point[0] * transform[0], point[1] * transform[1]
+
+
+def _scale_vector(vector: Point, transform: Tuple[float, float, List[int], List[int]]) -> Point:
+    return vector[0] * transform[0], vector[1] * transform[1]
 
 
 def _axis_item(name: str, vector: Point, vertex: Point) -> Dict[str, Any]:

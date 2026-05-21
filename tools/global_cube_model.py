@@ -1101,36 +1101,16 @@ def fit_global_cube_model(
     if model is None:
         return None
 
-    # CHIRALITY CHECK + AUTO-CORRECTION.
-    # In iso projection the 6 hexagon corners alternate between 3 "near"
-    # (1 cube-edge from vertex) and 3 "far" (2 cube-edges). Both
-    # assignments are symmetric under 60° rotation around the body
-    # diagonal — same silhouette, different 3D pose. The Procrustes
-    # 6! brute-force fit picks one assignment based on tiny noise
-    # differences in the residual, which flips chirality on ~52% of
-    # runs and ~55% of CASES are non-deterministic across reruns
-    # (validated against 58-case axis-labeled gallery, 116 runs, on
-    # 2026-05-21).
-    #
-    # The discriminator: pixel darkness along vertex→corner lines, with
-    # an EMPIRICALLY-VALIDATED INVERTED POLARITY — sep<0 ≡ correct,
-    # sep>0 ≡ flipped. Yields ~82% agreement with position-based
-    # ground truth on non-ambiguous runs (vs 11% with the naive
-    # bezel-darkness polarity). See tools/CHIRALITY_DETECTION_REPORT.md
-    # for the full empirical table.
-    #
-    # With apply_correction=True the model is rebuilt with the
-    # far-corner positions as new axes when the signal indicates a
-    # flip. Given the 52% base rate and ~82% detector accuracy this
-    # is a substantial net win over leaving the chirality random.
-    model, chirality_debug = _apply_chirality_correction(
-        model, detection, image_rgb, apply_correction=True
-    )
-    model.debug.update(chirality_debug)
-
     # MEAN-OF-3 VERTEX ENSEMBLE: average PnP vertex, bezel vertex, and
     # hexagon centroid. Empirically validated against 27 user-labeled
     # ground-truth marks. Falls back to PnP-only if bezel is missing.
+    # NOTE: this MUST run BEFORE the chirality check below. The chirality
+    # detector samples pixel darkness along vertex→corner lines, and
+    # the PnP-only vertex was typically 10–50 px off from the true cube
+    # vertex, causing the near-line to skim off the cube-edge bezel and
+    # producing a counter-intuitive inverted-polarity signal. With the
+    # ensemble-corrected vertex, the line should land on the bezel
+    # again, restoring the geometric-ideal polarity (sep > 0 ≡ correct).
     pnp_vertex = model.cube_center_screen
     hex_centroid = cube_center
     candidates = [pnp_vertex, hex_centroid]
@@ -1172,6 +1152,17 @@ def fit_global_cube_model(
         "ensemble_n_candidates": len(candidates),
         "ensemble_shift_px": round(math.hypot(*pnp_to_avg_shift), 1),
     })
+
+    # CHIRALITY CHECK + AUTO-CORRECTION (runs AFTER vertex ensemble).
+    # The Procrustes 6! brute-force in fit_cube_template_to_anchors
+    # picks among ~6 near-degenerate symmetry-equivalent permutations,
+    # flipping chirality ~52% of the time. We detect via pixel darkness
+    # along vertex→corner lines (now sampled from the better, ensemble-
+    # corrected vertex). See tools/CHIRALITY_DETECTION_REPORT.md.
+    model, chirality_debug = _apply_chirality_correction(
+        model, detection, image_rgb, apply_correction=True
+    )
+    model.debug.update(chirality_debug)
 
     # IMAGE-BASED VERTEX REFINEMENT (gated on absolute junction score).
     # The ensemble vertex above is silhouette-derived — for ~22% of cases

@@ -1,0 +1,1355 @@
+{
+  "config": {
+    "axisGoodDeg": 15.0,
+    "defaultGateMinPredictedScore": 0.45,
+    "defaultGateMinScoreGain": 0.04,
+    "featureNames": [
+      "bias",
+      "dx_norm",
+      "dy_norm",
+      "radius_norm",
+      "radius_norm_sq",
+      "ray_score",
+      "center_darkness",
+      "mean_forward_score",
+      "min_forward_score",
+      "mean_backward_score",
+      "max_backward_score",
+      "mean_startness",
+      "min_startness",
+      "mean_forward_contrast",
+      "fit_quality",
+      "fit_residual_norm",
+      "ray_score_x_startness",
+      "ray_score_x_center_darkness"
+    ],
+    "plausibleVertexPx": 50.0,
+    "ridgeLambda": 0.75,
+    "searchRadiusPx": 220,
+    "searchStepPx": 16,
+    "strictVertexPx": 30.0,
+    "targetScalePx": 55.0
+  },
+  "description": "Diagnostics-only leave-one-row-out learned scoring function for visible trihedral vertex candidates.",
+  "probe": "learned_vertex_localizer_v0",
+  "rows": [
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1537.36,
+        2008.64
+      ],
+      "baselineVertexErrorPx": 26.85,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 19.34,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1541.36,
+        2028.64
+      ],
+      "candidateOracleVertexErrorPx": 7.51,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1546.87,
+        2033.75
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 12 - B - white up IMG_6702.JPG",
+      "key": "12_B",
+      "learnedBaselinePredictedScore": 0.461467,
+      "learnedGatedAccepted": false,
+      "learnedGatedImprovementPx": 0.0,
+      "learnedGatedStatus": "strict",
+      "learnedGatedVertex": [
+        1537.36,
+        2008.64
+      ],
+      "learnedGatedVertexErrorPx": 26.85,
+      "learnedPredictedScore": 0.496366,
+      "learnedScoreGain": 0.034899,
+      "learnedTop1ImprovementPx": 5.03,
+      "learnedTop1Status": "strict",
+      "learnedTop1Vertex": [
+        1541.36,
+        2012.64
+      ],
+      "learnedTop1VertexErrorPx": 21.82,
+      "modelAxisMaxAngleErrorDeg": 60.81,
+      "setId": "12",
+      "side": "B",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1495.99,
+        1814.07
+      ],
+      "baselineVertexErrorPx": 53.9,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 44.53,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1451.99,
+        1802.07
+      ],
+      "candidateOracleVertexErrorPx": 9.37,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1445.43,
+        1795.38
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 14 - B - white up IMG_6706.JPG",
+      "key": "14_B",
+      "learnedBaselinePredictedScore": 0.392208,
+      "learnedGatedAccepted": true,
+      "learnedGatedImprovementPx": 26.89,
+      "learnedGatedStatus": "strict",
+      "learnedGatedVertex": [
+        1435.99,
+        1770.07
+      ],
+      "learnedGatedVertexErrorPx": 27.01,
+      "learnedPredictedScore": 0.524305,
+      "learnedScoreGain": 0.132097,
+      "learnedTop1ImprovementPx": 26.89,
+      "learnedTop1Status": "strict",
+      "learnedTop1Vertex": [
+        1435.99,
+        1770.07
+      ],
+      "learnedTop1VertexErrorPx": 27.01,
+      "modelAxisMaxAngleErrorDeg": 62.48,
+      "setId": "14",
+      "side": "B",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1484.51,
+        2009.22
+      ],
+      "baselineVertexErrorPx": 63.51,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 55.25,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1424.51,
+        2013.22
+      ],
+      "candidateOracleVertexErrorPx": 8.26,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1421.1,
+        2005.7
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 15 - A - white up IMG_6707.JPG",
+      "key": "15_A",
+      "learnedBaselinePredictedScore": 0.456819,
+      "learnedGatedAccepted": true,
+      "learnedGatedImprovementPx": 22.03,
+      "learnedGatedStatus": "plausible",
+      "learnedGatedVertex": [
+        1408.51,
+        2045.22
+      ],
+      "learnedGatedVertexErrorPx": 41.48,
+      "learnedPredictedScore": 0.567264,
+      "learnedScoreGain": 0.110445,
+      "learnedTop1ImprovementPx": 22.03,
+      "learnedTop1Status": "plausible",
+      "learnedTop1Vertex": [
+        1408.51,
+        2045.22
+      ],
+      "learnedTop1VertexErrorPx": 41.48,
+      "modelAxisMaxAngleErrorDeg": 6.53,
+      "setId": "15",
+      "side": "A",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1491.53,
+        2003.42
+      ],
+      "baselineVertexErrorPx": 71.99,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 65.64,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1559.53,
+        1991.42
+      ],
+      "candidateOracleVertexErrorPx": 6.34,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1561.2,
+        1985.3
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 15 - B - white up IMG_6708.JPG",
+      "key": "15_B",
+      "learnedBaselinePredictedScore": 0.482647,
+      "learnedGatedAccepted": true,
+      "learnedGatedImprovementPx": 17.84,
+      "learnedGatedStatus": "blocked",
+      "learnedGatedVertex": [
+        1559.53,
+        2039.42
+      ],
+      "learnedGatedVertexErrorPx": 54.15,
+      "learnedPredictedScore": 0.540631,
+      "learnedScoreGain": 0.057984,
+      "learnedTop1ImprovementPx": 17.84,
+      "learnedTop1Status": "blocked",
+      "learnedTop1Vertex": [
+        1559.53,
+        2039.42
+      ],
+      "learnedTop1VertexErrorPx": 54.15,
+      "modelAxisMaxAngleErrorDeg": 4.06,
+      "setId": "15",
+      "side": "B",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1479.79,
+        1934.83
+      ],
+      "baselineVertexErrorPx": 107.18,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 105.38,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1531.79,
+        1842.83
+      ],
+      "candidateOracleVertexErrorPx": 1.81,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1531.65,
+        1841.03
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 17 - B - white up.JPG",
+      "key": "17_B",
+      "learnedBaselinePredictedScore": 0.496489,
+      "learnedGatedAccepted": true,
+      "learnedGatedImprovementPx": 11.61,
+      "learnedGatedStatus": "blocked",
+      "learnedGatedVertex": [
+        1547.79,
+        1746.83
+      ],
+      "learnedGatedVertexErrorPx": 95.57,
+      "learnedPredictedScore": 0.751422,
+      "learnedScoreGain": 0.254934,
+      "learnedTop1ImprovementPx": 11.61,
+      "learnedTop1Status": "blocked",
+      "learnedTop1Vertex": [
+        1547.79,
+        1746.83
+      ],
+      "learnedTop1VertexErrorPx": 95.57,
+      "modelAxisMaxAngleErrorDeg": 5.15,
+      "setId": "17",
+      "side": "B",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1362.39,
+        1964.47
+      ],
+      "baselineVertexErrorPx": 38.72,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 33.35,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1366.39,
+        2000.47
+      ],
+      "candidateOracleVertexErrorPx": 5.36,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1371.5,
+        2002.1
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 21 - A - white up.JPG",
+      "key": "21_A",
+      "learnedBaselinePredictedScore": 0.59695,
+      "learnedGatedAccepted": false,
+      "learnedGatedImprovementPx": 0.0,
+      "learnedGatedStatus": "plausible",
+      "learnedGatedVertex": [
+        1362.39,
+        1964.47
+      ],
+      "learnedGatedVertexErrorPx": 38.72,
+      "learnedPredictedScore": 0.620451,
+      "learnedScoreGain": 0.023501,
+      "learnedTop1ImprovementPx": -12.09,
+      "learnedTop1Status": "blocked",
+      "learnedTop1Vertex": [
+        1382.39,
+        1952.47
+      ],
+      "learnedTop1VertexErrorPx": 50.81,
+      "modelAxisMaxAngleErrorDeg": 5.08,
+      "setId": "21",
+      "side": "A",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1529.0,
+        2073.0
+      ],
+      "baselineVertexErrorPx": 75.69,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 73.28,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1597.0,
+        2045.0
+      ],
+      "candidateOracleVertexErrorPx": 2.41,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1599.4,
+        2045.2
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 21 - B - white up.JPG",
+      "key": "21_B",
+      "learnedBaselinePredictedScore": 0.4606,
+      "learnedGatedAccepted": false,
+      "learnedGatedImprovementPx": 0.0,
+      "learnedGatedStatus": "blocked",
+      "learnedGatedVertex": [
+        1529.0,
+        2073.0
+      ],
+      "learnedGatedVertexErrorPx": 75.69,
+      "learnedPredictedScore": 0.482315,
+      "learnedScoreGain": 0.021715,
+      "learnedTop1ImprovementPx": 37.84,
+      "learnedTop1Status": "plausible",
+      "learnedTop1Vertex": [
+        1565.0,
+        2061.0
+      ],
+      "learnedTop1VertexErrorPx": 37.85,
+      "modelAxisMaxAngleErrorDeg": 5.12,
+      "setId": "21",
+      "side": "B",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1636.2,
+        1996.37
+      ],
+      "baselineVertexErrorPx": 87.57,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 80.33,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1560.2,
+        2032.37
+      ],
+      "candidateOracleVertexErrorPx": 7.24,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1554.5,
+        2027.9
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 24 - A - white up IMG_6769.JPG",
+      "key": "24_A",
+      "learnedBaselinePredictedScore": 0.477857,
+      "learnedGatedAccepted": false,
+      "learnedGatedImprovementPx": 0.0,
+      "learnedGatedStatus": "blocked",
+      "learnedGatedVertex": [
+        1636.2,
+        1996.37
+      ],
+      "learnedGatedVertexErrorPx": 87.57,
+      "learnedPredictedScore": 0.490392,
+      "learnedScoreGain": 0.012535,
+      "learnedTop1ImprovementPx": 27.22,
+      "learnedTop1Status": "blocked",
+      "learnedTop1Vertex": [
+        1608.2,
+        2000.37
+      ],
+      "learnedTop1VertexErrorPx": 60.35,
+      "modelAxisMaxAngleErrorDeg": 61.72,
+      "setId": "24",
+      "side": "A",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1471.0,
+        2003.0
+      ],
+      "baselineVertexErrorPx": 72.54,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 67.96,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1459.0,
+        2071.0
+      ],
+      "candidateOracleVertexErrorPx": 4.58,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1461.4,
+        2074.9
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 26 - A - white up IMG_6773.JPG",
+      "key": "26_A",
+      "learnedBaselinePredictedScore": 0.532892,
+      "learnedGatedAccepted": true,
+      "learnedGatedImprovementPx": 36.56,
+      "learnedGatedStatus": "plausible",
+      "learnedGatedVertex": [
+        1459.0,
+        2039.0
+      ],
+      "learnedGatedVertexErrorPx": 35.98,
+      "learnedPredictedScore": 0.60254,
+      "learnedScoreGain": 0.069647,
+      "learnedTop1ImprovementPx": 36.56,
+      "learnedTop1Status": "plausible",
+      "learnedTop1Vertex": [
+        1459.0,
+        2039.0
+      ],
+      "learnedTop1VertexErrorPx": 35.98,
+      "modelAxisMaxAngleErrorDeg": 2.99,
+      "setId": "26",
+      "side": "A",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1442.64,
+        2016.51
+      ],
+      "baselineVertexErrorPx": 80.9,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 71.86,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1462.64,
+        2100.51
+      ],
+      "candidateOracleVertexErrorPx": 9.04,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1468.1,
+        2093.3
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 26 - B - white up IMG_6774.JPG",
+      "key": "26_B",
+      "learnedBaselinePredictedScore": 0.442025,
+      "learnedGatedAccepted": false,
+      "learnedGatedImprovementPx": 0.0,
+      "learnedGatedStatus": "blocked",
+      "learnedGatedVertex": [
+        1442.64,
+        2016.51
+      ],
+      "learnedGatedVertexErrorPx": 80.9,
+      "learnedPredictedScore": 0.442025,
+      "learnedScoreGain": 0.0,
+      "learnedTop1ImprovementPx": -0.0,
+      "learnedTop1Status": "blocked",
+      "learnedTop1Vertex": [
+        1442.64,
+        2016.51
+      ],
+      "learnedTop1VertexErrorPx": 80.9,
+      "modelAxisMaxAngleErrorDeg": 64.04,
+      "setId": "26",
+      "side": "B",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1525.97,
+        1947.84
+      ],
+      "baselineVertexErrorPx": 6.99,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 0.0,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1525.97,
+        1947.84
+      ],
+      "candidateOracleVertexErrorPx": 6.99,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1521.51,
+        1942.46
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 27 - B - white up IMG_6776.JPG",
+      "key": "27_B",
+      "learnedBaselinePredictedScore": 0.474623,
+      "learnedGatedAccepted": true,
+      "learnedGatedImprovementPx": -64.03,
+      "learnedGatedStatus": "blocked",
+      "learnedGatedVertex": [
+        1513.97,
+        1871.84
+      ],
+      "learnedGatedVertexErrorPx": 71.02,
+      "learnedPredictedScore": 0.674475,
+      "learnedScoreGain": 0.199852,
+      "learnedTop1ImprovementPx": -64.03,
+      "learnedTop1Status": "blocked",
+      "learnedTop1Vertex": [
+        1513.97,
+        1871.84
+      ],
+      "learnedTop1VertexErrorPx": 71.02,
+      "modelAxisMaxAngleErrorDeg": 3.4,
+      "setId": "27",
+      "side": "B",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1549.19,
+        1946.05
+      ],
+      "baselineVertexErrorPx": 124.3,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 122.4,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1425.19,
+        1966.05
+      ],
+      "candidateOracleVertexErrorPx": 1.9,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1426.7,
+        1967.2
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 28 - A - white up IMG_6777.JPG",
+      "key": "28_A",
+      "learnedBaselinePredictedScore": 0.422719,
+      "learnedGatedAccepted": true,
+      "learnedGatedImprovementPx": 18.83,
+      "learnedGatedStatus": "blocked",
+      "learnedGatedVertex": [
+        1521.19,
+        2014.05
+      ],
+      "learnedGatedVertexErrorPx": 105.47,
+      "learnedPredictedScore": 0.539347,
+      "learnedScoreGain": 0.116628,
+      "learnedTop1ImprovementPx": 18.83,
+      "learnedTop1Status": "blocked",
+      "learnedTop1Vertex": [
+        1521.19,
+        2014.05
+      ],
+      "learnedTop1VertexErrorPx": 105.47,
+      "modelAxisMaxAngleErrorDeg": 4.91,
+      "setId": "28",
+      "side": "A",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1477.34,
+        1934.2
+      ],
+      "baselineVertexErrorPx": 102.57,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 93.34,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1417.34,
+        2018.2
+      ],
+      "candidateOracleVertexErrorPx": 9.23,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1410.5,
+        2012.0
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 28 - B - white up IMG_6778.JPG",
+      "key": "28_B",
+      "learnedBaselinePredictedScore": 0.44073,
+      "learnedGatedAccepted": true,
+      "learnedGatedImprovementPx": 44.37,
+      "learnedGatedStatus": "blocked",
+      "learnedGatedVertex": [
+        1417.34,
+        1954.2
+      ],
+      "learnedGatedVertexErrorPx": 58.2,
+      "learnedPredictedScore": 0.65383,
+      "learnedScoreGain": 0.213101,
+      "learnedTop1ImprovementPx": 44.37,
+      "learnedTop1Status": "blocked",
+      "learnedTop1Vertex": [
+        1417.34,
+        1954.2
+      ],
+      "learnedTop1VertexErrorPx": 58.2,
+      "modelAxisMaxAngleErrorDeg": 2.91,
+      "setId": "28",
+      "side": "B",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1445.16,
+        2067.17
+      ],
+      "baselineVertexErrorPx": 57.39,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 51.06,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1497.16,
+        2103.17
+      ],
+      "candidateOracleVertexErrorPx": 6.33,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1491.0,
+        2101.7
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 29 - A - white up IMG_6779.JPG",
+      "key": "29_A",
+      "learnedBaselinePredictedScore": 0.467446,
+      "learnedGatedAccepted": true,
+      "learnedGatedImprovementPx": 4.17,
+      "learnedGatedStatus": "blocked",
+      "learnedGatedVertex": [
+        1465.16,
+        2055.17
+      ],
+      "learnedGatedVertexErrorPx": 53.22,
+      "learnedPredictedScore": 0.533791,
+      "learnedScoreGain": 0.066345,
+      "learnedTop1ImprovementPx": 4.17,
+      "learnedTop1Status": "blocked",
+      "learnedTop1Vertex": [
+        1465.16,
+        2055.17
+      ],
+      "learnedTop1VertexErrorPx": 53.22,
+      "modelAxisMaxAngleErrorDeg": 60.57,
+      "setId": "29",
+      "side": "A",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1435.41,
+        1957.79
+      ],
+      "baselineVertexErrorPx": 25.39,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 16.35,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1407.41,
+        1977.79
+      ],
+      "candidateOracleVertexErrorPx": 9.03,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1415.0,
+        1972.89
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 29 - B - white up IMG_6780.JPG",
+      "key": "29_B",
+      "learnedBaselinePredictedScore": 0.57897,
+      "learnedGatedAccepted": false,
+      "learnedGatedImprovementPx": 0.0,
+      "learnedGatedStatus": "strict",
+      "learnedGatedVertex": [
+        1435.41,
+        1957.79
+      ],
+      "learnedGatedVertexErrorPx": 25.39,
+      "learnedPredictedScore": 0.606791,
+      "learnedScoreGain": 0.02782,
+      "learnedTop1ImprovementPx": 1.3,
+      "learnedTop1Status": "strict",
+      "learnedTop1Vertex": [
+        1391.41,
+        1977.79
+      ],
+      "learnedTop1VertexErrorPx": 24.09,
+      "modelAxisMaxAngleErrorDeg": 1.5,
+      "setId": "29",
+      "side": "B",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1466.93,
+        2250.07
+      ],
+      "baselineVertexErrorPx": 39.71,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 37.84,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1438.93,
+        2222.07
+      ],
+      "candidateOracleVertexErrorPx": 1.87,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1440.2,
+        2220.7
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 30 - A - white up IMG_7100.JPG",
+      "key": "30_A",
+      "learnedBaselinePredictedScore": 0.731033,
+      "learnedGatedAccepted": true,
+      "learnedGatedImprovementPx": -9.68,
+      "learnedGatedStatus": "plausible",
+      "learnedGatedVertex": [
+        1438.93,
+        2270.07
+      ],
+      "learnedGatedVertexErrorPx": 49.39,
+      "learnedPredictedScore": 0.975709,
+      "learnedScoreGain": 0.244676,
+      "learnedTop1ImprovementPx": -9.68,
+      "learnedTop1Status": "plausible",
+      "learnedTop1Vertex": [
+        1438.93,
+        2270.07
+      ],
+      "learnedTop1VertexErrorPx": 49.39,
+      "modelAxisMaxAngleErrorDeg": 7.45,
+      "setId": "30",
+      "side": "A",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1613.57,
+        1931.2
+      ],
+      "baselineVertexErrorPx": 10.0,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 7.02,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1617.57,
+        1919.2
+      ],
+      "candidateOracleVertexErrorPx": 2.99,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1617.87,
+        1922.17
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 30 - B - white up IMG_7101.JPG",
+      "key": "30_B",
+      "learnedBaselinePredictedScore": 0.462501,
+      "learnedGatedAccepted": true,
+      "learnedGatedImprovementPx": -35.03,
+      "learnedGatedStatus": "plausible",
+      "learnedGatedVertex": [
+        1617.57,
+        1967.2
+      ],
+      "learnedGatedVertexErrorPx": 45.03,
+      "learnedPredictedScore": 0.737631,
+      "learnedScoreGain": 0.275129,
+      "learnedTop1ImprovementPx": -35.03,
+      "learnedTop1Status": "plausible",
+      "learnedTop1Vertex": [
+        1617.57,
+        1967.2
+      ],
+      "learnedTop1VertexErrorPx": 45.03,
+      "modelAxisMaxAngleErrorDeg": 3.89,
+      "setId": "30",
+      "side": "B",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1391.46,
+        1974.52
+      ],
+      "baselineVertexErrorPx": 47.18,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 40.12,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1427.46,
+        2010.52
+      ],
+      "candidateOracleVertexErrorPx": 7.06,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1420.5,
+        2011.7
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 31 - A - white up IMG_7102.JPG",
+      "key": "31_A",
+      "learnedBaselinePredictedScore": 0.429105,
+      "learnedGatedAccepted": true,
+      "learnedGatedImprovementPx": 16.81,
+      "learnedGatedStatus": "plausible",
+      "learnedGatedVertex": [
+        1395.46,
+        1994.52
+      ],
+      "learnedGatedVertexErrorPx": 30.37,
+      "learnedPredictedScore": 0.598512,
+      "learnedScoreGain": 0.169407,
+      "learnedTop1ImprovementPx": 16.81,
+      "learnedTop1Status": "plausible",
+      "learnedTop1Vertex": [
+        1395.46,
+        1994.52
+      ],
+      "learnedTop1VertexErrorPx": 30.37,
+      "modelAxisMaxAngleErrorDeg": 2.32,
+      "setId": "31",
+      "side": "A",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1327.0,
+        1939.0
+      ],
+      "baselineVertexErrorPx": 7.68,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 4.77,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1331.0,
+        1943.0
+      ],
+      "candidateOracleVertexErrorPx": 2.91,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1333.86,
+        1942.46
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 31 - B - white up IMG_7103.JPG",
+      "key": "31_B",
+      "learnedBaselinePredictedScore": 0.472349,
+      "learnedGatedAccepted": true,
+      "learnedGatedImprovementPx": -42.61,
+      "learnedGatedStatus": "blocked",
+      "learnedGatedVertex": [
+        1347.0,
+        1991.0
+      ],
+      "learnedGatedVertexErrorPx": 50.29,
+      "learnedPredictedScore": 0.767876,
+      "learnedScoreGain": 0.295527,
+      "learnedTop1ImprovementPx": -42.61,
+      "learnedTop1Status": "blocked",
+      "learnedTop1Vertex": [
+        1347.0,
+        1991.0
+      ],
+      "learnedTop1VertexErrorPx": 50.29,
+      "modelAxisMaxAngleErrorDeg": 2.67,
+      "setId": "31",
+      "side": "B",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1532.91,
+        1989.84
+      ],
+      "baselineVertexErrorPx": 72.33,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 66.3,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1600.91,
+        1961.84
+      ],
+      "candidateOracleVertexErrorPx": 6.03,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1601.8,
+        1967.8
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 32 - A - white up IMG_7143.JPG",
+      "key": "32_A",
+      "learnedBaselinePredictedScore": 0.454922,
+      "learnedGatedAccepted": true,
+      "learnedGatedImprovementPx": 27.66,
+      "learnedGatedStatus": "plausible",
+      "learnedGatedVertex": [
+        1616.91,
+        2009.84
+      ],
+      "learnedGatedVertexErrorPx": 44.67,
+      "learnedPredictedScore": 0.511027,
+      "learnedScoreGain": 0.056104,
+      "learnedTop1ImprovementPx": 27.66,
+      "learnedTop1Status": "plausible",
+      "learnedTop1Vertex": [
+        1616.91,
+        2009.84
+      ],
+      "learnedTop1VertexErrorPx": 44.67,
+      "modelAxisMaxAngleErrorDeg": 59.88,
+      "setId": "32",
+      "side": "A",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1367.0,
+        1826.0
+      ],
+      "baselineVertexErrorPx": 70.61,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 67.14,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1371.0,
+        1894.0
+      ],
+      "candidateOracleVertexErrorPx": 3.47,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1373.6,
+        1896.3
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 32 - B - white up IMG_7144.JPG",
+      "key": "32_B",
+      "learnedBaselinePredictedScore": 0.372117,
+      "learnedGatedAccepted": true,
+      "learnedGatedImprovementPx": 16.98,
+      "learnedGatedStatus": "blocked",
+      "learnedGatedVertex": [
+        1355.0,
+        1846.0
+      ],
+      "learnedGatedVertexErrorPx": 53.63,
+      "learnedPredictedScore": 0.538765,
+      "learnedScoreGain": 0.166649,
+      "learnedTop1ImprovementPx": 16.98,
+      "learnedTop1Status": "blocked",
+      "learnedTop1Vertex": [
+        1355.0,
+        1846.0
+      ],
+      "learnedTop1VertexErrorPx": 53.63,
+      "modelAxisMaxAngleErrorDeg": 62.97,
+      "setId": "32",
+      "side": "B",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1288.77,
+        1842.56
+      ],
+      "baselineVertexErrorPx": 102.95,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 98.43,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1324.77,
+        1942.56
+      ],
+      "candidateOracleVertexErrorPx": 4.52,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1320.8,
+        1940.4
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 36 - B - white up IMG_7152.JPG",
+      "key": "36_B",
+      "learnedBaselinePredictedScore": 0.486302,
+      "learnedGatedAccepted": false,
+      "learnedGatedImprovementPx": 0.0,
+      "learnedGatedStatus": "blocked",
+      "learnedGatedVertex": [
+        1288.77,
+        1842.56
+      ],
+      "learnedGatedVertexErrorPx": 102.95,
+      "learnedPredictedScore": 0.487806,
+      "learnedScoreGain": 0.001504,
+      "learnedTop1ImprovementPx": 70.78,
+      "learnedTop1Status": "plausible",
+      "learnedTop1Vertex": [
+        1308.77,
+        1910.56
+      ],
+      "learnedTop1VertexErrorPx": 32.17,
+      "modelAxisMaxAngleErrorDeg": 1.79,
+      "setId": "36",
+      "side": "B",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1508.0,
+        1917.0
+      ],
+      "baselineVertexErrorPx": 91.97,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 85.03,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1576.0,
+        1857.0
+      ],
+      "candidateOracleVertexErrorPx": 6.94,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1572.23,
+        1851.17
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 42 - B - white up IMG_7164.JPG",
+      "key": "42_B",
+      "learnedBaselinePredictedScore": 0.4317,
+      "learnedGatedAccepted": true,
+      "learnedGatedImprovementPx": 44.77,
+      "learnedGatedStatus": "plausible",
+      "learnedGatedVertex": [
+        1544.0,
+        1889.0
+      ],
+      "learnedGatedVertexErrorPx": 47.2,
+      "learnedPredictedScore": 0.525642,
+      "learnedScoreGain": 0.093942,
+      "learnedTop1ImprovementPx": 44.77,
+      "learnedTop1Status": "plausible",
+      "learnedTop1Vertex": [
+        1544.0,
+        1889.0
+      ],
+      "learnedTop1VertexErrorPx": 47.2,
+      "modelAxisMaxAngleErrorDeg": 64.06,
+      "setId": "42",
+      "side": "B",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1472.0,
+        1826.0
+      ],
+      "baselineVertexErrorPx": 185.52,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 183.21,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1364.0,
+        1974.0
+      ],
+      "candidateOracleVertexErrorPx": 2.3,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1362.7,
+        1975.9
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 44 - A - white up IMG_7167.JPG",
+      "key": "44_A",
+      "learnedBaselinePredictedScore": 0.43053,
+      "learnedGatedAccepted": false,
+      "learnedGatedImprovementPx": 0.0,
+      "learnedGatedStatus": "blocked",
+      "learnedGatedVertex": [
+        1472.0,
+        1826.0
+      ],
+      "learnedGatedVertexErrorPx": 185.52,
+      "learnedPredictedScore": 0.43053,
+      "learnedScoreGain": 0.0,
+      "learnedTop1ImprovementPx": 0.0,
+      "learnedTop1Status": "blocked",
+      "learnedTop1Vertex": [
+        1472.0,
+        1826.0
+      ],
+      "learnedTop1VertexErrorPx": 185.52,
+      "modelAxisMaxAngleErrorDeg": 62.49,
+      "setId": "44",
+      "side": "A",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1615.0,
+        1988.0
+      ],
+      "baselineVertexErrorPx": 117.57,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 109.76,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1507.0,
+        2008.0
+      ],
+      "candidateOracleVertexErrorPx": 7.81,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1499.2,
+        2008.3
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 44 - B - white up IMG_7168.JPG",
+      "key": "44_B",
+      "learnedBaselinePredictedScore": 0.355716,
+      "learnedGatedAccepted": false,
+      "learnedGatedImprovementPx": 0.0,
+      "learnedGatedStatus": "blocked",
+      "learnedGatedVertex": [
+        1615.0,
+        1988.0
+      ],
+      "learnedGatedVertexErrorPx": 117.57,
+      "learnedPredictedScore": 0.417815,
+      "learnedScoreGain": 0.062099,
+      "learnedTop1ImprovementPx": 8.86,
+      "learnedTop1Status": "blocked",
+      "learnedTop1Vertex": [
+        1603.0,
+        1976.0
+      ],
+      "learnedTop1VertexErrorPx": 108.71,
+      "modelAxisMaxAngleErrorDeg": 62.18,
+      "setId": "44",
+      "side": "B",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1423.84,
+        2163.77
+      ],
+      "baselineVertexErrorPx": 4.96,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 0.0,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1423.84,
+        2163.77
+      ],
+      "candidateOracleVertexErrorPx": 4.96,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1420.08,
+        2160.54
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 57 - A - white-up IMG_7510.JPG",
+      "key": "57_A",
+      "learnedBaselinePredictedScore": 0.592213,
+      "learnedGatedAccepted": false,
+      "learnedGatedImprovementPx": 0.0,
+      "learnedGatedStatus": "strict",
+      "learnedGatedVertex": [
+        1423.84,
+        2163.77
+      ],
+      "learnedGatedVertexErrorPx": 4.96,
+      "learnedPredictedScore": 0.592213,
+      "learnedScoreGain": 0.0,
+      "learnedTop1ImprovementPx": 0.0,
+      "learnedTop1Status": "strict",
+      "learnedTop1Vertex": [
+        1423.84,
+        2163.77
+      ],
+      "learnedTop1VertexErrorPx": 4.96,
+      "modelAxisMaxAngleErrorDeg": 8.6,
+      "setId": "57",
+      "side": "A",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1558.87,
+        1985.83
+      ],
+      "baselineVertexErrorPx": 70.74,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 66.0,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1498.87,
+        1957.83
+      ],
+      "candidateOracleVertexErrorPx": 4.74,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1495.4,
+        1954.6
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 61 - A - white-up IMG_7518.JPG",
+      "key": "61_A",
+      "learnedBaselinePredictedScore": 0.480055,
+      "learnedGatedAccepted": false,
+      "learnedGatedImprovementPx": 0.0,
+      "learnedGatedStatus": "blocked",
+      "learnedGatedVertex": [
+        1558.87,
+        1985.83
+      ],
+      "learnedGatedVertexErrorPx": 70.74,
+      "learnedPredictedScore": 0.480055,
+      "learnedScoreGain": 0.0,
+      "learnedTop1ImprovementPx": 0.0,
+      "learnedTop1Status": "blocked",
+      "learnedTop1Vertex": [
+        1558.87,
+        1985.83
+      ],
+      "learnedTop1VertexErrorPx": 70.74,
+      "modelAxisMaxAngleErrorDeg": 61.3,
+      "setId": "61",
+      "side": "A",
+      "trainingRowCount": 27
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1367.73,
+        1888.78
+      ],
+      "baselineVertexErrorPx": 60.04,
+      "candidateCount": 588,
+      "candidateOracleImprovementPx": 53.56,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1355.73,
+        1828.78
+      ],
+      "candidateOracleVertexErrorPx": 6.47,
+      "evaluationStatus": "ok",
+      "humanVertex": [
+        1362.2,
+        1829.0
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 61 - B - white-up IMG_7519.JPG",
+      "key": "61_B",
+      "learnedBaselinePredictedScore": 0.606736,
+      "learnedGatedAccepted": false,
+      "learnedGatedImprovementPx": 0.0,
+      "learnedGatedStatus": "blocked",
+      "learnedGatedVertex": [
+        1367.73,
+        1888.78
+      ],
+      "learnedGatedVertexErrorPx": 60.04,
+      "learnedPredictedScore": 0.606736,
+      "learnedScoreGain": 0.0,
+      "learnedTop1ImprovementPx": 0.0,
+      "learnedTop1Status": "blocked",
+      "learnedTop1Vertex": [
+        1367.73,
+        1888.78
+      ],
+      "learnedTop1VertexErrorPx": 60.04,
+      "modelAxisMaxAngleErrorDeg": 4.09,
+      "setId": "61",
+      "side": "B",
+      "trainingRowCount": 27
+    }
+  ],
+  "schemaVersion": 1,
+  "sourceFeedback": "/private/tmp/cube-learned-vertex-localizer-v0/tests/fixtures/vertex_axis_human_feedback_v0.json",
+  "summary": {
+    "axisBlockedRowCount": 11,
+    "axisGoodBaselineStrictCount": 5,
+    "axisGoodLearnedGatedStrictCount": 2,
+    "axisGoodRowCount": 17,
+    "baselinePlausibleCount": 9,
+    "baselineStrictCount": 6,
+    "candidateOraclePlausibleCount": 28,
+    "candidateOracleStrictCount": 28,
+    "evaluatedRowCount": 28,
+    "learnedGatedAcceptedCount": 16,
+    "learnedGatedImprovedRowCount": 11,
+    "learnedGatedPlausibleCount": 12,
+    "learnedGatedStrictCount": 4,
+    "learnedGatedWorsenedRowCount": 4,
+    "learnedThresholdSweep": {
+      "bestNonEmptyAtMostTwoWorsens": {
+        "acceptedCount": 3,
+        "improvedCount": 1,
+        "meanVertexErrorPx": 68.4796,
+        "plausibleCount": 8,
+        "strictCount": 5,
+        "thresholds": {
+          "minPredictedScore": 0.75,
+          "minScoreGain": -0.05
+        },
+        "worsenedCount": 2
+      },
+      "bestNonEmptyLowWorsen": {
+        "acceptedCount": 3,
+        "improvedCount": 1,
+        "meanVertexErrorPx": 68.4796,
+        "plausibleCount": 8,
+        "strictCount": 5,
+        "thresholds": {
+          "minPredictedScore": 0.75,
+          "minScoreGain": -0.05
+        },
+        "worsenedCount": 2
+      },
+      "evaluatedNonEmptyGateCount": 54
+    },
+    "learnedTop1ImprovedRowCount": 16,
+    "learnedTop1PlausibleCount": 13,
+    "learnedTop1StrictCount": 4,
+    "learnedTop1WorsenedRowCount": 5,
+    "meanBaselineVertexErrorPx": 67.0268,
+    "meanCandidateOracleVertexErrorPx": 5.6239,
+    "meanLearnedGatedVertexErrorPx": 62.1279,
+    "meanLearnedTop1VertexErrorPx": 57.1657,
+    "medianBaselineVertexErrorPx": 70.675,
+    "medianCandidateOracleVertexErrorPx": 6.18,
+    "medianLearnedGatedVertexErrorPx": 53.425,
+    "medianLearnedTop1VertexErrorPx": 50.55,
+    "rowCount": 28
+  }
+}

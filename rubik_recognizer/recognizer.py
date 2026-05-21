@@ -937,6 +937,106 @@ def _base_recognition_signals(analysis_a: ImageAnalysis, analysis_b: ImageAnalys
             "imageB": _top_visible_triple_quality(analysis_b, "D"),
         },
         "topVisibleBalancedColorAssignment": _top_visible_face_pair_balanced_assignment_signal(analysis_a, analysis_b),
+        "twoViewGeometryConsistency": _two_view_geometry_consistency(analysis_a, analysis_b),
+    }
+
+
+def _grid_median_spacing(grid: FaceGrid) -> Optional[float]:
+    """Median pixel spacing between adjacent cells in a 3x3 face grid.
+
+    Returns None if the grid's points don't form a 3x3 array.
+    """
+    pts = grid.points
+    if pts is None or len(pts) != 3 or any(len(row) != 3 for row in pts):
+        return None
+    distances: List[float] = []
+    for r in range(3):
+        for c in range(2):
+            x0, y0 = pts[r][c]
+            x1, y1 = pts[r][c + 1]
+            distances.append(math.hypot(x1 - x0, y1 - y0))
+    for r in range(2):
+        for c in range(3):
+            x0, y0 = pts[r][c]
+            x1, y1 = pts[r + 1][c]
+            distances.append(math.hypot(x1 - x0, y1 - y0))
+    if not distances:
+        return None
+    distances.sort()
+    n = len(distances)
+    if n % 2 == 1:
+        return float(distances[n // 2])
+    return float((distances[n // 2 - 1] + distances[n // 2]) / 2)
+
+
+def _photo_median_spacing(analysis: ImageAnalysis) -> Optional[float]:
+    """Median sticker spacing across all selected face grids in a photo.
+
+    Each FaceGrid contributes one spacing measurement. The median of those
+    three (or fewer, if not all faces fitted) is the photo's
+    characteristic scale. None if no grids are available.
+    """
+    grid_spacings = [_grid_median_spacing(g) for g in analysis.grids]
+    valid = sorted(s for s in grid_spacings if s is not None and s > 0)
+    if not valid:
+        return None
+    n = len(valid)
+    if n % 2 == 1:
+        return float(valid[n // 2])
+    return float((valid[n // 2 - 1] + valid[n // 2]) / 2)
+
+
+def _two_view_geometry_consistency(
+    analysis_a: ImageAnalysis,
+    analysis_b: ImageAnalysis,
+) -> Dict[str, Any]:
+    """Cross-photo geometric consistency signal: do A and B describe a
+    cube at compatible scales?
+
+    The same physical cube photographed back-to-back should produce
+    similar pixel sticker spacings in A and B (within ~30%; user might
+    shift slightly between captures but not dramatically). Wildly
+    mismatched spacings suggest one of the photos has a face-grid fit
+    that's actually following background pattern instead of cube
+    geometry — the failure mode behind the severe-failure class
+    (sets 24, 28, 31 on the labeled corpus: 70%+ sticker mismatches in
+    cv-local's output, consistent with one or both photos having
+    fundamentally wrong face geometry).
+
+    DIAGNOSTIC-ONLY: this signal is emitted in `recognition_signals`
+    but no recognition behavior currently depends on it. Validated
+    against the labeled corpus, it can graduate into the
+    `needs_manual_review` category trigger.
+
+    Tolerance: configurable via env (`RUBIK_TWO_VIEW_RATIO_TOLERANCE`,
+    default 1.4). Default is loose enough to absorb legitimate camera
+    distance differences (the user often holds the camera at slightly
+    different distances for A and B), tight enough to catch the
+    grid-fit failures where one photo's "cube" is actually background.
+    """
+    spacing_a = _photo_median_spacing(analysis_a)
+    spacing_b = _photo_median_spacing(analysis_b)
+    if spacing_a is None or spacing_b is None:
+        return {
+            "spacingPxA": spacing_a,
+            "spacingPxB": spacing_b,
+            "ratio": None,
+            "inconsistent": False,
+            "reason": "missing_grids",
+        }
+    ratio = max(spacing_a, spacing_b) / max(min(spacing_a, spacing_b), 1e-6)
+    try:
+        tolerance = float(os.environ.get("RUBIK_TWO_VIEW_RATIO_TOLERANCE", "1.4"))
+    except ValueError:
+        tolerance = 1.4
+    inconsistent = ratio > tolerance
+    return {
+        "spacingPxA": round(spacing_a, 1),
+        "spacingPxB": round(spacing_b, 1),
+        "ratio": round(ratio, 3),
+        "toleranceRatio": round(tolerance, 3),
+        "inconsistent": inconsistent,
+        "reason": "two_view_inconsistent" if inconsistent else "ok",
     }
 
 

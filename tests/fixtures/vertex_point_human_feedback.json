@@ -38,14 +38,17 @@
       },
       "candidateStatus": "ok",
       "evaluationTier": "easy_corpus",
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        399.73,
+        572.52
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 15 - A - white up IMG_6707.JPG",
-      "labelQuality": null,
+      "labelQuality": "high",
       "notes": "",
       "overlayPath": "/tmp/vertex_point_candidate_easy_corpus_overlays/set_15_A_vertex_point_candidates.png",
       "setId": "15",
       "side": "A",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the visible trihedral vertex point. A top-1 hit is within 10px; top-3 recall means any of ranks 1-3 is within that threshold.",
       "topCandidates": [
         {
@@ -169,14 +172,17 @@
       },
       "candidateStatus": "ok",
       "evaluationTier": "easy_corpus",
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        446.64,
+        566.99
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 15 - B - white up IMG_6708.JPG",
-      "labelQuality": null,
+      "labelQuality": "high",
       "notes": "",
       "overlayPath": "/tmp/vertex_point_candidate_easy_corpus_overlays/set_15_B_vertex_point_candidates.png",
       "setId": "15",
       "side": "B",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the visible trihedral vertex point. A top-1 hit is within 10px; top-3 recall means any of ranks 1-3 is within that threshold.",
       "topCandidates": [
         {
@@ -300,14 +306,17 @@
       },
       "candidateStatus": "ok",
       "evaluationTier": "easy_corpus",
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        371.38,
+        512.22
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 23 - A - white up.JPG",
-      "labelQuality": null,
+      "labelQuality": "high",
       "notes": "",
       "overlayPath": "/tmp/vertex_point_candidate_easy_corpus_overlays/set_23_A_vertex_point_candidates.png",
       "setId": "23",
       "side": "A",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the visible trihedral vertex point. A top-1 hit is within 10px; top-3 recall means any of ranks 1-3 is within that threshold.",
       "topCandidates": [
         {
@@ -431,14 +440,17 @@
       },
       "candidateStatus": "ok",
       "evaluationTier": "easy_corpus",
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        399.73,
+        576.76
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 23 - B - white up.JPG",
-      "labelQuality": null,
+      "labelQuality": "high",
       "notes": "",
       "overlayPath": "/tmp/vertex_point_candidate_easy_corpus_overlays/set_23_B_vertex_point_candidates.png",
       "setId": "23",
       "side": "B",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the visible trihedral vertex point. A top-1 hit is within 10px; top-3 recall means any of ranks 1-3 is within that threshold.",
       "topCandidates": [
         {
@@ -562,14 +574,17 @@
       },
       "candidateStatus": "ok",
       "evaluationTier": "easy_corpus",
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        416.34,
+        595.34
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 26 - A - white up IMG_6773.JPG",
-      "labelQuality": null,
+      "labelQuality": "high",
       "notes": "",
       "overlayPath": "/tmp/vertex_point_candidate_easy_corpus_overlays/set_26_A_vertex_point_candidates.png",
       "setId": "26",
       "side": "A",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the visible trihedral vertex point. A top-1 hit is within 10px; top-3 recall means any of ranks 1-3 is within that threshold.",
       "topCandidates": [
         {
@@ -693,14 +708,17 @@
       },
       "candidateStatus": "low_iou",
       "evaluationTier": "easy_corpus",
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        417.32,
+        599.26
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 26 - B - white up IMG_6774.JPG",
-      "labelQuality": null,
+      "labelQuality": "high",
       "notes": "",
       "overlayPath": "/tmp/vertex_point_candidate_easy_corpus_overlays/set_26_B_vertex_point_candidates.png",
       "setId": "26",
       "side": "B",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the visible trihedral vertex point. A top-1 hit is within 10px; top-3 recall means any of ranks 1-3 is within that threshold.",
       "topCandidates": [
         {
@@ -824,14 +842,17 @@
       },
       "candidateStatus": "ok",
       "evaluationTier": "easy_corpus",
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        420.25,
+        597.3
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 29 - A - white up IMG_6779.JPG",
-      "labelQuality": null,
+      "labelQuality": "high",
       "notes": "",
       "overlayPath": "/tmp/vertex_point_candidate_easy_corpus_overlays/set_29_A_vertex_point_candidates.png",
       "setId": "29",
       "side": "A",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the visible trihedral vertex point. A top-1 hit is within 10px; top-3 recall means any of ranks 1-3 is within that threshold.",
       "topCandidates": [
         {
@@ -955,14 +976,17 @@
       },
       "candidateStatus": "ok",
       "evaluationTier": "easy_corpus",
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        403.63,
+        564.05
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 29 - B - white up IMG_6780.JPG",
-      "labelQuality": null,
+      "labelQuality": "high",
       "notes": "",
       "overlayPath": "/tmp/vertex_point_candidate_easy_corpus_overlays/set_29_B_vertex_point_candidates.png",
       "setId": "29",
       "side": "B",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the visible trihedral vertex point. A top-1 hit is within 10px; top-3 recall means any of ranks 1-3 is within that threshold.",
       "topCandidates": [
         {
@@ -1086,14 +1110,17 @@
       },
       "candidateStatus": "ok",
       "evaluationTier": "easy_corpus",
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        457.39,
+        560.14
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 32 - A - white up IMG_7143.JPG",
-      "labelQuality": null,
+      "labelQuality": "high",
       "notes": "",
       "overlayPath": "/tmp/vertex_point_candidate_easy_corpus_overlays/set_32_A_vertex_point_candidates.png",
       "setId": "32",
       "side": "A",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the visible trihedral vertex point. A top-1 hit is within 10px; top-3 recall means any of ranks 1-3 is within that threshold.",
       "topCandidates": [
         {
@@ -1217,14 +1244,17 @@
       },
       "candidateStatus": "ok",
       "evaluationTier": "easy_corpus",
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        391.91,
+        543.52
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 32 - B - white up IMG_7144.JPG",
-      "labelQuality": null,
+      "labelQuality": "high",
       "notes": "",
       "overlayPath": "/tmp/vertex_point_candidate_easy_corpus_overlays/set_32_B_vertex_point_candidates.png",
       "setId": "32",
       "side": "B",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the visible trihedral vertex point. A top-1 hit is within 10px; top-3 recall means any of ranks 1-3 is within that threshold.",
       "topCandidates": [
         {
@@ -1348,14 +1378,17 @@
       },
       "candidateStatus": "ok",
       "evaluationTier": "easy_corpus",
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        449.57,
+        577.74
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 36 - A - white up IMG_7151.JPG",
-      "labelQuality": null,
+      "labelQuality": "high",
       "notes": "",
       "overlayPath": "/tmp/vertex_point_candidate_easy_corpus_overlays/set_36_A_vertex_point_candidates.png",
       "setId": "36",
       "side": "A",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the visible trihedral vertex point. A top-1 hit is within 10px; top-3 recall means any of ranks 1-3 is within that threshold.",
       "topCandidates": [
         {
@@ -1479,14 +1512,17 @@
       },
       "candidateStatus": "ok",
       "evaluationTier": "easy_corpus",
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        374.32,
+        557.21
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 36 - B - white up IMG_7152.JPG",
-      "labelQuality": null,
+      "labelQuality": "high",
       "notes": "",
       "overlayPath": "/tmp/vertex_point_candidate_easy_corpus_overlays/set_36_B_vertex_point_candidates.png",
       "setId": "36",
       "side": "B",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the visible trihedral vertex point. A top-1 hit is within 10px; top-3 recall means any of ranks 1-3 is within that threshold.",
       "topCandidates": [
         {
@@ -1610,14 +1646,17 @@
       },
       "candidateStatus": "ok",
       "evaluationTier": "easy_corpus",
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        414.39,
+        605.12
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 37 - A - white up IMG_7153.JPG",
-      "labelQuality": null,
+      "labelQuality": "high",
       "notes": "",
       "overlayPath": "/tmp/vertex_point_candidate_easy_corpus_overlays/set_37_A_vertex_point_candidates.png",
       "setId": "37",
       "side": "A",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the visible trihedral vertex point. A top-1 hit is within 10px; top-3 recall means any of ranks 1-3 is within that threshold.",
       "topCandidates": [
         {
@@ -1741,14 +1780,17 @@
       },
       "candidateStatus": "ok",
       "evaluationTier": "easy_corpus",
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        412.43,
+        660.86
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 37 - B - white up IMG_7154.JPG",
-      "labelQuality": null,
+      "labelQuality": "high",
       "notes": "",
       "overlayPath": "/tmp/vertex_point_candidate_easy_corpus_overlays/set_37_B_vertex_point_candidates.png",
       "setId": "37",
       "side": "B",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the visible trihedral vertex point. A top-1 hit is within 10px; top-3 recall means any of ranks 1-3 is within that threshold.",
       "topCandidates": [
         {
@@ -1872,14 +1914,17 @@
       },
       "candidateStatus": "ok",
       "evaluationTier": "easy_corpus",
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        459.34,
+        549.38
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 42 - A - white up IMG_7163.JPG",
-      "labelQuality": null,
+      "labelQuality": "high",
       "notes": "",
       "overlayPath": "/tmp/vertex_point_candidate_easy_corpus_overlays/set_42_A_vertex_point_candidates.png",
       "setId": "42",
       "side": "A",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the visible trihedral vertex point. A top-1 hit is within 10px; top-3 recall means any of ranks 1-3 is within that threshold.",
       "topCandidates": [
         {
@@ -2003,14 +2048,17 @@
       },
       "candidateStatus": "ok",
       "evaluationTier": "easy_corpus",
-      "humanVertexPoint": null,
+      "humanVertexPoint": [
+        444.68,
+        525.91
+      ],
       "imagePath": "/Users/jhuber/Downloads/Set 42 - B - white up IMG_7164.JPG",
-      "labelQuality": null,
+      "labelQuality": "high",
       "notes": "",
       "overlayPath": "/tmp/vertex_point_candidate_easy_corpus_overlays/set_42_B_vertex_point_candidates.png",
       "setId": "42",
       "side": "B",
-      "status": "unlabeled",
+      "status": "labeled",
       "target": "Mark the visible trihedral vertex point. A top-1 hit is within 10px; top-3 recall means any of ranks 1-3 is within that threshold.",
       "topCandidates": [
         {

@@ -1,0 +1,293 @@
+{
+  "config": {
+    "plausibleMaxAxisAngleDeg": 15.0,
+    "plausibleVertexPx": 50.0,
+    "strictMaxAxisAngleDeg": 8.0,
+    "strictVertexPx": 30.0
+  },
+  "description": "Diagnostics/data-only scorer for the visible trihedral: vertex point plus three outgoing cube-edge rays.",
+  "probe": "trihedral_axis_fit_v0",
+  "rows": [
+    {
+      "axisEndpointCount": 0,
+      "evaluationStatus": "axis_labels_pending",
+      "hasCurrentModel": true,
+      "key": "12_B",
+      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "setId": "12",
+      "side": "B",
+      "vertexErrorPx": 37.25
+    },
+    {
+      "axisEndpointCount": 0,
+      "evaluationStatus": "axis_labels_pending",
+      "hasCurrentModel": true,
+      "key": "14_B",
+      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "setId": "14",
+      "side": "B",
+      "vertexErrorPx": 33.04
+    },
+    {
+      "axisEndpointCount": 0,
+      "evaluationStatus": "axis_labels_pending",
+      "hasCurrentModel": true,
+      "key": "15_A",
+      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "setId": "15",
+      "side": "A",
+      "vertexErrorPx": 63.51
+    },
+    {
+      "axisEndpointCount": 0,
+      "evaluationStatus": "axis_labels_pending",
+      "hasCurrentModel": true,
+      "key": "15_B",
+      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "setId": "15",
+      "side": "B",
+      "vertexErrorPx": 71.99
+    },
+    {
+      "axisEndpointCount": 0,
+      "evaluationStatus": "axis_labels_pending",
+      "hasCurrentModel": true,
+      "key": "17_B",
+      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "setId": "17",
+      "side": "B",
+      "vertexErrorPx": 109.96
+    },
+    {
+      "axisEndpointCount": 0,
+      "evaluationStatus": "axis_labels_pending",
+      "hasCurrentModel": true,
+      "key": "21_A",
+      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "setId": "21",
+      "side": "A",
+      "vertexErrorPx": 38.72
+    },
+    {
+      "axisEndpointCount": 0,
+      "evaluationStatus": "axis_labels_pending",
+      "hasCurrentModel": true,
+      "key": "21_B",
+      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "setId": "21",
+      "side": "B",
+      "vertexErrorPx": 75.69
+    },
+    {
+      "axisEndpointCount": 0,
+      "evaluationStatus": "axis_labels_pending",
+      "hasCurrentModel": true,
+      "key": "24_A",
+      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "setId": "24",
+      "side": "A",
+      "vertexErrorPx": 87.57
+    },
+    {
+      "axisEndpointCount": 0,
+      "evaluationStatus": "axis_labels_pending",
+      "hasCurrentModel": true,
+      "key": "26_A",
+      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "setId": "26",
+      "side": "A",
+      "vertexErrorPx": 72.54
+    },
+    {
+      "axisEndpointCount": 0,
+      "evaluationStatus": "axis_labels_pending",
+      "hasCurrentModel": true,
+      "key": "26_B",
+      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "setId": "26",
+      "side": "B",
+      "vertexErrorPx": 80.9
+    },
+    {
+      "evaluationStatus": "missing_human_vertex",
+      "key": "27_B",
+      "labelStatus": "judgment_only",
+      "setId": "27",
+      "side": "B"
+    },
+    {
+      "axisEndpointCount": 0,
+      "evaluationStatus": "axis_labels_pending",
+      "hasCurrentModel": true,
+      "key": "28_A",
+      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "setId": "28",
+      "side": "A",
+      "vertexErrorPx": 124.3
+    },
+    {
+      "axisEndpointCount": 0,
+      "evaluationStatus": "axis_labels_pending",
+      "hasCurrentModel": true,
+      "key": "28_B",
+      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "setId": "28",
+      "side": "B",
+      "vertexErrorPx": 102.57
+    },
+    {
+      "axisEndpointCount": 0,
+      "evaluationStatus": "axis_labels_pending",
+      "hasCurrentModel": true,
+      "key": "29_A",
+      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "setId": "29",
+      "side": "A",
+      "vertexErrorPx": 57.39
+    },
+    {
+      "evaluationStatus": "missing_human_vertex",
+      "key": "29_B",
+      "labelStatus": "judgment_only",
+      "setId": "29",
+      "side": "B"
+    },
+    {
+      "axisEndpointCount": 0,
+      "evaluationStatus": "axis_labels_pending",
+      "hasCurrentModel": true,
+      "key": "30_A",
+      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "setId": "30",
+      "side": "A",
+      "vertexErrorPx": 39.71
+    },
+    {
+      "evaluationStatus": "missing_human_vertex",
+      "key": "30_B",
+      "labelStatus": "judgment_only",
+      "setId": "30",
+      "side": "B"
+    },
+    {
+      "axisEndpointCount": 0,
+      "evaluationStatus": "axis_labels_pending",
+      "hasCurrentModel": true,
+      "key": "31_A",
+      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "setId": "31",
+      "side": "A",
+      "vertexErrorPx": 47.18
+    },
+    {
+      "evaluationStatus": "missing_human_vertex",
+      "key": "31_B",
+      "labelStatus": "judgment_only",
+      "setId": "31",
+      "side": "B"
+    },
+    {
+      "axisEndpointCount": 0,
+      "evaluationStatus": "axis_labels_pending",
+      "hasCurrentModel": true,
+      "key": "32_A",
+      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "setId": "32",
+      "side": "A",
+      "vertexErrorPx": 72.33
+    },
+    {
+      "axisEndpointCount": 0,
+      "evaluationStatus": "axis_labels_pending",
+      "hasCurrentModel": true,
+      "key": "32_B",
+      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "setId": "32",
+      "side": "B",
+      "vertexErrorPx": 70.61
+    },
+    {
+      "axisEndpointCount": 0,
+      "evaluationStatus": "axis_labels_pending",
+      "hasCurrentModel": true,
+      "key": "36_B",
+      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "setId": "36",
+      "side": "B",
+      "vertexErrorPx": 102.95
+    },
+    {
+      "axisEndpointCount": 0,
+      "evaluationStatus": "axis_labels_pending",
+      "hasCurrentModel": true,
+      "key": "42_B",
+      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "setId": "42",
+      "side": "B",
+      "vertexErrorPx": 89.25
+    },
+    {
+      "axisEndpointCount": 0,
+      "evaluationStatus": "axis_labels_pending",
+      "hasCurrentModel": true,
+      "key": "44_A",
+      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "setId": "44",
+      "side": "A",
+      "vertexErrorPx": 185.52
+    },
+    {
+      "axisEndpointCount": 0,
+      "evaluationStatus": "axis_labels_pending",
+      "hasCurrentModel": true,
+      "key": "44_B",
+      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "setId": "44",
+      "side": "B",
+      "vertexErrorPx": 117.57
+    },
+    {
+      "evaluationStatus": "missing_human_vertex",
+      "key": "57_A",
+      "labelStatus": "judgment_only",
+      "setId": "57",
+      "side": "A"
+    },
+    {
+      "axisEndpointCount": 0,
+      "evaluationStatus": "axis_labels_pending",
+      "hasCurrentModel": true,
+      "key": "61_A",
+      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "setId": "61",
+      "side": "A",
+      "vertexErrorPx": 70.74
+    },
+    {
+      "axisEndpointCount": 0,
+      "evaluationStatus": "axis_labels_pending",
+      "hasCurrentModel": true,
+      "key": "61_B",
+      "labelStatus": "vertex_labeled_axes_unlabeled",
+      "setId": "61",
+      "side": "B",
+      "vertexErrorPx": 60.04
+    }
+  ],
+  "schemaVersion": 1,
+  "sourceFeedback": "/private/tmp/cube-trihedral-axis-labeler/tests/fixtures/vertex_axis_human_feedback_v0.json",
+  "summary": {
+    "axisLabelsPendingRowCount": 23,
+    "blockedCount": 0,
+    "meanMaxAxisAngleErrorDeg": null,
+    "meanVertexErrorPx": null,
+    "medianMaxAxisAngleErrorDeg": null,
+    "medianVertexErrorPx": null,
+    "missingHumanVertexRowCount": 5,
+    "missingModelTrihedralRowCount": 0,
+    "plausibleCount": 0,
+    "rowCount": 28,
+    "strictReadyCount": 0,
+    "trihedralLabeledRowCount": 0
+  }
+}

@@ -84,11 +84,14 @@ def test_chirality_check_no_image_skips():
     assert debug["chirality_check"] == "skipped_no_image"
 
 
-def test_chirality_correct_when_near_corners_have_dark_lines():
-    """Bezels run along the 3 NEAR corner directions of the model.
-    Per-corner darkness for near corners > far corners → correct."""
-    near_angles = [math.radians(30), math.radians(270), math.radians(150)]
-    img = _image_with_dark_lines(near_angles, r_max=110)
+def test_chirality_correct_under_empirical_polarity():
+    """Empirically validated polarity (sep<0 ≡ correct chirality): synthetic
+    image with dark lines along the FAR directions (90°/330°/210°) and the
+    model labeled correctly with near at 30°/270°/150°. Lines vertex→near
+    sample light background (no dark line there), lines vertex→far sample
+    the dark stripes. Darkness sep<0 → detector says "correct"."""
+    far_angles = [math.radians(90), math.radians(330), math.radians(210)]
+    img = _image_with_dark_lines(far_angles, r_max=110)
     model = _solved_iso_model(edge_px=100.0)
     detection = InteriorBezelDetection(
         cube_center=(500.0, 500.0),
@@ -97,20 +100,22 @@ def test_chirality_correct_when_near_corners_have_dark_lines():
     )
     corrected, debug = _apply_chirality_correction(model, detection, img)
     assert debug["chirality_check"] == "correct", debug
-    assert debug["chirality_mean_near_darkness"] > debug["chirality_mean_far_darkness"]
+    # Empirical polarity: near LIGHTER than far ≡ correct
+    assert debug["chirality_mean_near_darkness"] < debug["chirality_mean_far_darkness"]
     # Axes unchanged
     assert corrected.axis_x_2d == model.axis_x_2d
     assert corrected.axis_y_2d == model.axis_y_2d
     assert corrected.axis_z_2d == model.axis_z_2d
 
 
-def test_chirality_flip_suggested_when_60deg_off_diagnostic_only():
-    """Dark bezels point at the TRUE near directions (30°, 270°, 150°)
-    but the model's labeled near corners are at the 60°-flipped positions
-    (90°, 330°, 210°). Default behavior is diagnostic-only — the debug
-    flag reports flip_suggested but the model is NOT swapped."""
-    true_near_angles = [math.radians(30), math.radians(270), math.radians(150)]
-    img = _image_with_dark_lines(true_near_angles, r_max=110)
+def test_chirality_flip_suggested_under_empirical_polarity_diagnostic_only():
+    """Model's labeled near corners are at the 60°-flipped positions
+    (90°/330°/210°). Synthetic image has dark stripes along those same
+    angles. Lines vertex→model.near now sample dark stripes, vertex→model.far
+    sample light. sep>0 → detector says "flip_suggested" (diagnostic only
+    when apply_correction defaults to False from a manual call)."""
+    far_angles = [math.radians(90), math.radians(330), math.radians(210)]
+    img = _image_with_dark_lines(far_angles, r_max=110)
 
     edge = 100.0
     m = GlobalCubeModel(
@@ -128,17 +133,19 @@ def test_chirality_flip_suggested_when_60deg_off_diagnostic_only():
     )
     result, debug = _apply_chirality_correction(m, detection, img)
     assert debug["chirality_check"] == "flip_suggested_diagnostic_only", debug
-    assert debug["chirality_mean_near_darkness"] < debug["chirality_mean_far_darkness"]
-    # Model is NOT swapped by default
+    # Empirical polarity: near DARKER than far ≡ flipped
+    assert debug["chirality_mean_near_darkness"] > debug["chirality_mean_far_darkness"]
+    # Model NOT swapped because apply_correction=False (default for direct call)
     assert result.axis_x_2d == m.axis_x_2d
     assert result.axis_y_2d == m.axis_y_2d
     assert result.axis_z_2d == m.axis_z_2d
 
 
 def test_chirality_corrected_when_apply_correction_true():
-    """With apply_correction=True the same setup actually swaps axes."""
-    true_near_angles = [math.radians(30), math.radians(270), math.radians(150)]
-    img = _image_with_dark_lines(true_near_angles, r_max=110)
+    """With apply_correction=True the flipped-model setup actually swaps
+    axes to use the far-corner positions as new near."""
+    far_angles = [math.radians(90), math.radians(330), math.radians(210)]
+    img = _image_with_dark_lines(far_angles, r_max=110)
 
     edge = 100.0
     m = GlobalCubeModel(
@@ -166,9 +173,11 @@ def test_chirality_corrected_when_apply_correction_true():
 
 def test_chirality_corrected_model_has_consistent_geometry():
     """After correction (apply_correction=True), derived geometry is
-    well-formed (7 corners, 3 face quads, 27 sticker cells)."""
-    true_near_angles = [math.radians(30), math.radians(270), math.radians(150)]
-    img = _image_with_dark_lines(true_near_angles, r_max=110)
+    well-formed (7 corners, 3 face quads, 27 sticker cells). Uses the
+    empirical-polarity setup: dark lines along the FAR directions, model
+    initially labeled at the FAR positions (sep>0 → flip applied)."""
+    far_angles = [math.radians(90), math.radians(330), math.radians(210)]
+    img = _image_with_dark_lines(far_angles, r_max=110)
     edge = 100.0
     m = GlobalCubeModel(
         cube_center_screen=(500.0, 500.0),
@@ -203,4 +212,4 @@ def test_chirality_ambiguous_on_flat_image():
     )
     _, debug = _apply_chirality_correction(model, detection, flat)
     assert debug["chirality_check"] == "ambiguous_no_correction", debug
-    assert abs(debug["chirality_darkness_separation"]) < 5.0
+    assert abs(debug["chirality_darkness_separation"]) < 10.0

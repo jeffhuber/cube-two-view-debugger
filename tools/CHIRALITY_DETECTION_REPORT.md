@@ -1,13 +1,13 @@
-# Chirality detection in global_cube_model — v0 report
+# Chirality detection in global_cube_model
 
 ## Bug
 
 The Procrustes brute-force fit in `fit_cube_template_to_anchors` searches
 all 720 (6!) permutations of detected hexagon corners → template
-positions, picks lowest residual. The cube has a 60° symmetry around its
-body diagonal that yields the SAME silhouette with the NEAR/FAR labels
-swapped — i.e., 6 symmetry-equivalent permutations all give nearly the
-same residual. Which one wins is then determined by tiny noise in the fit,
+positions and picks the lowest residual. The cube has a 60° symmetry
+around its body diagonal that yields the SAME silhouette with the NEAR/FAR
+labels swapped — 6 symmetry-equivalent permutations all give nearly the
+same residual. Which one wins is determined by tiny noise in the fit,
 making the chirality choice effectively non-deterministic.
 
 Discovered via the axis-labeling tool's ground truth (4 user-labeled
@@ -15,100 +15,114 @@ cases on 2026-05-22): set 12_A's model output had its near-corner axes
 ~58° off from the user-labeled directions — a clear 60° flip rather than
 a small drift.
 
-## What this PR adds
+## Detector
 
-A diagnostic probe — `_apply_chirality_correction` — that inspects each
-of the 6 hexagon corners after the fit:
+`_apply_chirality_correction` inspects each of the 6 hexagon corners
+after the fit:
 
 1. For each of the 6 corners, compute mean pixel **darkness** along the
-   line from the model vertex to that corner.
-2. Mean of the 3 model-labeled NEAR corners' darkness vs mean of the
-   3 model-labeled FAR corners' darkness.
-3. **Signed separation** = mean_near − mean_far.
-4. Emit `chirality_check` debug status + per-corner darkness +
-   separation in `model.debug`.
+   line from the model vertex to that corner (15–85% of the line, to
+   skip endpoints).
+2. Mean of the 3 model-labeled NEAR corners' darkness (`mean_near`) vs
+   the 3 model-labeled FAR corners' darkness (`mean_far`).
+3. **Signed separation** = `mean_near − mean_far`.
+4. Emit `chirality_check` status + per-corner darkness + separation in
+   `model.debug`.
 
 ### Status values
 
-- `correct`               — model.near corners are darker than model.far (signal looks right)
-- `flip_suggested_diagnostic_only` — model.near appear lighter than model.far (signal suggests flip)
-- `ambiguous_no_correction`        — |separation| < 5 (no clear signal)
-- `skipped_no_image`               — no RGB image passed in
-- `skipped_missing_corners`        — model didn't populate visible_corners
+| status                              | meaning                                                                |
+|-------------------------------------|------------------------------------------------------------------------|
+| `correct`                           | sep < −10 → empirically the chirality is correct                       |
+| `corrected_60deg_flip`              | sep > +10 → flipped; rebuilt model with far corners as new axes        |
+| `flip_suggested_diagnostic_only`    | sep > +10 but `apply_correction=False` → model left unchanged           |
+| `ambiguous_no_correction`           | \|sep\| < 10 → no clear signal                                         |
+| `skipped_no_image`                  | no RGB image passed in                                                 |
+| `skipped_missing_corners`           | model didn't populate `visible_corners`                                |
 
-### Geometric rationale
+## Empirical polarity (validated 2026-05-21 on 58-case axis-labeled gallery)
 
-In a clean iso-projection render:
-- vertex→NEAR corner runs along a visible cube edge = DARK BEZEL along
-  its full length → high darkness
-- vertex→FAR corner cuts across a colored sticker face (face diagonal)
-  → lighter
+**The polarity is COUNTER-INTUITIVE.** Naive bezel-darkness reasoning
+says vertex→near (along a cube edge) should sample more dark bezel
+pixels than vertex→far (across a face diagonal), so sep > 0 should mean
+"correct". The data says the opposite:
 
-So darker NEAR than FAR means chirality correct; the inverse suggests
-the model labeled the FAR positions as near.
+| pos. truth | sep sign | examples |
+|------------|----------|----------|
+| CORRECT    | negative | sep ≈ −34, −25, −18, −30, −29 (stable-CORRECT cases) |
+| FLIPPED    | positive | sep ≈ +94, +73, +60, +51, +42 (stable-FLIPPED cases) |
 
-## Why diagnostic-only (no auto-correction by default)
+So the code uses the EMPIRICAL polarity: `sep < 0` ≡ correct,
+`sep > 0` ≡ flipped.
 
-Validated against the 4 user-labeled cases (12_A, 12_B, 17_A, 17_B):
-the synthetic-image signal is clean and works perfectly (all 8 unit
-tests pass) but the **real-photo signal is noisy and frequently
-inverted**. Empirically auto-correction makes the geometry WORSE in
-3 of 4 cases.
+### Validation cross-tab (58 cases × 2 runs = 116 model runs)
 
-Suspected causes:
+Rows = detector says, cols = position-based ground truth (bearings
+comparison against user-labeled near corners, scale-invariant):
 
-1. **Vertex offset.** The model vertex from `fit_cube_template_to_anchors`
-   has typical 10–50 px error (the post-PnP mean-of-3 ensemble brings
-   it down, but the ensemble is applied AFTER the chirality check
-   currently). When the model vertex is shifted from the true cube
-   vertex, the line vertex→near doesn't actually lie on the bezel; it
-   skims into the adjacent sticker interior.
-2. **Dark sticker colors.** Red, blue, dark green stickers along far
-   diagonals compete with bezel darkness — the face-diagonal line can
-   sample darker pixels than expected.
-3. **Lighting glare on bezels.** Reflective bezel plastic + glossy
-   stickers cause bright spots on bezels that drag near-line darkness
-   down.
+|             | CORRECT | FLIPPED | AMBIGUOUS | total |
+|-------------|--------:|--------:|----------:|------:|
+| CORRECT     | 45      | 7       | 2         | 54    |
+| FLIPPED     | 5       | 48      | 1         | 54    |
+| AMBIG       | 3       | 5       | 0         | 8     |
+| **total**   | 53      | 60      | 3         | 116   |
+
+Detector agreement on non-ambiguous truth (113 runs):
+- **agree: 93/113 (82.3%)**
+- disagree: 12/113 (10.6%)
+- detector ambiguous: 8/113 (7.1%)
+
+Base rate of chirality flips in the model: **60/116 = 51.7%** —
+essentially a coin flip per Procrustes run.
+
+Case-level stability across 2 runs: only 26/58 cases (45%) are stable;
+32/58 cases (55%) flip outcome between runs.
+
+### Suspected cause of the polarity inversion
+
+The model vertex from PnP is typically 10–50 px off from the true cube
+vertex (the post-PnP mean-of-3 ensemble brings it down, but the
+ensemble is applied AFTER the chirality check). When the model vertex
+is shifted from the true cube vertex, the line from model_vertex to
+model.h_x (the geometrically NEAR corner) doesn't actually lie on the
+cube-edge bezel — it skims off into adjacent sticker interior. Meanwhile
+the line to model.h_xy (geometrically FAR via face diagonal) crosses
+multiple internal between-sticker bezels at near-perpendicular angles,
+racking up MORE total darkness than the off-bezel line to model.h_x.
+
+The empirical polarity reflects this systematic vertex-offset regime
+rather than the idealized "bezel-along-edge" reasoning.
 
 ## What's next
 
-To enable `apply_correction=True` safely we need either:
+- **Pre-condition vertex precision.** With a better vertex localizer
+  (PRs #207/#208/#209/#211 chained), the off-bezel skim could shrink
+  and the polarity might revert toward the geometric ideal. Worth
+  re-validating once the vertex KNN pipeline lands at higher accuracy.
+- **Deterministic Procrustes tie-breaker.** Even with a 82%-accurate
+  detector, fixing the root non-determinism in the 6! brute-force
+  would eliminate the symptom entirely. Candidate rule: among the
+  permutations within ε of best residual, prefer the one whose
+  detected near corners match detected bezel-line angles (mod 180°).
+- **Lateral gradient discriminator.** Sample perpendicular to the
+  vertex→corner line: a bezel produces sharp transverse edges, a face
+  diagonal does not. More robust to vertex offset than along-line
+  darkness.
 
-- **Robust geometric discriminator.** Distance-from-vertex is degenerate
-  in true iso projection (all 6 corners equidistant under orthographic);
-  with perspective there's a signal but it's noisy in cases with yaw
-  (verified by the probe — 17_A had 1 of 3 user-near corners among the
-  3 farthest hex corners). Bezel-line angle matching modulo 180°
-  ALSO degenerate: near and far corners share the same 3 lines through
-  the vertex.
-- **Better image-based discriminator.** Possibly: sample lateral
-  perpendicular gradient transitions (a bezel produces sharp
-  perpendicular edges; a face diagonal does not). Or: orient detected
-  bezel half-lines and match to the model's near-corner directions —
-  but this requires reliable bezel detection (current `signal_quality`
-  is often < 0.1 on these photos).
-- **Larger ground-truth set.** Full axis-labeled gallery (in progress)
-  will let us pick a separation threshold that's empirically reliable
-  rather than the 5-degree minimum we have now.
-
-## How to consume the diagnostic
+## How to consume
 
 ```python
 model = fit_global_cube_model(detection, image_rgb, mask)
 print(model.debug["chirality_check"])
-# 'correct' | 'flip_suggested_diagnostic_only' | 'ambiguous_no_correction'
-# | 'skipped_no_image' | 'skipped_missing_corners'
+# 'correct' | 'corrected_60deg_flip' | 'ambiguous_no_correction' | …
 
-print(model.debug["chirality_darkness_separation"])  # signed, in [-255, 255]
-print(model.debug["chirality_near_line_darkness"])   # 3 floats
-print(model.debug["chirality_far_line_darkness"])    # 3 floats
+print(model.debug["chirality_darkness_separation"])   # signed
+print(model.debug["chirality_near_line_darkness"])    # 3 floats
+print(model.debug["chirality_far_line_darkness"])     # 3 floats
 ```
 
-To opt into the experimental auto-correction (use at your own risk):
-
-```python
-from tools.global_cube_model import _apply_chirality_correction
-corrected, debug = _apply_chirality_correction(
-    model, detection, image_rgb, apply_correction=True
-)
-```
+`fit_global_cube_model` now calls `_apply_chirality_correction` with
+`apply_correction=True` by default, so the returned model reflects the
+chirality-corrected geometry whenever the detector fires. To skip
+correction (diagnostic-only), call `_apply_chirality_correction`
+directly with `apply_correction=False`.

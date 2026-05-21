@@ -952,7 +952,9 @@ def _apply_chirality_correction(
     # all 6 corners).
     all_positions = list(near_positions) + list(far_positions)
     all_darkness = list(near_darkness) + list(far_darkness)
-    sorted_idx = sorted(range(6), key=lambda i: -all_darkness[i])
+    # Under empirical polarity: true-near corners are the 3 LIGHTEST
+    # (lowest darkness) among the 6 vertex→corner lines, not the darkest.
+    sorted_idx = sorted(range(6), key=lambda i: all_darkness[i])
     true_near_positions = [all_positions[i] for i in sorted_idx[:3]]
 
     cx, cy = vertex
@@ -984,19 +986,35 @@ def _apply_chirality_correction(
     debug["chirality_axis_angle_errors_after_deg"] = [round(e, 1) for e in errors_after]
 
     # Insufficient lighting / texture contrast to make a call.
-    if abs(separation) < 5.0:
+    if abs(separation) < 10.0:
         debug["chirality_check"] = "ambiguous_no_correction"
         return model, debug
 
-    if separation > 0:
-        # Model's labeled "near" corners ARE the darker ones — chirality
-        # appears correct per the darkness signal.
+    # EMPIRICAL POLARITY (validated 2026-05-21 on 58-case axis-labeled
+    # gallery, 116 model runs). Counter-intuitively, in real photos the
+    # line vertex→model.h_x (model's labeled "near", which IS the
+    # near-in-3D 1-cube-edge endpoint) samples LIGHTER pixels than the
+    # line vertex→model.h_xy (model's "far", 2-cube-edge endpoint via
+    # face diagonal) when the chirality is CORRECT — i.e., sep<0 means
+    # CORRECT, sep>0 means FLIPPED. This is the OPPOSITE of the
+    # naive bezel-darkness reasoning. Suspected cause: typical model
+    # vertex offset (~10–50 px from true cube vertex after PnP) means
+    # vertex→near lines skim off the cube-edge bezel into adjacent
+    # sticker interior, while vertex→far lines (across face diagonals)
+    # cross multiple perpendicular internal bezels and rack up more
+    # darkness. The base rate of chirality flips in the model is 52%;
+    # this polarity-corrected detector agrees with position-based
+    # ground truth on ~82% of non-ambiguous runs. See
+    # tools/CHIRALITY_DETECTION_REPORT.md for the full empirical table.
+    if separation < 0:
+        # Model's labeled "near" is LIGHTER — empirically this is the
+        # CORRECT chirality.
         debug["chirality_check"] = "correct"
         return model, debug
 
-    # separation < -5: per the darkness signal, model's "near" corners
-    # are the LIGHTER set — chirality looks flipped. Whether we actually
-    # rebuild the model with swapped axes depends on apply_correction.
+    # separation > +10: model's "near" is DARKER — empirically the
+    # chirality is FLIPPED, swap to use far-corner positions as new
+    # axes.
     if not apply_correction:
         debug["chirality_check"] = "flip_suggested_diagnostic_only"
         return model, debug
@@ -1083,28 +1101,30 @@ def fit_global_cube_model(
     if model is None:
         return None
 
-    # CHIRALITY CHECK (diagnostic only by default).
+    # CHIRALITY CHECK + AUTO-CORRECTION.
     # In iso projection the 6 hexagon corners alternate between 3 "near"
     # (1 cube-edge from vertex) and 3 "far" (2 cube-edges). Both
     # assignments are symmetric under 60° rotation around the body
     # diagonal — same silhouette, different 3D pose. The Procrustes
     # 6! brute-force fit picks one assignment based on tiny noise
-    # differences in the residual, which can flip the chirality
-    # between runs (~25% of cases per the axis-labeling ground-truth
-    # probe).
+    # differences in the residual, which flips chirality on ~52% of
+    # runs and ~55% of CASES are non-deterministic across reruns
+    # (validated against 58-case axis-labeled gallery, 116 runs, on
+    # 2026-05-21).
     #
-    # The discriminator (pixel darkness along vertex→corner lines) is
-    # clean on synthetic inputs but unreliable on real photos due to
-    # vertex offset, dark sticker colors competing with bezels, and
-    # lighting glare. We compute the signal and emit it as a debug
-    # field for visibility into the bug, but do NOT auto-apply the
-    # 60° flip by default — empirical validation against 4 user-
-    # labeled cases showed auto-correction makes the geometry WORSE
-    # in 3 of 4 cases. Pass `apply_correction=True` to enable swap
-    # once a more robust discriminator is wired in (planned follow-up
-    # after the full axis-labeled gallery is in place).
+    # The discriminator: pixel darkness along vertex→corner lines, with
+    # an EMPIRICALLY-VALIDATED INVERTED POLARITY — sep<0 ≡ correct,
+    # sep>0 ≡ flipped. Yields ~82% agreement with position-based
+    # ground truth on non-ambiguous runs (vs 11% with the naive
+    # bezel-darkness polarity). See tools/CHIRALITY_DETECTION_REPORT.md
+    # for the full empirical table.
+    #
+    # With apply_correction=True the model is rebuilt with the
+    # far-corner positions as new axes when the signal indicates a
+    # flip. Given the 52% base rate and ~82% detector accuracy this
+    # is a substantial net win over leaving the chirality random.
     model, chirality_debug = _apply_chirality_correction(
-        model, detection, image_rgb, apply_correction=False
+        model, detection, image_rgb, apply_correction=True
     )
     model.debug.update(chirality_debug)
 

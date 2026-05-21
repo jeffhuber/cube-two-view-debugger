@@ -1,0 +1,1046 @@
+{
+  "config": {
+    "largeRegressionPx": 30.0,
+    "meaningfulDeltaPx": 5.0,
+    "thresholdsPx": [
+      30,
+      50,
+      75,
+      100
+    ]
+  },
+  "description": "Diagnostics/data-only comparison of the same refined global-model fit when driven by rembg silhouettes versus SAM3 whole-cube masks.",
+  "probe": "sam3_whole_cube_silhouette_bakeoff_v0",
+  "rows": [
+    {
+      "deltaPx": -102.61,
+      "imagePath": "/Users/jhuber/Downloads/Set 44 - B - white up IMG_7168.JPG",
+      "imageSize": [
+        3024,
+        4032
+      ],
+      "key": "44_B",
+      "rembgErrorPx": 117.57,
+      "rembgFit": {
+        "bezelVsFitCubeCenterOffsetPx": 19.0,
+        "cubeCenterSource": "mean3_ensemble+image_refined",
+        "fitQuality": 0.822,
+        "fitResidualRmsPx": 35.66,
+        "hexagonCentroidVsBezelVertexOffsetPx": 23.7,
+        "refinement": "applied"
+      },
+      "rembgVertex": [
+        1615.0,
+        1988.0
+      ],
+      "sam3ErrorPx": 14.96,
+      "sam3Fit": {
+        "bezelVsFitCubeCenterOffsetPx": 87.3,
+        "cubeCenterSource": "mean3_ensemble+image_refined",
+        "fitQuality": 0.891,
+        "fitResidualRmsPx": 21.87,
+        "hexagonCentroidVsBezelVertexOffsetPx": 21.2,
+        "refinement": "applied"
+      },
+      "sam3Vertex": [
+        1509.0,
+        1997.0
+      ],
+      "setId": "44",
+      "side": "B",
+      "trueVertex": [
+        1499.2,
+        2008.3
+      ],
+      "winner": "sam3"
+    },
+    {
+      "deltaPx": -56.8,
+      "imagePath": "/Users/jhuber/Downloads/Set 26 - B - white up IMG_6774.JPG",
+      "imageSize": [
+        3024,
+        4032
+      ],
+      "key": "26_B",
+      "rembgErrorPx": 80.91,
+      "rembgFit": {
+        "bezelVsFitCubeCenterOffsetPx": 58.8,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.881,
+        "fitResidualRmsPx": 23.83,
+        "hexagonCentroidVsBezelVertexOffsetPx": 10.4,
+        "refinement": "skipped_high_base_score"
+      },
+      "rembgVertex": [
+        1442.64,
+        2016.51
+      ],
+      "sam3ErrorPx": 24.1,
+      "sam3Fit": {
+        "bezelVsFitCubeCenterOffsetPx": 144.2,
+        "cubeCenterSource": "mean3_ensemble+image_refined",
+        "fitQuality": 0.904,
+        "fitResidualRmsPx": 19.12,
+        "hexagonCentroidVsBezelVertexOffsetPx": 65.9,
+        "refinement": "applied"
+      },
+      "sam3Vertex": [
+        1460.0,
+        2116.0
+      ],
+      "setId": "26",
+      "side": "B",
+      "trueVertex": [
+        1468.1,
+        2093.3
+      ],
+      "winner": "sam3"
+    },
+    {
+      "deltaPx": -51.86,
+      "imagePath": "/Users/jhuber/Downloads/Set 61 - A - white-up IMG_7518.JPG",
+      "imageSize": [
+        3024,
+        4032
+      ],
+      "key": "61_A",
+      "rembgErrorPx": 70.74,
+      "rembgFit": {
+        "bezelVsFitCubeCenterOffsetPx": 55.5,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.792,
+        "fitResidualRmsPx": 41.51,
+        "hexagonCentroidVsBezelVertexOffsetPx": 144.1,
+        "refinement": "skipped_high_base_score"
+      },
+      "rembgVertex": [
+        1558.87,
+        1985.83
+      ],
+      "sam3ErrorPx": 18.88,
+      "sam3Fit": {
+        "bezelVsFitCubeCenterOffsetPx": 131.9,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.806,
+        "fitResidualRmsPx": 38.75,
+        "hexagonCentroidVsBezelVertexOffsetPx": 162.4,
+        "refinement": "skipped_high_base_score"
+      },
+      "sam3Vertex": [
+        1514.0,
+        1957.82
+      ],
+      "setId": "61",
+      "side": "A",
+      "trueVertex": [
+        1495.4,
+        1954.6
+      ],
+      "winner": "sam3"
+    },
+    {
+      "deltaPx": -45.82,
+      "imagePath": "/Users/jhuber/Downloads/Set 28 - A - white up IMG_6777.JPG",
+      "imageSize": [
+        3024,
+        4032
+      ],
+      "key": "28_A",
+      "rembgErrorPx": 124.3,
+      "rembgFit": {
+        "bezelVsFitCubeCenterOffsetPx": 106.5,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.88,
+        "fitResidualRmsPx": 24.08,
+        "hexagonCentroidVsBezelVertexOffsetPx": 121.7,
+        "refinement": "skipped_high_base_score"
+      },
+      "rembgVertex": [
+        1549.19,
+        1946.05
+      ],
+      "sam3ErrorPx": 78.48,
+      "sam3Fit": {
+        "bezelVsFitCubeCenterOffsetPx": 107.0,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.906,
+        "fitResidualRmsPx": 18.86,
+        "hexagonCentroidVsBezelVertexOffsetPx": 141.2,
+        "refinement": "skipped_high_base_score"
+      },
+      "sam3Vertex": [
+        1479.18,
+        1908.84
+      ],
+      "setId": "28",
+      "side": "A",
+      "trueVertex": [
+        1426.7,
+        1967.2
+      ],
+      "winner": "sam3"
+    },
+    {
+      "deltaPx": -37.18,
+      "imagePath": "/Users/jhuber/Downloads/Set 44 - A - white up IMG_7167.JPG",
+      "imageSize": [
+        3024,
+        4032
+      ],
+      "key": "44_A",
+      "rembgErrorPx": 185.52,
+      "rembgFit": {
+        "bezelVsFitCubeCenterOffsetPx": 38.8,
+        "cubeCenterSource": "mean3_ensemble+image_refined",
+        "fitQuality": 0.81,
+        "fitResidualRmsPx": 38.06,
+        "hexagonCentroidVsBezelVertexOffsetPx": 31.8,
+        "refinement": "applied"
+      },
+      "rembgVertex": [
+        1472.0,
+        1826.0
+      ],
+      "sam3ErrorPx": 148.34,
+      "sam3Fit": {
+        "bezelVsFitCubeCenterOffsetPx": 151.9,
+        "cubeCenterSource": "mean3_ensemble+image_refined",
+        "fitQuality": 0.884,
+        "fitResidualRmsPx": 23.18,
+        "hexagonCentroidVsBezelVertexOffsetPx": 24.7,
+        "refinement": "applied"
+      },
+      "sam3Vertex": [
+        1505.0,
+        1934.0
+      ],
+      "setId": "44",
+      "side": "A",
+      "trueVertex": [
+        1362.7,
+        1975.9
+      ],
+      "winner": "sam3"
+    },
+    {
+      "deltaPx": -33.33,
+      "imagePath": "/Users/jhuber/Downloads/Set 36 - B - white up IMG_7152.JPG",
+      "imageSize": [
+        3024,
+        4032
+      ],
+      "key": "36_B",
+      "rembgErrorPx": 102.95,
+      "rembgFit": {
+        "bezelVsFitCubeCenterOffsetPx": 113.0,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.89,
+        "fitResidualRmsPx": 22.09,
+        "hexagonCentroidVsBezelVertexOffsetPx": 120.4,
+        "refinement": "skipped_high_base_score"
+      },
+      "rembgVertex": [
+        1288.77,
+        1842.56
+      ],
+      "sam3ErrorPx": 69.62,
+      "sam3Fit": {
+        "bezelVsFitCubeCenterOffsetPx": 179.0,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.913,
+        "fitResidualRmsPx": 17.42,
+        "hexagonCentroidVsBezelVertexOffsetPx": 38.4,
+        "refinement": "skipped_high_base_score"
+      },
+      "sam3Vertex": [
+        1314.84,
+        1871.04
+      ],
+      "setId": "36",
+      "side": "B",
+      "trueVertex": [
+        1320.8,
+        1940.4
+      ],
+      "winner": "sam3"
+    },
+    {
+      "deltaPx": -22.96,
+      "imagePath": "/Users/jhuber/Downloads/Set 32 - B - white up IMG_7144.JPG",
+      "imageSize": [
+        3024,
+        4032
+      ],
+      "key": "32_B",
+      "rembgErrorPx": 70.61,
+      "rembgFit": {
+        "bezelVsFitCubeCenterOffsetPx": 19.1,
+        "cubeCenterSource": "mean3_ensemble+image_refined",
+        "fitQuality": 0.879,
+        "fitResidualRmsPx": 24.15,
+        "hexagonCentroidVsBezelVertexOffsetPx": 18.1,
+        "refinement": "applied"
+      },
+      "rembgVertex": [
+        1367.0,
+        1826.0
+      ],
+      "sam3ErrorPx": 47.65,
+      "sam3Fit": {
+        "bezelVsFitCubeCenterOffsetPx": 136.7,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.876,
+        "fitResidualRmsPx": 24.83,
+        "hexagonCentroidVsBezelVertexOffsetPx": 61.7,
+        "refinement": "skipped_high_base_score"
+      },
+      "sam3Vertex": [
+        1402.8,
+        1858.64
+      ],
+      "setId": "32",
+      "side": "B",
+      "trueVertex": [
+        1373.6,
+        1896.3
+      ],
+      "winner": "sam3"
+    },
+    {
+      "deltaPx": -19.68,
+      "imagePath": "/Users/jhuber/Downloads/Set 30 - A - white up IMG_7100.JPG",
+      "imageSize": [
+        3024,
+        4032
+      ],
+      "key": "30_A",
+      "rembgErrorPx": 39.72,
+      "rembgFit": {
+        "bezelVsFitCubeCenterOffsetPx": 141.6,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.484,
+        "fitResidualRmsPx": 103.14,
+        "hexagonCentroidVsBezelVertexOffsetPx": 50.5,
+        "refinement": "skipped_high_base_score"
+      },
+      "rembgVertex": [
+        1466.93,
+        2250.07
+      ],
+      "sam3ErrorPx": 20.03,
+      "sam3Fit": {
+        "bezelVsFitCubeCenterOffsetPx": 130.1,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.916,
+        "fitResidualRmsPx": 16.77,
+        "hexagonCentroidVsBezelVertexOffsetPx": 58.5,
+        "refinement": "skipped_high_base_score"
+      },
+      "sam3Vertex": [
+        1456.84,
+        2231.85
+      ],
+      "setId": "30",
+      "side": "A",
+      "trueVertex": [
+        1440.2,
+        2220.7
+      ],
+      "winner": "sam3"
+    },
+    {
+      "deltaPx": -17.56,
+      "imagePath": "/Users/jhuber/Downloads/Set 15 - B - white up IMG_6708.JPG",
+      "imageSize": [
+        3024,
+        4032
+      ],
+      "key": "15_B",
+      "rembgErrorPx": 71.99,
+      "rembgFit": {
+        "bezelVsFitCubeCenterOffsetPx": 98.3,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.795,
+        "fitResidualRmsPx": 41.03,
+        "hexagonCentroidVsBezelVertexOffsetPx": 146.8,
+        "refinement": "skipped_high_base_score"
+      },
+      "rembgVertex": [
+        1491.53,
+        2003.42
+      ],
+      "sam3ErrorPx": 54.43,
+      "sam3Fit": {
+        "bezelVsFitCubeCenterOffsetPx": 64.2,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.834,
+        "fitResidualRmsPx": 33.27,
+        "hexagonCentroidVsBezelVertexOffsetPx": 16.3,
+        "refinement": "skipped_high_base_score"
+      },
+      "sam3Vertex": [
+        1542.65,
+        1934.13
+      ],
+      "setId": "15",
+      "side": "B",
+      "trueVertex": [
+        1561.2,
+        1985.3
+      ],
+      "winner": "sam3"
+    },
+    {
+      "deltaPx": -16.86,
+      "imagePath": "/Users/jhuber/Downloads/Set 14 - B - white up IMG_6706.JPG",
+      "imageSize": [
+        3024,
+        4032
+      ],
+      "key": "14_B",
+      "rembgErrorPx": 33.05,
+      "rembgFit": {
+        "bezelVsFitCubeCenterOffsetPx": 58.5,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.755,
+        "fitResidualRmsPx": 48.91,
+        "hexagonCentroidVsBezelVertexOffsetPx": 66.8,
+        "refinement": "skipped_high_base_score"
+      },
+      "rembgVertex": [
+        1495.99,
+        1814.07
+      ],
+      "sam3ErrorPx": 16.19,
+      "sam3Fit": {
+        "bezelVsFitCubeCenterOffsetPx": 60.1,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.757,
+        "fitResidualRmsPx": 48.66,
+        "hexagonCentroidVsBezelVertexOffsetPx": 107.8,
+        "refinement": "skipped_high_base_score"
+      },
+      "sam3Vertex": [
+        1462.66,
+        1818.62
+      ],
+      "setId": "14",
+      "side": "B",
+      "trueVertex": [
+        1465.0,
+        1802.6
+      ],
+      "winner": "sam3"
+    },
+    {
+      "deltaPx": -16.22,
+      "imagePath": "/Users/jhuber/Downloads/Set 15 - A - white up IMG_6707.JPG",
+      "imageSize": [
+        3024,
+        4032
+      ],
+      "key": "15_A",
+      "rembgErrorPx": 63.5,
+      "rembgFit": {
+        "bezelVsFitCubeCenterOffsetPx": 116.0,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.814,
+        "fitResidualRmsPx": 37.23,
+        "hexagonCentroidVsBezelVertexOffsetPx": 143.4,
+        "refinement": "skipped_high_base_score"
+      },
+      "rembgVertex": [
+        1484.51,
+        2009.22
+      ],
+      "sam3ErrorPx": 47.28,
+      "sam3Fit": {
+        "bezelVsFitCubeCenterOffsetPx": 45.5,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.81,
+        "fitResidualRmsPx": 37.91,
+        "hexagonCentroidVsBezelVertexOffsetPx": 161.2,
+        "refinement": "skipped_high_base_score"
+      },
+      "sam3Vertex": [
+        1461.38,
+        2030.47
+      ],
+      "setId": "15",
+      "side": "A",
+      "trueVertex": [
+        1421.1,
+        2005.7
+      ],
+      "winner": "sam3"
+    },
+    {
+      "deltaPx": -15.83,
+      "imagePath": "/Users/jhuber/Downloads/Set 32 - A - white up IMG_7143.JPG",
+      "imageSize": [
+        3024,
+        4032
+      ],
+      "key": "32_A",
+      "rembgErrorPx": 72.33,
+      "rembgFit": {
+        "bezelVsFitCubeCenterOffsetPx": 18.3,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.841,
+        "fitResidualRmsPx": 31.81,
+        "hexagonCentroidVsBezelVertexOffsetPx": 13.4,
+        "refinement": "skipped_high_base_score"
+      },
+      "rembgVertex": [
+        1532.91,
+        1989.84
+      ],
+      "sam3ErrorPx": 56.5,
+      "sam3Fit": {
+        "bezelVsFitCubeCenterOffsetPx": 63.6,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.864,
+        "fitResidualRmsPx": 27.21,
+        "hexagonCentroidVsBezelVertexOffsetPx": 69.8,
+        "refinement": "skipped_high_base_score"
+      },
+      "sam3Vertex": [
+        1547.11,
+        1982.01
+      ],
+      "setId": "32",
+      "side": "A",
+      "trueVertex": [
+        1601.8,
+        1967.8
+      ],
+      "winner": "sam3"
+    },
+    {
+      "deltaPx": -12.09,
+      "imagePath": "/Users/jhuber/Downloads/Set 29 - A - white up IMG_6779.JPG",
+      "imageSize": [
+        3024,
+        4032
+      ],
+      "key": "29_A",
+      "rembgErrorPx": 57.39,
+      "rembgFit": {
+        "bezelVsFitCubeCenterOffsetPx": 19.8,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.819,
+        "fitResidualRmsPx": 36.12,
+        "hexagonCentroidVsBezelVertexOffsetPx": 54.4,
+        "refinement": "skipped_high_base_score"
+      },
+      "rembgVertex": [
+        1445.16,
+        2067.17
+      ],
+      "sam3ErrorPx": 45.3,
+      "sam3Fit": {
+        "bezelVsFitCubeCenterOffsetPx": 41.2,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.867,
+        "fitResidualRmsPx": 26.63,
+        "hexagonCentroidVsBezelVertexOffsetPx": 8.7,
+        "refinement": "skipped_high_base_score"
+      },
+      "sam3Vertex": [
+        1467.48,
+        2062.99
+      ],
+      "setId": "29",
+      "side": "A",
+      "trueVertex": [
+        1491.0,
+        2101.7
+      ],
+      "winner": "sam3"
+    },
+    {
+      "deltaPx": -10.82,
+      "imagePath": "/Users/jhuber/Downloads/Set 12 - B - white up IMG_6702.JPG",
+      "imageSize": [
+        3024,
+        4032
+      ],
+      "key": "12_B",
+      "rembgErrorPx": 37.25,
+      "rembgFit": {
+        "bezelVsFitCubeCenterOffsetPx": 21.3,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.809,
+        "fitResidualRmsPx": 38.24,
+        "hexagonCentroidVsBezelVertexOffsetPx": 24.4,
+        "refinement": "skipped_high_base_score"
+      },
+      "rembgVertex": [
+        1537.36,
+        2008.64
+      ],
+      "sam3ErrorPx": 26.43,
+      "sam3Fit": {
+        "bezelVsFitCubeCenterOffsetPx": 48.2,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.892,
+        "fitResidualRmsPx": 21.57,
+        "hexagonCentroidVsBezelVertexOffsetPx": 120.0,
+        "refinement": "skipped_high_base_score"
+      },
+      "sam3Vertex": [
+        1570.86,
+        2035.03
+      ],
+      "setId": "12",
+      "side": "B",
+      "trueVertex": [
+        1546.3,
+        2044.8
+      ],
+      "winner": "sam3"
+    },
+    {
+      "deltaPx": -1.21,
+      "imagePath": "/Users/jhuber/Downloads/Set 24 - A - white up IMG_6769.JPG",
+      "imageSize": [
+        3024,
+        4032
+      ],
+      "key": "24_A",
+      "rembgErrorPx": 87.58,
+      "rembgFit": {
+        "bezelVsFitCubeCenterOffsetPx": 26.4,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.831,
+        "fitResidualRmsPx": 33.76,
+        "hexagonCentroidVsBezelVertexOffsetPx": 133.8,
+        "refinement": "skipped_high_base_score"
+      },
+      "rembgVertex": [
+        1636.2,
+        1996.37
+      ],
+      "sam3ErrorPx": 86.36,
+      "sam3Fit": {
+        "bezelVsFitCubeCenterOffsetPx": 8.9,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.839,
+        "fitResidualRmsPx": 32.2,
+        "hexagonCentroidVsBezelVertexOffsetPx": 128.1,
+        "refinement": "skipped_high_base_score"
+      },
+      "sam3Vertex": [
+        1628.84,
+        1983.94
+      ],
+      "setId": "24",
+      "side": "A",
+      "trueVertex": [
+        1554.5,
+        2027.9
+      ],
+      "winner": "tie"
+    },
+    {
+      "deltaPx": 3.32,
+      "imagePath": "/Users/jhuber/Downloads/Set 28 - B - white up IMG_6778.JPG",
+      "imageSize": [
+        3024,
+        4032
+      ],
+      "key": "28_B",
+      "rembgErrorPx": 102.57,
+      "rembgFit": {
+        "bezelVsFitCubeCenterOffsetPx": 53.8,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.835,
+        "fitResidualRmsPx": 32.99,
+        "hexagonCentroidVsBezelVertexOffsetPx": 31.3,
+        "refinement": "skipped_high_base_score"
+      },
+      "rembgVertex": [
+        1477.34,
+        1934.2
+      ],
+      "sam3ErrorPx": 105.89,
+      "sam3Fit": {
+        "bezelVsFitCubeCenterOffsetPx": 43.6,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.874,
+        "fitResidualRmsPx": 25.3,
+        "hexagonCentroidVsBezelVertexOffsetPx": 15.5,
+        "refinement": "skipped_high_base_score"
+      },
+      "sam3Vertex": [
+        1468.87,
+        1923.65
+      ],
+      "setId": "28",
+      "side": "B",
+      "trueVertex": [
+        1410.5,
+        2012.0
+      ],
+      "winner": "tie"
+    },
+    {
+      "deltaPx": 17.72,
+      "imagePath": "/Users/jhuber/Downloads/Set 21 - A - white up.JPG",
+      "imageSize": [
+        3024,
+        4032
+      ],
+      "key": "21_A",
+      "rembgErrorPx": 38.72,
+      "rembgFit": {
+        "bezelVsFitCubeCenterOffsetPx": 187.8,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.882,
+        "fitResidualRmsPx": 23.56,
+        "hexagonCentroidVsBezelVertexOffsetPx": 3.7,
+        "refinement": "skipped_high_base_score"
+      },
+      "rembgVertex": [
+        1362.39,
+        1964.47
+      ],
+      "sam3ErrorPx": 56.44,
+      "sam3Fit": {
+        "bezelVsFitCubeCenterOffsetPx": 70.9,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.901,
+        "fitResidualRmsPx": 19.72,
+        "hexagonCentroidVsBezelVertexOffsetPx": 59.2,
+        "refinement": "skipped_high_base_score"
+      },
+      "sam3Vertex": [
+        1401.94,
+        1954.58
+      ],
+      "setId": "21",
+      "side": "A",
+      "trueVertex": [
+        1371.5,
+        2002.1
+      ],
+      "winner": "rembg"
+    },
+    {
+      "deltaPx": 27.04,
+      "imagePath": "/Users/jhuber/Downloads/Set 17 - B - white up.JPG",
+      "imageSize": [
+        3024,
+        4032
+      ],
+      "key": "17_B",
+      "rembgErrorPx": 109.95,
+      "rembgFit": {
+        "bezelVsFitCubeCenterOffsetPx": 121.5,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.933,
+        "fitResidualRmsPx": 13.42,
+        "hexagonCentroidVsBezelVertexOffsetPx": 29.3,
+        "refinement": "skipped_high_base_score"
+      },
+      "rembgVertex": [
+        1479.79,
+        1934.83
+      ],
+      "sam3ErrorPx": 136.99,
+      "sam3Fit": {
+        "bezelVsFitCubeCenterOffsetPx": 87.8,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.876,
+        "fitResidualRmsPx": 24.78,
+        "hexagonCentroidVsBezelVertexOffsetPx": 25.8,
+        "refinement": "skipped_high_base_score"
+      },
+      "sam3Vertex": [
+        1458.47,
+        1953.94
+      ],
+      "setId": "17",
+      "side": "B",
+      "trueVertex": [
+        1529.0,
+        1836.5
+      ],
+      "winner": "rembg"
+    },
+    {
+      "deltaPx": 28.84,
+      "imagePath": "/Users/jhuber/Downloads/Set 61 - B - white-up IMG_7519.JPG",
+      "imageSize": [
+        3024,
+        4032
+      ],
+      "key": "61_B",
+      "rembgErrorPx": 60.03,
+      "rembgFit": {
+        "bezelVsFitCubeCenterOffsetPx": 184.1,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.809,
+        "fitResidualRmsPx": 38.16,
+        "hexagonCentroidVsBezelVertexOffsetPx": 150.6,
+        "refinement": "skipped_high_base_score"
+      },
+      "rembgVertex": [
+        1367.73,
+        1888.78
+      ],
+      "sam3ErrorPx": 88.87,
+      "sam3Fit": {
+        "bezelVsFitCubeCenterOffsetPx": 123.3,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.82,
+        "fitResidualRmsPx": 36.09,
+        "hexagonCentroidVsBezelVertexOffsetPx": 172.1,
+        "refinement": "skipped_high_base_score"
+      },
+      "sam3Vertex": [
+        1386.66,
+        1914.44
+      ],
+      "setId": "61",
+      "side": "B",
+      "trueVertex": [
+        1362.2,
+        1829.0
+      ],
+      "winner": "rembg"
+    },
+    {
+      "deltaPx": 42.47,
+      "imagePath": "/Users/jhuber/Downloads/Set 21 - B - white up.JPG",
+      "imageSize": [
+        3024,
+        4032
+      ],
+      "key": "21_B",
+      "rembgErrorPx": 75.69,
+      "rembgFit": {
+        "bezelVsFitCubeCenterOffsetPx": 184.7,
+        "cubeCenterSource": "mean3_ensemble+image_refined",
+        "fitQuality": 0.784,
+        "fitResidualRmsPx": 43.21,
+        "hexagonCentroidVsBezelVertexOffsetPx": 60.9,
+        "refinement": "applied"
+      },
+      "rembgVertex": [
+        1529.0,
+        2073.0
+      ],
+      "sam3ErrorPx": 118.16,
+      "sam3Fit": {
+        "bezelVsFitCubeCenterOffsetPx": 61.0,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.891,
+        "fitResidualRmsPx": 21.85,
+        "hexagonCentroidVsBezelVertexOffsetPx": 114.1,
+        "refinement": "skipped_high_base_score"
+      },
+      "sam3Vertex": [
+        1507.48,
+        1970.96
+      ],
+      "setId": "21",
+      "side": "B",
+      "trueVertex": [
+        1599.4,
+        2045.2
+      ],
+      "winner": "rembg"
+    },
+    {
+      "deltaPx": 44.44,
+      "imagePath": "/Users/jhuber/Downloads/Set 31 - A - white up IMG_7102.JPG",
+      "imageSize": [
+        3024,
+        4032
+      ],
+      "key": "31_A",
+      "rembgErrorPx": 47.18,
+      "rembgFit": {
+        "bezelVsFitCubeCenterOffsetPx": 36.4,
+        "cubeCenterSource": "mean3_ensemble",
+        "fitQuality": 0.841,
+        "fitResidualRmsPx": 31.85,
+        "hexagonCentroidVsBezelVertexOffsetPx": 50.2,
+        "refinement": "skipped_high_base_score"
+      },
+      "rembgVertex": [
+        1391.46,
+        1974.52
+      ],
+      "sam3ErrorPx": 91.62,
+      "sam3Fit": {
+        "bezelVsFitCubeCenterOffsetPx": 50.9,
+        "cubeCenterSource": "mean3_ensemble+image_refined",
+        "fitQuality": 0.801,
+        "fitResidualRmsPx": 39.73,
+        "hexagonCentroidVsBezelVertexOffsetPx": 31.0,
+        "refinement": "applied"
+      },
+      "sam3Vertex": [
+        1337.0,
+        1974.0
+      ],
+      "setId": "31",
+      "side": "A",
+      "trueVertex": [
+        1420.5,
+        2011.7
+      ],
+      "winner": "rembg"
+    },
+    {
+      "deltaPx": 48.33,
+      "imagePath": "/Users/jhuber/Downloads/Set 26 - A - white up IMG_6773.JPG",
+      "imageSize": [
+        3024,
+        4032
+      ],
+      "key": "26_A",
+      "rembgErrorPx": 72.54,
+      "rembgFit": {
+        "bezelVsFitCubeCenterOffsetPx": 149.5,
+        "cubeCenterSource": "mean3_ensemble+image_refined",
+        "fitQuality": 0.917,
+        "fitResidualRmsPx": 16.69,
+        "hexagonCentroidVsBezelVertexOffsetPx": 112.3,
+        "refinement": "applied"
+      },
+      "rembgVertex": [
+        1471.0,
+        2003.0
+      ],
+      "sam3ErrorPx": 120.87,
+      "sam3Fit": {
+        "bezelVsFitCubeCenterOffsetPx": 107.7,
+        "cubeCenterSource": "mean3_ensemble+image_refined",
+        "fitQuality": 0.839,
+        "fitResidualRmsPx": 32.13,
+        "hexagonCentroidVsBezelVertexOffsetPx": 10.4,
+        "refinement": "applied"
+      },
+      "sam3Vertex": [
+        1564.0,
+        2011.0
+      ],
+      "setId": "26",
+      "side": "A",
+      "trueVertex": [
+        1461.4,
+        2074.9
+      ],
+      "winner": "rembg"
+    },
+    {
+      "deltaPx": 96.99,
+      "imagePath": "/Users/jhuber/Downloads/Set 42 - B - white up IMG_7164.JPG",
+      "imageSize": [
+        3024,
+        4032
+      ],
+      "key": "42_B",
+      "rembgErrorPx": 89.25,
+      "rembgFit": {
+        "bezelVsFitCubeCenterOffsetPx": 0.0,
+        "cubeCenterSource": "mean3_ensemble+image_refined",
+        "fitQuality": 0.592,
+        "fitResidualRmsPx": 81.69,
+        "hexagonCentroidVsBezelVertexOffsetPx": 139.8,
+        "refinement": "applied"
+      },
+      "rembgVertex": [
+        1508.0,
+        1917.0
+      ],
+      "sam3ErrorPx": 186.24,
+      "sam3Fit": {
+        "bezelVsFitCubeCenterOffsetPx": 0.0,
+        "cubeCenterSource": "mean3_ensemble+image_refined",
+        "fitQuality": 0.584,
+        "fitResidualRmsPx": 83.18,
+        "hexagonCentroidVsBezelVertexOffsetPx": 8.8,
+        "refinement": "applied"
+      },
+      "sam3Vertex": [
+        1500.0,
+        2021.0
+      ],
+      "setId": "42",
+      "side": "B",
+      "trueVertex": [
+        1560.6,
+        1844.9
+      ],
+      "winner": "rembg"
+    }
+  ],
+  "schemaVersion": 1,
+  "skipped": [
+    {
+      "key": "27_B",
+      "reason": "missing_true_vertex"
+    },
+    {
+      "key": "29_B",
+      "reason": "missing_true_vertex"
+    },
+    {
+      "key": "30_B",
+      "reason": "missing_true_vertex"
+    },
+    {
+      "key": "31_B",
+      "reason": "missing_true_vertex"
+    },
+    {
+      "key": "57_A",
+      "reason": "missing_true_vertex"
+    }
+  ],
+  "source": {
+    "feedbackPath": "/Users/jhuber/Downloads/gcm_refined_feedback.json",
+    "note": "The committed fixture preserves this local bakeoff result; the source fit directories are diagnostic artifacts, not runtime dependencies.",
+    "rembgFitDir": "/tmp/gcm_refined",
+    "sam3FitDir": "/tmp/gcm_sam3"
+  },
+  "summary": {
+    "meanDeltaPx": -6.5948,
+    "rembgBetterCount": 7,
+    "rembgMaxErrorPx": 185.52,
+    "rembgMeanErrorPx": 78.7539,
+    "rembgMedianErrorPx": 72.33,
+    "rembgP95ErrorPx": 123.627,
+    "rowCount": 23,
+    "sam3BetterCount": 14,
+    "sam3LargeRegressionCount": 4,
+    "sam3MaxErrorPx": 186.24,
+    "sam3MeanErrorPx": 72.1578,
+    "sam3MedianErrorPx": 56.5,
+    "sam3P95ErrorPx": 147.205,
+    "skippedCount": 5,
+    "thresholdCounts": {
+      "100": {
+        "rembgBelow": 17,
+        "sam3Below": 17
+      },
+      "30": {
+        "rembgBelow": 0,
+        "sam3Below": 6
+      },
+      "50": {
+        "rembgBelow": 5,
+        "sam3Below": 9
+      },
+      "75": {
+        "rembgBelow": 13,
+        "sam3Below": 13
+      }
+    },
+    "tieCount": 2
+  }
+}

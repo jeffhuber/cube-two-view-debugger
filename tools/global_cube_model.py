@@ -63,11 +63,12 @@ Dependencies:
 """
 from __future__ import annotations
 
+import itertools
 import math
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -814,6 +815,209 @@ def _refine_vertex_via_image_junction(
     return best_xy, debug
 
 
+def _line_darkness_from_vertex(
+    image_rgb: np.ndarray,
+    vertex: Point,
+    target: Point,
+    n_samples: int = 24,
+    skip_endpoints_frac: float = 0.15,
+) -> float:
+    """Mean pixel darkness along the line from vertex toward target.
+
+    A NEAR hexagon corner is connected to the vertex by a visible cube
+    edge (a dark bezel line). A FAR hexagon corner is reached only via
+    a face DIAGONAL through colored sticker interior. So:
+      darkness along vertex→near_corner = HIGH (bezel pixels along the line)
+      darkness along vertex→far_corner  = LOW (passes through sticker faces)
+
+    We skip the endpoints (where the vertex itself and the hexagon corner
+    might both be on dark bezels) to focus on the line interior, which
+    is where bezel-vs-sticker most cleanly differentiates.
+    """
+    h, w = image_rgb.shape[:2]
+    if vertex[0] < 0 or vertex[1] < 0 or vertex[0] >= w or vertex[1] >= h:
+        return 0.0
+    gray = image_rgb.mean(axis=2).astype(np.float32)
+    darkness = 255.0 - gray
+    t_vals = np.linspace(skip_endpoints_frac, 1.0 - skip_endpoints_frac, n_samples)
+    xs = (vertex[0] + (target[0] - vertex[0]) * t_vals).astype(np.int32)
+    ys = (vertex[1] + (target[1] - vertex[1]) * t_vals).astype(np.int32)
+    in_image = (xs >= 0) & (xs < w) & (ys >= 0) & (ys < h)
+    if not in_image.any():
+        return 0.0
+    return float(darkness[ys[in_image], xs[in_image]].mean())
+
+
+def _signed_angle_diff_deg(a_rad: float, b_rad: float) -> float:
+    """Smallest difference between two ORIENTED angles, in degrees [0, 180]."""
+    diff = math.degrees(a_rad - b_rad)
+    while diff > 180.0:
+        diff -= 360.0
+    while diff <= -180.0:
+        diff += 360.0
+    return abs(diff)
+
+
+def _apply_chirality_correction(
+    model: GlobalCubeModel,
+    detection: Optional["InteriorBezelDetection"] = None,
+    image_rgb: Optional[np.ndarray] = None,
+    apply_correction: bool = False,
+) -> Tuple[GlobalCubeModel, Dict[str, Any]]:
+    """Detect + (optionally) correct 60° chirality flip via per-corner
+    line darkness.
+
+    GEOMETRIC SETUP. In iso projection there are 6 hexagon-silhouette
+    corners around the central trihedral vertex:
+      - 3 NEAR corners (each 1 cube-edge from vertex). In a clean
+        rendering the line vertex→near runs along a visible cube edge
+        and samples DARK BEZEL pixels.
+      - 3 FAR corners (each 2 cube-edges from vertex, reached via a face
+        diagonal). The line vertex→far cuts across colored sticker
+        interior — should sample LIGHTER pixels.
+
+    A 60° rotation of the model around the cube's body diagonal yields
+    the SAME silhouette but swaps the near/far labels. The Procrustes
+    brute-force fit can pick either assignment based on tiny noise
+    differences in the residual — so the chirality is effectively
+    random in noisy real-photo inputs.
+
+    DISCRIMINATOR. Mean pixel darkness along the line vertex→corner,
+    measured for all 6 hexagon corners. If the model's labeled NEAR
+    corners are systematically darker than its labeled FAR corners, the
+    chirality is correct. If the opposite holds, the chirality is
+    flipped — model's "near" corners are actually at the face-diagonal
+    positions and we should swap to use the model's "far" positions as
+    the new near corners.
+
+    EMPIRICAL CAVEAT (2026-05-22). Validated against 4 user-labeled
+    cases (set 12_A/B, 17_A/B): the synthetic signal is clean but the
+    real-photo signal is noisy and frequently inverted. Suspected
+    causes: (1) model vertex is slightly offset from the true cube
+    vertex (typical ~10-50 px after PnP, reduced by the post-PnP
+    mean-of-3 ensemble), so the line vertex→near doesn't actually lie
+    on the bezel; (2) dark sticker colors (red, blue) along far
+    diagonals compete with bezel darkness; (3) lighting glare on some
+    bezels brightens them. Because of this we currently compute the
+    signal and emit it as a debug field but DO NOT auto-correct by
+    default (`apply_correction=False`). Future work: re-validate on
+    the full axis-labeled gallery (in progress) to learn a reliable
+    threshold, or replace darkness with a more robust geometric signal.
+
+    Returns (model, debug_dict). Debug contains the per-corner
+    darkness, mean-near vs mean-far, signed separation, and
+    chirality_check status.
+    """
+    debug: Dict[str, Any] = {}
+    if image_rgb is None:
+        debug["chirality_check"] = "skipped_no_image"
+        return model, debug
+
+    near_keys = ["h_x", "h_y", "h_z"]
+    far_keys = ["h_xy", "h_xz", "h_yz"]
+    near_positions = [model.visible_corners.get(k) for k in near_keys]
+    far_positions = [model.visible_corners.get(k) for k in far_keys]
+    if any(p is None for p in near_positions) or any(p is None for p in far_positions):
+        debug["chirality_check"] = "skipped_missing_corners"
+        return model, debug
+
+    vertex = model.cube_center_screen
+    near_darkness = [
+        _line_darkness_from_vertex(image_rgb, vertex, p)  # type: ignore[arg-type]
+        for p in near_positions
+    ]
+    far_darkness = [
+        _line_darkness_from_vertex(image_rgb, vertex, p)  # type: ignore[arg-type]
+        for p in far_positions
+    ]
+    debug["chirality_near_line_darkness"] = [round(d, 1) for d in near_darkness]
+    debug["chirality_far_line_darkness"] = [round(d, 1) for d in far_darkness]
+
+    mean_near = sum(near_darkness) / 3.0
+    mean_far = sum(far_darkness) / 3.0
+    debug["chirality_mean_near_darkness"] = round(mean_near, 1)
+    debug["chirality_mean_far_darkness"] = round(mean_far, 1)
+
+    # Decision threshold: meaningful separation required. If the difference
+    # is too small the image evidence is ambiguous and we leave the model
+    # alone. A correctly-labeled cube under decent lighting should show
+    # ~30-80 unit separation (bezels are ~20-50 darker than stickers on
+    # a typical 0-255 inverted-gray scale).
+    separation = mean_near - mean_far
+    debug["chirality_darkness_separation"] = round(separation, 1)
+
+    # Also report best-permutation errors before/after, in case downstream
+    # tooling wants to compare these regimes. We compute these against the
+    # 3 darkness-derived "true near" directions (top-3 by darkness across
+    # all 6 corners).
+    all_positions = list(near_positions) + list(far_positions)
+    all_darkness = list(near_darkness) + list(far_darkness)
+    sorted_idx = sorted(range(6), key=lambda i: -all_darkness[i])
+    true_near_positions = [all_positions[i] for i in sorted_idx[:3]]
+
+    cx, cy = vertex
+
+    def _axis_angles(positions):
+        return [math.atan2(p[1] - cy, p[0] - cx) for p in positions]  # type: ignore[index]
+
+    def best_match_error(ax_angles, target_angles):
+        best_total = math.inf
+        best_errors = None
+        for perm in itertools.permutations(range(3)):
+            errors = [
+                _signed_angle_diff_deg(ax_angles[i], target_angles[perm[i]])
+                for i in range(3)
+            ]
+            total = sum(errors)
+            if total < best_total:
+                best_total = total
+                best_errors = errors
+        return best_errors
+
+    target_angles = _axis_angles(true_near_positions)
+    current_axis_angles = _axis_angles(near_positions)
+    errors_before = best_match_error(current_axis_angles, target_angles)
+    debug["chirality_axis_angle_errors_before_deg"] = [round(e, 1) for e in errors_before]
+
+    flipped_axis_angles = _axis_angles(far_positions)
+    errors_after = best_match_error(flipped_axis_angles, target_angles)
+    debug["chirality_axis_angle_errors_after_deg"] = [round(e, 1) for e in errors_after]
+
+    # Insufficient lighting / texture contrast to make a call.
+    if abs(separation) < 5.0:
+        debug["chirality_check"] = "ambiguous_no_correction"
+        return model, debug
+
+    if separation > 0:
+        # Model's labeled "near" corners ARE the darker ones — chirality
+        # appears correct per the darkness signal.
+        debug["chirality_check"] = "correct"
+        return model, debug
+
+    # separation < -5: per the darkness signal, model's "near" corners
+    # are the LIGHTER set — chirality looks flipped. Whether we actually
+    # rebuild the model with swapped axes depends on apply_correction.
+    if not apply_correction:
+        debug["chirality_check"] = "flip_suggested_diagnostic_only"
+        return model, debug
+
+    new_axes = [
+        (p[0] - cx, p[1] - cy) for p in far_positions  # type: ignore[index]
+    ]
+    corrected = GlobalCubeModel(
+        cube_center_screen=model.cube_center_screen,
+        axis_x_2d=new_axes[0],
+        axis_y_2d=new_axes[1],
+        axis_z_2d=new_axes[2],
+        fit_loss=model.fit_loss,
+        fit_quality=model.fit_quality,
+    )
+    derive_geometry(corrected)
+    corrected.debug.update(model.debug)
+    debug["chirality_check"] = "corrected_60deg_flip"
+    return corrected, debug
+
+
 def fit_global_cube_model(
     detection: InteriorBezelDetection,
     image_rgb: np.ndarray,
@@ -878,6 +1082,31 @@ def fit_global_cube_model(
     )
     if model is None:
         return None
+
+    # CHIRALITY CHECK (diagnostic only by default).
+    # In iso projection the 6 hexagon corners alternate between 3 "near"
+    # (1 cube-edge from vertex) and 3 "far" (2 cube-edges). Both
+    # assignments are symmetric under 60° rotation around the body
+    # diagonal — same silhouette, different 3D pose. The Procrustes
+    # 6! brute-force fit picks one assignment based on tiny noise
+    # differences in the residual, which can flip the chirality
+    # between runs (~25% of cases per the axis-labeling ground-truth
+    # probe).
+    #
+    # The discriminator (pixel darkness along vertex→corner lines) is
+    # clean on synthetic inputs but unreliable on real photos due to
+    # vertex offset, dark sticker colors competing with bezels, and
+    # lighting glare. We compute the signal and emit it as a debug
+    # field for visibility into the bug, but do NOT auto-apply the
+    # 60° flip by default — empirical validation against 4 user-
+    # labeled cases showed auto-correction makes the geometry WORSE
+    # in 3 of 4 cases. Pass `apply_correction=True` to enable swap
+    # once a more robust discriminator is wired in (planned follow-up
+    # after the full axis-labeled gallery is in place).
+    model, chirality_debug = _apply_chirality_correction(
+        model, detection, image_rgb, apply_correction=False
+    )
+    model.debug.update(chirality_debug)
 
     # MEAN-OF-3 VERTEX ENSEMBLE: average PnP vertex, bezel vertex, and
     # hexagon centroid. Empirically validated against 27 user-labeled

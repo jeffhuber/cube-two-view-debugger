@@ -145,11 +145,13 @@ def evaluate_row(row: Dict[str, Any], *, config: RayStartConfig) -> Dict[str, An
     axis_category = "axis_good" if max_axis_error <= AXIS_GOOD_DEG else "axis_blocked"
 
     baseline_error = _distance(model_vertex, human_vertex)
+    model_axis_units = _valid_axis_units(model_axes)
+    human_axis_units = _valid_axis_units(human_axis_vectors)
     model_best = refine_vertex(darkness, start=model_vertex, axes=model_axes, config=config)
-    model_baseline_score = score_candidate(darkness, model_vertex, model_axes, config=config)
+    model_baseline_score = score_candidate(darkness, model_vertex, model_axis_units, config=config)
     model_gated = _gated_choice(model_vertex, model_baseline_score, model_best, config)
     human_axis_best = refine_vertex(darkness, start=model_vertex, axes=human_axis_vectors, config=config)
-    human_baseline_score = score_candidate(darkness, model_vertex, human_axis_vectors, config=config)
+    human_baseline_score = score_candidate(darkness, model_vertex, human_axis_units, config=config)
     human_axis_gated = _gated_choice(model_vertex, human_baseline_score, human_axis_best, config)
 
     model_best_error = _distance(model_best["point"], human_vertex)
@@ -171,7 +173,7 @@ def evaluate_row(row: Dict[str, Any], *, config: RayStartConfig) -> Dict[str, An
         "modelAxisGatedVertexErrorPx": round(model_gated_error, 2),
         "modelAxisGatedImprovementPx": round(baseline_error - model_gated_error, 2),
         "modelAxisGatedStatus": _vertex_status(model_gated_error),
-        "modelAxisScoreGain": round(model_best["score"] - model_baseline_score["score"], 6),
+        "modelAxisScoreGain": _score_gain(model_best, model_baseline_score),
         "modelAxisBestComponents": model_best["components"],
         "humanAxisOracleBestVertex": _round_point(human_axis_best["point"]),
         "humanAxisOracleBestVertexErrorPx": round(human_best_error, 2),
@@ -181,7 +183,7 @@ def evaluate_row(row: Dict[str, Any], *, config: RayStartConfig) -> Dict[str, An
         "humanAxisOracleGatedVertexErrorPx": round(human_gated_error, 2),
         "humanAxisOracleGatedImprovementPx": round(baseline_error - human_gated_error, 2),
         "humanAxisOracleGatedStatus": _vertex_status(human_gated_error),
-        "humanAxisOracleScoreGain": round(human_axis_best["score"] - human_baseline_score["score"], 6),
+        "humanAxisOracleScoreGain": _score_gain(human_axis_best, human_baseline_score),
         "humanVertex": _round_point(human_vertex),
     }
 
@@ -397,7 +399,8 @@ def render_report(document: Dict[str, Any]) -> str:
             "",
             "- This is still a diagnostics-only image objective, not production wiring.",
             "- A useful production-shaped signal would increase strict/plausible rows while keeping worsened accepted rows near zero.",
-            "- The threshold sweep could not find a non-empty model-axis gate with two-or-fewer worsened rows, so the current hand-tuned ray-start score is not a safe promotion signal.",
+            "- The best low-worsen threshold sweep accepts only three rows, improves one, worsens two, and still underperforms baseline strict/plausible counts.",
+            "- That means the current hand-tuned ray-start score is not a safe promotion signal even when gated tightly.",
             "- If gated model-axis results remain no better than baseline, the next step should be explicit line/junction extraction or learned vertex localization rather than hand-tuned darkness scoring.",
             "",
         ]
@@ -411,12 +414,13 @@ def _gated_choice(
     best: Dict[str, Any],
     config: RayStartConfig,
 ) -> Dict[str, Any]:
-    gain = float(best["score"]) - float(baseline_score["score"])
+    gain = _score_gain(best, baseline_score)
     components = best.get("components") or {}
     mean_startness = float(components.get("meanStartness", -999.0))
     min_startness = float(components.get("minStartness", -999.0))
     accepted = (
-        gain >= config.accept_min_score_gain
+        gain is not None
+        and gain >= config.accept_min_score_gain
         and mean_startness >= config.accept_min_mean_startness
         and min_startness >= config.accept_min_min_startness
     )
@@ -492,11 +496,27 @@ def _model_axis_threshold_sweep(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any
 
 def _row_passes_model_gate(row: Dict[str, Any], *, gain_t: float, mean_t: float, min_t: float) -> bool:
     components = row.get("modelAxisBestComponents") or {}
+    score_gain = row.get("modelAxisScoreGain")
+    if score_gain is None:
+        return False
     return (
-        float(row.get("modelAxisScoreGain", -999.0)) >= gain_t
+        float(score_gain) >= gain_t
         and float(components.get("meanStartness", -999.0)) >= mean_t
         and float(components.get("minStartness", -999.0)) >= min_t
     )
+
+
+def _valid_axis_units(axes: Sequence[Point]) -> List[Point]:
+    units = [_unit(axis) for axis in axes]
+    return [unit for unit in units if unit is not None]
+
+
+def _score_gain(best: Dict[str, Any], baseline_score: Dict[str, Any]) -> Optional[float]:
+    best_score = float(best.get("score", float("-inf")))
+    baseline = float(baseline_score.get("score", float("-inf")))
+    if not math.isfinite(best_score) or not math.isfinite(baseline):
+        return None
+    return round(best_score - baseline, 6)
 
 
 def _format_sweep(item: Optional[Dict[str, Any]]) -> str:

@@ -125,3 +125,15 @@ def test_ray_start_gating_can_keep_baseline_when_score_gain_is_weak(tmp_path: Pa
     row = document["rows"][0]
     assert row["modelAxisGatedAccepted"] is False
     assert row["modelAxisGatedVertexErrorPx"] == 0.0
+
+
+def test_committed_ray_start_summary_is_strict_json():
+    path = Path(__file__).resolve().parents[1] / "tests" / "fixtures" / "ray_start_vertex_refinement_v0_summary.json"
+
+    document = json.loads(
+        path.read_text(encoding="utf-8"),
+        parse_constant=lambda value: (_ for _ in ()).throw(ValueError(value)),
+    )
+
+    assert document["summary"]["rowCount"] == 28
+    assert document["summary"]["modelAxisGatedStrictCount"] == 5

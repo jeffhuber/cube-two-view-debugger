@@ -16,14 +16,14 @@ This probe searches for a visible-trihedral vertex by rewarding dark outgoing ax
 - Human-axis oracle best strict/plausible: 6 / 14
 - Human-axis oracle gated strict/plausible: 5 / 13
 - Axis-good strict baseline/model-gated/oracle-gated: 5 / 4 / 3
-- Model-axis gated accepted rows: 17
+- Model-axis gated accepted rows: 16
 - Human-axis oracle gated accepted rows: 27
-- Model-axis gated improved/worsened rows by >5px: 9 / 8
+- Model-axis gated improved/worsened rows by >5px: 9 / 7
 - Human-axis oracle gated improved/worsened rows by >5px: 16 / 9
-- Mean vertex error baseline/model-gated/oracle-gated: 67.0 px / 60.9 px / 49.2 px
+- Mean vertex error baseline/model-gated/oracle-gated: 67.0 px / 60.6 px / 49.2 px
 - Median vertex error baseline/model-gated/oracle-gated: 70.7 px / 58.3 px / 52.6 px
-- Best non-empty low-worsen model gate: accepted 5, improved 2, worsened 3, strict/plausible 5 / 7, mean 68.8 px (gain>=0.0, meanStart>=-0.05, minStart>=0.1)
-- Best non-empty model gate with <=2 worsens: none
+- Best non-empty low-worsen model gate: accepted 3, improved 1, worsened 2, strict/plausible 5 / 8, mean 68.4 px (gain>=0.4, meanStart>=-0.05, minStart>=0.1)
+- Best non-empty model gate with <=2 worsens: accepted 3, improved 1, worsened 2, strict/plausible 5 / 8, mean 68.4 px (gain>=0.4, meanStart>=-0.05, minStart>=0.1)
 
 ## Rows
 
@@ -54,7 +54,7 @@ This probe searches for a visible-trihedral vertex by rewarding dark outgoing ax
 | `42_B` | `axis_blocked` | 92.0 px | 92.0 px | no | 0.0 px | 34.0 px | yes | 58.0 px |
 | `44_A` | `axis_blocked` | 185.5 px | 185.5 px | no | 0.0 px | 185.5 px | no | 0.0 px |
 | `44_B` | `axis_blocked` | 117.6 px | 117.6 px | no | 0.0 px | 8.6 px | yes | 108.9 px |
-| `57_A` | `axis_good` | 5.0 px | 12.0 px | yes | -7.1 px | 33.0 px | yes | -28.0 px |
+| `57_A` | `axis_good` | 5.0 px | 5.0 px | no | 0.0 px | 33.0 px | yes | -28.0 px |
 | `61_A` | `axis_blocked` | 70.7 px | 70.7 px | no | 0.0 px | 9.8 px | yes | 61.0 px |
 | `61_B` | `axis_good` | 60.0 px | 5.5 px | yes | 54.5 px | 5.5 px | yes | 54.5 px |
 
@@ -62,5 +62,6 @@ This probe searches for a visible-trihedral vertex by rewarding dark outgoing ax
 
 - This is still a diagnostics-only image objective, not production wiring.
 - A useful production-shaped signal would increase strict/plausible rows while keeping worsened accepted rows near zero.
-- The threshold sweep could not find a non-empty model-axis gate with two-or-fewer worsened rows, so the current hand-tuned ray-start score is not a safe promotion signal.
+- The best low-worsen threshold sweep accepts only three rows, improves one, worsens two, and still underperforms baseline strict/plausible counts.
+- That means the current hand-tuned ray-start score is not a safe promotion signal even when gated tightly.
 - If gated model-axis results remain no better than baseline, the next step should be explicit line/junction extraction or learned vertex localization rather than hand-tuned darkness scoring.

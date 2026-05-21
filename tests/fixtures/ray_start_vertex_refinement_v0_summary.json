@@ -43,7 +43,7 @@
         2080.64
       ],
       "humanAxisOracleGatedVertexErrorPx": 46.96,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 0.251871,
       "humanVertex": [
         1546.87,
         2033.75
@@ -77,7 +77,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 26.85,
       "modelAxisMaxAngleErrorDeg": 60.81,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 0.622097,
       "setId": "12",
       "side": "B"
     },
@@ -103,7 +103,7 @@
         1850.07
       ],
       "humanAxisOracleGatedVertexErrorPx": 56.59,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 0.643113,
       "humanVertex": [
         1445.43,
         1795.38
@@ -137,7 +137,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 53.9,
       "modelAxisMaxAngleErrorDeg": 62.48,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 0.138275,
       "setId": "14",
       "side": "B"
     },
@@ -163,7 +163,7 @@
         2045.22
       ],
       "humanAxisOracleGatedVertexErrorPx": 40.44,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 0.754013,
       "humanVertex": [
         1421.1,
         2005.7
@@ -197,7 +197,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 40.44,
       "modelAxisMaxAngleErrorDeg": 6.53,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 0.786485,
       "setId": "15",
       "side": "A"
     },
@@ -223,7 +223,7 @@
         2039.42
       ],
       "humanAxisOracleGatedVertexErrorPx": 55.99,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 0.359852,
       "humanVertex": [
         1561.2,
         1985.3
@@ -257,7 +257,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 54.17,
       "modelAxisMaxAngleErrorDeg": 4.06,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 0.352908,
       "setId": "15",
       "side": "B"
     },
@@ -283,7 +283,7 @@
         1778.83
       ],
       "humanAxisOracleGatedVertexErrorPx": 62.32,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 0.598721,
       "humanVertex": [
         1531.65,
         1841.03
@@ -317,7 +317,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 62.32,
       "modelAxisMaxAngleErrorDeg": 5.15,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 0.559697,
       "setId": "17",
       "side": "B"
     },
@@ -343,7 +343,7 @@
         1952.47
       ],
       "humanAxisOracleGatedVertexErrorPx": 56.45,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 0.172686,
       "humanVertex": [
         1371.5,
         2002.1
@@ -377,7 +377,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 63.4,
       "modelAxisMaxAngleErrorDeg": 5.08,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 0.172261,
       "setId": "21",
       "side": "A"
     },
@@ -403,7 +403,7 @@
         2037.0
       ],
       "humanAxisOracleGatedVertexErrorPx": 15.88,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 0.78774,
       "humanVertex": [
         1599.4,
         2045.2
@@ -437,7 +437,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 15.88,
       "modelAxisMaxAngleErrorDeg": 5.12,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 0.45539,
       "setId": "21",
       "side": "B"
     },
@@ -463,7 +463,7 @@
         1972.37
       ],
       "humanAxisOracleGatedVertexErrorPx": 55.58,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 0.868423,
       "humanVertex": [
         1554.5,
         2027.9
@@ -497,7 +497,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 87.57,
       "modelAxisMaxAngleErrorDeg": 61.72,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 0.470033,
       "setId": "24",
       "side": "A"
     },
@@ -523,7 +523,7 @@
         2027.0
       ],
       "humanAxisOracleGatedVertexErrorPx": 47.96,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 1.677065,
       "humanVertex": [
         1461.4,
         2074.9
@@ -557,7 +557,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 48.85,
       "modelAxisMaxAngleErrorDeg": 2.99,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 1.698761,
       "setId": "26",
       "side": "A"
     },
@@ -583,7 +583,7 @@
         2052.51
       ],
       "humanAxisOracleGatedVertexErrorPx": 40.82,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 1.095936,
       "humanVertex": [
         1468.1,
         2093.3
@@ -617,7 +617,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 80.9,
       "modelAxisMaxAngleErrorDeg": 64.04,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 0.157928,
       "setId": "26",
       "side": "B"
     },
@@ -643,7 +643,7 @@
         1875.84
       ],
       "humanAxisOracleGatedVertexErrorPx": 67.05,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 1.232512,
       "humanVertex": [
         1521.51,
         1942.46
@@ -677,7 +677,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 67.05,
       "modelAxisMaxAngleErrorDeg": 3.4,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 1.249772,
       "setId": "27",
       "side": "B"
     },
@@ -703,7 +703,7 @@
         1910.05
       ],
       "humanAxisOracleGatedVertexErrorPx": 57.2,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 1.147576,
       "humanVertex": [
         1426.7,
         1967.2
@@ -737,7 +737,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 52.87,
       "modelAxisMaxAngleErrorDeg": 4.91,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 1.092714,
       "setId": "28",
       "side": "A"
     },
@@ -763,7 +763,7 @@
         1958.2
       ],
       "humanAxisOracleGatedVertexErrorPx": 54.05,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 1.255333,
       "humanVertex": [
         1410.5,
         2012.0
@@ -797,7 +797,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 54.05,
       "modelAxisMaxAngleErrorDeg": 2.91,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 1.15343,
       "setId": "28",
       "side": "B"
     },
@@ -823,7 +823,7 @@
         2043.17
       ],
       "humanAxisOracleGatedVertexErrorPx": 58.57,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 0.628612,
       "humanVertex": [
         1491.0,
         2101.7
@@ -857,7 +857,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 57.39,
       "modelAxisMaxAngleErrorDeg": 60.57,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 0.397251,
       "setId": "29",
       "side": "A"
     },
@@ -883,7 +883,7 @@
         1921.79
       ],
       "humanAxisOracleGatedVertexErrorPx": 51.79,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 0.387722,
       "humanVertex": [
         1415.0,
         1972.89
@@ -917,7 +917,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 51.79,
       "modelAxisMaxAngleErrorDeg": 1.5,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 0.382302,
       "setId": "29",
       "side": "B"
     },
@@ -943,7 +943,7 @@
         2274.07
       ],
       "humanAxisOracleGatedVertexErrorPx": 53.44,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 0.304392,
       "humanVertex": [
         1440.2,
         2220.7
@@ -977,7 +977,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 67.01,
       "modelAxisMaxAngleErrorDeg": 7.45,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 0.377139,
       "setId": "30",
       "side": "A"
     },
@@ -1003,7 +1003,7 @@
         1979.2
       ],
       "humanAxisOracleGatedVertexErrorPx": 57.55,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 1.057446,
       "humanVertex": [
         1617.87,
         1922.17
@@ -1037,7 +1037,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 60.34,
       "modelAxisMaxAngleErrorDeg": 3.89,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 0.904289,
       "setId": "30",
       "side": "B"
     },
@@ -1063,7 +1063,7 @@
         2070.52
       ],
       "humanAxisOracleGatedVertexErrorPx": 59.23,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 1.115292,
       "humanVertex": [
         1420.5,
         2011.7
@@ -1097,7 +1097,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 59.23,
       "modelAxisMaxAngleErrorDeg": 2.32,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 1.060611,
       "setId": "31",
       "side": "A"
     },
@@ -1123,7 +1123,7 @@
         1999.0
       ],
       "humanAxisOracleGatedVertexErrorPx": 56.77,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 0.798477,
       "humanVertex": [
         1333.86,
         1942.46
@@ -1157,7 +1157,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 47.72,
       "modelAxisMaxAngleErrorDeg": 2.67,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 0.776246,
       "setId": "31",
       "side": "B"
     },
@@ -1183,7 +1183,7 @@
         1941.84
       ],
       "humanAxisOracleGatedVertexErrorPx": 33.32,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 0.57302,
       "humanVertex": [
         1601.8,
         1967.8
@@ -1217,7 +1217,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 72.33,
       "modelAxisMaxAngleErrorDeg": 59.88,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 0.269217,
       "setId": "32",
       "side": "A"
     },
@@ -1243,7 +1243,7 @@
         1862.0
       ],
       "humanAxisOracleGatedVertexErrorPx": 45.97,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 1.95274,
       "humanVertex": [
         1373.6,
         1896.3
@@ -1277,7 +1277,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 70.61,
       "modelAxisMaxAngleErrorDeg": 62.97,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 0.453683,
       "setId": "32",
       "side": "B"
     },
@@ -1303,7 +1303,7 @@
         1914.56
       ],
       "humanAxisOracleGatedVertexErrorPx": 27.06,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 0.672848,
       "humanVertex": [
         1320.8,
         1940.4
@@ -1337,7 +1337,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 27.06,
       "modelAxisMaxAngleErrorDeg": 1.79,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 0.6677,
       "setId": "36",
       "side": "B"
     },
@@ -1363,7 +1363,7 @@
         1881.0
       ],
       "humanAxisOracleGatedVertexErrorPx": 33.96,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 1.648384,
       "humanVertex": [
         1572.23,
         1851.17
@@ -1397,7 +1397,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 91.97,
       "modelAxisMaxAngleErrorDeg": 64.06,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 0.609468,
       "setId": "42",
       "side": "B"
     },
@@ -1423,7 +1423,7 @@
         1826.0
       ],
       "humanAxisOracleGatedVertexErrorPx": 185.52,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 0.526064,
       "humanVertex": [
         1362.7,
         1975.9
@@ -1457,7 +1457,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 185.52,
       "modelAxisMaxAngleErrorDeg": 62.49,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 0.074193,
       "setId": "44",
       "side": "A"
     },
@@ -1483,7 +1483,7 @@
         2012.0
       ],
       "humanAxisOracleGatedVertexErrorPx": 8.63,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 0.790982,
       "humanVertex": [
         1499.2,
         2008.3
@@ -1517,7 +1517,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 117.57,
       "modelAxisMaxAngleErrorDeg": 62.18,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 0.102834,
       "setId": "44",
       "side": "B"
     },
@@ -1543,7 +1543,7 @@
         2127.77
       ],
       "humanAxisOracleGatedVertexErrorPx": 32.99,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 0.103873,
       "humanVertex": [
         1420.08,
         2160.54
@@ -1568,16 +1568,16 @@
         2151.77
       ],
       "modelAxisBestVertexErrorPx": 12.03,
-      "modelAxisGatedAccepted": true,
-      "modelAxisGatedImprovementPx": -7.08,
+      "modelAxisGatedAccepted": false,
+      "modelAxisGatedImprovementPx": 0.0,
       "modelAxisGatedStatus": "strict",
       "modelAxisGatedVertex": [
-        1411.84,
-        2151.77
+        1423.84,
+        2163.77
       ],
-      "modelAxisGatedVertexErrorPx": 12.03,
+      "modelAxisGatedVertexErrorPx": 4.96,
       "modelAxisMaxAngleErrorDeg": 8.6,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 0.001299,
       "setId": "57",
       "side": "A"
     },
@@ -1603,7 +1603,7 @@
         1949.83
       ],
       "humanAxisOracleGatedVertexErrorPx": 9.77,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 0.203411,
       "humanVertex": [
         1495.4,
         1954.6
@@ -1637,7 +1637,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 70.74,
       "modelAxisMaxAngleErrorDeg": 61.3,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 0.277622,
       "setId": "61",
       "side": "A"
     },
@@ -1663,7 +1663,7 @@
         1828.78
       ],
       "humanAxisOracleGatedVertexErrorPx": 5.53,
-      "humanAxisOracleScoreGain": Infinity,
+      "humanAxisOracleScoreGain": 0.161935,
       "humanVertex": [
         1362.2,
         1829.0
@@ -1697,7 +1697,7 @@
       ],
       "modelAxisGatedVertexErrorPx": 5.53,
       "modelAxisMaxAngleErrorDeg": 4.09,
-      "modelAxisScoreGain": Infinity,
+      "modelAxisScoreGain": 0.113843,
       "setId": "61",
       "side": "B"
     }
@@ -1722,31 +1722,43 @@
     "humanAxisOracleGatedWorsenedRowCount": 9,
     "meanBaselineVertexErrorPx": 67.0268,
     "meanHumanAxisOracleGatedVertexErrorPx": 49.1925,
-    "meanModelAxisGatedVertexErrorPx": 60.8961,
+    "meanModelAxisGatedVertexErrorPx": 60.6436,
     "medianBaselineVertexErrorPx": 70.675,
     "medianHumanAxisOracleGatedVertexErrorPx": 52.615,
     "medianModelAxisGatedVertexErrorPx": 58.31,
     "modelAxisBestPlausibleCount": 7,
     "modelAxisBestStrictCount": 4,
-    "modelAxisGatedAcceptedCount": 17,
+    "modelAxisGatedAcceptedCount": 16,
     "modelAxisGatedImprovedRowCount": 9,
     "modelAxisGatedPlausibleCount": 8,
     "modelAxisGatedStrictCount": 5,
-    "modelAxisGatedWorsenedRowCount": 8,
+    "modelAxisGatedWorsenedRowCount": 7,
     "modelAxisThresholdSweep": {
-      "bestNonEmptyAtMostTwoWorsens": null,
-      "bestNonEmptyLowWorsen": {
-        "acceptedCount": 5,
-        "improvedCount": 2,
-        "meanVertexErrorPx": 68.7696,
-        "plausibleCount": 7,
+      "bestNonEmptyAtMostTwoWorsens": {
+        "acceptedCount": 3,
+        "improvedCount": 1,
+        "meanVertexErrorPx": 68.4311,
+        "plausibleCount": 8,
         "strictCount": 5,
         "thresholds": {
           "meanStartness": -0.05,
           "minStartness": 0.1,
-          "scoreGain": 0.0
+          "scoreGain": 0.4
         },
-        "worsenedCount": 3
+        "worsenedCount": 2
+      },
+      "bestNonEmptyLowWorsen": {
+        "acceptedCount": 3,
+        "improvedCount": 1,
+        "meanVertexErrorPx": 68.4311,
+        "plausibleCount": 8,
+        "strictCount": 5,
+        "thresholds": {
+          "meanStartness": -0.05,
+          "minStartness": 0.1,
+          "scoreGain": 0.4
+        },
+        "worsenedCount": 2
       },
       "evaluatedNonEmptyGateCount": 720
     },

@@ -1,0 +1,2698 @@
+{
+  "config": {
+    "highFitQualityMarginConfidenceV0": {
+      "minFitQualityMargin": 0.08,
+      "minSelectedFitQuality": 0.9
+    },
+    "plausibleVertexPx": 50.0,
+    "strictResidualMarginConfidenceV0": {
+      "maxSelectedResidualRmsPx": 18.0,
+      "minResidualMarginPx": 20.0
+    },
+    "strictVertexPx": 30.0
+  },
+  "description": "Diagnostics/data-only bakeoff for choosing between rembg/SAM3 whole-cube global-model hypotheses, with abstention when confidence is low.",
+  "probe": "vertex_axis_source_selection_v0",
+  "rows": [
+    {
+      "bestSourceByVertexError": "sam3",
+      "key": "12_B",
+      "policyResults": {
+        "always_rembg": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.809,
+          "fitResidualRmsPx": 38.24,
+          "policy": "always_rembg",
+          "selectedErrorPx": 37.25,
+          "selection": "rembg",
+          "status": "plausible"
+        },
+        "always_sam3": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.892,
+          "fitResidualRmsPx": 21.57,
+          "policy": "always_sam3",
+          "selectedErrorPx": 26.43,
+          "selection": "sam3",
+          "status": "strict_ready"
+        },
+        "global_model_score_v0": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "lower_fit_residual_rms",
+            "residualMarginPx": 16.67
+          },
+          "fitQuality": 0.892,
+          "fitResidualRmsPx": 21.57,
+          "policy": "global_model_score_v0",
+          "selectedErrorPx": 26.43,
+          "selection": "sam3",
+          "status": "strict_ready"
+        },
+        "high_fit_quality_margin_confidence_v0": {
+          "details": {
+            "fitQualityMargin": 0.083,
+            "otherFitQuality": 0.809,
+            "reason": "higher_fit_quality_with_strict_margin",
+            "selectedFitQuality": 0.892
+          },
+          "policy": "high_fit_quality_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        },
+        "oracle_best_source": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "label_oracle"
+          },
+          "fitQuality": 0.892,
+          "fitResidualRmsPx": 21.57,
+          "policy": "oracle_best_source",
+          "selectedErrorPx": 26.43,
+          "selection": "sam3",
+          "status": "strict_ready"
+        },
+        "strict_residual_margin_confidence_v0": {
+          "details": {
+            "otherResidualRmsPx": 38.24,
+            "reason": "lower_residual_with_strict_margin",
+            "residualMarginPx": 16.67,
+            "selectedResidualRmsPx": 21.57
+          },
+          "policy": "strict_residual_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        }
+      },
+      "sourceDiagnostics": {
+        "rembg": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.809,
+          "fitResidualRmsPx": 38.24,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "split_plausible",
+          "vertex": [
+            1537.36,
+            2008.64
+          ],
+          "vertexErrorPx": 37.25
+        },
+        "sam3": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.892,
+          "fitResidualRmsPx": 21.57,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "split_ready_strict",
+          "vertex": [
+            1570.86,
+            2035.03
+          ],
+          "vertexErrorPx": 26.43
+        }
+      },
+      "sourceErrors": {
+        "rembg": 37.25,
+        "sam3": 26.43
+      },
+      "trueVertex": [
+        1546.3,
+        2044.8
+      ]
+    },
+    {
+      "bestSourceByVertexError": "sam3",
+      "key": "14_B",
+      "policyResults": {
+        "always_rembg": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.755,
+          "fitResidualRmsPx": 48.91,
+          "policy": "always_rembg",
+          "selectedErrorPx": 33.05,
+          "selection": "rembg",
+          "status": "plausible"
+        },
+        "always_sam3": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.757,
+          "fitResidualRmsPx": 48.66,
+          "policy": "always_sam3",
+          "selectedErrorPx": 16.19,
+          "selection": "sam3",
+          "status": "strict_ready"
+        },
+        "global_model_score_v0": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "lower_fit_residual_rms",
+            "residualMarginPx": 0.25
+          },
+          "fitQuality": 0.757,
+          "fitResidualRmsPx": 48.66,
+          "policy": "global_model_score_v0",
+          "selectedErrorPx": 16.19,
+          "selection": "sam3",
+          "status": "strict_ready"
+        },
+        "high_fit_quality_margin_confidence_v0": {
+          "details": {
+            "fitQualityMargin": 0.002,
+            "otherFitQuality": 0.755,
+            "reason": "higher_fit_quality_with_strict_margin",
+            "selectedFitQuality": 0.757
+          },
+          "policy": "high_fit_quality_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        },
+        "oracle_best_source": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "label_oracle"
+          },
+          "fitQuality": 0.757,
+          "fitResidualRmsPx": 48.66,
+          "policy": "oracle_best_source",
+          "selectedErrorPx": 16.19,
+          "selection": "sam3",
+          "status": "strict_ready"
+        },
+        "strict_residual_margin_confidence_v0": {
+          "details": {
+            "otherResidualRmsPx": 48.91,
+            "reason": "lower_residual_with_strict_margin",
+            "residualMarginPx": 0.25,
+            "selectedResidualRmsPx": 48.66
+          },
+          "policy": "strict_residual_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        }
+      },
+      "sourceDiagnostics": {
+        "rembg": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.755,
+          "fitResidualRmsPx": 48.91,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "split_plausible",
+          "vertex": [
+            1495.99,
+            1814.07
+          ],
+          "vertexErrorPx": 33.05
+        },
+        "sam3": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.757,
+          "fitResidualRmsPx": 48.66,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "split_ready_strict",
+          "vertex": [
+            1462.66,
+            1818.62
+          ],
+          "vertexErrorPx": 16.19
+        }
+      },
+      "sourceErrors": {
+        "rembg": 33.05,
+        "sam3": 16.19
+      },
+      "trueVertex": [
+        1465.0,
+        1802.6
+      ]
+    },
+    {
+      "bestSourceByVertexError": "sam3",
+      "key": "15_A",
+      "policyResults": {
+        "always_rembg": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.814,
+          "fitResidualRmsPx": 37.23,
+          "policy": "always_rembg",
+          "selectedErrorPx": 63.5,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "always_sam3": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.81,
+          "fitResidualRmsPx": 37.91,
+          "policy": "always_sam3",
+          "selectedErrorPx": 47.28,
+          "selection": "sam3",
+          "status": "plausible"
+        },
+        "global_model_score_v0": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "lower_fit_residual_rms",
+            "residualMarginPx": 0.68
+          },
+          "fitQuality": 0.814,
+          "fitResidualRmsPx": 37.23,
+          "policy": "global_model_score_v0",
+          "selectedErrorPx": 63.5,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "high_fit_quality_margin_confidence_v0": {
+          "details": {
+            "fitQualityMargin": 0.004,
+            "otherFitQuality": 0.81,
+            "reason": "higher_fit_quality_with_strict_margin",
+            "selectedFitQuality": 0.814
+          },
+          "policy": "high_fit_quality_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        },
+        "oracle_best_source": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "label_oracle"
+          },
+          "fitQuality": 0.81,
+          "fitResidualRmsPx": 37.91,
+          "policy": "oracle_best_source",
+          "selectedErrorPx": 47.28,
+          "selection": "sam3",
+          "status": "plausible"
+        },
+        "strict_residual_margin_confidence_v0": {
+          "details": {
+            "otherResidualRmsPx": 37.91,
+            "reason": "lower_residual_with_strict_margin",
+            "residualMarginPx": 0.68,
+            "selectedResidualRmsPx": 37.23
+          },
+          "policy": "strict_residual_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        }
+      },
+      "sourceDiagnostics": {
+        "rembg": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.814,
+          "fitResidualRmsPx": 37.23,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1484.51,
+            2009.22
+          ],
+          "vertexErrorPx": 63.5
+        },
+        "sam3": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.81,
+          "fitResidualRmsPx": 37.91,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "split_plausible",
+          "vertex": [
+            1461.38,
+            2030.47
+          ],
+          "vertexErrorPx": 47.28
+        }
+      },
+      "sourceErrors": {
+        "rembg": 63.5,
+        "sam3": 47.28
+      },
+      "trueVertex": [
+        1421.1,
+        2005.7
+      ]
+    },
+    {
+      "bestSourceByVertexError": "sam3",
+      "key": "15_B",
+      "policyResults": {
+        "always_rembg": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.795,
+          "fitResidualRmsPx": 41.03,
+          "policy": "always_rembg",
+          "selectedErrorPx": 71.99,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "always_sam3": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.834,
+          "fitResidualRmsPx": 33.27,
+          "policy": "always_sam3",
+          "selectedErrorPx": 54.43,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "global_model_score_v0": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "lower_fit_residual_rms",
+            "residualMarginPx": 7.76
+          },
+          "fitQuality": 0.834,
+          "fitResidualRmsPx": 33.27,
+          "policy": "global_model_score_v0",
+          "selectedErrorPx": 54.43,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "high_fit_quality_margin_confidence_v0": {
+          "details": {
+            "fitQualityMargin": 0.039,
+            "otherFitQuality": 0.795,
+            "reason": "higher_fit_quality_with_strict_margin",
+            "selectedFitQuality": 0.834
+          },
+          "policy": "high_fit_quality_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        },
+        "oracle_best_source": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "label_oracle"
+          },
+          "fitQuality": 0.834,
+          "fitResidualRmsPx": 33.27,
+          "policy": "oracle_best_source",
+          "selectedErrorPx": 54.43,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "strict_residual_margin_confidence_v0": {
+          "details": {
+            "otherResidualRmsPx": 41.03,
+            "reason": "lower_residual_with_strict_margin",
+            "residualMarginPx": 7.76,
+            "selectedResidualRmsPx": 33.27
+          },
+          "policy": "strict_residual_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        }
+      },
+      "sourceDiagnostics": {
+        "rembg": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.795,
+          "fitResidualRmsPx": 41.03,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1491.53,
+            2003.42
+          ],
+          "vertexErrorPx": 71.99
+        },
+        "sam3": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.834,
+          "fitResidualRmsPx": 33.27,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1542.65,
+            1934.13
+          ],
+          "vertexErrorPx": 54.43
+        }
+      },
+      "sourceErrors": {
+        "rembg": 71.99,
+        "sam3": 54.43
+      },
+      "trueVertex": [
+        1561.2,
+        1985.3
+      ]
+    },
+    {
+      "bestSourceByVertexError": "rembg",
+      "key": "17_B",
+      "policyResults": {
+        "always_rembg": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.933,
+          "fitResidualRmsPx": 13.42,
+          "policy": "always_rembg",
+          "selectedErrorPx": 109.95,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "always_sam3": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.876,
+          "fitResidualRmsPx": 24.78,
+          "policy": "always_sam3",
+          "selectedErrorPx": 136.99,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "global_model_score_v0": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "lower_fit_residual_rms",
+            "residualMarginPx": 11.36
+          },
+          "fitQuality": 0.933,
+          "fitResidualRmsPx": 13.42,
+          "policy": "global_model_score_v0",
+          "selectedErrorPx": 109.95,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "high_fit_quality_margin_confidence_v0": {
+          "details": {
+            "fitQualityMargin": 0.057,
+            "otherFitQuality": 0.876,
+            "reason": "higher_fit_quality_with_strict_margin",
+            "selectedFitQuality": 0.933
+          },
+          "policy": "high_fit_quality_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        },
+        "oracle_best_source": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "label_oracle"
+          },
+          "fitQuality": 0.933,
+          "fitResidualRmsPx": 13.42,
+          "policy": "oracle_best_source",
+          "selectedErrorPx": 109.95,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "strict_residual_margin_confidence_v0": {
+          "details": {
+            "otherResidualRmsPx": 24.78,
+            "reason": "lower_residual_with_strict_margin",
+            "residualMarginPx": 11.36,
+            "selectedResidualRmsPx": 13.42
+          },
+          "policy": "strict_residual_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        }
+      },
+      "sourceDiagnostics": {
+        "rembg": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.933,
+          "fitResidualRmsPx": 13.42,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1479.79,
+            1934.83
+          ],
+          "vertexErrorPx": 109.95
+        },
+        "sam3": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.876,
+          "fitResidualRmsPx": 24.78,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1458.47,
+            1953.94
+          ],
+          "vertexErrorPx": 136.99
+        }
+      },
+      "sourceErrors": {
+        "rembg": 109.95,
+        "sam3": 136.99
+      },
+      "trueVertex": [
+        1529.0,
+        1836.5
+      ]
+    },
+    {
+      "bestSourceByVertexError": "rembg",
+      "key": "21_A",
+      "policyResults": {
+        "always_rembg": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.882,
+          "fitResidualRmsPx": 23.56,
+          "policy": "always_rembg",
+          "selectedErrorPx": 38.72,
+          "selection": "rembg",
+          "status": "plausible"
+        },
+        "always_sam3": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.901,
+          "fitResidualRmsPx": 19.72,
+          "policy": "always_sam3",
+          "selectedErrorPx": 56.44,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "global_model_score_v0": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "lower_fit_residual_rms",
+            "residualMarginPx": 3.84
+          },
+          "fitQuality": 0.901,
+          "fitResidualRmsPx": 19.72,
+          "policy": "global_model_score_v0",
+          "selectedErrorPx": 56.44,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "high_fit_quality_margin_confidence_v0": {
+          "details": {
+            "fitQualityMargin": 0.019,
+            "otherFitQuality": 0.882,
+            "reason": "higher_fit_quality_with_strict_margin",
+            "selectedFitQuality": 0.901
+          },
+          "policy": "high_fit_quality_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        },
+        "oracle_best_source": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "label_oracle"
+          },
+          "fitQuality": 0.882,
+          "fitResidualRmsPx": 23.56,
+          "policy": "oracle_best_source",
+          "selectedErrorPx": 38.72,
+          "selection": "rembg",
+          "status": "plausible"
+        },
+        "strict_residual_margin_confidence_v0": {
+          "details": {
+            "otherResidualRmsPx": 23.56,
+            "reason": "lower_residual_with_strict_margin",
+            "residualMarginPx": 3.84,
+            "selectedResidualRmsPx": 19.72
+          },
+          "policy": "strict_residual_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        }
+      },
+      "sourceDiagnostics": {
+        "rembg": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.882,
+          "fitResidualRmsPx": 23.56,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "split_plausible",
+          "vertex": [
+            1362.39,
+            1964.47
+          ],
+          "vertexErrorPx": 38.72
+        },
+        "sam3": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.901,
+          "fitResidualRmsPx": 19.72,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1401.94,
+            1954.58
+          ],
+          "vertexErrorPx": 56.44
+        }
+      },
+      "sourceErrors": {
+        "rembg": 38.72,
+        "sam3": 56.44
+      },
+      "trueVertex": [
+        1371.5,
+        2002.1
+      ]
+    },
+    {
+      "bestSourceByVertexError": "rembg",
+      "key": "21_B",
+      "policyResults": {
+        "always_rembg": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.784,
+          "fitResidualRmsPx": 43.21,
+          "policy": "always_rembg",
+          "selectedErrorPx": 75.69,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "always_sam3": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.891,
+          "fitResidualRmsPx": 21.85,
+          "policy": "always_sam3",
+          "selectedErrorPx": 118.16,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "global_model_score_v0": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "lower_fit_residual_rms",
+            "residualMarginPx": 21.36
+          },
+          "fitQuality": 0.891,
+          "fitResidualRmsPx": 21.85,
+          "policy": "global_model_score_v0",
+          "selectedErrorPx": 118.16,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "high_fit_quality_margin_confidence_v0": {
+          "details": {
+            "fitQualityMargin": 0.107,
+            "otherFitQuality": 0.784,
+            "reason": "higher_fit_quality_with_strict_margin",
+            "selectedFitQuality": 0.891
+          },
+          "policy": "high_fit_quality_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        },
+        "oracle_best_source": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "label_oracle"
+          },
+          "fitQuality": 0.784,
+          "fitResidualRmsPx": 43.21,
+          "policy": "oracle_best_source",
+          "selectedErrorPx": 75.69,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "strict_residual_margin_confidence_v0": {
+          "details": {
+            "otherResidualRmsPx": 43.21,
+            "reason": "lower_residual_with_strict_margin",
+            "residualMarginPx": 21.36,
+            "selectedResidualRmsPx": 21.85
+          },
+          "policy": "strict_residual_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        }
+      },
+      "sourceDiagnostics": {
+        "rembg": {
+          "cubeCenterSource": "mean3_ensemble+image_refined",
+          "fitQuality": 0.784,
+          "fitResidualRmsPx": 43.21,
+          "nondegenerate": true,
+          "refinement": "applied",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1529.0,
+            2073.0
+          ],
+          "vertexErrorPx": 75.69
+        },
+        "sam3": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.891,
+          "fitResidualRmsPx": 21.85,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1507.48,
+            1970.96
+          ],
+          "vertexErrorPx": 118.16
+        }
+      },
+      "sourceErrors": {
+        "rembg": 75.69,
+        "sam3": 118.16
+      },
+      "trueVertex": [
+        1599.4,
+        2045.2
+      ]
+    },
+    {
+      "bestSourceByVertexError": "sam3",
+      "key": "24_A",
+      "policyResults": {
+        "always_rembg": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.831,
+          "fitResidualRmsPx": 33.76,
+          "policy": "always_rembg",
+          "selectedErrorPx": 87.58,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "always_sam3": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.839,
+          "fitResidualRmsPx": 32.2,
+          "policy": "always_sam3",
+          "selectedErrorPx": 86.36,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "global_model_score_v0": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "lower_fit_residual_rms",
+            "residualMarginPx": 1.56
+          },
+          "fitQuality": 0.839,
+          "fitResidualRmsPx": 32.2,
+          "policy": "global_model_score_v0",
+          "selectedErrorPx": 86.36,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "high_fit_quality_margin_confidence_v0": {
+          "details": {
+            "fitQualityMargin": 0.008,
+            "otherFitQuality": 0.831,
+            "reason": "higher_fit_quality_with_strict_margin",
+            "selectedFitQuality": 0.839
+          },
+          "policy": "high_fit_quality_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        },
+        "oracle_best_source": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "label_oracle"
+          },
+          "fitQuality": 0.839,
+          "fitResidualRmsPx": 32.2,
+          "policy": "oracle_best_source",
+          "selectedErrorPx": 86.36,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "strict_residual_margin_confidence_v0": {
+          "details": {
+            "otherResidualRmsPx": 33.76,
+            "reason": "lower_residual_with_strict_margin",
+            "residualMarginPx": 1.56,
+            "selectedResidualRmsPx": 32.2
+          },
+          "policy": "strict_residual_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        }
+      },
+      "sourceDiagnostics": {
+        "rembg": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.831,
+          "fitResidualRmsPx": 33.76,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1636.2,
+            1996.37
+          ],
+          "vertexErrorPx": 87.58
+        },
+        "sam3": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.839,
+          "fitResidualRmsPx": 32.2,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1628.84,
+            1983.94
+          ],
+          "vertexErrorPx": 86.36
+        }
+      },
+      "sourceErrors": {
+        "rembg": 87.58,
+        "sam3": 86.36
+      },
+      "trueVertex": [
+        1554.5,
+        2027.9
+      ]
+    },
+    {
+      "bestSourceByVertexError": "rembg",
+      "key": "26_A",
+      "policyResults": {
+        "always_rembg": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.917,
+          "fitResidualRmsPx": 16.69,
+          "policy": "always_rembg",
+          "selectedErrorPx": 72.54,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "always_sam3": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.839,
+          "fitResidualRmsPx": 32.13,
+          "policy": "always_sam3",
+          "selectedErrorPx": 120.87,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "global_model_score_v0": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "lower_fit_residual_rms",
+            "residualMarginPx": 15.44
+          },
+          "fitQuality": 0.917,
+          "fitResidualRmsPx": 16.69,
+          "policy": "global_model_score_v0",
+          "selectedErrorPx": 72.54,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "high_fit_quality_margin_confidence_v0": {
+          "details": {
+            "fitQualityMargin": 0.078,
+            "otherFitQuality": 0.839,
+            "reason": "higher_fit_quality_with_strict_margin",
+            "selectedFitQuality": 0.917
+          },
+          "policy": "high_fit_quality_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        },
+        "oracle_best_source": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "label_oracle"
+          },
+          "fitQuality": 0.917,
+          "fitResidualRmsPx": 16.69,
+          "policy": "oracle_best_source",
+          "selectedErrorPx": 72.54,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "strict_residual_margin_confidence_v0": {
+          "details": {
+            "otherResidualRmsPx": 32.13,
+            "reason": "lower_residual_with_strict_margin",
+            "residualMarginPx": 15.44,
+            "selectedResidualRmsPx": 16.69
+          },
+          "policy": "strict_residual_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        }
+      },
+      "sourceDiagnostics": {
+        "rembg": {
+          "cubeCenterSource": "mean3_ensemble+image_refined",
+          "fitQuality": 0.917,
+          "fitResidualRmsPx": 16.69,
+          "nondegenerate": true,
+          "refinement": "applied",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1471.0,
+            2003.0
+          ],
+          "vertexErrorPx": 72.54
+        },
+        "sam3": {
+          "cubeCenterSource": "mean3_ensemble+image_refined",
+          "fitQuality": 0.839,
+          "fitResidualRmsPx": 32.13,
+          "nondegenerate": true,
+          "refinement": "applied",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1564.0,
+            2011.0
+          ],
+          "vertexErrorPx": 120.87
+        }
+      },
+      "sourceErrors": {
+        "rembg": 72.54,
+        "sam3": 120.87
+      },
+      "trueVertex": [
+        1461.4,
+        2074.9
+      ]
+    },
+    {
+      "bestSourceByVertexError": "sam3",
+      "key": "26_B",
+      "policyResults": {
+        "always_rembg": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.881,
+          "fitResidualRmsPx": 23.83,
+          "policy": "always_rembg",
+          "selectedErrorPx": 80.91,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "always_sam3": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.904,
+          "fitResidualRmsPx": 19.12,
+          "policy": "always_sam3",
+          "selectedErrorPx": 24.1,
+          "selection": "sam3",
+          "status": "strict_ready"
+        },
+        "global_model_score_v0": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "lower_fit_residual_rms",
+            "residualMarginPx": 4.71
+          },
+          "fitQuality": 0.904,
+          "fitResidualRmsPx": 19.12,
+          "policy": "global_model_score_v0",
+          "selectedErrorPx": 24.1,
+          "selection": "sam3",
+          "status": "strict_ready"
+        },
+        "high_fit_quality_margin_confidence_v0": {
+          "details": {
+            "fitQualityMargin": 0.023,
+            "otherFitQuality": 0.881,
+            "reason": "higher_fit_quality_with_strict_margin",
+            "selectedFitQuality": 0.904
+          },
+          "policy": "high_fit_quality_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        },
+        "oracle_best_source": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "label_oracle"
+          },
+          "fitQuality": 0.904,
+          "fitResidualRmsPx": 19.12,
+          "policy": "oracle_best_source",
+          "selectedErrorPx": 24.1,
+          "selection": "sam3",
+          "status": "strict_ready"
+        },
+        "strict_residual_margin_confidence_v0": {
+          "details": {
+            "otherResidualRmsPx": 23.83,
+            "reason": "lower_residual_with_strict_margin",
+            "residualMarginPx": 4.71,
+            "selectedResidualRmsPx": 19.12
+          },
+          "policy": "strict_residual_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        }
+      },
+      "sourceDiagnostics": {
+        "rembg": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.881,
+          "fitResidualRmsPx": 23.83,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1442.64,
+            2016.51
+          ],
+          "vertexErrorPx": 80.91
+        },
+        "sam3": {
+          "cubeCenterSource": "mean3_ensemble+image_refined",
+          "fitQuality": 0.904,
+          "fitResidualRmsPx": 19.12,
+          "nondegenerate": true,
+          "refinement": "applied",
+          "status": "split_ready_strict",
+          "vertex": [
+            1460.0,
+            2116.0
+          ],
+          "vertexErrorPx": 24.1
+        }
+      },
+      "sourceErrors": {
+        "rembg": 80.91,
+        "sam3": 24.1
+      },
+      "trueVertex": [
+        1468.1,
+        2093.3
+      ]
+    },
+    {
+      "bestSourceByVertexError": "sam3",
+      "key": "28_A",
+      "policyResults": {
+        "always_rembg": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.88,
+          "fitResidualRmsPx": 24.08,
+          "policy": "always_rembg",
+          "selectedErrorPx": 124.3,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "always_sam3": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.906,
+          "fitResidualRmsPx": 18.86,
+          "policy": "always_sam3",
+          "selectedErrorPx": 78.48,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "global_model_score_v0": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "lower_fit_residual_rms",
+            "residualMarginPx": 5.22
+          },
+          "fitQuality": 0.906,
+          "fitResidualRmsPx": 18.86,
+          "policy": "global_model_score_v0",
+          "selectedErrorPx": 78.48,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "high_fit_quality_margin_confidence_v0": {
+          "details": {
+            "fitQualityMargin": 0.026,
+            "otherFitQuality": 0.88,
+            "reason": "higher_fit_quality_with_strict_margin",
+            "selectedFitQuality": 0.906
+          },
+          "policy": "high_fit_quality_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        },
+        "oracle_best_source": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "label_oracle"
+          },
+          "fitQuality": 0.906,
+          "fitResidualRmsPx": 18.86,
+          "policy": "oracle_best_source",
+          "selectedErrorPx": 78.48,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "strict_residual_margin_confidence_v0": {
+          "details": {
+            "otherResidualRmsPx": 24.08,
+            "reason": "lower_residual_with_strict_margin",
+            "residualMarginPx": 5.22,
+            "selectedResidualRmsPx": 18.86
+          },
+          "policy": "strict_residual_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        }
+      },
+      "sourceDiagnostics": {
+        "rembg": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.88,
+          "fitResidualRmsPx": 24.08,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1549.19,
+            1946.05
+          ],
+          "vertexErrorPx": 124.3
+        },
+        "sam3": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.906,
+          "fitResidualRmsPx": 18.86,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1479.18,
+            1908.84
+          ],
+          "vertexErrorPx": 78.48
+        }
+      },
+      "sourceErrors": {
+        "rembg": 124.3,
+        "sam3": 78.48
+      },
+      "trueVertex": [
+        1426.7,
+        1967.2
+      ]
+    },
+    {
+      "bestSourceByVertexError": "rembg",
+      "key": "28_B",
+      "policyResults": {
+        "always_rembg": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.835,
+          "fitResidualRmsPx": 32.99,
+          "policy": "always_rembg",
+          "selectedErrorPx": 102.57,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "always_sam3": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.874,
+          "fitResidualRmsPx": 25.3,
+          "policy": "always_sam3",
+          "selectedErrorPx": 105.89,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "global_model_score_v0": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "lower_fit_residual_rms",
+            "residualMarginPx": 7.69
+          },
+          "fitQuality": 0.874,
+          "fitResidualRmsPx": 25.3,
+          "policy": "global_model_score_v0",
+          "selectedErrorPx": 105.89,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "high_fit_quality_margin_confidence_v0": {
+          "details": {
+            "fitQualityMargin": 0.039,
+            "otherFitQuality": 0.835,
+            "reason": "higher_fit_quality_with_strict_margin",
+            "selectedFitQuality": 0.874
+          },
+          "policy": "high_fit_quality_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        },
+        "oracle_best_source": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "label_oracle"
+          },
+          "fitQuality": 0.835,
+          "fitResidualRmsPx": 32.99,
+          "policy": "oracle_best_source",
+          "selectedErrorPx": 102.57,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "strict_residual_margin_confidence_v0": {
+          "details": {
+            "otherResidualRmsPx": 32.99,
+            "reason": "lower_residual_with_strict_margin",
+            "residualMarginPx": 7.69,
+            "selectedResidualRmsPx": 25.3
+          },
+          "policy": "strict_residual_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        }
+      },
+      "sourceDiagnostics": {
+        "rembg": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.835,
+          "fitResidualRmsPx": 32.99,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1477.34,
+            1934.2
+          ],
+          "vertexErrorPx": 102.57
+        },
+        "sam3": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.874,
+          "fitResidualRmsPx": 25.3,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1468.87,
+            1923.65
+          ],
+          "vertexErrorPx": 105.89
+        }
+      },
+      "sourceErrors": {
+        "rembg": 102.57,
+        "sam3": 105.89
+      },
+      "trueVertex": [
+        1410.5,
+        2012.0
+      ]
+    },
+    {
+      "bestSourceByVertexError": "sam3",
+      "key": "29_A",
+      "policyResults": {
+        "always_rembg": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.819,
+          "fitResidualRmsPx": 36.12,
+          "policy": "always_rembg",
+          "selectedErrorPx": 57.39,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "always_sam3": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.867,
+          "fitResidualRmsPx": 26.63,
+          "policy": "always_sam3",
+          "selectedErrorPx": 45.3,
+          "selection": "sam3",
+          "status": "plausible"
+        },
+        "global_model_score_v0": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "lower_fit_residual_rms",
+            "residualMarginPx": 9.49
+          },
+          "fitQuality": 0.867,
+          "fitResidualRmsPx": 26.63,
+          "policy": "global_model_score_v0",
+          "selectedErrorPx": 45.3,
+          "selection": "sam3",
+          "status": "plausible"
+        },
+        "high_fit_quality_margin_confidence_v0": {
+          "details": {
+            "fitQualityMargin": 0.048,
+            "otherFitQuality": 0.819,
+            "reason": "higher_fit_quality_with_strict_margin",
+            "selectedFitQuality": 0.867
+          },
+          "policy": "high_fit_quality_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        },
+        "oracle_best_source": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "label_oracle"
+          },
+          "fitQuality": 0.867,
+          "fitResidualRmsPx": 26.63,
+          "policy": "oracle_best_source",
+          "selectedErrorPx": 45.3,
+          "selection": "sam3",
+          "status": "plausible"
+        },
+        "strict_residual_margin_confidence_v0": {
+          "details": {
+            "otherResidualRmsPx": 36.12,
+            "reason": "lower_residual_with_strict_margin",
+            "residualMarginPx": 9.49,
+            "selectedResidualRmsPx": 26.63
+          },
+          "policy": "strict_residual_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        }
+      },
+      "sourceDiagnostics": {
+        "rembg": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.819,
+          "fitResidualRmsPx": 36.12,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1445.16,
+            2067.17
+          ],
+          "vertexErrorPx": 57.39
+        },
+        "sam3": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.867,
+          "fitResidualRmsPx": 26.63,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "split_plausible",
+          "vertex": [
+            1467.48,
+            2062.99
+          ],
+          "vertexErrorPx": 45.3
+        }
+      },
+      "sourceErrors": {
+        "rembg": 57.39,
+        "sam3": 45.3
+      },
+      "trueVertex": [
+        1491.0,
+        2101.7
+      ]
+    },
+    {
+      "bestSourceByVertexError": "sam3",
+      "key": "30_A",
+      "policyResults": {
+        "always_rembg": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.484,
+          "fitResidualRmsPx": 103.14,
+          "policy": "always_rembg",
+          "selectedErrorPx": 39.72,
+          "selection": "rembg",
+          "status": "plausible"
+        },
+        "always_sam3": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.916,
+          "fitResidualRmsPx": 16.77,
+          "policy": "always_sam3",
+          "selectedErrorPx": 20.03,
+          "selection": "sam3",
+          "status": "strict_ready"
+        },
+        "global_model_score_v0": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "lower_fit_residual_rms",
+            "residualMarginPx": 86.37
+          },
+          "fitQuality": 0.916,
+          "fitResidualRmsPx": 16.77,
+          "policy": "global_model_score_v0",
+          "selectedErrorPx": 20.03,
+          "selection": "sam3",
+          "status": "strict_ready"
+        },
+        "high_fit_quality_margin_confidence_v0": {
+          "bestSourceCorrect": true,
+          "details": {
+            "fitQualityMargin": 0.432,
+            "otherFitQuality": 0.484,
+            "reason": "higher_fit_quality_with_strict_margin",
+            "selectedFitQuality": 0.916
+          },
+          "fitQuality": 0.916,
+          "fitResidualRmsPx": 16.77,
+          "policy": "high_fit_quality_margin_confidence_v0",
+          "selectedErrorPx": 20.03,
+          "selection": "sam3",
+          "status": "strict_ready"
+        },
+        "oracle_best_source": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "label_oracle"
+          },
+          "fitQuality": 0.916,
+          "fitResidualRmsPx": 16.77,
+          "policy": "oracle_best_source",
+          "selectedErrorPx": 20.03,
+          "selection": "sam3",
+          "status": "strict_ready"
+        },
+        "strict_residual_margin_confidence_v0": {
+          "bestSourceCorrect": true,
+          "details": {
+            "otherResidualRmsPx": 103.14,
+            "reason": "lower_residual_with_strict_margin",
+            "residualMarginPx": 86.37,
+            "selectedResidualRmsPx": 16.77
+          },
+          "fitQuality": 0.916,
+          "fitResidualRmsPx": 16.77,
+          "policy": "strict_residual_margin_confidence_v0",
+          "selectedErrorPx": 20.03,
+          "selection": "sam3",
+          "status": "strict_ready"
+        }
+      },
+      "sourceDiagnostics": {
+        "rembg": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.484,
+          "fitResidualRmsPx": 103.14,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "split_plausible",
+          "vertex": [
+            1466.93,
+            2250.07
+          ],
+          "vertexErrorPx": 39.72
+        },
+        "sam3": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.916,
+          "fitResidualRmsPx": 16.77,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "split_ready_strict",
+          "vertex": [
+            1456.84,
+            2231.85
+          ],
+          "vertexErrorPx": 20.03
+        }
+      },
+      "sourceErrors": {
+        "rembg": 39.72,
+        "sam3": 20.03
+      },
+      "trueVertex": [
+        1440.2,
+        2220.7
+      ]
+    },
+    {
+      "bestSourceByVertexError": "rembg",
+      "key": "31_A",
+      "policyResults": {
+        "always_rembg": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.841,
+          "fitResidualRmsPx": 31.85,
+          "policy": "always_rembg",
+          "selectedErrorPx": 47.18,
+          "selection": "rembg",
+          "status": "plausible"
+        },
+        "always_sam3": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.801,
+          "fitResidualRmsPx": 39.73,
+          "policy": "always_sam3",
+          "selectedErrorPx": 91.62,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "global_model_score_v0": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "lower_fit_residual_rms",
+            "residualMarginPx": 7.88
+          },
+          "fitQuality": 0.841,
+          "fitResidualRmsPx": 31.85,
+          "policy": "global_model_score_v0",
+          "selectedErrorPx": 47.18,
+          "selection": "rembg",
+          "status": "plausible"
+        },
+        "high_fit_quality_margin_confidence_v0": {
+          "details": {
+            "fitQualityMargin": 0.04,
+            "otherFitQuality": 0.801,
+            "reason": "higher_fit_quality_with_strict_margin",
+            "selectedFitQuality": 0.841
+          },
+          "policy": "high_fit_quality_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        },
+        "oracle_best_source": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "label_oracle"
+          },
+          "fitQuality": 0.841,
+          "fitResidualRmsPx": 31.85,
+          "policy": "oracle_best_source",
+          "selectedErrorPx": 47.18,
+          "selection": "rembg",
+          "status": "plausible"
+        },
+        "strict_residual_margin_confidence_v0": {
+          "details": {
+            "otherResidualRmsPx": 39.73,
+            "reason": "lower_residual_with_strict_margin",
+            "residualMarginPx": 7.88,
+            "selectedResidualRmsPx": 31.85
+          },
+          "policy": "strict_residual_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        }
+      },
+      "sourceDiagnostics": {
+        "rembg": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.841,
+          "fitResidualRmsPx": 31.85,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "split_plausible",
+          "vertex": [
+            1391.46,
+            1974.52
+          ],
+          "vertexErrorPx": 47.18
+        },
+        "sam3": {
+          "cubeCenterSource": "mean3_ensemble+image_refined",
+          "fitQuality": 0.801,
+          "fitResidualRmsPx": 39.73,
+          "nondegenerate": true,
+          "refinement": "applied",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1337.0,
+            1974.0
+          ],
+          "vertexErrorPx": 91.62
+        }
+      },
+      "sourceErrors": {
+        "rembg": 47.18,
+        "sam3": 91.62
+      },
+      "trueVertex": [
+        1420.5,
+        2011.7
+      ]
+    },
+    {
+      "bestSourceByVertexError": "sam3",
+      "key": "32_A",
+      "policyResults": {
+        "always_rembg": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.841,
+          "fitResidualRmsPx": 31.81,
+          "policy": "always_rembg",
+          "selectedErrorPx": 72.33,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "always_sam3": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.864,
+          "fitResidualRmsPx": 27.21,
+          "policy": "always_sam3",
+          "selectedErrorPx": 56.5,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "global_model_score_v0": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "lower_fit_residual_rms",
+            "residualMarginPx": 4.6
+          },
+          "fitQuality": 0.864,
+          "fitResidualRmsPx": 27.21,
+          "policy": "global_model_score_v0",
+          "selectedErrorPx": 56.5,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "high_fit_quality_margin_confidence_v0": {
+          "details": {
+            "fitQualityMargin": 0.023,
+            "otherFitQuality": 0.841,
+            "reason": "higher_fit_quality_with_strict_margin",
+            "selectedFitQuality": 0.864
+          },
+          "policy": "high_fit_quality_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        },
+        "oracle_best_source": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "label_oracle"
+          },
+          "fitQuality": 0.864,
+          "fitResidualRmsPx": 27.21,
+          "policy": "oracle_best_source",
+          "selectedErrorPx": 56.5,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "strict_residual_margin_confidence_v0": {
+          "details": {
+            "otherResidualRmsPx": 31.81,
+            "reason": "lower_residual_with_strict_margin",
+            "residualMarginPx": 4.6,
+            "selectedResidualRmsPx": 27.21
+          },
+          "policy": "strict_residual_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        }
+      },
+      "sourceDiagnostics": {
+        "rembg": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.841,
+          "fitResidualRmsPx": 31.81,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1532.91,
+            1989.84
+          ],
+          "vertexErrorPx": 72.33
+        },
+        "sam3": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.864,
+          "fitResidualRmsPx": 27.21,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1547.11,
+            1982.01
+          ],
+          "vertexErrorPx": 56.5
+        }
+      },
+      "sourceErrors": {
+        "rembg": 72.33,
+        "sam3": 56.5
+      },
+      "trueVertex": [
+        1601.8,
+        1967.8
+      ]
+    },
+    {
+      "bestSourceByVertexError": "sam3",
+      "key": "32_B",
+      "policyResults": {
+        "always_rembg": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.879,
+          "fitResidualRmsPx": 24.15,
+          "policy": "always_rembg",
+          "selectedErrorPx": 70.61,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "always_sam3": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.876,
+          "fitResidualRmsPx": 24.83,
+          "policy": "always_sam3",
+          "selectedErrorPx": 47.65,
+          "selection": "sam3",
+          "status": "plausible"
+        },
+        "global_model_score_v0": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "lower_fit_residual_rms",
+            "residualMarginPx": 0.68
+          },
+          "fitQuality": 0.879,
+          "fitResidualRmsPx": 24.15,
+          "policy": "global_model_score_v0",
+          "selectedErrorPx": 70.61,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "high_fit_quality_margin_confidence_v0": {
+          "details": {
+            "fitQualityMargin": 0.003,
+            "otherFitQuality": 0.876,
+            "reason": "higher_fit_quality_with_strict_margin",
+            "selectedFitQuality": 0.879
+          },
+          "policy": "high_fit_quality_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        },
+        "oracle_best_source": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "label_oracle"
+          },
+          "fitQuality": 0.876,
+          "fitResidualRmsPx": 24.83,
+          "policy": "oracle_best_source",
+          "selectedErrorPx": 47.65,
+          "selection": "sam3",
+          "status": "plausible"
+        },
+        "strict_residual_margin_confidence_v0": {
+          "details": {
+            "otherResidualRmsPx": 24.83,
+            "reason": "lower_residual_with_strict_margin",
+            "residualMarginPx": 0.68,
+            "selectedResidualRmsPx": 24.15
+          },
+          "policy": "strict_residual_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        }
+      },
+      "sourceDiagnostics": {
+        "rembg": {
+          "cubeCenterSource": "mean3_ensemble+image_refined",
+          "fitQuality": 0.879,
+          "fitResidualRmsPx": 24.15,
+          "nondegenerate": true,
+          "refinement": "applied",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1367.0,
+            1826.0
+          ],
+          "vertexErrorPx": 70.61
+        },
+        "sam3": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.876,
+          "fitResidualRmsPx": 24.83,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "split_plausible",
+          "vertex": [
+            1402.8,
+            1858.64
+          ],
+          "vertexErrorPx": 47.65
+        }
+      },
+      "sourceErrors": {
+        "rembg": 70.61,
+        "sam3": 47.65
+      },
+      "trueVertex": [
+        1373.6,
+        1896.3
+      ]
+    },
+    {
+      "bestSourceByVertexError": "sam3",
+      "key": "36_B",
+      "policyResults": {
+        "always_rembg": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.89,
+          "fitResidualRmsPx": 22.09,
+          "policy": "always_rembg",
+          "selectedErrorPx": 102.95,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "always_sam3": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.913,
+          "fitResidualRmsPx": 17.42,
+          "policy": "always_sam3",
+          "selectedErrorPx": 69.62,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "global_model_score_v0": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "lower_fit_residual_rms",
+            "residualMarginPx": 4.67
+          },
+          "fitQuality": 0.913,
+          "fitResidualRmsPx": 17.42,
+          "policy": "global_model_score_v0",
+          "selectedErrorPx": 69.62,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "high_fit_quality_margin_confidence_v0": {
+          "details": {
+            "fitQualityMargin": 0.023,
+            "otherFitQuality": 0.89,
+            "reason": "higher_fit_quality_with_strict_margin",
+            "selectedFitQuality": 0.913
+          },
+          "policy": "high_fit_quality_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        },
+        "oracle_best_source": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "label_oracle"
+          },
+          "fitQuality": 0.913,
+          "fitResidualRmsPx": 17.42,
+          "policy": "oracle_best_source",
+          "selectedErrorPx": 69.62,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "strict_residual_margin_confidence_v0": {
+          "details": {
+            "otherResidualRmsPx": 22.09,
+            "reason": "lower_residual_with_strict_margin",
+            "residualMarginPx": 4.67,
+            "selectedResidualRmsPx": 17.42
+          },
+          "policy": "strict_residual_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        }
+      },
+      "sourceDiagnostics": {
+        "rembg": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.89,
+          "fitResidualRmsPx": 22.09,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1288.77,
+            1842.56
+          ],
+          "vertexErrorPx": 102.95
+        },
+        "sam3": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.913,
+          "fitResidualRmsPx": 17.42,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1314.84,
+            1871.04
+          ],
+          "vertexErrorPx": 69.62
+        }
+      },
+      "sourceErrors": {
+        "rembg": 102.95,
+        "sam3": 69.62
+      },
+      "trueVertex": [
+        1320.8,
+        1940.4
+      ]
+    },
+    {
+      "bestSourceByVertexError": "rembg",
+      "key": "42_B",
+      "policyResults": {
+        "always_rembg": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.592,
+          "fitResidualRmsPx": 81.69,
+          "policy": "always_rembg",
+          "selectedErrorPx": 89.25,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "always_sam3": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.584,
+          "fitResidualRmsPx": 83.18,
+          "policy": "always_sam3",
+          "selectedErrorPx": 186.24,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "global_model_score_v0": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "lower_fit_residual_rms",
+            "residualMarginPx": 1.49
+          },
+          "fitQuality": 0.592,
+          "fitResidualRmsPx": 81.69,
+          "policy": "global_model_score_v0",
+          "selectedErrorPx": 89.25,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "high_fit_quality_margin_confidence_v0": {
+          "details": {
+            "fitQualityMargin": 0.008,
+            "otherFitQuality": 0.584,
+            "reason": "higher_fit_quality_with_strict_margin",
+            "selectedFitQuality": 0.592
+          },
+          "policy": "high_fit_quality_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        },
+        "oracle_best_source": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "label_oracle"
+          },
+          "fitQuality": 0.592,
+          "fitResidualRmsPx": 81.69,
+          "policy": "oracle_best_source",
+          "selectedErrorPx": 89.25,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "strict_residual_margin_confidence_v0": {
+          "details": {
+            "otherResidualRmsPx": 83.18,
+            "reason": "lower_residual_with_strict_margin",
+            "residualMarginPx": 1.49,
+            "selectedResidualRmsPx": 81.69
+          },
+          "policy": "strict_residual_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        }
+      },
+      "sourceDiagnostics": {
+        "rembg": {
+          "cubeCenterSource": "mean3_ensemble+image_refined",
+          "fitQuality": 0.592,
+          "fitResidualRmsPx": 81.69,
+          "nondegenerate": true,
+          "refinement": "applied",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1508.0,
+            1917.0
+          ],
+          "vertexErrorPx": 89.25
+        },
+        "sam3": {
+          "cubeCenterSource": "mean3_ensemble+image_refined",
+          "fitQuality": 0.584,
+          "fitResidualRmsPx": 83.18,
+          "nondegenerate": true,
+          "refinement": "applied",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1500.0,
+            2021.0
+          ],
+          "vertexErrorPx": 186.24
+        }
+      },
+      "sourceErrors": {
+        "rembg": 89.25,
+        "sam3": 186.24
+      },
+      "trueVertex": [
+        1560.6,
+        1844.9
+      ]
+    },
+    {
+      "bestSourceByVertexError": "sam3",
+      "key": "44_A",
+      "policyResults": {
+        "always_rembg": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.81,
+          "fitResidualRmsPx": 38.06,
+          "policy": "always_rembg",
+          "selectedErrorPx": 185.52,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "always_sam3": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.884,
+          "fitResidualRmsPx": 23.18,
+          "policy": "always_sam3",
+          "selectedErrorPx": 148.34,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "global_model_score_v0": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "lower_fit_residual_rms",
+            "residualMarginPx": 14.88
+          },
+          "fitQuality": 0.884,
+          "fitResidualRmsPx": 23.18,
+          "policy": "global_model_score_v0",
+          "selectedErrorPx": 148.34,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "high_fit_quality_margin_confidence_v0": {
+          "details": {
+            "fitQualityMargin": 0.074,
+            "otherFitQuality": 0.81,
+            "reason": "higher_fit_quality_with_strict_margin",
+            "selectedFitQuality": 0.884
+          },
+          "policy": "high_fit_quality_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        },
+        "oracle_best_source": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "label_oracle"
+          },
+          "fitQuality": 0.884,
+          "fitResidualRmsPx": 23.18,
+          "policy": "oracle_best_source",
+          "selectedErrorPx": 148.34,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "strict_residual_margin_confidence_v0": {
+          "details": {
+            "otherResidualRmsPx": 38.06,
+            "reason": "lower_residual_with_strict_margin",
+            "residualMarginPx": 14.88,
+            "selectedResidualRmsPx": 23.18
+          },
+          "policy": "strict_residual_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        }
+      },
+      "sourceDiagnostics": {
+        "rembg": {
+          "cubeCenterSource": "mean3_ensemble+image_refined",
+          "fitQuality": 0.81,
+          "fitResidualRmsPx": 38.06,
+          "nondegenerate": true,
+          "refinement": "applied",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1472.0,
+            1826.0
+          ],
+          "vertexErrorPx": 185.52
+        },
+        "sam3": {
+          "cubeCenterSource": "mean3_ensemble+image_refined",
+          "fitQuality": 0.884,
+          "fitResidualRmsPx": 23.18,
+          "nondegenerate": true,
+          "refinement": "applied",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1505.0,
+            1934.0
+          ],
+          "vertexErrorPx": 148.34
+        }
+      },
+      "sourceErrors": {
+        "rembg": 185.52,
+        "sam3": 148.34
+      },
+      "trueVertex": [
+        1362.7,
+        1975.9
+      ]
+    },
+    {
+      "bestSourceByVertexError": "sam3",
+      "key": "44_B",
+      "policyResults": {
+        "always_rembg": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.822,
+          "fitResidualRmsPx": 35.66,
+          "policy": "always_rembg",
+          "selectedErrorPx": 117.57,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "always_sam3": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.891,
+          "fitResidualRmsPx": 21.87,
+          "policy": "always_sam3",
+          "selectedErrorPx": 14.96,
+          "selection": "sam3",
+          "status": "strict_ready"
+        },
+        "global_model_score_v0": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "lower_fit_residual_rms",
+            "residualMarginPx": 13.79
+          },
+          "fitQuality": 0.891,
+          "fitResidualRmsPx": 21.87,
+          "policy": "global_model_score_v0",
+          "selectedErrorPx": 14.96,
+          "selection": "sam3",
+          "status": "strict_ready"
+        },
+        "high_fit_quality_margin_confidence_v0": {
+          "details": {
+            "fitQualityMargin": 0.069,
+            "otherFitQuality": 0.822,
+            "reason": "higher_fit_quality_with_strict_margin",
+            "selectedFitQuality": 0.891
+          },
+          "policy": "high_fit_quality_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        },
+        "oracle_best_source": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "label_oracle"
+          },
+          "fitQuality": 0.891,
+          "fitResidualRmsPx": 21.87,
+          "policy": "oracle_best_source",
+          "selectedErrorPx": 14.96,
+          "selection": "sam3",
+          "status": "strict_ready"
+        },
+        "strict_residual_margin_confidence_v0": {
+          "details": {
+            "otherResidualRmsPx": 35.66,
+            "reason": "lower_residual_with_strict_margin",
+            "residualMarginPx": 13.79,
+            "selectedResidualRmsPx": 21.87
+          },
+          "policy": "strict_residual_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        }
+      },
+      "sourceDiagnostics": {
+        "rembg": {
+          "cubeCenterSource": "mean3_ensemble+image_refined",
+          "fitQuality": 0.822,
+          "fitResidualRmsPx": 35.66,
+          "nondegenerate": true,
+          "refinement": "applied",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1615.0,
+            1988.0
+          ],
+          "vertexErrorPx": 117.57
+        },
+        "sam3": {
+          "cubeCenterSource": "mean3_ensemble+image_refined",
+          "fitQuality": 0.891,
+          "fitResidualRmsPx": 21.87,
+          "nondegenerate": true,
+          "refinement": "applied",
+          "status": "split_ready_strict",
+          "vertex": [
+            1509.0,
+            1997.0
+          ],
+          "vertexErrorPx": 14.96
+        }
+      },
+      "sourceErrors": {
+        "rembg": 117.57,
+        "sam3": 14.96
+      },
+      "trueVertex": [
+        1499.2,
+        2008.3
+      ]
+    },
+    {
+      "bestSourceByVertexError": "sam3",
+      "key": "61_A",
+      "policyResults": {
+        "always_rembg": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.792,
+          "fitResidualRmsPx": 41.51,
+          "policy": "always_rembg",
+          "selectedErrorPx": 70.74,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "always_sam3": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.806,
+          "fitResidualRmsPx": 38.75,
+          "policy": "always_sam3",
+          "selectedErrorPx": 18.88,
+          "selection": "sam3",
+          "status": "strict_ready"
+        },
+        "global_model_score_v0": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "lower_fit_residual_rms",
+            "residualMarginPx": 2.76
+          },
+          "fitQuality": 0.806,
+          "fitResidualRmsPx": 38.75,
+          "policy": "global_model_score_v0",
+          "selectedErrorPx": 18.88,
+          "selection": "sam3",
+          "status": "strict_ready"
+        },
+        "high_fit_quality_margin_confidence_v0": {
+          "details": {
+            "fitQualityMargin": 0.014,
+            "otherFitQuality": 0.792,
+            "reason": "higher_fit_quality_with_strict_margin",
+            "selectedFitQuality": 0.806
+          },
+          "policy": "high_fit_quality_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        },
+        "oracle_best_source": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "label_oracle"
+          },
+          "fitQuality": 0.806,
+          "fitResidualRmsPx": 38.75,
+          "policy": "oracle_best_source",
+          "selectedErrorPx": 18.88,
+          "selection": "sam3",
+          "status": "strict_ready"
+        },
+        "strict_residual_margin_confidence_v0": {
+          "details": {
+            "otherResidualRmsPx": 41.51,
+            "reason": "lower_residual_with_strict_margin",
+            "residualMarginPx": 2.76,
+            "selectedResidualRmsPx": 38.75
+          },
+          "policy": "strict_residual_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        }
+      },
+      "sourceDiagnostics": {
+        "rembg": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.792,
+          "fitResidualRmsPx": 41.51,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1558.87,
+            1985.83
+          ],
+          "vertexErrorPx": 70.74
+        },
+        "sam3": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.806,
+          "fitResidualRmsPx": 38.75,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "split_ready_strict",
+          "vertex": [
+            1514.0,
+            1957.82
+          ],
+          "vertexErrorPx": 18.88
+        }
+      },
+      "sourceErrors": {
+        "rembg": 70.74,
+        "sam3": 18.88
+      },
+      "trueVertex": [
+        1495.4,
+        1954.6
+      ]
+    },
+    {
+      "bestSourceByVertexError": "rembg",
+      "key": "61_B",
+      "policyResults": {
+        "always_rembg": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.809,
+          "fitResidualRmsPx": 38.16,
+          "policy": "always_rembg",
+          "selectedErrorPx": 60.03,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "always_sam3": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "fixed_source"
+          },
+          "fitQuality": 0.82,
+          "fitResidualRmsPx": 36.09,
+          "policy": "always_sam3",
+          "selectedErrorPx": 88.87,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "global_model_score_v0": {
+          "bestSourceCorrect": false,
+          "details": {
+            "reason": "lower_fit_residual_rms",
+            "residualMarginPx": 2.07
+          },
+          "fitQuality": 0.82,
+          "fitResidualRmsPx": 36.09,
+          "policy": "global_model_score_v0",
+          "selectedErrorPx": 88.87,
+          "selection": "sam3",
+          "status": "false_confident"
+        },
+        "high_fit_quality_margin_confidence_v0": {
+          "details": {
+            "fitQualityMargin": 0.011,
+            "otherFitQuality": 0.809,
+            "reason": "higher_fit_quality_with_strict_margin",
+            "selectedFitQuality": 0.82
+          },
+          "policy": "high_fit_quality_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        },
+        "oracle_best_source": {
+          "bestSourceCorrect": true,
+          "details": {
+            "reason": "label_oracle"
+          },
+          "fitQuality": 0.809,
+          "fitResidualRmsPx": 38.16,
+          "policy": "oracle_best_source",
+          "selectedErrorPx": 60.03,
+          "selection": "rembg",
+          "status": "false_confident"
+        },
+        "strict_residual_margin_confidence_v0": {
+          "details": {
+            "otherResidualRmsPx": 38.16,
+            "reason": "lower_residual_with_strict_margin",
+            "residualMarginPx": 2.07,
+            "selectedResidualRmsPx": 36.09
+          },
+          "policy": "strict_residual_margin_confidence_v0",
+          "selection": "abstain",
+          "status": "abstained"
+        }
+      },
+      "sourceDiagnostics": {
+        "rembg": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.809,
+          "fitResidualRmsPx": 38.16,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1367.73,
+            1888.78
+          ],
+          "vertexErrorPx": 60.03
+        },
+        "sam3": {
+          "cubeCenterSource": "mean3_ensemble",
+          "fitQuality": 0.82,
+          "fitResidualRmsPx": 36.09,
+          "nondegenerate": true,
+          "refinement": "skipped_high_base_score",
+          "status": "vertex_error_blocked",
+          "vertex": [
+            1386.66,
+            1914.44
+          ],
+          "vertexErrorPx": 88.87
+        }
+      },
+      "sourceErrors": {
+        "rembg": 60.03,
+        "sam3": 88.87
+      },
+      "trueVertex": [
+        1362.2,
+        1829.0
+      ]
+    }
+  ],
+  "schemaVersion": 1,
+  "sourceGeometryFixture": "/private/tmp/cube-vertex-source-selection/tests/fixtures/geometry_first_face_split_v0_summary.json",
+  "summary": {
+    "policySummaries": {
+      "always_rembg": {
+        "abstainCount": 0,
+        "bestSourceCorrectCount": 8,
+        "falseConfidentCount": 18,
+        "meanSelectedErrorPx": 78.7539,
+        "medianSelectedErrorPx": 72.33,
+        "plausibleCount": 5,
+        "rowCount": 23,
+        "selectedCount": 23,
+        "strictReadyCount": 0
+      },
+      "always_sam3": {
+        "abstainCount": 0,
+        "bestSourceCorrectCount": 15,
+        "falseConfidentCount": 14,
+        "meanSelectedErrorPx": 72.1578,
+        "medianSelectedErrorPx": 56.5,
+        "plausibleCount": 9,
+        "rowCount": 23,
+        "selectedCount": 23,
+        "strictReadyCount": 6
+      },
+      "global_model_score_v0": {
+        "abstainCount": 0,
+        "bestSourceCorrectCount": 17,
+        "falseConfidentCount": 15,
+        "meanSelectedErrorPx": 64.4352,
+        "medianSelectedErrorPx": 63.5,
+        "plausibleCount": 8,
+        "rowCount": 23,
+        "selectedCount": 23,
+        "strictReadyCount": 6
+      },
+      "high_fit_quality_margin_confidence_v0": {
+        "abstainCount": 22,
+        "bestSourceCorrectCount": 1,
+        "falseConfidentCount": 0,
+        "meanSelectedErrorPx": 20.03,
+        "medianSelectedErrorPx": 20.03,
+        "plausibleCount": 1,
+        "rowCount": 23,
+        "selectedCount": 1,
+        "strictReadyCount": 1
+      },
+      "oracle_best_source": {
+        "abstainCount": 0,
+        "bestSourceCorrectCount": 23,
+        "falseConfidentCount": 12,
+        "meanSelectedErrorPx": 58.7165,
+        "medianSelectedErrorPx": 54.43,
+        "plausibleCount": 11,
+        "rowCount": 23,
+        "selectedCount": 23,
+        "strictReadyCount": 6
+      },
+      "strict_residual_margin_confidence_v0": {
+        "abstainCount": 22,
+        "bestSourceCorrectCount": 1,
+        "falseConfidentCount": 0,
+        "meanSelectedErrorPx": 20.03,
+        "medianSelectedErrorPx": 20.03,
+        "plausibleCount": 1,
+        "rowCount": 23,
+        "selectedCount": 1,
+        "strictReadyCount": 1
+      }
+    },
+    "rowCount": 23
+  }
+}

@@ -41,6 +41,7 @@ if str(ROOT) not in sys.path:
 
 from tools.global_cube_model_v0 import _round_point  # noqa: E402
 from tools.vertex_candidate_source_probe import _distance_px, _parse_point  # noqa: E402
+from tools.evaluate_hybrid_pipeline import _load_processing_image  # noqa: E402
 
 
 Point = Tuple[float, float]
@@ -651,7 +652,8 @@ def _render_overlay(
     human_vertex: Point,
     output_path: Path,
 ) -> None:
-    base = Image.open(image_path).convert("RGBA")
+    processing_image, _ = _load_processing_image(image_path)
+    base = processing_image.convert("RGBA")
     overlay = Image.new("RGBA", base.size, (0, 0, 0, 0))
     colors = {
         "whole_cube": (0, 180, 220, 38),

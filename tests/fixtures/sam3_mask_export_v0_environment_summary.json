@@ -1,7 +1,493 @@
 {
+  "cachedImport": {
+    "importedMaskCount": 28,
+    "promptKey": "whole_cube",
+    "provider": "sam3",
+    "rows": [
+      {
+        "maskPixels": 2960377,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_12_B_whole_cube.png",
+        "outputShape": [
+          4032,
+          3024
+        ],
+        "resizedToProcessingImage": false,
+        "setId": "12",
+        "side": "B",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_12_B_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 3558288,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_14_B_whole_cube.png",
+        "outputShape": [
+          4032,
+          3024
+        ],
+        "resizedToProcessingImage": false,
+        "setId": "14",
+        "side": "B",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_14_B_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 270882,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_15_A_whole_cube.png",
+        "outputShape": [
+          1150,
+          862
+        ],
+        "resizedToProcessingImage": true,
+        "setId": "15",
+        "side": "A",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_15_A_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 279874,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_15_B_whole_cube.png",
+        "outputShape": [
+          1150,
+          862
+        ],
+        "resizedToProcessingImage": true,
+        "setId": "15",
+        "side": "B",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_15_B_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 3248482,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_17_B_whole_cube.png",
+        "outputShape": [
+          4032,
+          3024
+        ],
+        "resizedToProcessingImage": false,
+        "setId": "17",
+        "side": "B",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_17_B_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 3429101,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_21_A_whole_cube.png",
+        "outputShape": [
+          4032,
+          3024
+        ],
+        "resizedToProcessingImage": false,
+        "setId": "21",
+        "side": "A",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_21_A_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 3528631,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_21_B_whole_cube.png",
+        "outputShape": [
+          4032,
+          3024
+        ],
+        "resizedToProcessingImage": false,
+        "setId": "21",
+        "side": "B",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_21_B_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 3162234,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_24_A_whole_cube.png",
+        "outputShape": [
+          4032,
+          3024
+        ],
+        "resizedToProcessingImage": false,
+        "setId": "24",
+        "side": "A",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_24_A_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 240835,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_26_A_whole_cube.png",
+        "outputShape": [
+          1150,
+          862
+        ],
+        "resizedToProcessingImage": true,
+        "setId": "26",
+        "side": "A",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_26_A_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 264542,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_26_B_whole_cube.png",
+        "outputShape": [
+          1150,
+          862
+        ],
+        "resizedToProcessingImage": true,
+        "setId": "26",
+        "side": "B",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_26_B_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 2907429,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_27_B_whole_cube.png",
+        "outputShape": [
+          4032,
+          3024
+        ],
+        "resizedToProcessingImage": false,
+        "setId": "27",
+        "side": "B",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_27_B_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 3404254,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_28_A_whole_cube.png",
+        "outputShape": [
+          4032,
+          3024
+        ],
+        "resizedToProcessingImage": false,
+        "setId": "28",
+        "side": "A",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_28_A_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 3067367,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_28_B_whole_cube.png",
+        "outputShape": [
+          4032,
+          3024
+        ],
+        "resizedToProcessingImage": false,
+        "setId": "28",
+        "side": "B",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_28_B_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 277974,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_29_A_whole_cube.png",
+        "outputShape": [
+          1150,
+          862
+        ],
+        "resizedToProcessingImage": true,
+        "setId": "29",
+        "side": "A",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_29_A_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 241608,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_29_B_whole_cube.png",
+        "outputShape": [
+          1150,
+          862
+        ],
+        "resizedToProcessingImage": true,
+        "setId": "29",
+        "side": "B",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_29_B_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 2055271,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_30_A_whole_cube.png",
+        "outputShape": [
+          4032,
+          3024
+        ],
+        "resizedToProcessingImage": false,
+        "setId": "30",
+        "side": "A",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_30_A_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 2177665,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_30_B_whole_cube.png",
+        "outputShape": [
+          4032,
+          3024
+        ],
+        "resizedToProcessingImage": false,
+        "setId": "30",
+        "side": "B",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_30_B_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 2329042,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_31_A_whole_cube.png",
+        "outputShape": [
+          4032,
+          3024
+        ],
+        "resizedToProcessingImage": false,
+        "setId": "31",
+        "side": "A",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_31_A_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 2549153,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_31_B_whole_cube.png",
+        "outputShape": [
+          4032,
+          3024
+        ],
+        "resizedToProcessingImage": false,
+        "setId": "31",
+        "side": "B",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_31_B_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 243185,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_32_A_whole_cube.png",
+        "outputShape": [
+          1150,
+          862
+        ],
+        "resizedToProcessingImage": true,
+        "setId": "32",
+        "side": "A",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_32_A_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 236264,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_32_B_whole_cube.png",
+        "outputShape": [
+          1150,
+          862
+        ],
+        "resizedToProcessingImage": true,
+        "setId": "32",
+        "side": "B",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_32_B_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 222741,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_36_B_whole_cube.png",
+        "outputShape": [
+          1150,
+          862
+        ],
+        "resizedToProcessingImage": true,
+        "setId": "36",
+        "side": "B",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_36_B_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 350974,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_42_B_whole_cube.png",
+        "outputShape": [
+          1150,
+          862
+        ],
+        "resizedToProcessingImage": true,
+        "setId": "42",
+        "side": "B",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_42_B_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 3907979,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_44_A_whole_cube.png",
+        "outputShape": [
+          4032,
+          3024
+        ],
+        "resizedToProcessingImage": false,
+        "setId": "44",
+        "side": "A",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_44_A_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 3748777,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_44_B_whole_cube.png",
+        "outputShape": [
+          4032,
+          3024
+        ],
+        "resizedToProcessingImage": false,
+        "setId": "44",
+        "side": "B",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_44_B_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 3040752,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_57_A_whole_cube.png",
+        "outputShape": [
+          4032,
+          3024
+        ],
+        "resizedToProcessingImage": false,
+        "setId": "57",
+        "side": "A",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_57_A_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 3475553,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_61_A_whole_cube.png",
+        "outputShape": [
+          4032,
+          3024
+        ],
+        "resizedToProcessingImage": false,
+        "setId": "61",
+        "side": "A",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_61_A_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      },
+      {
+        "maskPixels": 3110035,
+        "outputPath": "/Users/jhuber/sam3_artifacts/foundation_masks/sam3/set_61_B_whole_cube.png",
+        "outputShape": [
+          4032,
+          3024
+        ],
+        "resizedToProcessingImage": false,
+        "setId": "61",
+        "side": "B",
+        "sourcePath": "/Users/jhuber/sam3_artifacts/sam3_probe/masks/set_61_B_sam3.npy",
+        "sourceShape": [
+          4032,
+          3024
+        ],
+        "status": "imported"
+      }
+    ],
+    "sourceDir": "/Users/jhuber/sam3_artifacts/sam3_probe/masks",
+    "status": "completed"
+  },
   "config": {
+    "importWholeCubeNpyDir": "/Users/jhuber/sam3_artifacts/sam3_probe/masks",
     "limitRows": null,
-    "maskDir": "/tmp/foundation_masks",
+    "maskDir": "/Users/jhuber/sam3_artifacts/foundation_masks",
     "maxInstances": 3,
     "prompts": [
       "whole_cube",
@@ -13,16 +499,22 @@
     ],
     "scoreThreshold": 0.0
   },
-  "description": "Diagnostics-only SAM3 external-mask exporter for the foundation segmentation bakeoff schema.",
+  "description": "Diagnostics-only MLX SAM3 external-mask exporter for the foundation segmentation bakeoff schema.",
   "environment": {
-    "blockedReason": "cuda_12_6_unavailable,sam3_package_missing,hf_token_missing",
+    "appleSiliconMac": true,
+    "blockedReason": "python_lt_3_13,mlx_package_missing,mlx_sam3_package_missing",
     "canAttemptInference": false,
     "cudaAvailable": false,
-    "cudaMeetsRequirement": false,
+    "cudaMeetsRequirement": true,
+    "cudaRequired": false,
     "cudaVersion": null,
     "hfTokenPresent": false,
+    "huggingFaceAuthRequired": false,
+    "mlxPackageInstalled": false,
     "mpsAvailable": true,
-    "pythonMeetsRequirement": true,
+    "platformMachine": "arm64",
+    "platformSystem": "Darwin",
+    "pythonMeetsRequirement": false,
     "pythonVersion": "3.12.13",
     "sam3PackageInstalled": false,
     "torchInstalled": true,
@@ -34,9 +526,10 @@
   "schemaVersion": 1,
   "sourceFeedback": "/private/tmp/cube-sam3-mask-export/tests/fixtures/vertex_point_human_feedback.json",
   "summary": {
-    "blockedReason": "cuda_12_6_unavailable,sam3_package_missing,hf_token_missing",
-    "exportedMaskCount": 0,
+    "blockedReason": "python_lt_3_13,mlx_package_missing,mlx_sam3_package_missing",
+    "cachedWholeCubeMaskCount": 28,
+    "exportedMaskCount": 28,
     "rowCount": 16,
-    "status": "blocked_prerequisites"
+    "status": "cached_import_completed"
   }
 }

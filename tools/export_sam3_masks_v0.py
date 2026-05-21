@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export SAM3 masks into the foundation-segmentation bakeoff schema.
+"""Export MLX SAM3 masks into the foundation-segmentation bakeoff schema.
 
 Diagnostics/data-only. This module does not alter recognizer behavior.
 
@@ -8,10 +8,10 @@ PR #192 established the stable external-mask layout consumed by
 
     <mask-dir>/sam3/set_<SET>_<SIDE>_<prompt>.png
 
-This exporter is the thin SAM3 adapter for that layout. It intentionally keeps
-SAM3 optional: when the package/checkpoint/GPU prerequisites are unavailable it
-writes a structured environment report instead of failing midway through the
-diagnostic workflow.
+This exporter targets the community Apple-Silicon MLX port
+``Deekshith-Dade/mlx_sam3``. It intentionally keeps SAM3 optional: when the
+package/checkpoint/runtime prerequisites are unavailable it writes a structured
+environment report instead of failing midway through the diagnostic workflow.
 """
 
 from __future__ import annotations
@@ -21,6 +21,7 @@ import importlib.util
 import json
 import os
 import platform
+import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -42,12 +43,14 @@ DEFAULT_SUMMARY = ROOT / "tests" / "fixtures" / "sam3_mask_export_v0_environment
 DEFAULT_REPORT = ROOT / "tools" / "SAM3_MASK_EXPORT_V0_REPORT.md"
 DEFAULT_SCORE_THRESHOLD = 0.0
 DEFAULT_MAX_INSTANCES = 3
+SAM3_CACHED_MASK_RE = re.compile(r"^set_(?P<set_id>[^_]+)_(?P<side>[AB])_sam3\.npy$")
 
 
 @dataclass(frozen=True)
 class ExportConfig:
     feedback_path: Path = DEFAULT_FEEDBACK
     mask_dir: Path = DEFAULT_MASK_DIR
+    import_whole_cube_npy_dir: Optional[Path] = None
     score_threshold: float = DEFAULT_SCORE_THRESHOLD
     max_instances: int = DEFAULT_MAX_INSTANCES
     limit_rows: Optional[int] = None
@@ -62,32 +65,44 @@ def generate_sam3_export_artifacts(
     """Check SAM3 environment and export masks when possible."""
     environment = sam3_environment_status()
     feedback = _read_json(config.feedback_path)
-    rows = _feedback_rows(feedback, limit_rows=config.limit_rows)
+    all_rows = _feedback_rows(feedback, limit_rows=None)
+    rows = all_rows[: config.limit_rows] if config.limit_rows is not None else all_rows
+    target_image_paths = _target_image_paths(all_rows)
+    cached_import = import_cached_whole_cube_masks(
+        source_dir=config.import_whole_cube_npy_dir,
+        mask_dir=config.mask_dir,
+        target_image_paths=target_image_paths,
+    )
     document: Dict[str, Any] = {
         "schemaVersion": 1,
         "probe": "sam3_mask_export_v0",
         "description": (
-            "Diagnostics-only SAM3 external-mask exporter for the foundation "
-            "segmentation bakeoff schema."
+            "Diagnostics-only MLX SAM3 external-mask exporter for the "
+            "foundation segmentation bakeoff schema."
         ),
         "sourceFeedback": str(config.feedback_path),
         "config": {
             "maskDir": str(config.mask_dir),
+            "importWholeCubeNpyDir": str(config.import_whole_cube_npy_dir) if config.import_whole_cube_npy_dir else None,
             "scoreThreshold": float(config.score_threshold),
             "maxInstances": int(config.max_instances),
             "limitRows": config.limit_rows,
             "prompts": list(config.prompts),
         },
         "environment": environment,
+        "cachedImport": cached_import,
         "summary": {
             "status": "blocked_prerequisites",
             "rowCount": len(rows),
-            "exportedMaskCount": 0,
+            "exportedMaskCount": cached_import["importedMaskCount"],
+            "cachedWholeCubeMaskCount": cached_import["importedMaskCount"],
             "blockedReason": environment["blockedReason"],
         },
         "rows": [],
     }
     if not environment["canAttemptInference"]:
+        if cached_import["importedMaskCount"]:
+            document["summary"]["status"] = "cached_import_completed"
         if strict:
             document["summary"]["strictExitCode"] = 2
         return document
@@ -102,26 +117,136 @@ def generate_sam3_export_artifacts(
     document["summary"] = {
         "status": "completed",
         "rowCount": len(exported_rows),
-        "exportedMaskCount": exported_count,
+        "exportedMaskCount": exported_count + cached_import["importedMaskCount"],
+        "cachedWholeCubeMaskCount": cached_import["importedMaskCount"],
+        "inferenceExportedMaskCount": exported_count,
         "blockedReason": None,
     }
     document["rows"] = exported_rows
     return document
 
 
+def import_cached_whole_cube_masks(
+    *,
+    source_dir: Optional[Path],
+    mask_dir: Path,
+    target_image_paths: Optional[Dict[Tuple[str, str], Path]] = None,
+) -> Dict[str, Any]:
+    """Import cached SAM3 ``rubik's cube`` .npy masks as whole-cube PNG masks."""
+    result: Dict[str, Any] = {
+        "sourceDir": str(source_dir) if source_dir else None,
+        "provider": "sam3",
+        "promptKey": "whole_cube",
+        "importedMaskCount": 0,
+        "rows": [],
+    }
+    if source_dir is None:
+        return result
+    if not source_dir.exists():
+        result["status"] = "source_missing"
+        return result
+
+    imported_rows: List[Dict[str, Any]] = []
+    for source_path in sorted(source_dir.glob("set_*_*_sam3.npy")):
+        match = SAM3_CACHED_MASK_RE.match(source_path.name)
+        if not match:
+            imported_rows.append({
+                "sourcePath": str(source_path),
+                "status": "skipped_unrecognized_name",
+            })
+            continue
+        set_id = match.group("set_id")
+        side = match.group("side")
+        output_path = mask_dir / "sam3" / f"set_{set_id}_{side}_whole_cube.png"
+        row: Dict[str, Any] = {
+            "setId": set_id,
+            "side": side,
+            "sourcePath": str(source_path),
+            "outputPath": str(output_path),
+            "status": "pending",
+        }
+        try:
+            mask = np.load(source_path, allow_pickle=False)
+            mask = np.asarray(mask).squeeze()
+            if mask.ndim != 2:
+                raise ValueError(f"expected 2D mask, got {mask.shape}")
+            original_shape = [int(mask.shape[0]), int(mask.shape[1])]
+            mask = mask.astype(bool)
+            target_size = _processing_image_size(
+                (target_image_paths or {}).get((set_id, side))
+            )
+            if target_size is not None and (int(mask.shape[1]), int(mask.shape[0])) != target_size:
+                mask_image = Image.fromarray(mask.astype(np.uint8) * 255, mode="L")
+                mask_image = mask_image.resize(target_size, Image.Resampling.NEAREST)
+                mask = np.asarray(mask_image, dtype=np.uint8) > 128
+            _write_mask(output_path, mask)
+        except Exception as exc:
+            row.update({
+                "status": "error",
+                "error": f"{exc.__class__.__name__}: {exc}",
+            })
+        else:
+            row.update({
+                "status": "imported",
+                "sourceShape": original_shape,
+                "outputShape": [int(mask.shape[0]), int(mask.shape[1])],
+                "resizedToProcessingImage": original_shape != [int(mask.shape[0]), int(mask.shape[1])],
+                "maskPixels": int(mask.sum()),
+            })
+        imported_rows.append(row)
+
+    imported_count = sum(1 for row in imported_rows if row.get("status") == "imported")
+    result["rows"] = imported_rows
+    result["importedMaskCount"] = imported_count
+    result["status"] = "completed" if imported_count else "no_matching_masks"
+    return result
+
+
+def _target_image_paths(rows: Sequence[Dict[str, Any]]) -> Dict[Tuple[str, str], Path]:
+    result: Dict[Tuple[str, str], Path] = {}
+    for row in rows:
+        image_path = Path(str(row.get("imagePath") or ""))
+        if image_path.exists():
+            result[(str(row.get("setId")), str(row.get("side")))] = image_path
+    return result
+
+
+def _processing_image_size(image_path: Optional[Path]) -> Optional[Tuple[int, int]]:
+    if image_path is None:
+        return None
+    try:
+        image = _load_sam3_processing_image(image_path)
+    except Exception:
+        return None
+    return (int(image.width), int(image.height))
+
+
+def _load_sam3_processing_image(image_path: Path) -> Image.Image:
+    from tools.evaluate_hybrid_pipeline import _load_processing_image  # type: ignore
+
+    image, _ = _load_processing_image(image_path)
+    return image
+
+
 def sam3_environment_status() -> Dict[str, Any]:
-    """Return a machine-readable SAM3 prerequisite report."""
+    """Return a machine-readable MLX SAM3 prerequisite report."""
     status: Dict[str, Any] = {
         "pythonVersion": platform.python_version(),
-        "pythonMeetsRequirement": sys.version_info >= (3, 12),
+        "pythonMeetsRequirement": sys.version_info >= (3, 13),
+        "platformSystem": platform.system(),
+        "platformMachine": platform.machine(),
+        "appleSiliconMac": platform.system() == "Darwin" and platform.machine() == "arm64",
         "sam3PackageInstalled": importlib.util.find_spec("sam3") is not None,
+        "mlxPackageInstalled": importlib.util.find_spec("mlx") is not None,
+        "huggingFaceAuthRequired": False,
         "hfTokenPresent": bool(os.environ.get("HF_TOKEN") or os.environ.get("HUGGING_FACE_HUB_TOKEN")),
         "torchInstalled": False,
         "torchVersion": None,
         "torchMeetsRequirement": False,
         "cudaAvailable": False,
         "cudaVersion": None,
-        "cudaMeetsRequirement": False,
+        "cudaRequired": False,
+        "cudaMeetsRequirement": True,
         "mpsAvailable": False,
         "blockedReason": None,
         "canAttemptInference": False,
@@ -129,32 +254,26 @@ def sam3_environment_status() -> Dict[str, Any]:
     try:
         import torch  # type: ignore
     except Exception as exc:
-        status["blockedReason"] = f"torch_unavailable:{exc.__class__.__name__}"
-        return status
-
-    status["torchInstalled"] = True
-    status["torchVersion"] = str(getattr(torch, "__version__", ""))
-    status["torchMeetsRequirement"] = _version_at_least(status["torchVersion"], (2, 7))
-    status["cudaAvailable"] = bool(torch.cuda.is_available())
-    status["cudaVersion"] = getattr(torch.version, "cuda", None)
-    status["cudaMeetsRequirement"] = (
-        status["cudaAvailable"]
-        and status["cudaVersion"] is not None
-        and _version_at_least(str(status["cudaVersion"]), (12, 6))
-    )
-    status["mpsAvailable"] = bool(getattr(torch.backends, "mps", None) and torch.backends.mps.is_available())
+        status["torchImportError"] = exc.__class__.__name__
+    else:
+        status["torchInstalled"] = True
+        status["torchVersion"] = str(getattr(torch, "__version__", ""))
+        status["torchMeetsRequirement"] = _version_at_least(status["torchVersion"], (2, 9))
+        status["cudaAvailable"] = bool(torch.cuda.is_available())
+        status["cudaVersion"] = getattr(torch.version, "cuda", None)
+        status["mpsAvailable"] = bool(getattr(torch.backends, "mps", None) and torch.backends.mps.is_available())
 
     blockers = []
     if not status["pythonMeetsRequirement"]:
-        blockers.append("python_lt_3_12")
+        blockers.append("python_lt_3_13")
+    if not status["appleSiliconMac"]:
+        blockers.append("not_apple_silicon_mac")
     if not status["torchMeetsRequirement"]:
-        blockers.append("torch_lt_2_7")
-    if not status["cudaMeetsRequirement"]:
-        blockers.append("cuda_12_6_unavailable")
+        blockers.append("torch_lt_2_9")
+    if not status["mlxPackageInstalled"]:
+        blockers.append("mlx_package_missing")
     if not status["sam3PackageInstalled"]:
-        blockers.append("sam3_package_missing")
-    if not status["hfTokenPresent"]:
-        blockers.append("hf_token_missing")
+        blockers.append("mlx_sam3_package_missing")
     status["blockedReason"] = ",".join(blockers) if blockers else None
     status["canAttemptInference"] = not blockers
     return status
@@ -170,7 +289,7 @@ class Sam3MaskExporter:
     @property
     def processor(self):
         if self._processor is None:
-            from sam3.model_builder import build_sam3_image_model  # type: ignore
+            from sam3 import build_sam3_image_model  # type: ignore
             from sam3.model.sam3_image_processor import Sam3Processor  # type: ignore
 
             model = build_sam3_image_model()
@@ -192,14 +311,14 @@ class Sam3MaskExporter:
         if not image_path.exists():
             return {**base, "status": "image_missing"}
 
-        image = Image.open(image_path).convert("RGB")
+        image = _load_sam3_processing_image(image_path)
         state = self.processor.set_image(image)
         prompt_rows = []
         exported_count = 0
         for prompt_spec in PROMPT_SPECS:
             if prompt_spec.key not in self.config.prompts:
                 continue
-            output = self.processor.set_text_prompt(state=state, prompt=prompt_spec.prompt)
+            output = self.processor.set_text_prompt(prompt_spec.prompt, state)
             mask, stats = select_mask_from_sam3_output(
                 output,
                 score_threshold=self.config.score_threshold,
@@ -275,7 +394,7 @@ def render_report(document: Dict[str, Any]) -> str:
         "",
         "Diagnostics/data-only artifact. This does not alter recognition behavior.",
         "",
-        "This report records whether the local machine can export SAM3 masks into the foundation segmentation bakeoff schema.",
+        "This report records whether the local machine can export MLX SAM3 masks into the foundation segmentation bakeoff schema.",
         "",
         "## Status",
         "",
@@ -283,17 +402,20 @@ def render_report(document: Dict[str, Any]) -> str:
         f"- Blocked reason: `{summary.get('blockedReason')}`",
         f"- Rows considered: {summary['rowCount']}",
         f"- Exported masks: {summary['exportedMaskCount']}",
+        f"- Cached whole-cube masks imported: {summary.get('cachedWholeCubeMaskCount', 0)}",
         "",
         "## Environment",
         "",
-        f"- Python: {environment['pythonVersion']} (meets >=3.12: {environment['pythonMeetsRequirement']})",
+        f"- Python: {environment['pythonVersion']} (meets >=3.13: {environment['pythonMeetsRequirement']})",
+        f"- Platform: {environment['platformSystem']} {environment['platformMachine']} (Apple Silicon Mac: {environment['appleSiliconMac']})",
+        f"- MLX installed: {environment['mlxPackageInstalled']}",
         f"- Torch installed: {environment['torchInstalled']} ({environment['torchVersion']})",
-        f"- Torch meets >=2.7: {environment['torchMeetsRequirement']}",
+        f"- Torch meets >=2.9: {environment['torchMeetsRequirement']}",
         f"- CUDA available: {environment['cudaAvailable']} ({environment['cudaVersion']})",
-        f"- CUDA meets >=12.6: {environment['cudaMeetsRequirement']}",
+        f"- CUDA required: {environment['cudaRequired']}",
         f"- MPS available: {environment['mpsAvailable']}",
-        f"- sam3 package installed: {environment['sam3PackageInstalled']}",
-        f"- HF token present: {environment['hfTokenPresent']}",
+        f"- MLX SAM3 package installed: {environment['sam3PackageInstalled']}",
+        f"- HF token required: {environment['huggingFaceAuthRequired']}",
         "",
         "## Mask Schema",
         "",
@@ -311,11 +433,28 @@ def render_report(document: Dict[str, Any]) -> str:
         "",
         "## Interpretation",
         "",
-        "- This machine cannot run official SAM3 image inference as-is because the required CUDA/Hugging Face/SAM3 prerequisites are not all present.",
-        "- The exporter is still useful: it defines the exact bridge from a capable SAM3 environment into the repo's dependency-free bakeoff harness.",
+        "- This exporter targets the community `Deekshith-Dade/mlx_sam3` Apple-Silicon port, not Meta's CUDA/HF-gated official package.",
+        "- The exporter is useful because it defines the exact bridge from a capable MLX SAM3 environment into the repo's dependency-free bakeoff harness.",
+        "- Cached `.npy` whole-cube masks can be imported without a SAM3 runtime; they prove the interchange path and provide silhouette coverage, but they do not by themselves provide the three face masks needed for vertex candidate scoring.",
         "- Once masks exist, the next useful metric is whether three visible-face prompts improve top-3 vertex recall over the current 3/16 source heuristic and 11/16 source-pool oracle ceiling.",
         "",
     ]
+    cached_rows = document.get("cachedImport", {}).get("rows") or []
+    if cached_rows:
+        lines.extend([
+            "## Cached Whole-Cube Import",
+            "",
+            "| Set | Side | Status | Source shape | Output shape | Resized | Mask pixels | Output |",
+            "|---:|---|---|---|---|---:|---:|---|",
+        ])
+        for row in cached_rows:
+            lines.append(
+                f"| {row.get('setId', '')} | {row.get('side', '')} | `{row.get('status')}` | "
+                f"{row.get('sourceShape', '')} | {row.get('outputShape', '')} | "
+                f"{row.get('resizedToProcessingImage', '')} | {row.get('maskPixels', '')} | "
+                f"`{row.get('outputPath', '')}` |"
+            )
+        lines.append("")
     if document.get("rows"):
         lines.extend([
             "## Exported Rows",
@@ -389,6 +528,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--mask-dir", type=Path, default=DEFAULT_MASK_DIR)
     parser.add_argument("--summary", type=Path, default=DEFAULT_SUMMARY)
     parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
+    parser.add_argument(
+        "--import-whole-cube-npy-dir",
+        type=Path,
+        default=None,
+        help="Import cached SAM3 rubik's-cube .npy masks as whole_cube PNG masks.",
+    )
     parser.add_argument("--score-threshold", type=float, default=DEFAULT_SCORE_THRESHOLD)
     parser.add_argument("--max-instances", type=int, default=DEFAULT_MAX_INSTANCES)
     parser.add_argument("--limit-rows", type=int, default=0)
@@ -408,6 +553,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     config = ExportConfig(
         feedback_path=args.feedback,
         mask_dir=args.mask_dir,
+        import_whole_cube_npy_dir=args.import_whole_cube_npy_dir,
         score_threshold=args.score_threshold,
         max_instances=args.max_instances,
         limit_rows=args.limit_rows if args.limit_rows > 0 else None,

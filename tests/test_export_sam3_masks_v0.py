@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import numpy as np
+from PIL import Image
 
 from tools.export_sam3_masks_v0 import (
     ExportConfig,
+    import_cached_whole_cube_masks,
     _normalize_mask_array,
     _version_at_least,
     generate_sam3_export_artifacts,
@@ -68,6 +70,59 @@ def test_generate_artifacts_writes_blocked_environment_report(tmp_path):
     assert "SAM3 Mask Export V0" in report
     if document["summary"]["status"] == "blocked_prerequisites":
         assert document["summary"]["blockedReason"]
+
+
+def test_import_cached_whole_cube_npy_masks(tmp_path):
+    source_dir = tmp_path / "cached"
+    source_dir.mkdir()
+    mask = np.zeros((8, 9), dtype=bool)
+    mask[2:5, 3:7] = True
+    np.save(source_dir / "set_15_A_sam3.npy", mask)
+
+    output_dir = tmp_path / "foundation_masks"
+    result = import_cached_whole_cube_masks(
+        source_dir=source_dir,
+        mask_dir=output_dir,
+    )
+
+    output_path = output_dir / "sam3" / "set_15_A_whole_cube.png"
+    assert result["importedMaskCount"] == 1
+    assert output_path.exists()
+    assert np.asarray(Image.open(output_path).convert("L")).sum() == int(mask.sum()) * 255
+
+
+def test_generate_artifacts_can_import_cached_masks_without_runtime(tmp_path):
+    source_dir = tmp_path / "cached"
+    source_dir.mkdir()
+    np.save(source_dir / "set_26_B_sam3.npy", np.ones((4, 5), dtype=bool))
+    image_path = tmp_path / "image.jpg"
+    Image.new("RGB", (10, 8), "white").save(image_path)
+    feedback = {
+        "rows": [
+            {
+                "setId": "26",
+                "side": "B",
+                "status": "labeled",
+                "imagePath": str(image_path),
+            }
+        ]
+    }
+    feedback_path = tmp_path / "feedback.json"
+    feedback_path.write_text(__import__("json").dumps(feedback), encoding="utf-8")
+
+    document = generate_sam3_export_artifacts(
+        ExportConfig(
+            feedback_path=feedback_path,
+            mask_dir=tmp_path / "masks",
+            import_whole_cube_npy_dir=source_dir,
+        )
+    )
+
+    assert document["cachedImport"]["importedMaskCount"] == 1
+    assert document["summary"]["cachedWholeCubeMaskCount"] == 1
+    output = tmp_path / "masks" / "sam3" / "set_26_B_whole_cube.png"
+    assert output.exists()
+    assert Image.open(output).size == (10, 8)
 
 
 def test_version_at_least_handles_local_version_suffixes():

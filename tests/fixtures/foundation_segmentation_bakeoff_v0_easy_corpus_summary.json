@@ -1,0 +1,967 @@
+{
+  "config": {
+    "externalMaskDir": null,
+    "outputDir": "/tmp/foundation_segmentation_bakeoff_v0_overlays",
+    "prompts": [
+      {
+        "key": "whole_cube",
+        "prompt": "Rubik's cube",
+        "role": "cube_silhouette"
+      },
+      {
+        "key": "top_face",
+        "prompt": "top visible face of the Rubik's cube",
+        "role": "visible_face"
+      },
+      {
+        "key": "left_face",
+        "prompt": "left visible face of the Rubik's cube",
+        "role": "visible_face"
+      },
+      {
+        "key": "right_face",
+        "prompt": "right visible face of the Rubik's cube",
+        "role": "visible_face"
+      },
+      {
+        "key": "stickers",
+        "prompt": "colored sticker squares on the Rubik's cube",
+        "role": "stickers"
+      },
+      {
+        "key": "black_grid_lines",
+        "prompt": "black plastic grid lines between stickers",
+        "role": "grid_or_bezel"
+      }
+    ],
+    "providers": [
+      "sam3",
+      "falcon"
+    ]
+  },
+  "description": "Diagnostics-only bakeoff harness for SAM3/Falcon-style promptable segmentation masks as vertex and face-rectification signals.",
+  "probe": "foundation_segmentation_bakeoff_v0",
+  "providerStatus": {
+    "falcon": {
+      "displayName": "Falcon Perception",
+      "externalMaskFileCount": 0,
+      "installedPackages": [],
+      "notes": "Open-vocabulary detection/segmentation candidate; external masks keep the repo dependency-free.",
+      "packageInstalled": false,
+      "status": "package_missing_external_masks_required"
+    },
+    "sam3": {
+      "displayName": "SAM3 / SAM3.1",
+      "externalMaskFileCount": 0,
+      "installedPackages": [],
+      "notes": "Promptable segmentation candidate; direct adapter intentionally not wired until local package/API is stable.",
+      "packageInstalled": false,
+      "status": "package_missing_external_masks_required"
+    }
+  },
+  "rows": [
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        399.73,
+        572.52
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 15 - A - white up IMG_6707.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        }
+      },
+      "setId": "15",
+      "side": "A"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        446.64,
+        566.99
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 15 - B - white up IMG_6708.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        }
+      },
+      "setId": "15",
+      "side": "B"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        371.38,
+        512.22
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 23 - A - white up.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        }
+      },
+      "setId": "23",
+      "side": "A"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        399.73,
+        576.76
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 23 - B - white up.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        }
+      },
+      "setId": "23",
+      "side": "B"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        416.34,
+        595.34
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 26 - A - white up IMG_6773.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        }
+      },
+      "setId": "26",
+      "side": "A"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        417.32,
+        599.26
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 26 - B - white up IMG_6774.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        }
+      },
+      "setId": "26",
+      "side": "B"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        420.25,
+        597.3
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 29 - A - white up IMG_6779.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        }
+      },
+      "setId": "29",
+      "side": "A"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        403.63,
+        564.05
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 29 - B - white up IMG_6780.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        }
+      },
+      "setId": "29",
+      "side": "B"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        457.39,
+        560.14
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 32 - A - white up IMG_7143.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        }
+      },
+      "setId": "32",
+      "side": "A"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        391.91,
+        543.52
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 32 - B - white up IMG_7144.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        }
+      },
+      "setId": "32",
+      "side": "B"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        449.57,
+        577.74
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 36 - A - white up IMG_7151.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        }
+      },
+      "setId": "36",
+      "side": "A"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        374.32,
+        557.21
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 36 - B - white up IMG_7152.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        }
+      },
+      "setId": "36",
+      "side": "B"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        414.39,
+        605.12
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 37 - A - white up IMG_7153.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        }
+      },
+      "setId": "37",
+      "side": "A"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        412.43,
+        660.86
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 37 - B - white up IMG_7154.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        }
+      },
+      "setId": "37",
+      "side": "B"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        459.34,
+        549.38
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 42 - A - white up IMG_7163.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        }
+      },
+      "setId": "42",
+      "side": "A"
+    },
+    {
+      "evaluationTier": "easy_corpus",
+      "humanVertexPoint": [
+        444.68,
+        525.91
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 42 - B - white up IMG_7164.JPG",
+      "providers": {
+        "falcon": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        },
+        "sam3": {
+          "candidateCount": 0,
+          "maskPrompts": [],
+          "metrics": {
+            "bestDistancePx": null,
+            "candidateCount": 0,
+            "oracleHit@10px": false,
+            "oracleHit@20px": false,
+            "top1DistancePx": null,
+            "top1Hit@10px": false,
+            "top1Hit@20px": false,
+            "top3DistancePx": null,
+            "top3Hit@10px": false,
+            "top3Hit@20px": false,
+            "top5DistancePx": null,
+            "top5Hit@10px": false,
+            "top5Hit@20px": false
+          },
+          "notes": "direct model inference is not wired; provide external masks to score this provider",
+          "status": "no_external_masks"
+        }
+      },
+      "setId": "42",
+      "side": "B"
+    }
+  ],
+  "schemaVersion": 1,
+  "sourceFeedback": "/private/tmp/cube-foundation-segmentation-bakeoff/tests/fixtures/vertex_point_human_feedback.json",
+  "summary": {
+    "providerSummaries": {
+      "falcon": {
+        "oracleHitCount@10px": 0,
+        "oracleHitCount@20px": 0,
+        "rowCount": 16,
+        "rowsWithAnyMask": 0,
+        "rowsWithCandidates": 0,
+        "rowsWithThreeFaceMasks": 0,
+        "top1HitCount@10px": 0,
+        "top1HitCount@20px": 0,
+        "top3HitCount@10px": 0,
+        "top3HitCount@20px": 0,
+        "top5HitCount@10px": 0,
+        "top5HitCount@20px": 0
+      },
+      "sam3": {
+        "oracleHitCount@10px": 0,
+        "oracleHitCount@20px": 0,
+        "rowCount": 16,
+        "rowsWithAnyMask": 0,
+        "rowsWithCandidates": 0,
+        "rowsWithThreeFaceMasks": 0,
+        "top1HitCount@10px": 0,
+        "top1HitCount@20px": 0,
+        "top3HitCount@10px": 0,
+        "top3HitCount@20px": 0,
+        "top5HitCount@10px": 0,
+        "top5HitCount@20px": 0
+      }
+    },
+    "rowCount": 16
+  },
+  "thresholdsPx": [
+    10.0,
+    20.0
+  ]
+}

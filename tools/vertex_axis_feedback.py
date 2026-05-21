@@ -205,12 +205,20 @@ def evaluate_feedback_row(row: Dict[str, Any]) -> Dict[str, Any]:
 
 def render_report(feedback: Dict[str, Any], evaluation: Dict[str, Any]) -> str:
     summary = evaluation["summary"]
+    is_active_queue = feedback.get("artifact") == "vertex_axis_active_learning_feedback_v0"
+    title = "# Vertex + Axis Active-Learning Feedback V0" if is_active_queue else "# Vertex + Axis Human Feedback V0"
+    description = (
+        "This fixture is the active-learning queue for additional visible-trihedral labels: vertex point plus three outgoing cube-edge rays."
+        if is_active_queue
+        else "This fixture upgrades the vertex-only labels into a scaffold for complete visible-trihedral labels: vertex point plus three outgoing cube-edge rays."
+    )
+    labeler_command = feedback.get("labelerCommand") or ".venv/bin/python tools/vertex_axis_label_server.py --port 8778"
     lines = [
-        "# Vertex + Axis Human Feedback V0",
+        title,
         "",
         "Diagnostics/data-only artifact. This does not alter recognizer behavior.",
         "",
-        "This fixture upgrades the vertex-only labels into a scaffold for complete visible-trihedral labels: vertex point plus three outgoing cube-edge rays.",
+        description,
         "",
         "## Summary",
         "",
@@ -229,7 +237,7 @@ def render_report(feedback: Dict[str, Any], evaluation: Dict[str, Any]) -> str:
         "Run the labeler with:",
         "",
         "```bash",
-        ".venv/bin/python tools/vertex_axis_label_server.py --port 8778",
+        str(labeler_command),
         "```",
         "",
         "## Rows",
@@ -257,14 +265,19 @@ def render_report(feedback: Dict[str, Any], evaluation: Dict[str, Any]) -> str:
             ]
         )
     else:
+        scaffold_line = (
+            "- The active-learning scaffold is ready for human vertex+axis labels; committed rows remain unlabeled until the labeler writes them."
+            if is_active_queue
+            else "- The scaffold is ready for human axis labels, but the committed durable labels are still vertex-only."
+        )
         lines.extend(
             [
-                "- The scaffold is ready for human axis labels, but the committed durable labels are still vertex-only.",
+                scaffold_line,
                 "- The next scorer can evaluate current model axes as soon as full trihedral labels exist; until then, axis-quality conclusions should stay pending.",
                 "",
             ]
         )
-    return "\n".join(lines)
+    return "\n".join(line.rstrip() for line in lines).rstrip() + "\n"
 
 
 def update_feedback_row(
@@ -387,7 +400,7 @@ def _median(values: Sequence[float]) -> Optional[float]:
 
 def _fmt_px(value: Any) -> str:
     if value is None:
-        return ""
+        return "n/a"
     return f"{float(value):.1f} px"
 
 

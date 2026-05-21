@@ -269,7 +269,7 @@ def _median(values: Sequence[float]) -> Optional[float]:
 
 def _fmt(value: Any, unit: str) -> str:
     if value is None:
-        return ""
+        return "n/a"
     return f"{float(value):.1f} {unit}"
 
 

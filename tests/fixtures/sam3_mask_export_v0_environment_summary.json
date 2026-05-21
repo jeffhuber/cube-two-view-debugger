@@ -1,0 +1,42 @@
+{
+  "config": {
+    "limitRows": null,
+    "maskDir": "/tmp/foundation_masks",
+    "maxInstances": 3,
+    "prompts": [
+      "whole_cube",
+      "top_face",
+      "left_face",
+      "right_face",
+      "stickers",
+      "black_grid_lines"
+    ],
+    "scoreThreshold": 0.0
+  },
+  "description": "Diagnostics-only SAM3 external-mask exporter for the foundation segmentation bakeoff schema.",
+  "environment": {
+    "blockedReason": "cuda_12_6_unavailable,sam3_package_missing,hf_token_missing",
+    "canAttemptInference": false,
+    "cudaAvailable": false,
+    "cudaMeetsRequirement": false,
+    "cudaVersion": null,
+    "hfTokenPresent": false,
+    "mpsAvailable": true,
+    "pythonMeetsRequirement": true,
+    "pythonVersion": "3.12.13",
+    "sam3PackageInstalled": false,
+    "torchInstalled": true,
+    "torchMeetsRequirement": true,
+    "torchVersion": "2.12.0"
+  },
+  "probe": "sam3_mask_export_v0",
+  "rows": [],
+  "schemaVersion": 1,
+  "sourceFeedback": "/private/tmp/cube-sam3-mask-export/tests/fixtures/vertex_point_human_feedback.json",
+  "summary": {
+    "blockedReason": "cuda_12_6_unavailable,sam3_package_missing,hf_token_missing",
+    "exportedMaskCount": 0,
+    "rowCount": 16,
+    "status": "blocked_prerequisites"
+  }
+}

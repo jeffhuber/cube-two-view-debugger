@@ -1,0 +1,3225 @@
+{
+  "conclusion": {
+    "productionWiringRecommendation": "diagnostics_only_needs_more_validation",
+    "reason": "A zero-worsen gate improves strict coverage on this label set, but this remains too small and too local for production wiring."
+  },
+  "config": {
+    "axisFarMaxPx": 150.0,
+    "axisGoodDeg": 15.0,
+    "axisNearMaxPx": 60.0,
+    "axisNearMinPx": 6.0,
+    "candidateConfig": {
+      "axisGoodDeg": 15.0,
+      "defaultGateMinPredictedScore": 0.45,
+      "defaultGateMinScoreGain": 0.04,
+      "featureNames": [
+        "bias",
+        "dx_norm",
+        "dy_norm",
+        "radius_norm",
+        "radius_norm_sq",
+        "ray_score",
+        "center_darkness",
+        "mean_forward_score",
+        "min_forward_score",
+        "mean_backward_score",
+        "max_backward_score",
+        "mean_startness",
+        "min_startness",
+        "mean_forward_contrast",
+        "fit_quality",
+        "fit_residual_norm",
+        "ray_score_x_startness",
+        "ray_score_x_center_darkness"
+      ],
+      "plausibleVertexPx": 50.0,
+      "ridgeLambda": 0.75,
+      "searchRadiusPx": 520,
+      "searchStepPx": 64,
+      "strictVertexPx": 30.0,
+      "targetScalePx": 55.0
+    },
+    "defaultGateMinScore": -3.0,
+    "defaultGateMinScoreGain": 1.5,
+    "featureNames": [
+      "bias",
+      "dx_norm",
+      "dy_norm",
+      "radius_norm",
+      "radius_norm_sq",
+      "ray_score",
+      "center_darkness",
+      "mean_forward_score",
+      "min_forward_score",
+      "mean_backward_score",
+      "max_backward_score",
+      "mean_startness",
+      "min_startness",
+      "mean_forward_contrast",
+      "fit_quality",
+      "fit_residual_norm",
+      "ray_score_x_startness",
+      "ray_score_x_center_darkness",
+      "patch_r10_dark_mean",
+      "patch_r10_dark_std",
+      "patch_r10_dark_p75",
+      "patch_r10_dark_p90",
+      "patch_r10_dark_fraction",
+      "patch_r10_grad_mean",
+      "patch_r10_grad_p90",
+      "patch_r10_structure_trace",
+      "patch_r10_harris",
+      "patch_r10_coherence",
+      "patch_r22_dark_mean",
+      "patch_r22_dark_std",
+      "patch_r22_dark_p75",
+      "patch_r22_dark_p90",
+      "patch_r22_dark_fraction",
+      "patch_r22_grad_mean",
+      "patch_r22_grad_p90",
+      "patch_r22_structure_trace",
+      "patch_r22_harris",
+      "patch_r22_coherence",
+      "patch_r44_dark_mean",
+      "patch_r44_dark_std",
+      "patch_r44_dark_p75",
+      "patch_r44_dark_p90",
+      "patch_r44_dark_fraction",
+      "patch_r44_grad_mean",
+      "patch_r44_grad_p90",
+      "patch_r44_structure_trace",
+      "patch_r44_harris",
+      "patch_r44_coherence",
+      "radial_dark_mean",
+      "radial_dark_std",
+      "radial_dark_max",
+      "radial_top3_mean",
+      "radial_rest_mean",
+      "radial_top3_gap",
+      "radial_peak_fraction",
+      "radial_p90_minus_p50",
+      "axis_near_forward_mean_dark",
+      "axis_near_forward_min_dark",
+      "axis_far_forward_mean_dark",
+      "axis_far_forward_min_dark",
+      "axis_near_forward_mean_contrast",
+      "axis_near_forward_min_contrast",
+      "axis_backward_mean_dark",
+      "axis_backward_max_dark",
+      "axis_backward_mean_contrast",
+      "axis_startness_mean",
+      "axis_startness_min",
+      "axis_min_forward_minus_max_backward"
+    ],
+    "lineHalfWidthPx": 2.0,
+    "maxNegativePrototypesPerRow": 14,
+    "maxPositivePrototypesPerRow": 10,
+    "negativeDistanceWeight": 0.22,
+    "negativeErrorPx": 70.0,
+    "patchRadiiPx": [
+      10,
+      22,
+      44
+    ],
+    "plausibleVertexPx": 50.0,
+    "positiveErrorPx": 30.0,
+    "radialAngleStepDeg": 30,
+    "radialSampleRadiusMaxPx": 58.0,
+    "radialSampleRadiusMinPx": 8.0,
+    "sideOffsetPx": 14.0,
+    "strictVertexPx": 30.0
+  },
+  "description": "Diagnostics-only leave-one-row-out localizer using patch texture, explicit radial junction, and face-boundary consistency features.",
+  "probe": "patch_junction_vertex_localizer_v0",
+  "rows": [
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1537.36,
+        2008.64
+      ],
+      "baselineVertexErrorPx": 26.85,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 0.0,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1537.36,
+        2008.64
+      ],
+      "candidateOracleVertexErrorPx": 26.85,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1546.87,
+        2033.75
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 12 - B - white up IMG_6702.JPG",
+      "key": "canonical:12_B",
+      "modelAxisMaxAngleErrorDeg": 60.81,
+      "patchJunctionBaselineScore": -5.397889,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "strict",
+      "patchJunctionGatedVertex": [
+        1537.36,
+        2008.64
+      ],
+      "patchJunctionGatedVertexErrorPx": 26.85,
+      "patchJunctionMeanNegativeDistance": 4.65862,
+      "patchJunctionMeanPositiveDistance": 4.266508,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -3.241611,
+      "patchJunctionScoreGain": 2.156278,
+      "patchJunctionTop1ImprovementPx": -172.84,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1721.36,
+        1936.64
+      ],
+      "patchJunctionTop1VertexErrorPx": 199.69,
+      "setId": "12",
+      "side": "B",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "12_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1495.99,
+        1814.07
+      ],
+      "baselineVertexErrorPx": 53.9,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 29.95,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1423.99,
+        1806.07
+      ],
+      "candidateOracleVertexErrorPx": 23.96,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1445.43,
+        1795.38
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 14 - B - white up IMG_6706.JPG",
+      "key": "canonical:14_B",
+      "modelAxisMaxAngleErrorDeg": 62.48,
+      "patchJunctionBaselineScore": -4.330044,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1495.99,
+        1814.07
+      ],
+      "patchJunctionGatedVertexErrorPx": 53.9,
+      "patchJunctionMeanNegativeDistance": 5.670888,
+      "patchJunctionMeanPositiveDistance": 5.236286,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -3.988691,
+      "patchJunctionScoreGain": 0.341353,
+      "patchJunctionTop1ImprovementPx": 10.02,
+      "patchJunctionTop1Status": "plausible",
+      "patchJunctionTop1Vertex": [
+        1487.99,
+        1806.07
+      ],
+      "patchJunctionTop1VertexErrorPx": 43.88,
+      "setId": "14",
+      "side": "B",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "14_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1484.51,
+        2009.22
+      ],
+      "baselineVertexErrorPx": 63.51,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 53.82,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1412.51,
+        2001.22
+      ],
+      "candidateOracleVertexErrorPx": 9.69,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1421.1,
+        2005.7
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 15 - A - white up IMG_6707.JPG",
+      "key": "canonical:15_A",
+      "modelAxisMaxAngleErrorDeg": 6.53,
+      "patchJunctionBaselineScore": -4.834322,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1484.51,
+        2009.22
+      ],
+      "patchJunctionGatedVertexErrorPx": 63.51,
+      "patchJunctionMeanNegativeDistance": 5.174699,
+      "patchJunctionMeanPositiveDistance": 4.274162,
+      "patchJunctionNegativePrototypeCount": 786,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -3.135728,
+      "patchJunctionScoreGain": 1.698594,
+      "patchJunctionTop1ImprovementPx": 53.82,
+      "patchJunctionTop1Status": "strict",
+      "patchJunctionTop1Vertex": [
+        1412.51,
+        2001.22
+      ],
+      "patchJunctionTop1VertexErrorPx": 9.69,
+      "setId": "15",
+      "side": "A",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "15_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1491.53,
+        2003.42
+      ],
+      "baselineVertexErrorPx": 71.99,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 54.98,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1547.53,
+        1995.42
+      ],
+      "candidateOracleVertexErrorPx": 17.01,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1561.2,
+        1985.3
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 15 - B - white up IMG_6708.JPG",
+      "key": "canonical:15_B",
+      "modelAxisMaxAngleErrorDeg": 4.06,
+      "patchJunctionBaselineScore": -5.028538,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1491.53,
+        2003.42
+      ],
+      "patchJunctionGatedVertexErrorPx": 71.99,
+      "patchJunctionMeanNegativeDistance": 4.648944,
+      "patchJunctionMeanPositiveDistance": 4.385132,
+      "patchJunctionNegativePrototypeCount": 788,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -3.362365,
+      "patchJunctionScoreGain": 1.666174,
+      "patchJunctionTop1ImprovementPx": 20.65,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1611.53,
+        1995.42
+      ],
+      "patchJunctionTop1VertexErrorPx": 51.34,
+      "setId": "15",
+      "side": "B",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "15_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1479.79,
+        1934.83
+      ],
+      "baselineVertexErrorPx": 107.18,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 84.99,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1535.79,
+        1862.83
+      ],
+      "candidateOracleVertexErrorPx": 22.19,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1531.65,
+        1841.03
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 17 - B - white up.JPG",
+      "key": "canonical:17_B",
+      "modelAxisMaxAngleErrorDeg": 5.15,
+      "patchJunctionBaselineScore": -4.750401,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1479.79,
+        1934.83
+      ],
+      "patchJunctionGatedVertexErrorPx": 107.18,
+      "patchJunctionMeanNegativeDistance": 5.46564,
+      "patchJunctionMeanPositiveDistance": 4.572506,
+      "patchJunctionNegativePrototypeCount": 786,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -3.370065,
+      "patchJunctionScoreGain": 1.380336,
+      "patchJunctionTop1ImprovementPx": 84.99,
+      "patchJunctionTop1Status": "strict",
+      "patchJunctionTop1Vertex": [
+        1535.79,
+        1862.83
+      ],
+      "patchJunctionTop1VertexErrorPx": 22.19,
+      "setId": "17",
+      "side": "B",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "17_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1362.39,
+        1964.47
+      ],
+      "baselineVertexErrorPx": 38.72,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 13.61,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1354.39,
+        2020.47
+      ],
+      "candidateOracleVertexErrorPx": 25.1,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1371.5,
+        2002.1
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 21 - A - white up.JPG",
+      "key": "canonical:21_A",
+      "modelAxisMaxAngleErrorDeg": 5.08,
+      "patchJunctionBaselineScore": -5.324403,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "plausible",
+      "patchJunctionGatedVertex": [
+        1362.39,
+        1964.47
+      ],
+      "patchJunctionGatedVertexErrorPx": 38.72,
+      "patchJunctionMeanNegativeDistance": 6.404934,
+      "patchJunctionMeanPositiveDistance": 4.872461,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -3.463375,
+      "patchJunctionScoreGain": 1.861028,
+      "patchJunctionTop1ImprovementPx": 13.62,
+      "patchJunctionTop1Status": "strict",
+      "patchJunctionTop1Vertex": [
+        1354.39,
+        2020.47
+      ],
+      "patchJunctionTop1VertexErrorPx": 25.1,
+      "setId": "21",
+      "side": "A",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "21_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1529.0,
+        2073.0
+      ],
+      "baselineVertexErrorPx": 75.69,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 51.21,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1585.0,
+        2065.0
+      ],
+      "candidateOracleVertexErrorPx": 24.48,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1599.4,
+        2045.2
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 21 - B - white up.JPG",
+      "key": "canonical:21_B",
+      "modelAxisMaxAngleErrorDeg": 5.12,
+      "patchJunctionBaselineScore": -5.059286,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1529.0,
+        2073.0
+      ],
+      "patchJunctionGatedVertexErrorPx": 75.69,
+      "patchJunctionMeanNegativeDistance": 4.423856,
+      "patchJunctionMeanPositiveDistance": 4.83615,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -3.862902,
+      "patchJunctionScoreGain": 1.196384,
+      "patchJunctionTop1ImprovementPx": -14.31,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1521.0,
+        2001.0
+      ],
+      "patchJunctionTop1VertexErrorPx": 90.0,
+      "setId": "21",
+      "side": "B",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "21_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1636.2,
+        1996.37
+      ],
+      "baselineVertexErrorPx": 87.57,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 61.25,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1564.2,
+        2052.37
+      ],
+      "candidateOracleVertexErrorPx": 26.32,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1554.5,
+        2027.9
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 24 - A - white up IMG_6769.JPG",
+      "key": "canonical:24_A",
+      "modelAxisMaxAngleErrorDeg": 61.72,
+      "patchJunctionBaselineScore": -5.034455,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1636.2,
+        1996.37
+      ],
+      "patchJunctionGatedVertexErrorPx": 87.57,
+      "patchJunctionMeanNegativeDistance": 3.421512,
+      "patchJunctionMeanPositiveDistance": 4.196634,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -3.443901,
+      "patchJunctionScoreGain": 1.590554,
+      "patchJunctionTop1ImprovementPx": -74.28,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1500.2,
+        2180.37
+      ],
+      "patchJunctionTop1VertexErrorPx": 161.85,
+      "setId": "24",
+      "side": "A",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "24_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1471.0,
+        2003.0
+      ],
+      "baselineVertexErrorPx": 72.54,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 56.56,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1463.0,
+        2059.0
+      ],
+      "candidateOracleVertexErrorPx": 15.98,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1461.4,
+        2074.9
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 26 - A - white up IMG_6773.JPG",
+      "key": "canonical:26_A",
+      "modelAxisMaxAngleErrorDeg": 2.99,
+      "patchJunctionBaselineScore": -9.285513,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1471.0,
+        2003.0
+      ],
+      "patchJunctionGatedVertexErrorPx": 72.54,
+      "patchJunctionMeanNegativeDistance": 4.502218,
+      "patchJunctionMeanPositiveDistance": 5.299419,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -4.308931,
+      "patchJunctionScoreGain": 4.976582,
+      "patchJunctionTop1ImprovementPx": 5.04,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1527.0,
+        2059.0
+      ],
+      "patchJunctionTop1VertexErrorPx": 67.5,
+      "setId": "26",
+      "side": "A",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "26_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1442.64,
+        2016.51
+      ],
+      "baselineVertexErrorPx": 80.9,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 43.96,
+      "candidateOracleStatus": "plausible",
+      "candidateOracleVertex": [
+        1498.64,
+        2072.51
+      ],
+      "candidateOracleVertexErrorPx": 36.94,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1468.1,
+        2093.3
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 26 - B - white up IMG_6774.JPG",
+      "key": "canonical:26_B",
+      "modelAxisMaxAngleErrorDeg": 64.04,
+      "patchJunctionBaselineScore": -4.524918,
+      "patchJunctionGatedAccepted": true,
+      "patchJunctionGatedImprovementPx": 43.96,
+      "patchJunctionGatedStatus": "plausible",
+      "patchJunctionGatedVertex": [
+        1498.64,
+        2072.51
+      ],
+      "patchJunctionGatedVertexErrorPx": 36.94,
+      "patchJunctionMeanNegativeDistance": 4.787766,
+      "patchJunctionMeanPositiveDistance": 3.689519,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 44,
+      "patchJunctionScore": -2.63621,
+      "patchJunctionScoreGain": 1.888708,
+      "patchJunctionTop1ImprovementPx": 43.96,
+      "patchJunctionTop1Status": "plausible",
+      "patchJunctionTop1Vertex": [
+        1498.64,
+        2072.51
+      ],
+      "patchJunctionTop1VertexErrorPx": 36.94,
+      "setId": "26",
+      "side": "B",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "26_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1525.97,
+        1947.84
+      ],
+      "baselineVertexErrorPx": 6.99,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 2.58,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1517.97,
+        1939.84
+      ],
+      "candidateOracleVertexErrorPx": 4.4,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1521.51,
+        1942.46
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 27 - B - white up IMG_6776.JPG",
+      "key": "canonical:27_B",
+      "modelAxisMaxAngleErrorDeg": 3.4,
+      "patchJunctionBaselineScore": -5.671913,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "strict",
+      "patchJunctionGatedVertex": [
+        1525.97,
+        1947.84
+      ],
+      "patchJunctionGatedVertexErrorPx": 6.99,
+      "patchJunctionMeanNegativeDistance": 3.821957,
+      "patchJunctionMeanPositiveDistance": 4.606907,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 42,
+      "patchJunctionScore": -3.766077,
+      "patchJunctionScoreGain": 1.905836,
+      "patchJunctionTop1ImprovementPx": -379.15,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1581.97,
+        2323.84
+      ],
+      "patchJunctionTop1VertexErrorPx": 386.14,
+      "setId": "27",
+      "side": "B",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "27_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1549.19,
+        1946.05
+      ],
+      "baselineVertexErrorPx": 124.3,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 92.17,
+      "candidateOracleStatus": "plausible",
+      "candidateOracleVertex": [
+        1413.19,
+        1938.05
+      ],
+      "candidateOracleVertexErrorPx": 32.13,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1426.7,
+        1967.2
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 28 - A - white up IMG_6777.JPG",
+      "key": "canonical:28_A",
+      "modelAxisMaxAngleErrorDeg": 4.91,
+      "patchJunctionBaselineScore": -5.539544,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1549.19,
+        1946.05
+      ],
+      "patchJunctionGatedVertexErrorPx": 124.3,
+      "patchJunctionMeanNegativeDistance": 3.9859,
+      "patchJunctionMeanPositiveDistance": 4.088868,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 44,
+      "patchJunctionScore": -3.21197,
+      "patchJunctionScoreGain": 2.327574,
+      "patchJunctionTop1ImprovementPx": 92.17,
+      "patchJunctionTop1Status": "plausible",
+      "patchJunctionTop1Vertex": [
+        1413.19,
+        1938.05
+      ],
+      "patchJunctionTop1VertexErrorPx": 32.13,
+      "setId": "28",
+      "side": "A",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "28_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1477.34,
+        1934.2
+      ],
+      "baselineVertexErrorPx": 102.57,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 80.17,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1405.34,
+        1990.2
+      ],
+      "candidateOracleVertexErrorPx": 22.4,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1410.5,
+        2012.0
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 28 - B - white up IMG_6778.JPG",
+      "key": "canonical:28_B",
+      "modelAxisMaxAngleErrorDeg": 2.91,
+      "patchJunctionBaselineScore": -4.862416,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1477.34,
+        1934.2
+      ],
+      "patchJunctionGatedVertexErrorPx": 102.57,
+      "patchJunctionMeanNegativeDistance": 5.691604,
+      "patchJunctionMeanPositiveDistance": 5.226031,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -3.973879,
+      "patchJunctionScoreGain": 0.888538,
+      "patchJunctionTop1ImprovementPx": -420.19,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1853.34,
+        1734.2
+      ],
+      "patchJunctionTop1VertexErrorPx": 522.76,
+      "setId": "28",
+      "side": "B",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "28_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1445.16,
+        2067.17
+      ],
+      "baselineVertexErrorPx": 57.39,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 33.64,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1501.16,
+        2123.17
+      ],
+      "candidateOracleVertexErrorPx": 23.75,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1491.0,
+        2101.7
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 29 - A - white up IMG_6779.JPG",
+      "key": "canonical:29_A",
+      "modelAxisMaxAngleErrorDeg": 60.57,
+      "patchJunctionBaselineScore": -4.605636,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1445.16,
+        2067.17
+      ],
+      "patchJunctionGatedVertexErrorPx": 57.39,
+      "patchJunctionMeanNegativeDistance": 6.268533,
+      "patchJunctionMeanPositiveDistance": 5.025285,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -3.646208,
+      "patchJunctionScoreGain": 0.959428,
+      "patchJunctionTop1ImprovementPx": 33.64,
+      "patchJunctionTop1Status": "strict",
+      "patchJunctionTop1Vertex": [
+        1501.16,
+        2123.17
+      ],
+      "patchJunctionTop1VertexErrorPx": 23.75,
+      "setId": "29",
+      "side": "A",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "29_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1435.41,
+        1957.79
+      ],
+      "baselineVertexErrorPx": 25.39,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 0.0,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1435.41,
+        1957.79
+      ],
+      "candidateOracleVertexErrorPx": 25.39,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1415.0,
+        1972.89
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 29 - B - white up IMG_6780.JPG",
+      "key": "canonical:29_B",
+      "modelAxisMaxAngleErrorDeg": 1.5,
+      "patchJunctionBaselineScore": -3.611655,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "strict",
+      "patchJunctionGatedVertex": [
+        1435.41,
+        1957.79
+      ],
+      "patchJunctionGatedVertexErrorPx": 25.39,
+      "patchJunctionMeanNegativeDistance": 6.732049,
+      "patchJunctionMeanPositiveDistance": 5.092706,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 42,
+      "patchJunctionScore": -3.611655,
+      "patchJunctionScoreGain": 0.0,
+      "patchJunctionTop1ImprovementPx": 0.0,
+      "patchJunctionTop1Status": "strict",
+      "patchJunctionTop1Vertex": [
+        1435.41,
+        1957.79
+      ],
+      "patchJunctionTop1VertexErrorPx": 25.39,
+      "setId": "29",
+      "side": "B",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "29_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1466.93,
+        2250.07
+      ],
+      "baselineVertexErrorPx": 39.71,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 11.3,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1458.93,
+        2242.07
+      ],
+      "candidateOracleVertexErrorPx": 28.42,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1440.2,
+        2220.7
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 30 - A - white up IMG_7100.JPG",
+      "key": "canonical:30_A",
+      "modelAxisMaxAngleErrorDeg": 7.45,
+      "patchJunctionBaselineScore": -7.962946,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "plausible",
+      "patchJunctionGatedVertex": [
+        1466.93,
+        2250.07
+      ],
+      "patchJunctionGatedVertexErrorPx": 39.71,
+      "patchJunctionMeanNegativeDistance": 6.207385,
+      "patchJunctionMeanPositiveDistance": 6.23558,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -4.869956,
+      "patchJunctionScoreGain": 3.09299,
+      "patchJunctionTop1ImprovementPx": -350.69,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1714.93,
+        2498.07
+      ],
+      "patchJunctionTop1VertexErrorPx": 390.4,
+      "setId": "30",
+      "side": "A",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "30_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1613.57,
+        1931.2
+      ],
+      "baselineVertexErrorPx": 10.0,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 0.0,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1613.57,
+        1931.2
+      ],
+      "candidateOracleVertexErrorPx": 10.0,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1617.87,
+        1922.17
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 30 - B - white up IMG_7101.JPG",
+      "key": "canonical:30_B",
+      "modelAxisMaxAngleErrorDeg": 3.89,
+      "patchJunctionBaselineScore": -14.577857,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "strict",
+      "patchJunctionGatedVertex": [
+        1613.57,
+        1931.2
+      ],
+      "patchJunctionGatedVertexErrorPx": 10.0,
+      "patchJunctionMeanNegativeDistance": 5.36769,
+      "patchJunctionMeanPositiveDistance": 5.070912,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 42,
+      "patchJunctionScore": -3.89002,
+      "patchJunctionScoreGain": 10.687836,
+      "patchJunctionTop1ImprovementPx": -361.55,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1349.57,
+        2179.2
+      ],
+      "patchJunctionTop1VertexErrorPx": 371.55,
+      "setId": "30",
+      "side": "B",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "30_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1391.46,
+        1974.52
+      ],
+      "baselineVertexErrorPx": 47.18,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 14.3,
+      "candidateOracleStatus": "plausible",
+      "candidateOracleVertex": [
+        1447.46,
+        2030.52
+      ],
+      "candidateOracleVertexErrorPx": 32.88,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1420.5,
+        2011.7
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 31 - A - white up IMG_7102.JPG",
+      "key": "canonical:31_A",
+      "modelAxisMaxAngleErrorDeg": 2.32,
+      "patchJunctionBaselineScore": -5.0434,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "plausible",
+      "patchJunctionGatedVertex": [
+        1391.46,
+        1974.52
+      ],
+      "patchJunctionGatedVertexErrorPx": 47.18,
+      "patchJunctionMeanNegativeDistance": 5.212999,
+      "patchJunctionMeanPositiveDistance": 4.871388,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 44,
+      "patchJunctionScore": -3.724528,
+      "patchJunctionScoreGain": 1.318872,
+      "patchJunctionTop1ImprovementPx": -293.66,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1383.46,
+        2350.52
+      ],
+      "patchJunctionTop1VertexErrorPx": 340.84,
+      "setId": "31",
+      "side": "A",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "31_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1327.0,
+        1939.0
+      ],
+      "baselineVertexErrorPx": 7.68,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 0.0,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1327.0,
+        1939.0
+      ],
+      "candidateOracleVertexErrorPx": 7.68,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1333.86,
+        1942.46
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 31 - B - white up IMG_7103.JPG",
+      "key": "canonical:31_B",
+      "modelAxisMaxAngleErrorDeg": 2.67,
+      "patchJunctionBaselineScore": -12.018976,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "strict",
+      "patchJunctionGatedVertex": [
+        1327.0,
+        1939.0
+      ],
+      "patchJunctionGatedVertexErrorPx": 7.68,
+      "patchJunctionMeanNegativeDistance": 4.960081,
+      "patchJunctionMeanPositiveDistance": 4.506563,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 42,
+      "patchJunctionScore": -3.415345,
+      "patchJunctionScoreGain": 8.603631,
+      "patchJunctionTop1ImprovementPx": -153.88,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1191.0,
+        1867.0
+      ],
+      "patchJunctionTop1VertexErrorPx": 161.56,
+      "setId": "31",
+      "side": "B",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "31_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1532.91,
+        1989.84
+      ],
+      "baselineVertexErrorPx": 72.33,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 53.27,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1588.91,
+        1981.84
+      ],
+      "candidateOracleVertexErrorPx": 19.06,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1601.8,
+        1967.8
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 32 - A - white up IMG_7143.JPG",
+      "key": "canonical:32_A",
+      "modelAxisMaxAngleErrorDeg": 59.88,
+      "patchJunctionBaselineScore": -4.739379,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1532.91,
+        1989.84
+      ],
+      "patchJunctionGatedVertexErrorPx": 72.33,
+      "patchJunctionMeanNegativeDistance": 3.722827,
+      "patchJunctionMeanPositiveDistance": 4.523475,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -3.704453,
+      "patchJunctionScoreGain": 1.034926,
+      "patchJunctionTop1ImprovementPx": -333.07,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1524.91,
+        2365.84
+      ],
+      "patchJunctionTop1VertexErrorPx": 405.4,
+      "setId": "32",
+      "side": "A",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "32_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1367.0,
+        1826.0
+      ],
+      "baselineVertexErrorPx": 70.61,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 50.17,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1359.0,
+        1882.0
+      ],
+      "candidateOracleVertexErrorPx": 20.44,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1373.6,
+        1896.3
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 32 - B - white up IMG_7144.JPG",
+      "key": "canonical:32_B",
+      "modelAxisMaxAngleErrorDeg": 62.97,
+      "patchJunctionBaselineScore": -10.637024,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1367.0,
+        1826.0
+      ],
+      "patchJunctionGatedVertexErrorPx": 70.61,
+      "patchJunctionMeanNegativeDistance": 6.080359,
+      "patchJunctionMeanPositiveDistance": 4.932543,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -3.594864,
+      "patchJunctionScoreGain": 7.04216,
+      "patchJunctionTop1ImprovementPx": -411.0,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        975.0,
+        1626.0
+      ],
+      "patchJunctionTop1VertexErrorPx": 481.61,
+      "setId": "32",
+      "side": "B",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "32_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1288.77,
+        1842.56
+      ],
+      "baselineVertexErrorPx": 102.95,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 70.31,
+      "candidateOracleStatus": "plausible",
+      "candidateOracleVertex": [
+        1344.77,
+        1962.56
+      ],
+      "candidateOracleVertexErrorPx": 32.64,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1320.8,
+        1940.4
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 36 - B - white up IMG_7152.JPG",
+      "key": "canonical:36_B",
+      "modelAxisMaxAngleErrorDeg": 1.79,
+      "patchJunctionBaselineScore": -3.187604,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1288.77,
+        1842.56
+      ],
+      "patchJunctionGatedVertexErrorPx": 102.95,
+      "patchJunctionMeanNegativeDistance": 4.318352,
+      "patchJunctionMeanPositiveDistance": 3.96034,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 44,
+      "patchJunctionScore": -3.010303,
+      "patchJunctionScoreGain": 0.177302,
+      "patchJunctionTop1ImprovementPx": -135.96,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1152.77,
+        1770.56
+      ],
+      "patchJunctionTop1VertexErrorPx": 238.91,
+      "setId": "36",
+      "side": "B",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "36_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1508.0,
+        1917.0
+      ],
+      "baselineVertexErrorPx": 91.97,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 81.69,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1564.0,
+        1845.0
+      ],
+      "candidateOracleVertexErrorPx": 10.29,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1572.23,
+        1851.17
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 42 - B - white up IMG_7164.JPG",
+      "key": "canonical:42_B",
+      "modelAxisMaxAngleErrorDeg": 64.06,
+      "patchJunctionBaselineScore": -8.341098,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1508.0,
+        1917.0
+      ],
+      "patchJunctionGatedVertexErrorPx": 91.97,
+      "patchJunctionMeanNegativeDistance": 5.673011,
+      "patchJunctionMeanPositiveDistance": 5.457627,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -4.209565,
+      "patchJunctionScoreGain": 4.131533,
+      "patchJunctionTop1ImprovementPx": -347.48,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1180.0,
+        1653.0
+      ],
+      "patchJunctionTop1VertexErrorPx": 439.45,
+      "setId": "42",
+      "side": "B",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "42_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1472.0,
+        1826.0
+      ],
+      "baselineVertexErrorPx": 185.52,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 145.43,
+      "candidateOracleStatus": "plausible",
+      "candidateOracleVertex": [
+        1336.0,
+        1946.0
+      ],
+      "candidateOracleVertexErrorPx": 40.09,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1362.7,
+        1975.9
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 44 - A - white up IMG_7167.JPG",
+      "key": "canonical:44_A",
+      "modelAxisMaxAngleErrorDeg": 62.49,
+      "patchJunctionBaselineScore": -6.634338,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1472.0,
+        1826.0
+      ],
+      "patchJunctionGatedVertexErrorPx": 185.52,
+      "patchJunctionMeanNegativeDistance": 5.075565,
+      "patchJunctionMeanPositiveDistance": 4.296563,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 44,
+      "patchJunctionScore": -3.179938,
+      "patchJunctionScoreGain": 3.4544,
+      "patchJunctionTop1ImprovementPx": 145.43,
+      "patchJunctionTop1Status": "plausible",
+      "patchJunctionTop1Vertex": [
+        1336.0,
+        1946.0
+      ],
+      "patchJunctionTop1VertexErrorPx": 40.09,
+      "setId": "44",
+      "side": "A",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "44_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1615.0,
+        1988.0
+      ],
+      "baselineVertexErrorPx": 117.57,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 82.8,
+      "candidateOracleStatus": "plausible",
+      "candidateOracleVertex": [
+        1479.0,
+        1980.0
+      ],
+      "candidateOracleVertexErrorPx": 34.77,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1499.2,
+        2008.3
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 44 - B - white up IMG_7168.JPG",
+      "key": "canonical:44_B",
+      "modelAxisMaxAngleErrorDeg": 62.18,
+      "patchJunctionBaselineScore": -4.301961,
+      "patchJunctionGatedAccepted": true,
+      "patchJunctionGatedImprovementPx": 61.06,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1543.0,
+        2044.0
+      ],
+      "patchJunctionGatedVertexErrorPx": 56.51,
+      "patchJunctionMeanNegativeDistance": 5.065631,
+      "patchJunctionMeanPositiveDistance": 3.861208,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 44,
+      "patchJunctionScore": -2.746769,
+      "patchJunctionScoreGain": 1.555193,
+      "patchJunctionTop1ImprovementPx": 61.06,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1543.0,
+        2044.0
+      ],
+      "patchJunctionTop1VertexErrorPx": 56.51,
+      "setId": "44",
+      "side": "B",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "44_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1423.84,
+        2163.77
+      ],
+      "baselineVertexErrorPx": 4.96,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 0.0,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1423.84,
+        2163.77
+      ],
+      "candidateOracleVertexErrorPx": 4.96,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1420.08,
+        2160.54
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 57 - A - white-up IMG_7510.JPG",
+      "key": "canonical:57_A",
+      "modelAxisMaxAngleErrorDeg": 8.6,
+      "patchJunctionBaselineScore": -3.773375,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "strict",
+      "patchJunctionGatedVertex": [
+        1423.84,
+        2163.77
+      ],
+      "patchJunctionGatedVertexErrorPx": 4.96,
+      "patchJunctionMeanNegativeDistance": 5.742079,
+      "patchJunctionMeanPositiveDistance": 3.971626,
+      "patchJunctionNegativePrototypeCount": 786,
+      "patchJunctionPositivePrototypeCount": 42,
+      "patchJunctionScore": -2.708369,
+      "patchJunctionScoreGain": 1.065007,
+      "patchJunctionTop1ImprovementPx": -182.43,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1287.84,
+        2027.77
+      ],
+      "patchJunctionTop1VertexErrorPx": 187.39,
+      "setId": "57",
+      "side": "A",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "57_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1558.87,
+        1985.83
+      ],
+      "baselineVertexErrorPx": 70.74,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 45.99,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1486.87,
+        1977.83
+      ],
+      "candidateOracleVertexErrorPx": 24.75,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1495.4,
+        1954.6
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 61 - A - white-up IMG_7518.JPG",
+      "key": "canonical:61_A",
+      "modelAxisMaxAngleErrorDeg": 61.3,
+      "patchJunctionBaselineScore": -4.583035,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1558.87,
+        1985.83
+      ],
+      "patchJunctionGatedVertexErrorPx": 70.74,
+      "patchJunctionMeanNegativeDistance": 6.050101,
+      "patchJunctionMeanPositiveDistance": 4.887641,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -3.556619,
+      "patchJunctionScoreGain": 1.026416,
+      "patchJunctionTop1ImprovementPx": 45.99,
+      "patchJunctionTop1Status": "strict",
+      "patchJunctionTop1Vertex": [
+        1486.87,
+        1977.83
+      ],
+      "patchJunctionTop1VertexErrorPx": 24.75,
+      "setId": "61",
+      "side": "A",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "61_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1367.73,
+        1888.78
+      ],
+      "baselineVertexErrorPx": 60.04,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 47.57,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1359.73,
+        1816.78
+      ],
+      "candidateOracleVertexErrorPx": 12.47,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1362.2,
+        1829.0
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 61 - B - white-up IMG_7519.JPG",
+      "key": "canonical:61_B",
+      "modelAxisMaxAngleErrorDeg": 4.09,
+      "patchJunctionBaselineScore": -5.674314,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1367.73,
+        1888.78
+      ],
+      "patchJunctionGatedVertexErrorPx": 60.04,
+      "patchJunctionMeanNegativeDistance": 4.439719,
+      "patchJunctionMeanPositiveDistance": 4.523838,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -3.547099,
+      "patchJunctionScoreGain": 2.127215,
+      "patchJunctionTop1ImprovementPx": -55.77,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1359.73,
+        1944.78
+      ],
+      "patchJunctionTop1VertexErrorPx": 115.81,
+      "setId": "61",
+      "side": "B",
+      "sourceFeedbackLane": "canonical",
+      "sourceRowKey": "61_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1798.09,
+        1685.94
+      ],
+      "baselineVertexErrorPx": 301.85,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 274.3,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1598.09,
+        1933.94
+      ],
+      "candidateOracleVertexErrorPx": 27.55,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1592.51,
+        1906.96
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 42 - A - white up IMG_7163.JPG",
+      "key": "active:42_A",
+      "modelAxisMaxAngleErrorDeg": 52.15,
+      "patchJunctionBaselineScore": -16.102712,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1798.09,
+        1685.94
+      ],
+      "patchJunctionGatedVertexErrorPx": 301.85,
+      "patchJunctionMeanNegativeDistance": 5.310999,
+      "patchJunctionMeanPositiveDistance": 4.683961,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -3.515541,
+      "patchJunctionScoreGain": 12.587171,
+      "patchJunctionTop1ImprovementPx": -121.24,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1982.09,
+        1741.94
+      ],
+      "patchJunctionTop1VertexErrorPx": 423.09,
+      "setId": "42",
+      "side": "A",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "42_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1592.69,
+        1010.91
+      ],
+      "baselineVertexErrorPx": 1017.98,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 504.05,
+      "candidateOracleStatus": "blocked",
+      "candidateOracleVertex": [
+        1584.69,
+        1514.91
+      ],
+      "candidateOracleVertexErrorPx": 513.92,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1572.23,
+        2028.68
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 36 - A - white up IMG_7151.JPG",
+      "key": "active:36_A",
+      "modelAxisMaxAngleErrorDeg": 64.56,
+      "patchJunctionBaselineScore": -11.659839,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1592.69,
+        1010.91
+      ],
+      "patchJunctionGatedVertexErrorPx": 1017.98,
+      "patchJunctionMeanNegativeDistance": 6.364451,
+      "patchJunctionMeanPositiveDistance": 5.030377,
+      "patchJunctionNegativePrototypeCount": 786,
+      "patchJunctionPositivePrototypeCount": 44,
+      "patchJunctionScore": -3.630198,
+      "patchJunctionScoreGain": 8.029642,
+      "patchJunctionTop1ImprovementPx": 112.81,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1456.69,
+        1130.91
+      ],
+      "patchJunctionTop1VertexErrorPx": 905.17,
+      "setId": "36",
+      "side": "A",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "36_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1404.65,
+        1913.31
+      ],
+      "baselineVertexErrorPx": 120.44,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 112.22,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1396.65,
+        2033.31
+      ],
+      "candidateOracleVertexErrorPx": 8.22,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1404.86,
+        2033.75
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 23 - B - white up.JPG",
+      "key": "active:23_B",
+      "modelAxisMaxAngleErrorDeg": 63.94,
+      "patchJunctionBaselineScore": -4.977792,
+      "patchJunctionGatedAccepted": true,
+      "patchJunctionGatedImprovementPx": 112.22,
+      "patchJunctionGatedStatus": "strict",
+      "patchJunctionGatedVertex": [
+        1396.65,
+        2033.31
+      ],
+      "patchJunctionGatedVertexErrorPx": 8.22,
+      "patchJunctionMeanNegativeDistance": 5.435253,
+      "patchJunctionMeanPositiveDistance": 4.141027,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -2.945271,
+      "patchJunctionScoreGain": 2.032521,
+      "patchJunctionTop1ImprovementPx": 112.22,
+      "patchJunctionTop1Status": "strict",
+      "patchJunctionTop1Vertex": [
+        1396.65,
+        2033.31
+      ],
+      "patchJunctionTop1VertexErrorPx": 8.22,
+      "setId": "23",
+      "side": "B",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "23_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1400.23,
+        1841.26
+      ],
+      "baselineVertexErrorPx": 266.53,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 244.35,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1456.23,
+        2089.26
+      ],
+      "candidateOracleVertexErrorPx": 22.18,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1440.36,
+        2104.75
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 37 - A - white up IMG_7153.JPG",
+      "key": "active:37_A",
+      "modelAxisMaxAngleErrorDeg": 60.92,
+      "patchJunctionBaselineScore": -6.325275,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1400.23,
+        1841.26
+      ],
+      "patchJunctionGatedVertexErrorPx": 266.53,
+      "patchJunctionMeanNegativeDistance": 4.62966,
+      "patchJunctionMeanPositiveDistance": 4.816332,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -3.797807,
+      "patchJunctionScoreGain": 2.527468,
+      "patchJunctionTop1ImprovementPx": 185.47,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1456.23,
+        2025.26
+      ],
+      "patchJunctionTop1VertexErrorPx": 81.06,
+      "setId": "37",
+      "side": "A",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "37_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1343.12,
+        1856.26
+      ],
+      "baselineVertexErrorPx": 99.61,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 73.27,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1271.12,
+        1784.26
+      ],
+      "candidateOracleVertexErrorPx": 26.34,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1293.28,
+        1770.02
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 23 - A - white up.JPG",
+      "key": "active:23_A",
+      "modelAxisMaxAngleErrorDeg": 67.82,
+      "patchJunctionBaselineScore": -5.429103,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1343.12,
+        1856.26
+      ],
+      "patchJunctionGatedVertexErrorPx": 99.61,
+      "patchJunctionMeanNegativeDistance": 6.027063,
+      "patchJunctionMeanPositiveDistance": 5.049288,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -3.723334,
+      "patchJunctionScoreGain": 1.705769,
+      "patchJunctionTop1ImprovementPx": 73.27,
+      "patchJunctionTop1Status": "strict",
+      "patchJunctionTop1Vertex": [
+        1271.12,
+        1784.26
+      ],
+      "patchJunctionTop1VertexErrorPx": 26.34,
+      "setId": "23",
+      "side": "A",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "23_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1274.82,
+        1953.94
+      ],
+      "baselineVertexErrorPx": 372.24,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 343.97,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1458.82,
+        2265.94
+      ],
+      "candidateOracleVertexErrorPx": 28.26,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1440.36,
+        2287.34
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 37 - B - white up IMG_7154.JPG",
+      "key": "active:37_B",
+      "modelAxisMaxAngleErrorDeg": 72.32,
+      "patchJunctionBaselineScore": -8.882199,
+      "patchJunctionGatedAccepted": true,
+      "patchJunctionGatedImprovementPx": 52.92,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1202.82,
+        2073.94
+      ],
+      "patchJunctionGatedVertexErrorPx": 319.32,
+      "patchJunctionMeanNegativeDistance": 6.158254,
+      "patchJunctionMeanPositiveDistance": 3.811205,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -2.456389,
+      "patchJunctionScoreGain": 6.425809,
+      "patchJunctionTop1ImprovementPx": 52.92,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1202.82,
+        2073.94
+      ],
+      "patchJunctionTop1VertexErrorPx": 319.32,
+      "setId": "37",
+      "side": "B",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "37_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1524.35,
+        2066.8
+      ],
+      "baselineVertexErrorPx": 115.9,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 86.96,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1580.35,
+        2186.8
+      ],
+      "candidateOracleVertexErrorPx": 28.94,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1592.51,
+        2160.54
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 12 - A - white up IMG_6701.JPG",
+      "key": "active:12_A",
+      "modelAxisMaxAngleErrorDeg": 6.91,
+      "patchJunctionBaselineScore": -12.049048,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1524.35,
+        2066.8
+      ],
+      "patchJunctionGatedVertexErrorPx": 115.9,
+      "patchJunctionMeanNegativeDistance": 4.590389,
+      "patchJunctionMeanPositiveDistance": 5.064844,
+      "patchJunctionNegativePrototypeCount": 786,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -4.054958,
+      "patchJunctionScoreGain": 7.99409,
+      "patchJunctionTop1ImprovementPx": -313.53,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1196.35,
+        1994.8
+      ],
+      "patchJunctionTop1VertexErrorPx": 429.43,
+      "setId": "12",
+      "side": "A",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "12_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1602.79,
+        1847.5
+      ],
+      "baselineVertexErrorPx": 190.76,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 157.63,
+      "candidateOracleStatus": "plausible",
+      "candidateOracleVertex": [
+        1466.79,
+        1967.5
+      ],
+      "candidateOracleVertexErrorPx": 33.13,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1440.36,
+        1947.53
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 27 - A - white upIMG_6775.JPG",
+      "key": "active:27_A",
+      "modelAxisMaxAngleErrorDeg": 6.98,
+      "patchJunctionBaselineScore": -4.308381,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1602.79,
+        1847.5
+      ],
+      "patchJunctionGatedVertexErrorPx": 190.76,
+      "patchJunctionMeanNegativeDistance": 4.780769,
+      "patchJunctionMeanPositiveDistance": 4.184101,
+      "patchJunctionNegativePrototypeCount": 786,
+      "patchJunctionPositivePrototypeCount": 44,
+      "patchJunctionScore": -3.132332,
+      "patchJunctionScoreGain": 1.176049,
+      "patchJunctionTop1ImprovementPx": 139.41,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1466.79,
+        1903.5
+      ],
+      "patchJunctionTop1VertexErrorPx": 51.35,
+      "setId": "27",
+      "side": "A",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "27_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1394.97,
+        1846.2
+      ],
+      "baselineVertexErrorPx": 142.65,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 119.64,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1450.97,
+        1966.2
+      ],
+      "candidateOracleVertexErrorPx": 23.0,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1435.29,
+        1983.03
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 24 - B - white up IMG_6770.JPG",
+      "key": "active:24_B",
+      "modelAxisMaxAngleErrorDeg": 63.33,
+      "patchJunctionBaselineScore": -12.150576,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1394.97,
+        1846.2
+      ],
+      "patchJunctionGatedVertexErrorPx": 142.65,
+      "patchJunctionMeanNegativeDistance": 6.07801,
+      "patchJunctionMeanPositiveDistance": 4.709557,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -3.372394,
+      "patchJunctionScoreGain": 8.778181,
+      "patchJunctionTop1ImprovementPx": 119.65,
+      "patchJunctionTop1Status": "strict",
+      "patchJunctionTop1Vertex": [
+        1450.97,
+        1966.2
+      ],
+      "patchJunctionTop1VertexErrorPx": 23.0,
+      "setId": "24",
+      "side": "B",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "24_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1523.3,
+        1677.45
+      ],
+      "baselineVertexErrorPx": 435.29,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 400.83,
+      "candidateOracleStatus": "plausible",
+      "candidateOracleVertex": [
+        1643.3,
+        2117.45
+      ],
+      "candidateOracleVertexErrorPx": 34.46,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1663.52,
+        2089.54
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 14 - A - white up IMG_6705.JPG",
+      "key": "active:14_A",
+      "modelAxisMaxAngleErrorDeg": 9.32,
+      "patchJunctionBaselineScore": -12.875764,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1523.3,
+        1677.45
+      ],
+      "patchJunctionGatedVertexErrorPx": 435.29,
+      "patchJunctionMeanNegativeDistance": 7.255363,
+      "patchJunctionMeanPositiveDistance": 5.47751,
+      "patchJunctionNegativePrototypeCount": 786,
+      "patchJunctionPositivePrototypeCount": 44,
+      "patchJunctionScore": -3.88133,
+      "patchJunctionScoreGain": 8.994434,
+      "patchJunctionTop1ImprovementPx": -116.57,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1195.3,
+        1797.45
+      ],
+      "patchJunctionTop1VertexErrorPx": 551.86,
+      "setId": "14",
+      "side": "A",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "14_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1443.24,
+        2027.22
+      ],
+      "baselineVertexErrorPx": 118.16,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 85.93,
+      "candidateOracleStatus": "plausible",
+      "candidateOracleVertex": [
+        1499.24,
+        2147.22
+      ],
+      "candidateOracleVertexErrorPx": 32.22,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1516.44,
+        2119.97
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 17 - A - white up.JPG",
+      "key": "active:17_A",
+      "modelAxisMaxAngleErrorDeg": 69.51,
+      "patchJunctionBaselineScore": -11.635671,
+      "patchJunctionGatedAccepted": true,
+      "patchJunctionGatedImprovementPx": 85.94,
+      "patchJunctionGatedStatus": "plausible",
+      "patchJunctionGatedVertex": [
+        1499.24,
+        2147.22
+      ],
+      "patchJunctionGatedVertexErrorPx": 32.22,
+      "patchJunctionMeanNegativeDistance": 4.403816,
+      "patchJunctionMeanPositiveDistance": 3.16694,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 44,
+      "patchJunctionScore": -2.1981,
+      "patchJunctionScoreGain": 9.43757,
+      "patchJunctionTop1ImprovementPx": 85.94,
+      "patchJunctionTop1Status": "plausible",
+      "patchJunctionTop1Vertex": [
+        1499.24,
+        2147.22
+      ],
+      "patchJunctionTop1VertexErrorPx": 32.22,
+      "setId": "17",
+      "side": "A",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "17_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1128.81,
+        1511.37
+      ],
+      "baselineVertexErrorPx": 829.78,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 500.22,
+      "candidateOracleStatus": "blocked",
+      "candidateOracleVertex": [
+        1376.81,
+        1951.37
+      ],
+      "candidateOracleVertexErrorPx": 329.56,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1597.58,
+        2196.05
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 57 - B - white-up IMG_7511.JPG",
+      "key": "active:57_B",
+      "modelAxisMaxAngleErrorDeg": 117.0,
+      "patchJunctionBaselineScore": -10.926015,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1128.81,
+        1511.37
+      ],
+      "patchJunctionGatedVertexErrorPx": 829.78,
+      "patchJunctionMeanNegativeDistance": 4.252491,
+      "patchJunctionMeanPositiveDistance": 4.071555,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 44,
+      "patchJunctionScore": -3.136008,
+      "patchJunctionScoreGain": 7.790007,
+      "patchJunctionTop1ImprovementPx": -146.8,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        800.81,
+        1631.37
+      ],
+      "patchJunctionTop1VertexErrorPx": 976.58,
+      "setId": "57",
+      "side": "B",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "57_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1414.97,
+        1935.22
+      ],
+      "baselineVertexErrorPx": 120.01,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 79.6,
+      "candidateOracleStatus": "plausible",
+      "candidateOracleVertex": [
+        1470.97,
+        2055.22
+      ],
+      "candidateOracleVertexErrorPx": 40.41,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1496.15,
+        2023.61
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 62 - A - white-up IMG_7521.JPG",
+      "key": "active:62_A",
+      "modelAxisMaxAngleErrorDeg": 5.81,
+      "patchJunctionBaselineScore": -5.912206,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1414.97,
+        1935.22
+      ],
+      "patchJunctionGatedVertexErrorPx": 120.01,
+      "patchJunctionMeanNegativeDistance": 5.085091,
+      "patchJunctionMeanPositiveDistance": 4.750739,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 44,
+      "patchJunctionScore": -3.632019,
+      "patchJunctionScoreGain": 2.280186,
+      "patchJunctionTop1ImprovementPx": 79.6,
+      "patchJunctionTop1Status": "plausible",
+      "patchJunctionTop1Vertex": [
+        1470.97,
+        2055.22
+      ],
+      "patchJunctionTop1VertexErrorPx": 40.41,
+      "setId": "62",
+      "side": "A",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "62_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1357.43,
+        1937.29
+      ],
+      "baselineVertexErrorPx": 181.58,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 163.66,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1541.43,
+        1993.29
+      ],
+      "candidateOracleVertexErrorPx": 17.92,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1526.58,
+        2003.32
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 62 - B - white-up IMG_7522.JPG",
+      "key": "active:62_B",
+      "modelAxisMaxAngleErrorDeg": 62.24,
+      "patchJunctionBaselineScore": -4.880036,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1357.43,
+        1937.29
+      ],
+      "patchJunctionGatedVertexErrorPx": 181.58,
+      "patchJunctionMeanNegativeDistance": 5.572578,
+      "patchJunctionMeanPositiveDistance": 4.437445,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -3.211478,
+      "patchJunctionScoreGain": 1.668559,
+      "patchJunctionTop1ImprovementPx": 163.66,
+      "patchJunctionTop1Status": "strict",
+      "patchJunctionTop1Vertex": [
+        1541.43,
+        1993.29
+      ],
+      "patchJunctionTop1VertexErrorPx": 17.92,
+      "setId": "62",
+      "side": "B",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "62_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1384.48,
+        1963.23
+      ],
+      "baselineVertexErrorPx": 73.34,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 40.43,
+      "candidateOracleStatus": "plausible",
+      "candidateOracleVertex": [
+        1312.48,
+        1891.23
+      ],
+      "candidateOracleVertexErrorPx": 32.91,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1323.71,
+        1922.17
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 22 - B - white up.JPG",
+      "key": "active:22_B",
+      "modelAxisMaxAngleErrorDeg": 2.9,
+      "patchJunctionBaselineScore": -4.800424,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1384.48,
+        1963.23
+      ],
+      "patchJunctionGatedVertexErrorPx": 73.34,
+      "patchJunctionMeanNegativeDistance": 4.061237,
+      "patchJunctionMeanPositiveDistance": 4.74898,
+      "patchJunctionNegativePrototypeCount": 786,
+      "patchJunctionPositivePrototypeCount": 44,
+      "patchJunctionScore": -3.855508,
+      "patchJunctionScoreGain": 0.944917,
+      "patchJunctionTop1ImprovementPx": -8.0,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1248.48,
+        1891.23
+      ],
+      "patchJunctionTop1VertexErrorPx": 81.34,
+      "setId": "22",
+      "side": "B",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "22_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1467.1,
+        1871.48
+      ],
+      "baselineVertexErrorPx": 86.12,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 71.5,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1523.1,
+        1927.48
+      ],
+      "candidateOracleVertexErrorPx": 14.62,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1536.72,
+        1922.17
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 58 - A - white-up IMG_7512.JPG",
+      "key": "active:58_A",
+      "modelAxisMaxAngleErrorDeg": 64.55,
+      "patchJunctionBaselineScore": -6.414862,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1467.1,
+        1871.48
+      ],
+      "patchJunctionGatedVertexErrorPx": 86.12,
+      "patchJunctionMeanNegativeDistance": 6.918822,
+      "patchJunctionMeanPositiveDistance": 4.770149,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -3.248008,
+      "patchJunctionScoreGain": 3.166855,
+      "patchJunctionTop1ImprovementPx": 71.5,
+      "patchJunctionTop1Status": "strict",
+      "patchJunctionTop1Vertex": [
+        1523.1,
+        1927.48
+      ],
+      "patchJunctionTop1VertexErrorPx": 14.62,
+      "setId": "58",
+      "side": "A",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "58_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1504.11,
+        1918.88
+      ],
+      "baselineVertexErrorPx": 33.79,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 9.29,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1496.11,
+        1974.88
+      ],
+      "candidateOracleVertexErrorPx": 24.5,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1506.29,
+        1952.6
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 58 - B - white-up IMG_7513.JPG",
+      "key": "active:58_B",
+      "modelAxisMaxAngleErrorDeg": 62.65,
+      "patchJunctionBaselineScore": -4.825607,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "plausible",
+      "patchJunctionGatedVertex": [
+        1504.11,
+        1918.88
+      ],
+      "patchJunctionGatedVertexErrorPx": 33.79,
+      "patchJunctionMeanNegativeDistance": 6.567288,
+      "patchJunctionMeanPositiveDistance": 5.961837,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -4.517033,
+      "patchJunctionScoreGain": 0.308573,
+      "patchJunctionTop1ImprovementPx": 9.29,
+      "patchJunctionTop1Status": "strict",
+      "patchJunctionTop1Vertex": [
+        1496.11,
+        1974.88
+      ],
+      "patchJunctionTop1VertexErrorPx": 24.5,
+      "setId": "58",
+      "side": "B",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "58_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1490.21,
+        1879.54
+      ],
+      "baselineVertexErrorPx": 184.52,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 174.38,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1354.21,
+        1743.54
+      ],
+      "candidateOracleVertexErrorPx": 10.14,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1364.29,
+        1744.66
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 39 - A - white up IMG_7157.JPG",
+      "key": "active:39_A",
+      "modelAxisMaxAngleErrorDeg": 60.85,
+      "patchJunctionBaselineScore": -11.452948,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1490.21,
+        1879.54
+      ],
+      "patchJunctionGatedVertexErrorPx": 184.52,
+      "patchJunctionMeanNegativeDistance": 5.043522,
+      "patchJunctionMeanPositiveDistance": 5.153286,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -4.043712,
+      "patchJunctionScoreGain": 7.409237,
+      "patchJunctionTop1ImprovementPx": 130.59,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1418.21,
+        1743.54
+      ],
+      "patchJunctionTop1VertexErrorPx": 53.93,
+      "setId": "39",
+      "side": "A",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "39_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1371.22,
+        1787.02
+      ],
+      "baselineVertexErrorPx": 263.36,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 239.61,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1363.22,
+        2035.02
+      ],
+      "candidateOracleVertexErrorPx": 23.75,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1344.0,
+        2048.97
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 47 - A - white up +90 IMG_7381.JPG",
+      "key": "active:47_A",
+      "modelAxisMaxAngleErrorDeg": 9.7,
+      "patchJunctionBaselineScore": -8.491655,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1371.22,
+        1787.02
+      ],
+      "patchJunctionGatedVertexErrorPx": 263.36,
+      "patchJunctionMeanNegativeDistance": 4.624343,
+      "patchJunctionMeanPositiveDistance": 4.343334,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -3.325978,
+      "patchJunctionScoreGain": 5.165677,
+      "patchJunctionTop1ImprovementPx": -140.8,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1043.22,
+        1779.02
+      ],
+      "patchJunctionTop1VertexErrorPx": 404.16,
+      "setId": "47",
+      "side": "A",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "47_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1515.19,
+        1854.58
+      ],
+      "baselineVertexErrorPx": 323.16,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 308.18,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1315.19,
+        2102.58
+      ],
+      "candidateOracleVertexErrorPx": 14.98,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1323.71,
+        2114.9
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 47 - B - white up +90 IMG_7382.JPG",
+      "key": "active:47_B",
+      "modelAxisMaxAngleErrorDeg": 14.33,
+      "patchJunctionBaselineScore": -15.073405,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1515.19,
+        1854.58
+      ],
+      "patchJunctionGatedVertexErrorPx": 323.16,
+      "patchJunctionMeanNegativeDistance": 3.839817,
+      "patchJunctionMeanPositiveDistance": 4.557848,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -3.713088,
+      "patchJunctionScoreGain": 11.360316,
+      "patchJunctionTop1ImprovementPx": 308.18,
+      "patchJunctionTop1Status": "strict",
+      "patchJunctionTop1Vertex": [
+        1315.19,
+        2102.58
+      ],
+      "patchJunctionTop1VertexErrorPx": 14.98,
+      "setId": "47",
+      "side": "B",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "47_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1434.4,
+        1758.48
+      ],
+      "baselineVertexErrorPx": 390.05,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 365.36,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1362.4,
+        2134.48
+      ],
+      "candidateOracleVertexErrorPx": 24.68,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1384.57,
+        2145.33
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 49 - A - white up +270 IMG_7385.JPG",
+      "key": "active:49_A",
+      "modelAxisMaxAngleErrorDeg": 15.47,
+      "patchJunctionBaselineScore": -16.080594,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1434.4,
+        1758.48
+      ],
+      "patchJunctionGatedVertexErrorPx": 390.05,
+      "patchJunctionMeanNegativeDistance": 4.39982,
+      "patchJunctionMeanPositiveDistance": 4.537898,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -3.569937,
+      "patchJunctionScoreGain": 12.510657,
+      "patchJunctionTop1ImprovementPx": 365.37,
+      "patchJunctionTop1Status": "strict",
+      "patchJunctionTop1Vertex": [
+        1362.4,
+        2134.48
+      ],
+      "patchJunctionTop1VertexErrorPx": 24.68,
+      "setId": "49",
+      "side": "A",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "49_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1570.27,
+        1858.72
+      ],
+      "baselineVertexErrorPx": 167.45,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 137.11,
+      "candidateOracleStatus": "plausible",
+      "candidateOracleVertex": [
+        1498.27,
+        2042.72
+      ],
+      "candidateOracleVertexErrorPx": 30.34,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1506.29,
+        2013.46
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 22 - A - white up.JPG",
+      "key": "active:22_A",
+      "modelAxisMaxAngleErrorDeg": 8.32,
+      "patchJunctionBaselineScore": -5.348917,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1570.27,
+        1858.72
+      ],
+      "patchJunctionGatedVertexErrorPx": 167.45,
+      "patchJunctionMeanNegativeDistance": 5.925623,
+      "patchJunctionMeanPositiveDistance": 5.401607,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 44,
+      "patchJunctionScore": -4.09797,
+      "patchJunctionScoreGain": 1.250947,
+      "patchJunctionTop1ImprovementPx": 137.11,
+      "patchJunctionTop1Status": "plausible",
+      "patchJunctionTop1Vertex": [
+        1498.27,
+        2042.72
+      ],
+      "patchJunctionTop1VertexErrorPx": 30.34,
+      "setId": "22",
+      "side": "A",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "22_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1555.71,
+        1982.55
+      ],
+      "baselineVertexErrorPx": 183.6,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 177.61,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1547.71,
+        2166.55
+      ],
+      "candidateOracleVertexErrorPx": 5.98,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1541.8,
+        2165.62
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 49 - B - white up +270 IMG_7386.JPG",
+      "key": "active:49_B",
+      "modelAxisMaxAngleErrorDeg": 66.29,
+      "patchJunctionBaselineScore": -8.924101,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1555.71,
+        1982.55
+      ],
+      "patchJunctionGatedVertexErrorPx": 183.6,
+      "patchJunctionMeanNegativeDistance": 5.55044,
+      "patchJunctionMeanPositiveDistance": 4.504608,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -3.283511,
+      "patchJunctionScoreGain": 5.64059,
+      "patchJunctionTop1ImprovementPx": 177.62,
+      "patchJunctionTop1Status": "strict",
+      "patchJunctionTop1Vertex": [
+        1547.71,
+        2166.55
+      ],
+      "patchJunctionTop1VertexErrorPx": 5.98,
+      "setId": "49",
+      "side": "B",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "49_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1246.44,
+        1862.47
+      ],
+      "baselineVertexErrorPx": 156.23,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 129.74,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1302.44,
+        1982.47
+      ],
+      "candidateOracleVertexErrorPx": 26.48,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1323.71,
+        1998.25
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 48 - B - white up +180 IMG_7384.JPG",
+      "key": "active:48_B",
+      "modelAxisMaxAngleErrorDeg": 68.37,
+      "patchJunctionBaselineScore": -6.20319,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1246.44,
+        1862.47
+      ],
+      "patchJunctionGatedVertexErrorPx": 156.23,
+      "patchJunctionMeanNegativeDistance": 5.133407,
+      "patchJunctionMeanPositiveDistance": 4.823099,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -3.69375,
+      "patchJunctionScoreGain": 2.50944,
+      "patchJunctionTop1ImprovementPx": -280.04,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        982.44,
+        1726.47
+      ],
+      "patchJunctionTop1VertexErrorPx": 436.27,
+      "setId": "48",
+      "side": "B",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "48_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1320.67,
+        2079.25
+      ],
+      "baselineVertexErrorPx": 238.28,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 207.35,
+      "candidateOracleStatus": "plausible",
+      "candidateOracleVertex": [
+        1376.67,
+        1879.25
+      ],
+      "candidateOracleVertexErrorPx": 30.93,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1389.65,
+        1851.17
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 39 - B - white up IMG_7158.JPG",
+      "key": "active:39_B",
+      "modelAxisMaxAngleErrorDeg": 9.81,
+      "patchJunctionBaselineScore": -16.784825,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1320.67,
+        2079.25
+      ],
+      "patchJunctionGatedVertexErrorPx": 238.28,
+      "patchJunctionMeanNegativeDistance": 5.470024,
+      "patchJunctionMeanPositiveDistance": 4.65157,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 44,
+      "patchJunctionScore": -3.448164,
+      "patchJunctionScoreGain": 13.336661,
+      "patchJunctionTop1ImprovementPx": -304.2,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1440.67,
+        2391.25
+      ],
+      "patchJunctionTop1VertexErrorPx": 542.48,
+      "setId": "39",
+      "side": "B",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "39_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1566.69,
+        1544.08
+      ],
+      "baselineVertexErrorPx": 573.82,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 472.66,
+      "candidateOracleStatus": "blocked",
+      "candidateOracleVertex": [
+        1494.69,
+        2048.08
+      ],
+      "candidateOracleVertexErrorPx": 101.17,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1404.86,
+        2094.61
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 46 - B - white up WCA IMG_7380.JPG",
+      "key": "active:46_B",
+      "modelAxisMaxAngleErrorDeg": 34.91,
+      "patchJunctionBaselineScore": -3.851217,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1566.69,
+        1544.08
+      ],
+      "patchJunctionGatedVertexErrorPx": 573.82,
+      "patchJunctionMeanNegativeDistance": 4.470002,
+      "patchJunctionMeanPositiveDistance": 4.390665,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 44,
+      "patchJunctionScore": -3.407265,
+      "patchJunctionScoreGain": 0.443952,
+      "patchJunctionTop1ImprovementPx": -5.51,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1558.69,
+        1536.08
+      ],
+      "patchJunctionTop1VertexErrorPx": 579.33,
+      "setId": "46",
+      "side": "B",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "46_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_good",
+      "baselineVertex": [
+        1184.73,
+        1711.5
+      ],
+      "baselineVertexErrorPx": 362.36,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 324.36,
+      "candidateOracleStatus": "plausible",
+      "candidateOracleVertex": [
+        1496.73,
+        1895.5
+      ],
+      "candidateOracleVertexErrorPx": 37.99,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1475.86,
+        1927.25
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 25 - B - white up IMG_6772.JPG",
+      "key": "active:25_B",
+      "modelAxisMaxAngleErrorDeg": 5.17,
+      "patchJunctionBaselineScore": -16.514053,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1184.73,
+        1711.5
+      ],
+      "patchJunctionGatedVertexErrorPx": 362.36,
+      "patchJunctionMeanNegativeDistance": 4.781024,
+      "patchJunctionMeanPositiveDistance": 5.114979,
+      "patchJunctionNegativePrototypeCount": 787,
+      "patchJunctionPositivePrototypeCount": 44,
+      "patchJunctionScore": -4.063153,
+      "patchJunctionScoreGain": 12.4509,
+      "patchJunctionTop1ImprovementPx": -190.96,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1048.73,
+        1575.5
+      ],
+      "patchJunctionTop1VertexErrorPx": 553.32,
+      "setId": "25",
+      "side": "B",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "25_B",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1509.19,
+        1640.43
+      ],
+      "baselineVertexErrorPx": 369.36,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 355.87,
+      "candidateOracleStatus": "strict",
+      "candidateOracleVertex": [
+        1437.19,
+        2016.43
+      ],
+      "candidateOracleVertexErrorPx": 13.49,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1440.36,
+        2003.32
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 48 - A - white up +180 IMG_7383.JPG",
+      "key": "active:48_A",
+      "modelAxisMaxAngleErrorDeg": 18.29,
+      "patchJunctionBaselineScore": -6.40379,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1509.19,
+        1640.43
+      ],
+      "patchJunctionGatedVertexErrorPx": 369.36,
+      "patchJunctionMeanNegativeDistance": 6.288146,
+      "patchJunctionMeanPositiveDistance": 4.550897,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 43,
+      "patchJunctionScore": -3.167505,
+      "patchJunctionScoreGain": 3.236284,
+      "patchJunctionTop1ImprovementPx": -69.76,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1501.19,
+        1568.43
+      ],
+      "patchJunctionTop1VertexErrorPx": 439.12,
+      "setId": "48",
+      "side": "A",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "48_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1791.84,
+        1396.83
+      ],
+      "baselineVertexErrorPx": 818.09,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 509.14,
+      "candidateOracleStatus": "blocked",
+      "candidateOracleVertex": [
+        1527.84,
+        1836.83
+      ],
+      "candidateOracleVertexErrorPx": 308.95,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1318.64,
+        2064.18
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 46 - A - white up WCA IMG_7379.JPG",
+      "key": "active:46_A",
+      "modelAxisMaxAngleErrorDeg": 118.41,
+      "patchJunctionBaselineScore": -10.751664,
+      "patchJunctionGatedAccepted": false,
+      "patchJunctionGatedImprovementPx": 0.0,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1791.84,
+        1396.83
+      ],
+      "patchJunctionGatedVertexErrorPx": 818.09,
+      "patchJunctionMeanNegativeDistance": 3.437573,
+      "patchJunctionMeanPositiveDistance": 3.949219,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 44,
+      "patchJunctionScore": -3.192952,
+      "patchJunctionScoreGain": 7.558711,
+      "patchJunctionTop1ImprovementPx": -50.1,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        2039.84,
+        1580.83
+      ],
+      "patchJunctionTop1VertexErrorPx": 868.19,
+      "setId": "46",
+      "side": "A",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "46_A",
+      "trainingRowCount": 57
+    },
+    {
+      "axisCategory": "axis_blocked",
+      "baselineVertex": [
+        1830.64,
+        1484.44
+      ],
+      "baselineVertexErrorPx": 702.42,
+      "candidateCount": 208,
+      "candidateOracleImprovementPx": 498.87,
+      "candidateOracleStatus": "blocked",
+      "candidateOracleVertex": [
+        1502.64,
+        1860.44
+      ],
+      "candidateOracleVertexErrorPx": 203.55,
+      "evaluationStatus": "ok",
+      "featureCount": 68,
+      "humanVertex": [
+        1374.43,
+        2018.54
+      ],
+      "imagePath": "/Users/jhuber/Downloads/Set 25 - A - white up IMG_6771.JPG",
+      "key": "active:25_A",
+      "modelAxisMaxAngleErrorDeg": 88.71,
+      "patchJunctionBaselineScore": -28.734539,
+      "patchJunctionGatedAccepted": true,
+      "patchJunctionGatedImprovementPx": 223.39,
+      "patchJunctionGatedStatus": "blocked",
+      "patchJunctionGatedVertex": [
+        1758.64,
+        1732.44
+      ],
+      "patchJunctionGatedVertexErrorPx": 479.03,
+      "patchJunctionMeanNegativeDistance": 3.556515,
+      "patchJunctionMeanPositiveDistance": 3.766924,
+      "patchJunctionNegativePrototypeCount": 785,
+      "patchJunctionPositivePrototypeCount": 44,
+      "patchJunctionScore": -2.984491,
+      "patchJunctionScoreGain": 25.750048,
+      "patchJunctionTop1ImprovementPx": 223.39,
+      "patchJunctionTop1Status": "blocked",
+      "patchJunctionTop1Vertex": [
+        1758.64,
+        1732.44
+      ],
+      "patchJunctionTop1VertexErrorPx": 479.03,
+      "setId": "25",
+      "side": "A",
+      "sourceFeedbackLane": "active",
+      "sourceRowKey": "25_A",
+      "trainingRowCount": 57
+    }
+  ],
+  "schemaVersion": 1,
+  "sourceFeedback": {
+    "activeLearningFeedback": "/private/tmp/cube-patch-junction-localizer-v0/tests/fixtures/vertex_axis_active_learning_feedback_v0.json",
+    "canonicalFeedback": "/private/tmp/cube-patch-junction-localizer-v0/tests/fixtures/vertex_axis_human_feedback_v0.json"
+  },
+  "summary": {
+    "axisBlockedRowCount": 31,
+    "axisGoodBaselineStrictCount": 5,
+    "axisGoodPatchJunctionGatedStrictCount": 5,
+    "axisGoodRowCount": 27,
+    "baselinePlausibleCount": 10,
+    "baselineStrictCount": 6,
+    "candidateOraclePlausibleCount": 53,
+    "candidateOracleStrictCount": 39,
+    "evaluatedRowCount": 58,
+    "meanBaselineVertexErrorPx": 191.6462,
+    "meanCandidateOracleVertexErrorPx": 46.3036,
+    "meanPatchJunctionGatedVertexErrorPx": 181.655,
+    "meanPatchJunctionTop1VertexErrorPx": 230.8769,
+    "medianBaselineVertexErrorPx": 111.54,
+    "medianCandidateOracleVertexErrorPx": 24.925,
+    "medianPatchJunctionGatedVertexErrorPx": 101.09,
+    "medianPatchJunctionTop1VertexErrorPx": 85.67,
+    "patchJunctionGatedAcceptedCount": 6,
+    "patchJunctionGatedImprovedRowCount": 6,
+    "patchJunctionGatedPlausibleCount": 13,
+    "patchJunctionGatedStrictCount": 7,
+    "patchJunctionGatedWorsenedRowCount": 0,
+    "patchJunctionThresholdSweep": {
+      "bestNonEmptyAtMostTwoWorsens": {
+        "acceptedCount": 6,
+        "improvedCount": 6,
+        "meanVertexErrorPx": 181.655,
+        "plausibleCount": 13,
+        "strictCount": 7,
+        "thresholds": {
+          "minScore": -3.0,
+          "minScoreGain": 1.5
+        },
+        "worsenedCount": 0
+      },
+      "bestNonEmptyLowWorsen": {
+        "acceptedCount": 6,
+        "improvedCount": 6,
+        "meanVertexErrorPx": 181.655,
+        "plausibleCount": 13,
+        "strictCount": 7,
+        "thresholds": {
+          "minScore": -3.0,
+          "minScoreGain": 1.5
+        },
+        "worsenedCount": 0
+      },
+      "bestNonEmptyZeroWorsen": {
+        "acceptedCount": 6,
+        "improvedCount": 6,
+        "meanVertexErrorPx": 181.655,
+        "plausibleCount": 13,
+        "strictCount": 7,
+        "thresholds": {
+          "minScore": -3.0,
+          "minScoreGain": 1.5
+        },
+        "worsenedCount": 0
+      },
+      "evaluatedNonEmptyGateCount": 66
+    },
+    "patchJunctionTop1ImprovedRowCount": 30,
+    "patchJunctionTop1PlausibleCount": 22,
+    "patchJunctionTop1StrictCount": 15,
+    "patchJunctionTop1WorsenedRowCount": 27,
+    "rowCount": 58
+  }
+}

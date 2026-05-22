@@ -227,6 +227,15 @@ def candidate_rules() -> List[Tuple[str, str, Callable[[TrustRow], bool]]]:
     Currently evaluates rules over phase_sep + cv-local status only.
     When --recompute-global-model lands, this will extend with rules over
     fit_residual_rms_px, vertex_ensemble_stddev_px, two_view_consistency_deg.
+
+    Note on lambda thresholds: each thresholded rule below uses the
+    ``lambda r, t=t: ...`` default-argument idiom to bind ``t`` at lambda
+    creation time. Without ``t=t``, Python's late-binding closure
+    semantics would cause every lambda to read whatever ``t`` is at the
+    end of the loop, making all thresholded rules collapse to the final
+    threshold. The regression test
+    ``test_candidate_rule_thresholds_are_correctly_bound_per_rule``
+    pins this behavior.
     """
     rules: List[Tuple[str, str, Callable[[TrustRow], bool]]] = []
 

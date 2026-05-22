@@ -171,6 +171,44 @@ def test_summarize_counts_outcomes_and_cases():
     assert s["n_marginal"] == 1
 
 
+def test_candidate_rule_thresholds_are_correctly_bound_per_rule():
+    """Regression guard for a Python closure gotcha that Qwen's audit of
+    PR #232 flagged (incorrectly — see commit history). Each thresholded
+    rule built inside a `for t in (...):` loop captures `t` via the
+    `lambda r, t=t:` default-argument idiom; this test pins that behavior
+    so a future refactor that drops the `t=t` binding (re-introducing the
+    classic late-binding-closure bug) fails loudly here instead of
+    silently making every thresholded rule evaluate at the LAST threshold
+    in the loop.
+    """
+    rules = {name: pred for name, _, pred in p2b.candidate_rules()}
+
+    # Build a probe with phase_sep = 10.0. A correctly-bound predicate
+    # should fire for thresholds <= 10 and NOT fire for thresholds > 10.
+    probe_at_10 = p2b.TrustRow(
+        case="probe", run=0, outcome="GOOD", category="GOOD",
+        phase_sep=10.0, phase_check="?", cv_status="ok", cv_consistent=True,
+    )
+    assert rules["phase_sep_alone_T0.0"](probe_at_10) is True
+    assert rules["phase_sep_alone_T5.0"](probe_at_10) is True
+    assert rules["phase_sep_alone_T8.0"](probe_at_10) is True
+    assert rules["phase_sep_alone_T15.0"](probe_at_10) is False
+    assert rules["phase_sep_alone_T20.0"](probe_at_10) is False
+
+    # Same probe through the OR-compound rules. Note the cv_consistent=True
+    # path means the cv-local side never fires, so the verdict matches the
+    # phase_sep side. This isolates the threshold binding.
+    assert rules["phase_or_cv_T8.0"](probe_at_10) is True   # 10 >= 8
+    assert rules["phase_or_cv_T11.7"](probe_at_10) is False  # 10 < 11.7
+    assert rules["phase_or_cv_T15.0"](probe_at_10) is False  # 10 < 15
+
+    # AND-compounds with cv_consistent=True NEVER fire (the AND-cv side
+    # is always False here). This separately confirms that the compound
+    # predicates are evaluating the cv side, not just inheriting the
+    # phase-only verdict.
+    assert rules["phase_and_cv_T8.0"](probe_at_10) is False
+
+
 def test_full_run_against_committed_fixtures_produces_expected_shape():
     """Smoke test: build the matrix from the actual committed fixtures and
     confirm the shape matches what the report consumes. This locks in the

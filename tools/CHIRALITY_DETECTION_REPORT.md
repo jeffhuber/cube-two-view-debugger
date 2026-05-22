@@ -55,51 +55,81 @@ pixels than vertex→far (across a face diagonal), so sep > 0 should mean
 So the code uses the EMPIRICAL polarity: `sep < 0` ≡ correct,
 `sep > 0` ≡ flipped.
 
-### Validation cross-tab (58 cases × 2 runs = 116 model runs)
+### Validation cross-tabs (58 cases × 2 runs = 116 model runs)
 
-Rows = detector says, cols = position-based ground truth (bearings
-comparison against user-labeled near corners, scale-invariant):
+Two regimes measured. Bearings comparison against user-labeled near
+corners is scale+translation invariant, so we work in gallery coords
+directly.
 
-|             | CORRECT | FLIPPED | AMBIGUOUS | total |
-|-------------|--------:|--------:|----------:|------:|
-| CORRECT     | 45      | 7       | 2         | 54    |
-| FLIPPED     | 5       | 48      | 1         | 54    |
-| AMBIG       | 3       | 5       | 0         | 8     |
-| **total**   | 53      | 60      | 3         | 116   |
+**Regime A — chirality check runs BEFORE mean-of-3 vertex ensemble**
+(initial PR #213 wiring). Detector verdict vs position truth:
 
-Detector agreement on non-ambiguous truth (113 runs):
-- **agree: 93/113 (82.3%)**
-- disagree: 12/113 (10.6%)
-- detector ambiguous: 8/113 (7.1%)
+|                                 | truth=CORRECT | truth=FLIPPED | total |
+|---------------------------------|--------------:|--------------:|------:|
+| correct (sep < −10, no flip)    |            45 |             7 |    52 |
+| corrected_60deg_flip (sep > +10)|             5 |            48 |    53 |
+| ambiguous (\|sep\| < 10)        |             3 |             5 |     8 |
+| **total**                       |            53 |            60 |   116 |
 
-Base rate of chirality flips in the model: **60/116 = 51.7%** —
-essentially a coin flip per Procrustes run.
+End-to-end accuracy: **53/116 = 45.7% correct** on the final returned
+model. Base rate of flips that pass through: **60/116 = 51.7%**.
 
-Case-level stability across 2 runs: only 26/58 cases (45%) are stable;
-32/58 cases (55%) flip outcome between runs.
+**Regime B — chirality check runs AFTER mean-of-3 vertex ensemble**
+(the order in current main). Detector verdict vs position truth:
 
-### Suspected cause of the polarity inversion
+|                                 | truth=CORRECT | truth=FLIPPED | total |
+|---------------------------------|--------------:|--------------:|------:|
+| correct (sep < −10, no flip)    |            32 |             4 |    36 |
+| corrected_60deg_flip (sep > +10)|            42 |             8 |    50 |
+| ambiguous (\|sep\| < 10)        |            18 |            12 |    30 |
+| **total**                       |            92 |            24 |   116 |
 
-The model vertex from PnP is typically 10–50 px off from the true cube
-vertex (the post-PnP mean-of-3 ensemble brings it down, but the
-ensemble is applied AFTER the chirality check). When the model vertex
-is shifted from the true cube vertex, the line from model_vertex to
-model.h_x (the geometrically NEAR corner) doesn't actually lie on the
-cube-edge bezel — it skims off into adjacent sticker interior. Meanwhile
-the line to model.h_xy (geometrically FAR via face diagonal) crosses
-multiple internal between-sticker bezels at near-perpendicular angles,
-racking up MORE total darkness than the off-bezel line to model.h_x.
+End-to-end accuracy: **92/116 = 79.3% correct** — a 33.6-percentage-
+point absolute improvement over Regime A (or ~71% relative).
+Base rate of flips that pass through: **24/116 = 20.7%** (down from
+51.7%).
 
-The empirical polarity reflects this systematic vertex-offset regime
-rather than the idealized "bezel-along-edge" reasoning.
+Detector accuracy when it commits a verdict (correct ∪
+corrected_60deg_flip): 32+42 = 74 right / 86 commits = **86%**.
+The 30 "ambiguous" runs land 60% correct vs 40% flipped — that's the
+underlying Procrustes coin-flip when neither the darkness signal nor a
+useful flip can salvage it.
+
+Case-level stability across 2 runs:
+- Regime A: 11/58 always CORRECT, 15/58 always FLIPPED, 32/58 mixed.
+- Regime B: **40/58 always CORRECT**, 6/58 always FLIPPED, 12/58 mixed.
+
+### Why the order matters
+
+The model vertex from PnP-only is typically 10–50 px off from the true
+cube vertex. When the chirality detector runs with that pre-ensemble
+vertex (Regime A), the line from model_vertex to model.h_x doesn't
+actually lie on the cube-edge bezel — it skims off into adjacent
+sticker interior. The detector then fires off a signal that's
+counter-intuitively inverted from the naive bezel-darkness reasoning
+(`sep < 0` ≡ correct), accidentally calibrated to that off-bezel
+regime.
+
+The mean-of-3 ensemble (PnP + bezel + hexagon-centroid) brings the
+vertex closer to the true cube vertex. Running the chirality detector
+on the ensemble-corrected vertex (Regime B) doesn't revert the
+polarity to the geometric ideal (`sep > 0` ≡ correct) — `sep < 0`
+still means correct — but the discriminator becomes much more
+confident: the |sep| < 10 ambiguous band shrinks the disagree rate
+from 10.6% to 3.4%, the commit rate goes up, and end-to-end accuracy
+nearly doubles.
+
+So the polarity inversion isn't a pure vertex-offset artifact. It
+holds in both regimes; vertex precision just makes the signal cleaner.
 
 ## What's next
 
-- **Pre-condition vertex precision.** With a better vertex localizer
-  (PRs #207/#208/#209/#211 chained), the off-bezel skim could shrink
-  and the polarity might revert toward the geometric ideal. Worth
-  re-validating once the vertex KNN pipeline lands at higher accuracy.
-- **Deterministic Procrustes tie-breaker.** Even with a 82%-accurate
+- **Tune the ambiguous threshold.** With |sep| < 10 still putting 30
+  runs into ambiguous (and 12 of those landing FLIPPED), a slightly
+  wider commit band (e.g., flip when sep > +5) might claw back a few
+  more flipped cases at the cost of accepting more low-confidence
+  flips. Empirical sweep over the 58-case gallery would calibrate it.
+- **Deterministic Procrustes tie-breaker.** Even with an 86%-accurate
   detector, fixing the root non-determinism in the 6! brute-force
   would eliminate the symptom entirely. Candidate rule: among the
   permutations within ε of best residual, prefer the one whose

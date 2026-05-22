@@ -24,13 +24,61 @@ After calibration, the user decides whether to:
 
 ## Components
 
-### 1. Local daemon: `tools/qwen_audit_bridge.py`
+The review work lives in `tools/qwen_audit_pr.py` (CLI + Python
+module). The daemon at `tools/qwen_audit_bridge.py` is a thin
+label-state-machine scheduler on top of the CLI: it polls, dedupes by
+head SHA, and shells out to the CLI for each PR that needs review.
 
-Runs on the user's machine (where Qwen3-Coder-Next is served).
-Polls GitHub every `QWEN_POLL_INTERVAL` seconds for PRs labeled
-`needs-qwen-audit`, fetches the diff, calls the local Qwen serving
-endpoint (OpenAI-compatible by default), and posts the response as a
-PR comment with a structured trailer.
+This split lets Claude / Codex invoke the reviewer on demand for a
+specific PR without waiting for the daemon's next poll — and keeps
+all the review-quality logic (full-file-content context, per-file
+chunking, three-tier severity, stale-HEAD detection) in one place.
+
+### 1. Reviewer CLI: `tools/qwen_audit_pr.py`
+
+Reviews ONE PR end-to-end. Per Codex's design feedback (cube-snap
+follow-up to #142 / ctvd #230):
+
+1. Fetches PR metadata + per-file diffs.
+2. For each changed file, fetches the **full file content at the PR
+   head SHA** (not just diff text — "diff-only review is too weak").
+3. Per-file Qwen pass: prompt sees full file + diff hunks + PR
+   title/body. Returns JSON `{"blockers": [...], "concerns": [...]}`.
+4. Synthesis Qwen pass: gathers per-file findings + cross-cutting
+   concerns (test coverage, doc-index, lane discipline) → final
+   verdict.
+5. Refetches head SHA at end. If it changed mid-review, emits the
+   `needs-qwen-audit` (stale) trailer instead of PASS/BLOCKED.
+6. Posts the comment with the authoritative trailer.
+
+**Severity contract** (in the prompt):
+
+- `BLOCKER` — must fix before merge (correctness, missing test for new
+  behavior, schema break, secret, claim in PR body that can't be
+  verified from visible code — Codex's "don't approve by vibes" rule)
+- `CONCERN` — non-blocking observation (style, naming, refactor idea)
+- `NONE` — no issues to report
+
+Verdict logic: any BLOCKER (per-file OR cross-cutting) → BLOCKED.
+Else → PASS. CONCERNs are surfaced in the comment body but don't gate.
+
+CLI usage:
+```bash
+GITHUB_TOKEN=<bot_pat> python3 tools/qwen_audit_pr.py \
+    --repo jeffhuber/cube-snap --pr 142
+```
+
+Add `--dry-run` to print the audit comment to stdout instead of
+posting. Exit codes: 0 (success), 1 (error), 2 (stale head — caller
+may requeue).
+
+### 2. Polling daemon: `tools/qwen_audit_bridge.py`
+
+Long-lived loop that polls GitHub for `needs-qwen-audit` labels and
+delegates each new PR to `qwen_audit_pr.audit_pr()`. Dedupes by
+`(repo, pr_number, head_sha)` so the same head doesn't trigger
+twice. State persists in `~/.config/qwen-audit-bridge/state.json`
+across restarts.
 
 Run manually for one pass:
 ```bash
@@ -42,7 +90,7 @@ Run as a long-lived daemon (e.g., inside tmux or under launchd/systemd):
 GITHUB_TOKEN=<bot_pat> python3 tools/qwen_audit_bridge.py
 ```
 
-Required environment:
+Required environment (shared between bridge and CLI):
 
 | Variable | Default | Purpose |
 |---|---|---|
@@ -166,9 +214,10 @@ some threshold (TBD; probably 20%).
 If calibration shows Qwen isn't ready, the cleanup is:
 
 ```bash
-rm tools/qwen_audit_bridge.py tools/qwen_audit_labeler.py
+rm tools/qwen_audit_bridge.py tools/qwen_audit_labeler.py tools/qwen_audit_pr.py
 rm .github/workflows/qwen-audit-labeler.yml
 rm tools/QWEN_AUDIT_PROTOCOL.md
+rm tests/test_qwen_audit_pr.py
 gh label delete needs-qwen-audit
 gh label delete qwen-audit-done
 gh label delete qwen-audit-blocked

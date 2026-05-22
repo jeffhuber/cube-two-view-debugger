@@ -111,13 +111,18 @@ def _annotate_rectified(face_img: Image.Image, label: str) -> Image.Image:
 
 
 def render_pair(set_id: str, image_a: Path, image_b: Path,
-                out_dir: Path) -> Dict[str, str]:
+                out_dir: Path, *,
+                hull_guard: bool = False,
+                fit_error_fallback: bool = False) -> Dict[str, str]:
     written: Dict[str, str] = {}
 
     for side, image_path in (("A", image_a), ("B", image_b)):
         img, _ = _load_processing_image(image_path)
         quads, debug = _proposer_face_quads(
-            image_path, side, hull_guard=False, processing_image=img,
+            image_path, side,
+            hull_guard=hull_guard,
+            fit_error_fallback=fit_error_fallback,
+            processing_image=img,
         )
 
         overlay = img.copy()
@@ -178,6 +183,10 @@ def main() -> int:
     ap.add_argument("--top", type=int, default=5,
                     help="when --worst-from is used: render the N worst pairs")
     ap.add_argument("--out", default=str(DEFAULT_OUT))
+    ap.add_argument("--hull-guard", action="store_true",
+                    help="enable rembg hull guard (production-equivalent path)")
+    ap.add_argument("--fit-error-fallback", action="store_true",
+                    help="enable topology-aware fit-error fallback (PR #160 + #163)")
     args = ap.parse_args()
 
     out_dir = Path(args.out)
@@ -211,7 +220,9 @@ def main() -> int:
             continue
         image_a, image_b = tasks_by_id[set_id]
         try:
-            written = render_pair(set_id, image_a, image_b, out_dir)
+            written = render_pair(set_id, image_a, image_b, out_dir,
+                                  hull_guard=args.hull_guard,
+                                  fit_error_fallback=args.fit_error_fallback)
         except Exception as e:
             print(f"  [{i}/{len(wanted_ids)}] set {set_id}: ERROR "
                   f"{type(e).__name__}: {e}", file=sys.stderr)

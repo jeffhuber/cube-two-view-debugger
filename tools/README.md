@@ -22,7 +22,8 @@
 |---|---|
 | [`STATE_OF_THE_WORLD.md`](STATE_OF_THE_WORLD.md) | Entry point. Current architecture map + phased roadmap. |
 | [`FIRST_PRINCIPLES_RECOGNIZER_DESIGN.md`](FIRST_PRINCIPLES_RECOGNIZER_DESIGN.md) | Target architecture + policy bar for first-principles work. |
-| [`POST_218_BASELINE_AND_TAXONOMY.md`](POST_218_BASELINE_AND_TAXONOMY.md) | Decision spine. Numbers, taxonomy, recommended next sequence. |
+| [`POST_218_BASELINE_AND_TAXONOMY.md`](POST_218_BASELINE_AND_TAXONOMY.md) | Decision spine. Numbers, taxonomy, recommended next sequence. (Global-model side.) |
+| [`PHASE_1_CV_LOCAL_BASELINE.md`](PHASE_1_CV_LOCAL_BASELINE.md) | Companion baseline on cv-local side. Headline: cv-local face-quads are not geometrically consistent (90% structural fit-fail). |
 | [`FAILURE_TAXONOMY.md`](FAILURE_TAXONOMY.md) | Single source of truth for failure-mode categories. |
 | [`BENCHMARK_INDEX.md`](BENCHMARK_INDEX.md) | Which fixture/report/script answers which question. |
 | [`README.md`](README.md) | This file. |
@@ -89,7 +90,8 @@
 
 | Script | What it does |
 |---|---|
-| **`baseline_post_218.py`** | **THE benchmark.** Runs global model on 58-case labeled gallery, categorizes, emits JSON + report. Supports `--diff` for row-level regression checks. |
+| **`baseline_post_218.py`** | **THE global-model benchmark.** Runs global model on 58-case labeled gallery, categorizes, emits JSON + report. Supports `--diff` for row-level regression checks. |
+| **`baseline_cv_local.py`** | **THE cv-local benchmark.** Same 58 cases; derives (vertex, 3 near, 3 far) from cv-local's face-quads via union-find clustering. JSON schema uniform with `baseline_post_218.py` so `--diff` works across both sides. Headline: 90% structural fit-fail. |
 | `evaluate_axis_ground_truth.py` | Per-axis bearing/length error against a candidate model output. |
 | `evaluate_hybrid_pipeline.py` | End-to-end production-recognizer accuracy on hard-case corpus. |
 | `evaluate_color_classifier_modes.py` | Color classifier mode comparison. |

@@ -48,7 +48,8 @@ principles work.
 |---|---|
 | **The current architecture + roadmap** | `STATE_OF_THE_WORLD.md` (this file) |
 | **The target architecture** | [`FIRST_PRINCIPLES_RECOGNIZER_DESIGN.md`](FIRST_PRINCIPLES_RECOGNIZER_DESIGN.md) |
-| **What works and what doesn't, with numbers** | [`POST_218_BASELINE_AND_TAXONOMY.md`](POST_218_BASELINE_AND_TAXONOMY.md) |
+| **What works and what doesn't, with numbers (global model side)** | [`POST_218_BASELINE_AND_TAXONOMY.md`](POST_218_BASELINE_AND_TAXONOMY.md) |
+| **What works and what doesn't, with numbers (cv-local side)** | [`PHASE_1_CV_LOCAL_BASELINE.md`](PHASE_1_CV_LOCAL_BASELINE.md) |
 | **The categorization of failure modes** | [`FAILURE_TAXONOMY.md`](FAILURE_TAXONOMY.md) |
 | **Which fixture/report answers which question** | [`BENCHMARK_INDEX.md`](BENCHMARK_INDEX.md) |
 | **The "chirality" / near-far phase issue** | [`NEAR_FAR_PHASE_REPORT.md`](NEAR_FAR_PHASE_REPORT.md) |
@@ -71,8 +72,8 @@ principles work.
 | Phase | Status | What it produces | Success criterion |
 |---|---|---|---|
 | **0 — Consolidate** | ✅ Done (#222) | Docs: this file, FIRST_PRINCIPLES_RECOGNIZER_DESIGN, FAILURE_TAXONOMY, BENCHMARK_INDEX, tools/README, COORDINATION. | All 6 docs landed; no code changes. |
-| **1 — Re-baseline both sides** | Pending (next) | Post-#218 global model snapshot (done; `tests/fixtures/post_218_baseline.json`) + matching cv-local snapshot. Documented gap between them. | Two committed JSON snapshots, both runnable via `--diff`. |
-| **2 — Trust policy diagnostics** | Pending | New `model.debug` fields: phase confidence, axis-vs-bezel agreement, two-view consistency. Diagnostics-only, no behavior change. | Product-shaped: catches catastrophic / phase-wrong cases with low false-retake on GOOD cases on the 58-case eval. Concretely: ≥80% recall on the catastrophic band at ≤10% false-retake on GOOD. (Aggregate-correlation thresholds like "r > 0.6" are an internal sanity check, not the success bar.) |
+| **1 — Re-baseline both sides** | ✅ Done (#220, #225) | Global model snapshot (`tests/fixtures/post_218_baseline.json`) + cv-local snapshot (`tests/fixtures/cv_local_baseline.json`). Documented gap (see `PHASE_1_CV_LOCAL_BASELINE.md`): cv-local face-quads aren't geometrically consistent on 90% of cases. | Two committed JSON snapshots, both runnable via `--diff`. ✅ |
+| **2 — Trust policy diagnostics** | Pending (next) | New `model.debug` fields: phase confidence, axis-vs-bezel agreement, two-view consistency. **High-leverage addition from Phase 1**: cv-local face-quad structural consistency (the "shared vertex within X px" check derived in `baseline_cv_local.py`) is itself a candidate trust signal. Diagnostics-only, no behavior change. | Product-shaped: catches catastrophic / phase-wrong cases with low false-retake on GOOD cases on the 58-case eval. Concretely: ≥80% recall on the catastrophic band at ≤10% false-retake on GOOD. (Aggregate-correlation thresholds like "r > 0.6" are an internal sanity check, not the success bar.) |
 | **3 — Guardrail experiment** | Pending | Production behavior change: low-trust cases route to retake/manual-fixer. First phase where production behavior changes. | Confident-wrong rate drops without abstention >15% (or agreed budget). Tracked in `--diff`. |
 | **4 — Learned geometry** | Pending | Trained vertex/axis/phase ranker on 58+ labels with held-out splits + calibrated abstention. | Held-out test accuracy + abstention curves match or beat Phase-3 heuristic. |
 | **5 — Better capture / UX** | Pending | Phase-3 diagnostics drive retake instructions / manual fixer rather than forcing repair. | Reduction in user-reported confident-wrong rate (production metric). |

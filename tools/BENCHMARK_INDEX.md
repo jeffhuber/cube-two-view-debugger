@@ -11,6 +11,7 @@
 | `tests/fixtures/gcm_axis_ground_truth.json` | **Vertex + 3 near corners** per photo, user-labeled in original-image coords | 58 photos (29 sets × A/B) | per-key: vertex, near_x, near_y, near_z, approved | `tools/baseline_post_218.py`, future learned ranker |
 | `tests/fixtures/gcm_vertex_ground_truth.json` | **Vertex only** per photo (earlier, smaller corpus) | 27 photos | per-key: vertex | older vertex evaluators (superseded by axis ground truth) |
 | `tests/fixtures/post_218_baseline.json` | **Committed accuracy snapshot** of current-main global model on the 58-case set, run 2× per case = 116 runs | 116 runs / 58 cases | per-case list of run results | regression gate via `--diff` |
+| `tests/fixtures/cv_local_baseline.json` | **Committed accuracy snapshot** of current-main cv-local (production recognizer) on the same 58 cases, with (vertex, 3 near, 3 far) derived from face-quad union-find clustering. **Headline: 90% structural fit-fail rate.** Schema matches `post_218_baseline.json` so `baseline_post_218.py --diff` works on both. | 58 runs / 58 cases | per-case list of run results | cross-side comparison; Phase 2 trust-signal input |
 | `tests/fixtures/overlay_visual_labels.json` | **Hex-fitter overlay correctness** labels from May-18 review | (varies) | per-case overlay verdict | `tools/generate_hex_fitter_walkthroughs.py` |
 | `tests/fixtures/vertex_axis_active_learning_feedback_v0.json` | Active-learning iteration of vertex/axis labels | (varies) | per-case feedback | `tools/active_vertex_axis_label_queue.py` |
 | `tests/fixtures/trihedral_junction_extraction_v0_summary.json` | Per-case extracted trihedral junction quality summary | (varies) | per-case summary | `tools/trihedral_junction_extraction_v0.py` |
@@ -21,6 +22,7 @@
 | Script | What it benchmarks | Output | Notes |
 |---|---|---|---|
 | **`tools/baseline_post_218.py`** | **Global model accuracy vs axis-labeled ground truth.** Categorizes each case GOOD / MARGINAL / CHIRALITY_MISS / CHIRALITY_FALSE_FLIP / TRUE_GEOMETRY_FAIL. | `tests/fixtures/post_218_baseline.json` + `POST_218_BASELINE_AND_TAXONOMY.md` | **The decision spine.** Use `--diff` for row-level regression checks. ~14 min for full re-run. |
+| **`tools/baseline_cv_local.py`** | **cv-local accuracy vs axis-labeled ground truth** (same 58 cases). Derives (vertex, 3 near, 3 far) from cv-local's 3 face-quads via union-find clustering of 12 corner instances. Same categorization as baseline_post_218. | `tests/fixtures/cv_local_baseline.json` + `PHASE_1_CV_LOCAL_BASELINE.md` | Companion to baseline_post_218 for cross-side comparison. ~14 min for full re-run. JSON schema is uniform with baseline_post_218 — pipe both through `tools/baseline_post_218.py --diff prev curr` for cross-side row-level deltas. |
 | `tools/evaluate_axis_ground_truth.py` | Per-axis bearing + length error against a candidate model output | per-pair score | Lower-level than baseline_post_218; useful for one-off candidate checks |
 | `tools/evaluate_hybrid_pipeline.py` | **End-to-end production-recognizer accuracy** on the hard-case corpus (per-sticker, per-state, exact-match) | `runs/eval_results.json` + summary | Production-side eval, not global-model |
 | `tools/evaluate_color_classifier_modes.py` | Color classifier accuracy under different modes (canonical / knn5_lab / knn5_lab_full ± adaptive) | per-mode confusion matrix | Used to choose `CUBE_RECOGNIZER_CLASSIFIER` default |
@@ -36,7 +38,8 @@
 | Question | Answer in |
 |---|---|
 | "How accurate is the current global model?" | `tests/fixtures/post_218_baseline.json` + `POST_218_BASELINE_AND_TAXONOMY.md` |
-| "How accurate is current-main cv-local?" | `tools/evaluate_hybrid_pipeline.py` output (run on demand; Phase-1 commit pending) |
+| "How accurate is cv-local at producing consistent cube geometry?" | `tests/fixtures/cv_local_baseline.json` + `PHASE_1_CV_LOCAL_BASELINE.md` (90% structural fit-fail) |
+| "How accurate is cv-local end-to-end on per-sticker color?" | `tools/evaluate_hybrid_pipeline.py` output (different question; production-style eval) |
 | "Did my PR regress geometry on any case?" | `tools/baseline_post_218.py --diff prev curr` |
 | "Which sets are always-failing across reruns?" | `POST_218_BASELINE_AND_TAXONOMY.md` "Case-level stability" table |
 | "Why did Set X fail?" | Look up its category in the baseline JSON, then read the failure-mode meaning in `FAILURE_TAXONOMY.md`. Visual: `tools/render_global_cube_model_v0_overlays.py` for that case. |

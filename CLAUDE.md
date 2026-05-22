@@ -532,6 +532,109 @@ identifier in prose does not. Verified by the self-audit failure on
 cube-snap#130 / ctvd#118 (caught during smoke verification, fixed in
 the same PRs).
 
+### Codex audit lane (calibration phase — informational only)
+
+Codex runs as a parallel reviewer alongside Devin. **No merge
+authority yet** — the standing in-thread merge delegation stays
+on `devin-audit-done` + CLEAN. Codex's verdict is calibration
+data; treat its labels as informational.
+
+State machine (parallels Devin):
+
+- `needs-codex-audit`: PR head SHA needs Codex review
+- `codex-audit-done`: Codex reviewed current head with no
+  P0/P1/P2 findings
+- `codex-audit-blocked`: Codex found P0/P1/P2 blocker findings
+
+Trigger model: **manual CLI**, not auto-fired. Run
+`python3 tools/codex_audit_pr.py --repo OWNER/REPO --pr N`
+to audit one PR; the CLI posts a comment with the
+authoritative `<!-- CODEX_AUDIT_STATE: ... -->` trailer, and
+`tools/codex_audit_labeler.py` (fired by
+`.github/workflows/codex-audit-labeler.yml` on `issue_comment`)
+flips the label.
+
+If the built-in workflow token can't label the bot's comments,
+set repo secret `CODEX_AUDIT_LABEL_TOKEN` to a fine-grained
+PAT with **Issues**: read+write and **Pull requests**: read.
+
+Mirror invariant — these files MUST stay byte-identical across
+`cube-two-view-debugger` and `cube-snap`:
+
+- `tools/codex_audit_pr.py`
+- `tools/codex_audit_labeler.py`
+- `tools/CODEX_AUDIT_PROTOCOL.md`
+- `.github/workflows/codex-audit-labeler.yml`
+
+Verify with `diff` before changing either side; PRs land in
+lockstep, exactly as for the Devin lane.
+
+Tests live in `tests/test_codex_audit_pr.py` and
+`tests/test_codex_audit_labeler.py` — **ctvd only**, not
+mirrored to cube-snap (cube-snap doesn't have its own python
+venv with pytest, so running labeler tests there is awkward;
+ctvd's `.venv/bin/pytest tests/test_codex_audit*` works
+against ctvd's copy of the labeler, which is byte-identical
+with cube-snap's).
+
+Full protocol: `tools/CODEX_AUDIT_PROTOCOL.md`.
+
+### Greptile audit lane (calibration phase — informational only)
+
+Greptile runs as the 3rd audit lane (SaaS GitHub App).
+**Live on cube-snap (free OSS tier); not installed on ctvd
+yet** — privacy tradeoff for the private repo is an explicit
+open decision. **No merge authority** — calibration data only.
+
+State machine (parallels Devin/Codex):
+
+- `needs-greptile-audit`: opt-in marker — labeler ONLY acts
+  on PRs carrying this (or a prior `done`/`blocked`). Greptile
+  auto-reviews every PR via the GitHub App, but only opted-in
+  PRs enter the bake-off.
+- `greptile-audit-done`: zero P0/P1 findings on current head
+- `greptile-audit-blocked`: any P0/P1 finding on current head
+
+Trigger model: **auto** on every PR via the Greptile GitHub
+App. `.github/workflows/greptile-audit-labeler.yml` fires on
+`pull_request_review` events from `greptile-apps[bot]` (not
+`issue_comment` like the others). The labeler has four
+defensive gates: opt-in, stale-HEAD, severity-parse fail-closed,
+verdict.
+
+If the built-in workflow token can't label the bot's reviews,
+set repo secret `GREPTILE_AUDIT_LABEL_TOKEN` to a fine-grained
+PAT with **Issues**: read+write and **Pull requests**: read.
+
+Mirror invariant — these files MUST stay byte-identical across
+`cube-two-view-debugger` and `cube-snap`:
+
+- `tools/greptile_audit_labeler.py`
+- `tools/GREPTILE_AUDIT_PROTOCOL.md`
+- `.github/workflows/greptile-audit-labeler.yml`
+
+The labeler-fail-closed-on-missing-review-id path (cube-snap
+#145 fix) means any malformed event or pagination cap re-applies
+`needs-greptile-audit` instead of silently PASSing.
+
+Tests live in `tests/test_greptile_audit_labeler.py` (both
+repos, byte-identical). Run with `.venv/bin/pytest
+tests/test_greptile_audit_labeler.py`.
+
+Full protocol: `tools/GREPTILE_AUDIT_PROTOCOL.md`.
+
+### Qwen lane (paused)
+
+The Qwen lane (local LM Studio runner) was the original 2nd
+audit lane during the calibration period. Currently **paused**
+— its calibration showed too many false positives to justify
+the LM Studio runtime cost. `tools/qwen_audit_*.py` and
+`tools/QWEN_AUDIT_PROTOCOL.md` are kept on disk so the lane
+is trivial to revive (`git revert` the workflow-deletion
+commits + recreate the 3 `qwen-audit-*` labels). The labeler
+workflow is **removed** in both repos (ctvd #237 / cube-snap
+#146), so Qwen comments are inert until the lane is restored.
+
 ## Other Claude/Codex working conventions
 
 - **GitHub markdown bodies: body-file only.** Never pass PR, issue,

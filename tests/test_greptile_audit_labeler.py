@@ -243,16 +243,48 @@ def test_decision_skips_non_greptile_authors():
     assert "ignored review author" in reason
 
 
-def test_decision_opt_in_gate_skips_pr_without_needs_label():
+def test_decision_opt_in_gate_skips_pr_without_any_greptile_label():
     """Gate 1: only opted-in PRs participate. Greptile auto-reviews every
-    PR but only ones with `needs-greptile-audit` get labels."""
+    PR but only ones with any greptile-audit-* label get processed."""
     event = _make_event()
     decision, reason = g.resolve_label_decision(
         event, pr_labels=[], current_head_sha="deadbeef00000000",
         review_comments=[{"body": _REAL_P1_BODY}],
     )
     assert decision is None
-    assert "does not carry" in reason and g.NEEDS_LABEL in reason
+    assert "does not carry any greptile-audit-* label" in reason
+
+
+def test_decision_opt_in_gate_accepts_done_label_too(monkeypatch):
+    """Codex PR #235 — P2 (round 2): an already-processed PR keeps its
+    `greptile-audit-done` (or `-blocked`) after the first review. A
+    subsequent Greptile review on a new push MUST still be processed
+    — otherwise the done/blocked label goes stale after a regression.
+    """
+    event = _make_event()
+    decision, reason = g.resolve_label_decision(
+        event,
+        pr_labels=[g.DONE_LABEL],  # previously processed, no needs-
+        current_head_sha="deadbeef00000000",
+        review_comments=[{"body": _REAL_P1_BODY}],
+    )
+    # Must NOT be None — the PR is opted-in via the done label.
+    assert decision is not None
+    # Real P1 → flips to blocked.
+    assert decision.add_label == g.BLOCKED_LABEL
+
+
+def test_decision_opt_in_gate_accepts_blocked_label_too():
+    """Symmetric: previously-blocked PR can flip to done on a fix."""
+    event = _make_event()
+    decision, reason = g.resolve_label_decision(
+        event,
+        pr_labels=[g.BLOCKED_LABEL],  # previously blocked
+        current_head_sha="deadbeef00000000",
+        review_comments=[],  # clean review now
+    )
+    assert decision is not None
+    assert decision.add_label == g.DONE_LABEL
 
 
 def test_decision_stale_head_gate_requeues():
@@ -354,6 +386,24 @@ def test_fetch_review_comments_paginates_until_empty(monkeypatch):
     assert "page=1" in fetch_calls[0]
     assert "page=2" in fetch_calls[1]
     assert "page=3" in fetch_calls[2]
+
+
+def test_fetch_review_comments_raises_on_pagination_cap(monkeypatch):
+    """Codex PR #235 — P2 (round 2): when the safety page cap is hit
+    without exhausting the list, raise `ReviewCommentsTruncated`
+    rather than silently returning partial data. The orchestrator
+    catches it and applies `needs-greptile-audit` (fail closed).
+    """
+    import pytest
+    # Return 100 entries for every page request — never reach a partial page
+    monkeypatch.setattr(
+        g, "github_request",
+        lambda method, path, *, token=None, **_kw:
+            [{"pull_request_review_id": 999, "body": "x"}] * 100,
+    )
+    with pytest.raises(g.ReviewCommentsTruncated) as exc_info:
+        g.fetch_review_comments("o/r", 1, 999, token="x")
+    assert "pagination cap" in str(exc_info.value).lower()
 
 
 def test_fetch_review_comments_filters_by_review_id(monkeypatch):

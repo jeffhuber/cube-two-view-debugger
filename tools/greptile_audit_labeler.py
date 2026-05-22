@@ -226,6 +226,19 @@ def fetch_pull_request(repo: str, pr_number: int, *, token: str) -> Dict[str, An
     return github_request("GET", f"/repos/{repo}/pulls/{pr_number}", token=token)
 
 
+class ReviewCommentsTruncated(RuntimeError):
+    """Raised when fetch_review_comments hits the safety page-cap.
+    Caller treats this as fail-closed → `needs-greptile-audit`."""
+
+
+# Safety cap. A real Greptile review has on the order of 1-20 findings;
+# a real PR has a few dozen inline comments. We raise this cap if the
+# decommissioning ever produces a counterexample. The orchestrator
+# treats hitting it as fail-closed via the `ReviewCommentsTruncated`
+# exception, not as silent truncation.
+_PAGE_CAP = 50  # 5000 comments
+
+
 def fetch_review_comments(
     repo: str, pr_number: int, review_id: int, *, token: str,
 ) -> List[Dict[str, Any]]:
@@ -235,29 +248,35 @@ def fetch_review_comments(
     (paginated, 100/page). Each has a `pull_request_review_id` field;
     we filter to the ones that belong to the review we're labeling for.
 
-    Codex review of PR #235 — P2 (round 1): paginate explicitly.
-    Without this, a PR with >100 prior inline comments OR a Greptile
-    review with >100 findings would miss target comments on later
-    pages — a P0/P1 on page 2 would be invisible and the labeler
-    would auto-apply `greptile-audit-done`.
+    Codex PR #235 — P2 (round 1): paginate. Codex PR #235 — P2
+    (round 2): if we hit the safety page cap without exhausting the
+    list, raise `ReviewCommentsTruncated` so the orchestrator can
+    fail closed to `needs-greptile-audit` — silently returning the
+    partial list could cause a P0/P1 on page 51+ to be invisible
+    and the audit labeled `done`.
     """
     all_comments: List[Dict[str, Any]] = []
     page = 1
-    # Cap at 5 pages = 500 comments. Greptile reviews with >500 findings
-    # are degenerate; treat as a separate failure mode.
-    while page <= 5:
+    while page <= _PAGE_CAP:
         chunk = github_request(
             "GET",
             f"/repos/{repo}/pulls/{pr_number}/comments?per_page=100&page={page}",
             token=token,
         ) or []
         if not chunk:
-            break
+            # Fully exhausted (empty page) — done.
+            return [c for c in all_comments if c.get("pull_request_review_id") == review_id]
         all_comments.extend(chunk)
         if len(chunk) < 100:
-            break
+            # Last (partial) page — exhausted.
+            return [c for c in all_comments if c.get("pull_request_review_id") == review_id]
         page += 1
-    return [c for c in all_comments if c.get("pull_request_review_id") == review_id]
+    # Hit the safety cap without exhausting. Fail closed.
+    raise ReviewCommentsTruncated(
+        f"hit pagination cap of {_PAGE_CAP} pages "
+        f"({_PAGE_CAP * 100} comments) for {repo}#{pr_number} "
+        f"review {review_id}; refusing to classify on partial data"
+    )
 
 
 def apply_label_decision(repo: str, decision: LabelDecision, *, token: str) -> None:
@@ -318,11 +337,22 @@ def resolve_label_decision(
     if not issue_number:
         return None, "event has no pull request number"
 
-    # Gate 1: opt-in
-    if NEEDS_LABEL not in (pr_labels or []):
+    # Gate 1: opt-in. PR must carry ANY greptile-audit-* label — the
+    # initial `needs-greptile-audit` opt-in OR a prior `done`/`blocked`
+    # from an earlier Greptile review (which means the PR is already
+    # in the bake-off and subsequent reviews should update its state).
+    #
+    # Codex review of PR #235 — P2 (round 2): without including
+    # done/blocked, the first review removes `needs-` and labels with
+    # done/blocked. The NEXT Greptile review (after a push) would then
+    # be ignored because `needs-` is gone, leaving a stale label.
+    pr_labels_set = set(pr_labels or [])
+    greptile_labels = {NEEDS_LABEL, DONE_LABEL, BLOCKED_LABEL}
+    if not (pr_labels_set & greptile_labels):
         return None, (
-            f"PR does not carry `{NEEDS_LABEL}` label — Greptile auto-reviews "
-            f"every PR but only opted-in PRs participate in the bake-off"
+            f"PR does not carry any greptile-audit-* label — Greptile "
+            f"auto-reviews every PR but only opted-in PRs participate in "
+            f"the bake-off. Add `{NEEDS_LABEL}` to opt in."
         )
 
     # Gate 2: stale-HEAD
@@ -415,9 +445,31 @@ def main() -> int:
         review = event.get("review") or {}
         review_id = review.get("id")
         if review_id:
-            review_comments = fetch_review_comments(
-                repo, pr_number, review_id, token=token or "",
-            )
+            try:
+                review_comments = fetch_review_comments(
+                    repo, pr_number, review_id, token=token or "",
+                )
+            except ReviewCommentsTruncated as exc:
+                # Codex PR #235 — P2 (round 2): hitting the pagination
+                # safety cap means we cannot classify on complete data.
+                # Fail closed to needs-greptile-audit, surfacing the
+                # cause in the apply log.
+                print(f"warn: review comments truncated — {exc}", file=sys.stderr)
+                issue_number = (event.get("pull_request") or {}).get("number")
+                if issue_number:
+                    apply_label_decision(
+                        repo,
+                        LabelDecision(
+                            issue_number=int(issue_number),
+                            add_label=NEEDS_LABEL,
+                            remove_labels=(DONE_LABEL, BLOCKED_LABEL),
+                            reviewed_sha=(review.get("commit_id") or None),
+                            reason=f"pagination truncated: {exc}",
+                        ),
+                        token=token or "",
+                    )
+                    print(f"applied (fail-closed): add {NEEDS_LABEL}")
+                return 0
 
     decision, reason = resolve_label_decision(
         event,

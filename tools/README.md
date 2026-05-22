@@ -53,7 +53,10 @@
 | `EXPANDED_VERTEX_LOCALIZER_V0_REPORT.md` | Patch-based vertex localizer variant — narrow improvement, didn't graduate. |
 | `FOUNDATION_SEGMENTATION_BAKEOFF_V0_REPORT.md` | SAM3 vs rembg silhouette bakeoff — SAM3 didn't materially beat rembg. |
 | `GEOMETRY_FIRST_FACE_SPLIT_V0_REPORT.md` | Geometry-first face split experiment — superseded. |
-| `GLOBAL_CUBE_MODEL_V0_REPORT.md` / `_V01_EASY_CORPUS_REPORT.md` / `_V01_EASY_WEAK_REPORT.md` / `_V0_EASY_CORPUS_REPORT.md` | Earlier global-model snapshots. Superseded by `POST_218_BASELINE_AND_TAXONOMY.md`. |
+| `GLOBAL_CUBE_MODEL_V0_REPORT.md` | First global-model snapshot. Superseded by `POST_218_BASELINE_AND_TAXONOMY.md`. |
+| `GLOBAL_CUBE_MODEL_V0_EASY_CORPUS_REPORT.md` | V0 on the easy corpus. Superseded. |
+| `GLOBAL_CUBE_MODEL_V01_EASY_CORPUS_REPORT.md` | V0.1 on the easy corpus. Superseded. |
+| `GLOBAL_CUBE_MODEL_V01_EASY_WEAK_REPORT.md` | V0.1 on the easy-weak subset. Superseded. |
 | `HEX_FITTER_FAILURE_TAXONOMY.md` | Earlier hex-fitter failure modes — partly subsumed by `FAILURE_TAXONOMY.md`. |
 | `KNN_VERTEX_LOCALIZER_V0_REPORT.md` | KNN-based vertex localizer — didn't graduate at safe coverage. |
 | `LEARNED_VERTEX_LOCALIZER_V0_REPORT.md` | Sklearn Ridge-on-15D vertex regressor — smoothed toward mean. |
@@ -62,10 +65,23 @@
 | `PATCH_JUNCTION_VERTEX_LOCALIZER_V0_REPORT.md` | Patch+junction vertex localizer — narrow pocket, didn't graduate. |
 | `RAW_PATCH_VERTEX_LOCALIZER_V0_REPORT.md` | Raw-patch vertex localizer — negative. |
 | `RAY_START_VERTEX_REFINEMENT_V0_REPORT.md` | Ray-start refinement variant — negative. |
-| `SAM3_MASK_EXPORT_V0_REPORT.md` / `_MLX_BOX_GUIDED_PROMPT_BAKEOFF_V0_REPORT.md` / `_MLX_CURRENT_PROMPT_BAKEOFF_V0_REPORT.md` / `_WHOLE_CUBE_SILHOUETTE_BAKEOFF_V0_REPORT.md` | SAM3 prompt bakeoffs. Off the table for more iteration. |
-| `TRIHEDRAL_AXIS_FIT_V0_REPORT.md` / `TRIHEDRAL_JUNCTION_EXTRACTION_V0_REPORT.md` | Explicit junction-extraction probes — negative. |
-| `VERTEX_AXIS_HUMAN_FEEDBACK_V0_REPORT.md` / `VERTEX_AXIS_SOURCE_SELECTION_V0_REPORT.md` | Earlier vertex/axis source-selection probes. |
-| `VERTEX_CANDIDATE_SOURCE_PROBE_REPORT.md` | Candidate-source probe. |
+| `SAM3_MASK_EXPORT_V0_REPORT.md` | SAM3 mask export pipeline. Bakeoff group — off the table for more iteration. |
+| `SAM3_MLX_BOX_GUIDED_PROMPT_BAKEOFF_V0_REPORT.md` | SAM3 box-guided prompt bakeoff. 0/16 top-3 vertex recall — do not wire. |
+| `SAM3_MLX_CURRENT_PROMPT_BAKEOFF_V0_REPORT.md` | SAM3 text-prompt bakeoff. Same negative result on vertex recall. |
+| `SAM3_WHOLE_CUBE_SILHOUETTE_BAKEOFF_V0_REPORT.md` | SAM3 whole-cube silhouette vs rembg. Mean/median wins but regression tail — alternate hypothesis only. |
+| `TRIHEDRAL_AXIS_FIT_V0_REPORT.md` | Trihedral axis fit — negative. |
+| `TRIHEDRAL_JUNCTION_EXTRACTION_V0_REPORT.md` | Explicit junction extraction — negative. |
+| `TRIHEDRAL_JUNCTION_EXPANDED_V0_REPORT.md` | Expanded junction-extraction variant — also negative. |
+| `VERTEX_AXIS_HUMAN_FEEDBACK_V0_REPORT.md` | Earlier vertex/axis human-feedback round. |
+| `VERTEX_AXIS_SOURCE_SELECTION_V0_REPORT.md` | Vertex/axis source-selection probe — confidence is the blocker. |
+| `VERTEX_AXIS_ACTIVE_LEARNING_FEEDBACK_V0_REPORT.md` | Active-learning feedback iteration on vertex/axis labels. |
+| `VERTEX_AXIS_ACTIVE_LEARNING_QUEUE_V0_REPORT.md` | Active-learning queue design — picks next photos to label based on model disagreement. |
+| `VERTEX_CANDIDATE_RANKER_V0_REPORT.md` | Multi-candidate vertex ranker — top-1 OK but calibrated abstention is the bottleneck. |
+| `VERTEX_FITTER_ASSISTED_RANKER_V0_REPORT.md` | Fitter-assisted variant of the ranker — same conclusion. |
+| `VERTEX_HYPOTHESIS_ENSEMBLE_V0_REPORT.md` | Ensemble over vertex hypotheses — no safe lift. |
+| `VERTEX_CANDIDATE_SOURCE_PROBE_REPORT.md` | Candidate-source probe — useful for future learned ranker. |
+| `VERTEX_POINT_CANDIDATES_EASY_CORPUS_REPORT.md` | Vertex-point candidate proposers on easy corpus — early exploration. |
+| `VERTEX_POINT_HUMAN_FEEDBACK_REPORT.md` | Human feedback on vertex-point candidates — superseded by axis-labeled gallery. |
 
 ## Python scripts
 
@@ -130,7 +146,8 @@
 | `vertex_hypothesis_ensemble_v0.py` | Ensemble of hypotheses — no safe lift. |
 | `vertex_candidate_source_probe.py` | Probe over candidate sources — useful for future learned ranker. |
 | `vertex_axis_source_selection_v0.py` | Source-selection over labeled feedback. |
-| `vertex_point_candidates.py` / `vertex_point_feedback.py` | Earlier vertex-point candidate proposers. |
+| `vertex_point_candidates.py` | Earlier vertex-point candidate proposer. |
+| `vertex_point_feedback.py` | Per-candidate vertex-point human feedback collection. |
 | `axis_ray_vertex_refinement_v0.py` | Hand-tuned ray-darkness refinement — not safe. |
 | `ray_start_vertex_refinement_v0.py` | Ray-start refinement — negative. |
 | `learned_vertex_localizer_v0.py` | Sklearn-Ridge-on-15D — smooths toward mean. |
@@ -138,9 +155,11 @@
 | `expanded_vertex_localizer_v0.py` | Expanded patch features — narrow. |
 | `raw_patch_vertex_localizer_v0.py` | Raw image patch ranker — negative. |
 | `patch_junction_vertex_localizer_v0.py` | Patch+junction combination — narrow. |
-| `trihedral_junction_extraction_v0.py` / `trihedral_junction_expanded_v0.py` | Explicit junction extractor — negative. |
+| `trihedral_junction_extraction_v0.py` | Explicit junction extractor — negative. |
+| `trihedral_junction_expanded_v0.py` | Expanded junction-extraction variant — also negative. |
 | `trihedral_axis_fit_v0.py` | Trihedral axis fitting — superseded by global model. |
 | `cube_mesh_anchor_fitter_v0.py` | Early mesh-anchor fitter — superseded. |
+| `global_cube_model_v0.py` | First global-model implementation. Superseded by `global_cube_model.py`. |
 | `train_vertex_regressor.py` | Trained vertex regressor — superseded by labeled-data approach. |
 
 ### 🟡 Historical — segmentation bakeoffs (off the table)
@@ -149,7 +168,8 @@
 |---|---|
 | `foundation_segmentation_bakeoff_v0.py` | SAM3 vs rembg — SAM3 didn't beat. |
 | `sam3_whole_cube_silhouette_bakeoff_v0.py` | SAM3 silhouette bakeoff. |
-| `export_sam3_masks_v0.py` / `extract_sam3_masks.py` | SAM3 mask export utilities. |
+| `export_sam3_masks_v0.py` | SAM3 mask export utility (v0). |
+| `extract_sam3_masks.py` | SAM3 mask extraction utility. |
 | `geometry_first_face_split_v0.py` | Geometry-first face split — superseded by hybrid pipeline. |
 
 ### 🟡 Historical — diagnostic probes (one-shot)
@@ -186,6 +206,28 @@
 | `test_global_cube_model.py` | Global cube model unit tests. |
 | `test_interior_bezel.py` | Interior bezel detector unit tests. |
 | (under `tests/`) | Project-wide test suite. |
+
+## How to keep this index complete
+
+Every `tools/*.py` and `tools/*.md` (except this README) must appear
+in this file. Quick check:
+
+```bash
+python3 -c "from pathlib import Path; r = Path('tools/README.md').read_text(); \
+  miss = [f.name for f in sorted(Path('tools').glob('*.md')) + sorted(Path('tools').glob('*.py')) \
+          if f.name != 'README.md' and f.name not in r]; \
+  print('missing:', miss or 'none')"
+```
+
+When adding a new script or report:
+- 🟢 active → put it in the relevant active section.
+- 🟡 historical (negative result / superseded experiment) → drop it in
+  the matching historical section. Don't delete; institutional memory.
+- 🔵 infra → add to the infra section.
+
+Filenames must appear verbatim — don't use slash-grouped suffix forms
+(e.g., `FOO_V0_REPORT.md / _V01_REPORT.md`) because a substring check
+won't recognize the grouped variant as "present".
 
 ## Conventions
 

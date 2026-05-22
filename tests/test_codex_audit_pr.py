@@ -312,7 +312,7 @@ def _install_audit_mocks(
     monkeypatch.setattr(c, "_create_temp_worktree",
                         lambda *a, **k: Path("/tmp/fake-wt-test"))
     monkeypatch.setattr(c, "_remove_worktree", lambda *a, **k: None)
-    monkeypatch.setattr(c, "run_codex_review", lambda *a, **k: codex_stdout)
+    monkeypatch.setattr(c, "run_codex_review", lambda *a, **k: (codex_stdout, ""))
 
 
 def test_audit_pr_pass_path(monkeypatch):
@@ -458,19 +458,22 @@ def test_run_codex_review_raises_on_nonzero_exit(monkeypatch):
     assert "not authenticated" in (exc_info.value.stderr or "")
 
 
-def test_run_codex_review_returns_stdout_on_success(monkeypatch):
-    """Mirror of above: successful (returncode=0) runs should NOT raise
-    and should return the captured stdout."""
+def test_run_codex_review_returns_stdout_and_stderr_separately(monkeypatch):
+    """Codex round 6 of #234 — P2: stdout and stderr must be returned
+    separately so the parser doesn't see stderr noise (which could
+    contain `- [P2]` bullets from echoed test output, etc.)."""
     class FakeResult:
         returncode = 0
-        stdout = "codex\nPASS\n"
-        stderr = ""
+        stdout = "codex\nPASS prose\n"
+        stderr = "progress chatter\n- [P2] this is from stderr — should not count\n"
 
     monkeypatch.setattr(c.subprocess, "run", lambda *a, **k: FakeResult())
     monkeypatch.setattr(c.Path, "exists", lambda self: True)
     config = c.AuditConfig(github_token="x", repo_paths={}, codex_cli_path="/fake/codex")
-    result = c.run_codex_review(config, Path("/tmp/fake-wt"))
-    assert "PASS" in result
+    stdout, stderr = c.run_codex_review(config, Path("/tmp/fake-wt"))
+    assert "PASS prose" in stdout
+    assert "[P2]" not in stdout  # stderr leak would break parsing
+    assert "[P2]" in stderr  # stderr captured separately for debugging
 
 
 def test_fetch_base_ref_calls_git_fetch_with_correct_remote_branch(monkeypatch):
@@ -512,6 +515,57 @@ def test_fetch_base_ref_handles_non_origin_prefixed_ref(monkeypatch):
     assert calls[0] == ["git", "-C", "/fake/repo", "fetch", "origin", "release-2026-05"]
 
 
+def test_audit_pr_force_push_race_emits_stale_not_crash(monkeypatch):
+    """Codex round 6 of #234 — P3: when the PR is force-pushed between
+    reading head_sha_start and creating the worktree, the SHA may not
+    be locally fetched anymore. The worktree create then fails. The
+    audit must catch that, refetch the PR, detect the head moved, and
+    emit STALE rather than crash."""
+    pr_meta_before = _fake_pr(head_sha="ooooldddhead")
+    pr_meta_after = _fake_pr(head_sha="nnnnewwwhead")
+    posted: List[Dict[str, Any]] = []
+    fetch_count = {"n": 0}
+
+    def fake_fetch_pr(repo, pr_number, *, token):
+        fetch_count["n"] += 1
+        # First call returns the "before" state; later calls return "after"
+        return pr_meta_before if fetch_count["n"] == 1 else pr_meta_after
+
+    monkeypatch.setattr(c, "fetch_pull_request", fake_fetch_pr)
+    monkeypatch.setattr(c, "post_pr_comment",
+                        lambda r, n, b, *, token: posted.append({"body": b})
+                                                  or {"html_url": "u"})
+    monkeypatch.setattr(c, "_fetch_pr_head", lambda *a, **k: None)
+    monkeypatch.setattr(c, "_fetch_base_ref", lambda *a, **k: None)
+
+    # Worktree create raises CalledProcessError (SHA not locally available)
+    def fake_worktree(*a, **k):
+        raise subprocess.CalledProcessError(
+            128, ["git", "worktree", "add"],
+            stderr="fatal: invalid reference: ooooldddhead",
+        )
+    monkeypatch.setattr(c, "_create_temp_worktree", fake_worktree)
+    monkeypatch.setattr(c, "_remove_worktree", lambda *a, **k: None)
+    monkeypatch.setattr(c, "run_codex_review",
+                        lambda *a, **k: (REAL_PASS_OUTPUT, ""))
+
+    config = c.AuditConfig(
+        github_token="test",
+        repo_paths={"jeffhuber/cube-two-view-debugger": Path("/tmp/fake-repo")},
+    )
+    Path("/tmp/fake-repo").mkdir(exist_ok=True)
+    try:
+        result = c.audit_pr(config, "jeffhuber/cube-two-view-debugger", 17)
+    finally:
+        Path("/tmp/fake-repo").rmdir()
+    # Force-push detected → STALE, not crash
+    assert result.verdict == "STALE"
+    assert result.trailer == c.STALE_TRAILER
+    assert result.head_sha_start == "ooooldddhead"
+    assert result.head_sha_end == "nnnnewwwhead"
+    assert c.STALE_TRAILER in posted[0]["body"]
+
+
 def test_audit_pr_fetches_both_pr_head_and_base_ref(monkeypatch):
     """Integration: `audit_pr` should call both `_fetch_pr_head` and
     `_fetch_base_ref` before creating the worktree (Codex meta-review P2)."""
@@ -533,7 +587,7 @@ def test_audit_pr_fetches_both_pr_head_and_base_ref(monkeypatch):
     monkeypatch.setattr(c, "_create_temp_worktree",
                         lambda *a, **k: Path("/tmp/fake-wt-test"))
     monkeypatch.setattr(c, "_remove_worktree", lambda *a, **k: None)
-    monkeypatch.setattr(c, "run_codex_review", lambda *a, **k: REAL_PASS_OUTPUT)
+    monkeypatch.setattr(c, "run_codex_review", lambda *a, **k: (REAL_PASS_OUTPUT, ""))
 
     config = c.AuditConfig(
         github_token="test",

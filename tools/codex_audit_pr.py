@@ -131,7 +131,8 @@ class AuditResult:
     verdict: str        # "PASS" | "BLOCKED" | "STALE"
     trailer: str
     comment_body: str
-    codex_stdout: str   # full stdout for debugging / inspection
+    codex_stdout: str   # stdout from the codex CLI (the review proper)
+    codex_stderr: str = ""  # stderr captured separately for debugging
     parsed: Optional[CodexVerdict] = None
     posted_comment_url: Optional[str] = None
 
@@ -385,15 +386,21 @@ def _fetch_base_ref(local_repo: Path, base_ref: str) -> None:
 def run_codex_review(
     config: AuditConfig,
     worktree_path: Path,
-) -> str:
-    """Run `codex review --base <ref>` from the worktree. Returns stdout.
+) -> Tuple[str, str]:
+    """Run `codex review --base <ref>` from the worktree. Returns
+    `(stdout, stderr)` — keep them separate so the parser only sees the
+    review output proper.
 
-    Raises `subprocess.CalledProcessError` on non-zero exit so the caller
-    can fail the audit rather than silently parse partial/empty output.
-    (Codex review round 1 of #234 — P2: without this check, an auth or
-    CLI failure would return empty stdout, the parser would see "no codex
-    marker", and the safe-default PASS-shaped verdict would mark the run
-    as `codex-audit-done`.)
+    Codex round 6 of #234 — P2: previously this returned the
+    concatenation of stdout + stderr, so progress chatter or warning
+    text on stderr (e.g., echoed markdown that contained a `- [P2]`
+    bullet, or a stray `codex` line in a quoted command) would
+    contaminate `parse_codex_output()` and could mislabel a PASS as
+    BLOCKED or trigger a false UNKNOWN.
+
+    Raises `subprocess.CalledProcessError` on non-zero exit (Codex
+    round 1 of #234 — P2: without this check, broken-Codex runs would
+    silently flow into `codex-audit-done`).
     """
     if not Path(config.codex_cli_path).exists():
         raise FileNotFoundError(
@@ -409,17 +416,13 @@ def run_codex_review(
         timeout=config.timeout,
     )
     if result.returncode != 0:
-        # Surface as CalledProcessError so the orchestrator can fail
-        # the audit (and main() can format an error exit code).
         raise subprocess.CalledProcessError(
             result.returncode,
             [config.codex_cli_path, "review", "--base", config.base_ref],
             output=result.stdout,
             stderr=result.stderr,
         )
-    # Codex writes its review to stdout; stderr has progress chatter.
-    # We capture both and prefer stdout for the verdict.
-    return result.stdout + ("\n" + result.stderr if result.stderr.strip() else "")
+    return result.stdout, result.stderr
 
 
 # ----- Comment formatting -----
@@ -506,10 +509,47 @@ def audit_pr(config: AuditConfig, repo: str, pr_number: int) -> AuditResult:
     # before running the review. Stale base = wrong diff = wrong review.
     _fetch_pr_head(local_repo, pr_number)
     _fetch_base_ref(local_repo, config.base_ref)
-    worktree_path = _create_temp_worktree(local_repo, head_sha_start)
+
+    # Codex round 6 of #234 — P3: handle the force-push race where
+    # `head_sha_start` was read before the user force-pushed and our
+    # `pull/<N>/head` fetch now points at the new SHA. If the old SHA
+    # isn't locally available, treat it as a stale-head condition
+    # rather than crashing on the worktree create.
+    try:
+        worktree_path = _create_temp_worktree(local_repo, head_sha_start)
+    except subprocess.CalledProcessError as exc:
+        # Worktree create failed — likely because the SHA isn't in the
+        # local repo anymore (force-push race). Refetch and compare;
+        # if the head has moved, emit the stale-requeue comment.
+        pr_meta_after = fetch_pull_request(repo, pr_number, token=config.github_token)
+        head_sha_after = pr_meta_after["head"]["sha"]
+        if head_sha_after != head_sha_start:
+            print(f"  force-push race: head moved from {head_sha_start[:8]} "
+                  f"to {head_sha_after[:8]} during fetch; emitting STALE",
+                  file=sys.stderr, flush=True)
+            comment_body = format_comment(
+                CodexVerdict(verdict="UNKNOWN",
+                             prose="(force-push detected before worktree created)"),
+                head_sha_start, is_stale=True, stale_end_sha=head_sha_after,
+            )
+            result = AuditResult(
+                repo=repo, pr_number=pr_number,
+                head_sha_start=head_sha_start, head_sha_end=head_sha_after,
+                verdict="STALE", trailer=STALE_TRAILER,
+                comment_body=comment_body, codex_stdout="", codex_stderr="",
+            )
+            if not config.dry_run:
+                posted = post_pr_comment(repo, pr_number, comment_body,
+                                          token=config.github_token)
+                result.posted_comment_url = posted.get("html_url")
+            return result
+        # Same head; the worktree failure is for some other reason.
+        # Re-raise so the outer error path runs.
+        raise
+
     try:
         t0 = time.time()
-        codex_stdout = run_codex_review(config, worktree_path)
+        codex_stdout, codex_stderr = run_codex_review(config, worktree_path)
         dt = time.time() - t0
         print(f"  codex review completed in {dt:.0f}s", file=sys.stderr, flush=True)
     finally:
@@ -551,6 +591,7 @@ def audit_pr(config: AuditConfig, repo: str, pr_number: int) -> AuditResult:
         trailer=trailer,
         comment_body=comment_body,
         codex_stdout=codex_stdout,
+        codex_stderr=codex_stderr,
         parsed=parsed,
     )
 

@@ -454,7 +454,23 @@ def main() -> int:
                 # safety cap means we cannot classify on complete data.
                 # Fail closed to needs-greptile-audit, surfacing the
                 # cause in the apply log.
+                #
+                # Codex PR #235 — P3 (round 3): the fallback must
+                # respect the same author/opt-in gates that
+                # `resolve_label_decision` enforces. Otherwise a
+                # non-Greptile review or non-opted-in PR could
+                # mutate labels on the truncation path.
                 print(f"warn: review comments truncated — {exc}", file=sys.stderr)
+                review_author = (review.get("user") or {}).get("login", "")
+                if not is_greptile_review_author(review_author):
+                    print(f"skip truncation fallback: review author "
+                          f"{review_author!r} is not a Greptile bot")
+                    return 0
+                pr_labels_set = set(pr_labels) if pr_labels else set()
+                if not (pr_labels_set & {NEEDS_LABEL, DONE_LABEL, BLOCKED_LABEL}):
+                    print(f"skip truncation fallback: PR has no "
+                          f"greptile-audit-* label (not opted in)")
+                    return 0
                 issue_number = (event.get("pull_request") or {}).get("number")
                 if issue_number:
                     apply_label_decision(

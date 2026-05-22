@@ -215,7 +215,9 @@ def test_build_matrix_from_recomputed_extracts_continuous_signals():
 
 def test_build_matrix_from_recomputed_handles_fit_failure():
     """A fit-failure run must produce a CATASTROPHIC outcome row with most
-    signals None. The verdict logic naturally treats this as 'retake'."""
+    signals None AND `model_fit_failed=True` so evaluate_rule treats it as
+    an automatic retake (Codex's #233 P2 finding — the original v2 code
+    counted these as uncaught-catastrophic, undercounting recall)."""
     recomp = _stub_recomputed([
         {
             "_case": "99_X", "run": 0, "status": "model_fit_failed",
@@ -230,6 +232,64 @@ def test_build_matrix_from_recomputed_handles_fit_failure():
     assert r.category == "TRUE_GEOMETRY_FAIL"
     assert r.fit_residual_rms_px is None
     assert r.hexagon_centroid_vs_bezel_vertex_offset_px is None
+    assert r.model_fit_failed is True  # the new auto-retake signal
+
+
+def test_evaluate_rule_auto_retakes_model_fit_failures():
+    """Codex's #233 P2 finding: when a row has `model_fit_failed=True`,
+    every candidate rule must count it as RETAKEN even if the predicate
+    returns False on its None signals. Otherwise model-fit failures
+    undercount recall.
+    """
+    # Two catastrophic rows: one with phase_sep that the predicate WOULD catch,
+    # one model_fit_failed with no signals. A predicate that never fires
+    # explicitly should still catch the fit-failed row via short-circuit.
+    rows = [
+        p2b.TrustRow(case="a", run=0, outcome="CATASTROPHIC", category="CHIRALITY_MISS",
+                     phase_sep=2.0, phase_check="?", cv_status="ok", cv_consistent=True),
+        p2b.TrustRow(case="b", run=0, outcome="CATASTROPHIC", category="TRUE_GEOMETRY_FAIL",
+                     phase_sep=None, phase_check="?", cv_status="ok", cv_consistent=True,
+                     model_fit_failed=True),
+        p2b.TrustRow(case="c", run=0, outcome="GOOD", category="GOOD",
+                     phase_sep=20.0, phase_check="?", cv_status="ok", cv_consistent=True),
+    ]
+    # A predicate that ONLY fires for low phase_sep — catches "a" by predicate,
+    # catches "b" by the auto-retake short-circuit.
+    result = p2b.evaluate_rule(
+        rows,
+        lambda r: r.phase_sep is not None and abs(r.phase_sep) < 5.0,
+        "low_phase",
+        "Retake when |phase_sep| < 5.",
+    )
+    assert result.catastrophic_caught == 2  # both — "a" via predicate, "b" via auto-retake
+    assert result.catastrophic_total == 2
+    assert result.good_retaken == 0  # "c" has phase_sep=20, doesn't fire; not fit-failed
+
+
+def test_evaluate_rule_auto_retake_doesnt_affect_good_rows():
+    """The auto-retake short-circuit applies to ALL outcomes — including
+    GOOD. A fit-failed GOOD row would be counted as a false-retake (which
+    is correct semantically: the model couldn't fit, so we'd retake even
+    if ground truth says the cube was actually GOOD). Verify this counts
+    in the FPR numerator.
+    """
+    rows = [
+        p2b.TrustRow(case="g", run=0, outcome="GOOD", category="GOOD",
+                     phase_sep=None, phase_check="?", cv_status="ok",
+                     cv_consistent=True, model_fit_failed=True),
+        p2b.TrustRow(case="g2", run=0, outcome="GOOD", category="GOOD",
+                     phase_sep=20.0, phase_check="?", cv_status="ok", cv_consistent=True),
+    ]
+    result = p2b.evaluate_rule(
+        rows,
+        lambda r: False,  # predicate never fires
+        "never",
+        "never retake",
+    )
+    # The fit-failed GOOD counts as a false-retake; the other GOOD doesn't.
+    assert result.good_retaken == 1
+    assert result.good_total == 2
+    assert abs(result.good_false_retake_rate - 0.5) < 1e-9
 
 
 def test_recomputed_signal_rules_include_expected_compositions():

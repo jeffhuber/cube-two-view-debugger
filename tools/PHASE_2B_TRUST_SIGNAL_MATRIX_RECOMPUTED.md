@@ -73,7 +73,7 @@ Joined from `tests/fixtures/post_218_baseline.json` (per-run phase_sep + outcome
 
 ## Headline finding
 
-**No rule over the currently-available signals (phase_sep + cv-local structural status, alone or combined) meets the Phase 2 bar.**
+**No rule over the 6 evaluated signals (phase_sep, cv-local structural status, fit_residual_rms_px, pnp_rms_px, hex↔bezel disagreement, ensemble_shift_px, junction_score_at_ensemble — alone, in OR/AND compounds, or as triples) meets the Phase 2 bar.**
 
 Closest-to-bar rule: `phase_sep_alone_T15.0`
 - catastrophic recall: 70.0% (bar: 80%; shortfall 10.0%)

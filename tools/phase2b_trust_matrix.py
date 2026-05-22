@@ -100,6 +100,14 @@ class TrustRow:
     ensemble_n_candidates: Optional[float] = None
     # Reserved for a future iteration that pairs A↔B views per set.
     two_view_consistency_deg: Optional[float] = None
+    # True when the global model couldn't fit this run at all (status was
+    # "model_fit_failed" or some other harness error). Codex caught the
+    # original v2 behavior treating these as "uncaught catastrophic"
+    # because every continuous-signal predicate returns False on None.
+    # The correct semantics: a model-fit failure is an AUTOMATIC retake,
+    # not something a trust rule needs to "catch". `evaluate_rule` short-
+    # circuits this flag to True regardless of predicate.
+    model_fit_failed: bool = False
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -119,6 +127,7 @@ class TrustRow:
             "ensemble_shift_px": self.ensemble_shift_px,
             "ensemble_n_candidates": self.ensemble_n_candidates,
             "two_view_consistency_deg": self.two_view_consistency_deg,
+            "model_fit_failed": self.model_fit_failed,
         }
 
 
@@ -243,6 +252,7 @@ def build_matrix_from_recomputed(
                     phase_check="?",
                     cv_status=cvs,
                     cv_consistent=cv_ok,
+                    model_fit_failed=True,
                 ))
                 continue
             category = r.get("category", "?")
@@ -279,11 +289,19 @@ def evaluate_rule(
     name: str,
     description: str,
 ) -> RuleEvalResult:
-    catastrophic_caught = sum(1 for r in rows if r.outcome == "CATASTROPHIC" and predicate(r))
+    # `model_fit_failed` rows short-circuit to "retake = True" regardless of
+    # predicate — the model couldn't fit, so we cannot trust any signal-based
+    # verdict and must retake. Codex's review of #233 (P2) caught the original
+    # behavior where these were counted as uncaught catastrophics, undercounting
+    # recall whenever a fit failure appeared in the corpus.
+    def _fires(r: TrustRow) -> bool:
+        return r.model_fit_failed or predicate(r)
+
+    catastrophic_caught = sum(1 for r in rows if r.outcome == "CATASTROPHIC" and _fires(r))
     catastrophic_total = sum(1 for r in rows if r.outcome == "CATASTROPHIC")
-    good_retaken = sum(1 for r in rows if r.outcome == "GOOD" and predicate(r))
+    good_retaken = sum(1 for r in rows if r.outcome == "GOOD" and _fires(r))
     good_total = sum(1 for r in rows if r.outcome == "GOOD")
-    marginal_retaken = sum(1 for r in rows if r.outcome == "MARGINAL" and predicate(r))
+    marginal_retaken = sum(1 for r in rows if r.outcome == "MARGINAL" and _fires(r))
     marginal_total = sum(1 for r in rows if r.outcome == "MARGINAL")
     return RuleEvalResult(
         name=name,
@@ -562,9 +580,17 @@ def render_markdown(
         lines.append("")
         lines.append("Phase 3 can wire this as a conservative guardrail.")
     else:
-        lines.append("**No rule over the currently-available signals "
-                     "(phase_sep + cv-local structural status, alone or "
-                     "combined) meets the Phase 2 bar.**")
+        if "recomputed" in summary.get("mode", "").lower():
+            lines.append("**No rule over the 6 evaluated signals "
+                         "(phase_sep, cv-local structural status, "
+                         "fit_residual_rms_px, pnp_rms_px, "
+                         "hex↔bezel disagreement, ensemble_shift_px, "
+                         "junction_score_at_ensemble — alone, in OR/AND "
+                         "compounds, or as triples) meets the Phase 2 bar.**")
+        else:
+            lines.append("**No rule over the currently-available signals "
+                         "(phase_sep + cv-local structural status, alone or "
+                         "combined) meets the Phase 2 bar.**")
         lines.append("")
         # Find the closest-to-bar rule by both axes
         def shortfall(r: RuleEvalResult) -> float:

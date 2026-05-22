@@ -1,4 +1,31 @@
-# Chirality detection in global_cube_model
+# Near/far phase detection in global_cube_model
+
+## Naming note (2026-05-22 rename)
+
+Earlier code and PRs (#210, #213, #218) called this "chirality
+detection." That's a slight misnomer:
+
+- **Strict-geometry chirality** means handedness under reflection —
+  a left-handed vs right-handed mirror invariant.
+- **What we actually face** is a **60° near/far phase ambiguity**: a
+  rotational degeneracy from the cube's 3-fold symmetry around its
+  body diagonal. The 6 hexagon-silhouette corners alternate near/far,
+  and the labels can be swapped by a 60° rotation that leaves the
+  silhouette unchanged.
+
+The mechanical rename (`_apply_chirality_correction` →
+`_resolve_near_far_phase`, `chirality_check` → `phase_check`, all
+`chirality_*` debug fields → `phase_*`) was done by a single PR
+following the strategic synthesis from Codex+Devin. Per
+[`tools/POST_218_BASELINE_AND_TAXONOMY.md`](POST_218_BASELINE_AND_TAXONOMY.md),
+the naming distinction matters because the current darkness-based
+detector is an empirical stopgap, not a first-principles signal —
+treating it as "chirality" pulled in wrong intuitions about what
+kind of evidence would settle the ambiguity.
+
+There is ONE genuinely-chirality concern still in
+`fit_cube_template_to_anchors` (the CCW vs CW hexagon ordering),
+and the comment there is explicit about distinguishing the two.
 
 ## Bug
 
@@ -8,7 +35,7 @@ positions and picks the lowest residual. The cube has a 60° symmetry
 around its body diagonal that yields the SAME silhouette with the NEAR/FAR
 labels swapped — 6 symmetry-equivalent permutations all give nearly the
 same residual. Which one wins is determined by tiny noise in the fit,
-making the chirality choice effectively non-deterministic.
+making the near/far phase choice effectively non-deterministic.
 
 Discovered via the axis-labeling tool's ground truth (4 user-labeled
 cases on 2026-05-22): set 12_A's model output had its near-corner axes
@@ -17,7 +44,7 @@ a small drift.
 
 ## Detector
 
-`_apply_chirality_correction` inspects each of the 6 hexagon corners
+`_resolve_near_far_phase` inspects each of the 6 hexagon corners
 after the fit:
 
 1. For each of the 6 corners, compute mean pixel **darkness** along the
@@ -26,14 +53,14 @@ after the fit:
 2. Mean of the 3 model-labeled NEAR corners' darkness (`mean_near`) vs
    the 3 model-labeled FAR corners' darkness (`mean_far`).
 3. **Signed separation** = `mean_near − mean_far`.
-4. Emit `chirality_check` status + per-corner darkness + separation in
+4. Emit `phase_check` status + per-corner darkness + separation in
    `model.debug`.
 
 ### Status values
 
 | status                              | meaning                                                                |
 |-------------------------------------|------------------------------------------------------------------------|
-| `correct`                           | sep < −10 → empirically the chirality is correct                       |
+| `correct`                           | sep < −10 → empirically the phase is correct                       |
 | `corrected_60deg_flip`              | sep > +10 → flipped; rebuilt model with far corners as new axes        |
 | `flip_suggested_diagnostic_only`    | sep > +10 but `apply_correction=False` → model left unchanged           |
 | `ambiguous_no_correction`           | \|sep\| < 10 → no clear signal                                         |
@@ -61,7 +88,7 @@ Two regimes measured. Bearings comparison against user-labeled near
 corners is scale+translation invariant, so we work in gallery coords
 directly.
 
-**Regime A — chirality check runs BEFORE mean-of-3 vertex ensemble**
+**Regime A — phase check runs BEFORE mean-of-3 vertex ensemble**
 (initial PR #213 wiring). Detector verdict vs position truth:
 
 |                                 | truth=CORRECT | truth=FLIPPED | total |
@@ -74,7 +101,7 @@ directly.
 End-to-end accuracy: **53/116 = 45.7% correct** on the final returned
 model. Base rate of flips that pass through: **60/116 = 51.7%**.
 
-**Regime B — chirality check runs AFTER mean-of-3 vertex ensemble**
+**Regime B — phase check runs AFTER mean-of-3 vertex ensemble**
 (the order in current main). Detector verdict vs position truth:
 
 |                                 | truth=CORRECT | truth=FLIPPED | total |
@@ -102,7 +129,7 @@ Case-level stability across 2 runs:
 ### Why the order matters
 
 The model vertex from PnP-only is typically 10–50 px off from the true
-cube vertex. When the chirality detector runs with that pre-ensemble
+cube vertex. When the phase detector runs with that pre-ensemble
 vertex (Regime A), the line from model_vertex to model.h_x doesn't
 actually lie on the cube-edge bezel — it skims off into adjacent
 sticker interior. The detector then fires off a signal that's
@@ -111,7 +138,7 @@ counter-intuitively inverted from the naive bezel-darkness reasoning
 regime.
 
 The mean-of-3 ensemble (PnP + bezel + hexagon-centroid) brings the
-vertex closer to the true cube vertex. Running the chirality detector
+vertex closer to the true cube vertex. Running the phase detector
 on the ensemble-corrected vertex (Regime B) doesn't revert the
 polarity to the geometric ideal (`sep > 0` ≡ correct) — `sep < 0`
 still means correct — but the discriminator becomes much more
@@ -143,16 +170,16 @@ holds in both regimes; vertex precision just makes the signal cleaner.
 
 ```python
 model = fit_global_cube_model(detection, image_rgb, mask)
-print(model.debug["chirality_check"])
+print(model.debug["phase_check"])
 # 'correct' | 'corrected_60deg_flip' | 'ambiguous_no_correction' | …
 
-print(model.debug["chirality_darkness_separation"])   # signed
-print(model.debug["chirality_near_line_darkness"])    # 3 floats
-print(model.debug["chirality_far_line_darkness"])     # 3 floats
+print(model.debug["phase_darkness_separation"])   # signed
+print(model.debug["phase_near_line_darkness"])    # 3 floats
+print(model.debug["phase_far_line_darkness"])     # 3 floats
 ```
 
-`fit_global_cube_model` now calls `_apply_chirality_correction` with
+`fit_global_cube_model` now calls `_resolve_near_far_phase` with
 `apply_correction=True` by default, so the returned model reflects the
-chirality-corrected geometry whenever the detector fires. To skip
-correction (diagnostic-only), call `_apply_chirality_correction`
+phase-corrected geometry whenever the detector fires. To skip
+correction (diagnostic-only), call `_resolve_near_far_phase`
 directly with `apply_correction=False`.

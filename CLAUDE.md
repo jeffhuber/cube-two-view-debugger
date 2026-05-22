@@ -398,7 +398,14 @@ authorized.
 - Opening a PR for ambiguous scope, broad refactors, or work the user
   has not already asked you to pursue
 - Claude: merging any PR, unless the user explicitly delegated that
-  merge in the current thread
+  merge in the current thread. The standing in-thread delegation is:
+  **"Keep going" / "continue" / "proceed" / similar continuation
+  phrases authorize merge of any PR Claude owns that carries the
+  `devin-audit-done` label and a CLEAN merge state.** Do NOT extend
+  this to PRs owned by Codex or anyone else, to PRs missing the
+  Devin-clear label, or to anything that needs `--admin` to bypass
+  branch protection. If the user redirects elsewhere ("work on X
+  instead"), the merge auth doesn't carry over to that next thing.
 - Merging despite unresolved or ambiguous Devin comments, failing
   checks, merge conflicts, or anything requiring `--admin`
 - Sending external messages (emails, Slack DMs to non-collaborators)
@@ -457,7 +464,9 @@ automation dedupes by repo + PR + head SHA.
 Keep merge authority separate from audit authority: Devin reviews
 only. Codex may merge after Devin is clear and Codex independently
 verifies checks/diff. Claude asks before merging unless explicitly
-delegated in-thread.
+delegated in-thread — and "Keep going" / "continue" / "proceed" count
+as that delegation for any of Claude's own PRs that are
+`devin-audit-done` + CLEAN (see "Ask first" above).
 
 The audit labeler reacts only to Devin-authored PR comments and runs
 default-branch code. If GitHub's built-in workflow token returns

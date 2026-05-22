@@ -65,6 +65,16 @@ PHASE_2A_REPORTED_RECALL = 0.458
 PHASE_2A_REPORTED_FPR = 0.092
 
 
+def _display_path(p: Path) -> str:
+    """Render `p` as a repo-relative string when possible, falling back to
+    the absolute path for arbitrary `--matrix-out /tmp/foo.json` invocations
+    (Codex caught the `relative_to()` crash in #232 review)."""
+    try:
+        return str(p.relative_to(REPO_ROOT))
+    except ValueError:
+        return str(p)
+
+
 @dataclass
 class TrustRow:
     """One row of the trust matrix — per case/run, joined signals + outcome."""
@@ -217,8 +227,22 @@ def evaluate_rule(
     )
 
 
-def _phase_above(row: TrustRow, t: float) -> bool:
-    return row.phase_sep is not None and row.phase_sep >= t
+def _phase_low_confidence(row: TrustRow, t: float) -> bool:
+    """Phase 2A's retake predicate: low |phase_sep| ≡ low confidence ≡ retake.
+
+    Reverses the polarity that PR #232 v1 had wrong (`phase_sep >= T`, which
+    yielded recall=41.7% / FPR=38.2% at T=11.7 — off from Phase 2A's
+    documented 45.8% / 9.2% at the same threshold). Codex caught this in
+    review. See `tools/phase2a_phase_confidence_calibration.py` line 178:
+    'For each threshold T, the retake decision is `|phase_sep| < T`'.
+
+    A small absolute phase separation means the phase detector couldn't
+    confidently distinguish near vs far face darkness; that's the retake
+    signal. Negative phase_sep values (where `sep<0 ≡ chirality correct`
+    per the empirical calibration in `NEAR_FAR_PHASE_REPORT.md`) are
+    handled correctly by the `abs()`.
+    """
+    return row.phase_sep is not None and abs(row.phase_sep) < t
 
 
 def candidate_rules() -> List[Tuple[str, str, Callable[[TrustRow], bool]]]:
@@ -239,18 +263,21 @@ def candidate_rules() -> List[Tuple[str, str, Callable[[TrustRow], bool]]]:
     """
     rules: List[Tuple[str, str, Callable[[TrustRow], bool]]] = []
 
-    # Single-signal rules
+    # Single-signal rules — phase predicate is `|phase_sep| < T`, NOT
+    # `phase_sep >= T` (Codex caught the polarity inversion in #232 review).
+    # Low |phase_sep| ≡ low phase confidence ≡ retake. See _phase_low_confidence
+    # docstring + tools/phase2a_phase_confidence_calibration.py L178.
     rules.append((
         "phase_sep_alone_T11.7",
-        "Retake when phase_sep >= 11.7 (Phase 2A operating point).",
-        lambda r: _phase_above(r, PHASE_2A_THRESHOLD),
+        "Retake when |phase_sep| < 11.7 (Phase 2A operating point).",
+        lambda r: _phase_low_confidence(r, PHASE_2A_THRESHOLD),
     ))
-    # Sweep additional phase_sep thresholds to confirm Phase 2A's ceiling.
-    for t in (0.0, 5.0, 8.0, 15.0, 20.0):
+    # Sweep additional |phase_sep| thresholds to characterize the curve.
+    for t in (0.5, 2.0, 5.0, 8.0, 15.0, 20.0):
         rules.append((
             f"phase_sep_alone_T{t}",
-            f"Retake when phase_sep >= {t}.",
-            lambda r, t=t: _phase_above(r, t),
+            f"Retake when |phase_sep| < {t}.",
+            lambda r, t=t: _phase_low_confidence(r, t),
         ))
     rules.append((
         "cv_local_alone",
@@ -263,15 +290,15 @@ def candidate_rules() -> List[Tuple[str, str, Callable[[TrustRow], bool]]]:
     for t in (8.0, 11.7, 15.0):
         rules.append((
             f"phase_or_cv_T{t}",
-            f"Retake when phase_sep >= {t} OR cv-local NOT consistent.",
-            lambda r, t=t: _phase_above(r, t) or not r.cv_consistent,
+            f"Retake when |phase_sep| < {t} OR cv-local NOT consistent.",
+            lambda r, t=t: _phase_low_confidence(r, t) or not r.cv_consistent,
         ))
     # Compound rules — AND (conservative, fewer false-retakes but lower recall)
     for t in (8.0, 11.7, 15.0):
         rules.append((
             f"phase_and_cv_T{t}",
-            f"Retake when phase_sep >= {t} AND cv-local NOT consistent.",
-            lambda r, t=t: _phase_above(r, t) and not r.cv_consistent,
+            f"Retake when |phase_sep| < {t} AND cv-local NOT consistent.",
+            lambda r, t=t: _phase_low_confidence(r, t) and not r.cv_consistent,
         ))
     # cv-local subdivision: maybe certain cv-local failure modes are stronger
     # signal than others. Specifically: fewer_than_3_face_quads is a harder
@@ -285,8 +312,8 @@ def candidate_rules() -> List[Tuple[str, str, Callable[[TrustRow], bool]]]:
     for t in (8.0, 11.7, 15.0):
         rules.append((
             f"phase_or_cv_severe_T{t}",
-            f"Retake when phase_sep >= {t} OR cv-local is `fewer_than_3_face_quads`.",
-            lambda r, t=t: _phase_above(r, t) or r.cv_status == "fewer_than_3_face_quads",
+            f"Retake when |phase_sep| < {t} OR cv-local is `fewer_than_3_face_quads`.",
+            lambda r, t=t: _phase_low_confidence(r, t) or r.cv_status == "fewer_than_3_face_quads",
         ))
 
     return rules
@@ -497,7 +524,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     }
     args.matrix_out.parent.mkdir(parents=True, exist_ok=True)
     args.matrix_out.write_text(json.dumps(matrix_out, indent=2))
-    print(f"matrix → {args.matrix_out.relative_to(REPO_ROOT)} "
+    print(f"matrix → {_display_path(args.matrix_out)} "
           f"({summary['n_rows']} rows, {len(rules)} rules evaluated)",
           file=sys.stderr)
 
@@ -505,7 +532,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     md = render_markdown(rows, results, summary)
     args.report_out.parent.mkdir(parents=True, exist_ok=True)
     args.report_out.write_text(md)
-    print(f"report → {args.report_out.relative_to(REPO_ROOT)}", file=sys.stderr)
+    print(f"report → {_display_path(args.report_out)}", file=sys.stderr)
 
     # Brief stdout summary
     passing = [r for r in results if r.meets_bar]

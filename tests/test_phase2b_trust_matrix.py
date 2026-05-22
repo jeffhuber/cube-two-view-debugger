@@ -180,33 +180,94 @@ def test_candidate_rule_thresholds_are_correctly_bound_per_rule():
     classic late-binding-closure bug) fails loudly here instead of
     silently making every thresholded rule evaluate at the LAST threshold
     in the loop.
+
+    UPDATED after Codex's #232 review (real polarity bug fix): the phase
+    predicate is `|phase_sep| < T` (Phase 2A semantics — low magnitude
+    means low confidence means retake), not `phase_sep >= T`. Probe row
+    is now phase_sep=2.0 so we can test both sides of small thresholds.
     """
     rules = {name: pred for name, _, pred in p2b.candidate_rules()}
 
-    # Build a probe with phase_sep = 10.0. A correctly-bound predicate
-    # should fire for thresholds <= 10 and NOT fire for thresholds > 10.
-    probe_at_10 = p2b.TrustRow(
+    # |phase_sep| = 2.0 — should fire for T > 2 (low-confidence below T),
+    # not fire for T <= 2 (above-threshold-confidence).
+    probe_low = p2b.TrustRow(
         case="probe", run=0, outcome="GOOD", category="GOOD",
-        phase_sep=10.0, phase_check="?", cv_status="ok", cv_consistent=True,
+        phase_sep=2.0, phase_check="?", cv_status="ok", cv_consistent=True,
     )
-    assert rules["phase_sep_alone_T0.0"](probe_at_10) is True
-    assert rules["phase_sep_alone_T5.0"](probe_at_10) is True
-    assert rules["phase_sep_alone_T8.0"](probe_at_10) is True
-    assert rules["phase_sep_alone_T15.0"](probe_at_10) is False
-    assert rules["phase_sep_alone_T20.0"](probe_at_10) is False
+    assert rules["phase_sep_alone_T0.5"](probe_low) is False  # 2 < 0.5 → False
+    assert rules["phase_sep_alone_T2.0"](probe_low) is False  # |sep| < T uses strict <; 2 < 2 → False
+    assert rules["phase_sep_alone_T5.0"](probe_low) is True   # 2 < 5 → True
+    assert rules["phase_sep_alone_T8.0"](probe_low) is True
+    assert rules["phase_sep_alone_T15.0"](probe_low) is True
 
-    # Same probe through the OR-compound rules. Note the cv_consistent=True
-    # path means the cv-local side never fires, so the verdict matches the
-    # phase_sep side. This isolates the threshold binding.
-    assert rules["phase_or_cv_T8.0"](probe_at_10) is True   # 10 >= 8
-    assert rules["phase_or_cv_T11.7"](probe_at_10) is False  # 10 < 11.7
-    assert rules["phase_or_cv_T15.0"](probe_at_10) is False  # 10 < 15
+    # Same probe through OR-compound rules — cv_consistent=True isolates phase side.
+    assert rules["phase_or_cv_T8.0"](probe_low) is True   # |2| < 8 → True
+    assert rules["phase_or_cv_T11.7"](probe_low) is True  # |2| < 11.7 → True
 
     # AND-compounds with cv_consistent=True NEVER fire (the AND-cv side
-    # is always False here). This separately confirms that the compound
-    # predicates are evaluating the cv side, not just inheriting the
-    # phase-only verdict.
-    assert rules["phase_and_cv_T8.0"](probe_at_10) is False
+    # is always False here).
+    assert rules["phase_and_cv_T8.0"](probe_low) is False
+
+    # Confirm negative phase_sep is also handled correctly via abs().
+    # phase_sep = -10 should be |10|, same as phase_sep = +10.
+    probe_neg = p2b.TrustRow(
+        case="probe2", run=0, outcome="GOOD", category="GOOD",
+        phase_sep=-10.0, phase_check="?", cv_status="ok", cv_consistent=True,
+    )
+    assert rules["phase_sep_alone_T5.0"](probe_neg) is False  # |-10|=10, not < 5
+    assert rules["phase_sep_alone_T15.0"](probe_neg) is True  # |-10|=10, < 15
+
+
+def test_phase_2a_reference_values_at_T11_7_match_documentation():
+    """Codex's #232 review caught a polarity inversion: the predicate
+    `phase_sep >= T` produced 41.7% recall / 38.2% FPR at T=11.7, but
+    Phase 2A documents 45.8% / 9.2% at the same threshold using `|sep| < T`.
+    After the polarity fix, evaluating on the committed post_218 baseline
+    must reproduce Phase 2A's numbers.
+
+    This test pins those reference values — if a future refactor reverts
+    the polarity or perturbs the predicate, this test fails loudly with
+    the bar values clearly violated.
+    """
+    import json
+    post = json.loads(p2b.POST_218_PATH.read_text())
+    cv = json.loads(p2b.CV_LOCAL_PATH.read_text())
+    rows = p2b.build_matrix(post, cv)
+
+    rules = {name: (desc, pred) for name, desc, pred in p2b.candidate_rules()}
+    _, pred = rules["phase_sep_alone_T11.7"]
+    result = p2b.evaluate_rule(rows, pred, "phase_sep_alone_T11.7",
+                               "Phase 2A reference rule")
+
+    # Phase 2A documents 45.8% recall (11/24) at 9.2% GOOD FPR (7/76).
+    # Allow a small slack (±2 pp) to absorb any minor data-counting drift
+    # between Phase 2A's separate calibration run and the post_218 join.
+    assert abs(result.catastrophic_recall - 0.458) <= 0.05, (
+        f"catastrophic recall {result.catastrophic_recall:.3f} drifted from "
+        f"Phase 2A's documented 0.458"
+    )
+    assert abs(result.good_false_retake_rate - 0.092) <= 0.05, (
+        f"GOOD FPR {result.good_false_retake_rate:.3f} drifted from "
+        f"Phase 2A's documented 0.092"
+    )
+    # Hard bar: should NOT be the buggy values (41.7% / 38.2%).
+    assert result.good_false_retake_rate < 0.20, (
+        f"GOOD FPR {result.good_false_retake_rate:.3f} is way above the bar; "
+        f"phase predicate polarity may be reverted to `phase_sep >= T`"
+    )
+
+
+def test_display_path_handles_paths_outside_repo_root():
+    """Codex's #232 non-blocking find: `Path.relative_to(REPO_ROOT)` crashes
+    on absolute paths outside the repo (e.g., `--matrix-out /tmp/foo.json`).
+    The fix uses `_display_path()` which falls back to the absolute path."""
+    from pathlib import Path
+    # Inside repo root → relative form
+    inside = p2b.REPO_ROOT / "tests" / "fixtures" / "x.json"
+    assert p2b._display_path(inside) == "tests/fixtures/x.json"
+    # Outside repo root → absolute fallback (no crash)
+    outside = Path("/tmp/foo.json")
+    assert p2b._display_path(outside) == "/tmp/foo.json"
 
 
 def test_full_run_against_committed_fixtures_produces_expected_shape():

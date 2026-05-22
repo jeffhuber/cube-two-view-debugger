@@ -16,31 +16,32 @@ Joined from `tests/fixtures/post_218_baseline.json` (per-run phase_sep + outcome
 
 | rule | description | recall | GOOD FPR | MARGINAL routed | meets bar? |
 |---|---|---|---|---|---|
-| `phase_sep_alone_T11.7` | Retake when phase_sep >= 11.7 (Phase 2A operating point). | 41.7% (10/24) | 38.2% (29/76) | 6.2% (1/16) | ❌ |
-| `phase_sep_alone_T0.0` | Retake when phase_sep >= 0.0. | 58.3% (14/24) | 40.8% (31/76) | 25.0% (4/16) | ❌ |
-| `phase_sep_alone_T5.0` | Retake when phase_sep >= 5.0. | 54.2% (13/24) | 39.5% (30/76) | 12.5% (2/16) | ❌ |
-| `phase_sep_alone_T8.0` | Retake when phase_sep >= 8.0. | 54.2% (13/24) | 38.2% (29/76) | 6.2% (1/16) | ❌ |
-| `phase_sep_alone_T15.0` | Retake when phase_sep >= 15.0. | 37.5% (9/24) | 34.2% (26/76) | 6.2% (1/16) | ❌ |
-| `phase_sep_alone_T20.0` | Retake when phase_sep >= 20.0. | 25.0% (6/24) | 32.9% (25/76) | 6.2% (1/16) | ❌ |
+| `phase_sep_alone_T11.7` | Retake when |phase_sep| < 11.7 (Phase 2A operating point). | 45.8% (11/24) | 9.2% (7/76) | 37.5% (6/16) | ❌ |
+| `phase_sep_alone_T0.5` | Retake when |phase_sep| < 0.5. | 0.0% (0/24) | 0.0% (0/76) | 0.0% (0/16) | ❌ |
+| `phase_sep_alone_T2.0` | Retake when |phase_sep| < 2.0. | 0.0% (0/24) | 0.0% (0/76) | 12.5% (2/16) | ❌ |
+| `phase_sep_alone_T5.0` | Retake when |phase_sep| < 5.0. | 12.5% (3/24) | 1.3% (1/76) | 18.8% (3/16) | ❌ |
+| `phase_sep_alone_T8.0` | Retake when |phase_sep| < 8.0. | 29.2% (7/24) | 5.3% (4/76) | 25.0% (4/16) | ❌ |
+| `phase_sep_alone_T15.0` | Retake when |phase_sep| < 15.0. | 50.0% (12/24) | 19.7% (15/76) | 50.0% (8/16) | ❌ |
+| `phase_sep_alone_T20.0` | Retake when |phase_sep| < 20.0. | 66.7% (16/24) | 30.3% (23/76) | 56.2% (9/16) | ❌ |
 | `cv_local_alone` | Retake when cv-local face-quad fit is NOT structurally consistent (status != 'ok'). | 100.0% (24/24) | 85.5% (65/76) | 93.8% (15/16) | ❌ |
-| `phase_or_cv_T8.0` | Retake when phase_sep >= 8.0 OR cv-local NOT consistent. | 100.0% (24/24) | 94.7% (72/76) | 93.8% (15/16) | ❌ |
-| `phase_or_cv_T11.7` | Retake when phase_sep >= 11.7 OR cv-local NOT consistent. | 100.0% (24/24) | 94.7% (72/76) | 93.8% (15/16) | ❌ |
-| `phase_or_cv_T15.0` | Retake when phase_sep >= 15.0 OR cv-local NOT consistent. | 100.0% (24/24) | 94.7% (72/76) | 93.8% (15/16) | ❌ |
-| `phase_and_cv_T8.0` | Retake when phase_sep >= 8.0 AND cv-local NOT consistent. | 54.2% (13/24) | 28.9% (22/76) | 6.2% (1/16) | ❌ |
-| `phase_and_cv_T11.7` | Retake when phase_sep >= 11.7 AND cv-local NOT consistent. | 41.7% (10/24) | 28.9% (22/76) | 6.2% (1/16) | ❌ |
-| `phase_and_cv_T15.0` | Retake when phase_sep >= 15.0 AND cv-local NOT consistent. | 37.5% (9/24) | 25.0% (19/76) | 6.2% (1/16) | ❌ |
+| `phase_or_cv_T8.0` | Retake when |phase_sep| < 8.0 OR cv-local NOT consistent. | 100.0% (24/24) | 85.5% (65/76) | 100.0% (16/16) | ❌ |
+| `phase_or_cv_T11.7` | Retake when |phase_sep| < 11.7 OR cv-local NOT consistent. | 100.0% (24/24) | 85.5% (65/76) | 100.0% (16/16) | ❌ |
+| `phase_or_cv_T15.0` | Retake when |phase_sep| < 15.0 OR cv-local NOT consistent. | 100.0% (24/24) | 86.8% (66/76) | 100.0% (16/16) | ❌ |
+| `phase_and_cv_T8.0` | Retake when |phase_sep| < 8.0 AND cv-local NOT consistent. | 29.2% (7/24) | 5.3% (4/76) | 18.8% (3/16) | ❌ |
+| `phase_and_cv_T11.7` | Retake when |phase_sep| < 11.7 AND cv-local NOT consistent. | 45.8% (11/24) | 9.2% (7/76) | 31.2% (5/16) | ❌ |
+| `phase_and_cv_T15.0` | Retake when |phase_sep| < 15.0 AND cv-local NOT consistent. | 50.0% (12/24) | 18.4% (14/76) | 43.8% (7/16) | ❌ |
 | `cv_severe_alone` | Retake when cv-local status is `fewer_than_3_face_quads` (the more severe failure mode — geometry couldn't even find 3 faces). | 33.3% (8/24) | 18.4% (14/76) | 12.5% (2/16) | ❌ |
-| `phase_or_cv_severe_T8.0` | Retake when phase_sep >= 8.0 OR cv-local is `fewer_than_3_face_quads`. | 75.0% (18/24) | 51.3% (39/76) | 18.8% (3/16) | ❌ |
-| `phase_or_cv_severe_T11.7` | Retake when phase_sep >= 11.7 OR cv-local is `fewer_than_3_face_quads`. | 66.7% (16/24) | 51.3% (39/76) | 18.8% (3/16) | ❌ |
-| `phase_or_cv_severe_T15.0` | Retake when phase_sep >= 15.0 OR cv-local is `fewer_than_3_face_quads`. | 66.7% (16/24) | 50.0% (38/76) | 18.8% (3/16) | ❌ |
+| `phase_or_cv_severe_T8.0` | Retake when |phase_sep| < 8.0 OR cv-local is `fewer_than_3_face_quads`. | 45.8% (11/24) | 23.7% (18/76) | 31.2% (5/16) | ❌ |
+| `phase_or_cv_severe_T11.7` | Retake when |phase_sep| < 11.7 OR cv-local is `fewer_than_3_face_quads`. | 54.2% (13/24) | 25.0% (19/76) | 43.8% (7/16) | ❌ |
+| `phase_or_cv_severe_T15.0` | Retake when |phase_sep| < 15.0 OR cv-local is `fewer_than_3_face_quads`. | 54.2% (13/24) | 31.6% (24/76) | 50.0% (8/16) | ❌ |
 
 ## Headline finding
 
 **No rule over the currently-available signals (phase_sep + cv-local structural status, alone or combined) meets the Phase 2 bar.**
 
-Closest-to-bar rule: `phase_and_cv_T8.0`
-- catastrophic recall: 54.2% (bar: 80%; shortfall 25.8%)
-- GOOD false-retake:   28.9% (bar: 10%; excess 18.9%)
+Closest-to-bar rule: `phase_sep_alone_T20.0`
+- catastrophic recall: 66.7% (bar: 80%; shortfall 13.3%)
+- GOOD false-retake:   30.3% (bar: 10%; excess 20.3%)
 
 ## Implications
 

@@ -43,7 +43,7 @@
 |---|---|
 | "How accurate is the current global model?" | `tests/fixtures/post_218_baseline.json` + `POST_218_BASELINE_AND_TAXONOMY.md` |
 | "How accurate is cv-local at producing consistent cube geometry?" | `tests/fixtures/cv_local_baseline.json` + `PHASE_1_CV_LOCAL_BASELINE.md` (90% structural fit-fail) |
-| "Can existing trust signals (phase_sep + cv-local) gate retake at the Phase 2 bar?" | `tests/fixtures/phase2b_trust_signal_matrix.json` + `PHASE_2B_TRUST_SIGNAL_MATRIX.md` — **no.** Closest-to-bar rule `phase_and_cv_T8.0` hits 54.2% recall / 28.9% GOOD FPR (bar: ≥80% / ≤10%). Needs `--recompute-global-model` extension or pivot to learned-geometry / capture-UX. |
+| "Can existing trust signals (phase_sep + cv-local) gate retake at the Phase 2 bar?" | `tests/fixtures/phase2b_trust_signal_matrix.json` + `PHASE_2B_TRUST_SIGNAL_MATRIX.md` — **no.** Closest-to-bar rule `phase_sep_alone_T20.0` hits 66.7% recall / 30.3% GOOD FPR (bar: ≥80% / ≤10%). Needs `--recompute-global-model` extension or pivot to learned-geometry / capture-UX. Phase 2A reference (T=11.7) confirmed at 45.8%/9.2%. |
 | "How accurate is cv-local end-to-end on per-sticker color?" | `tools/evaluate_hybrid_pipeline.py` output (different question; production-style eval) |
 | "What is current-main production solvable-rate / per-sticker accuracy on corpus + hard cases?" | `tests/fixtures/main_solvable_baseline.json` + `MAIN_SOLVABLE_BASELINE.md` |
 | "Did my PR regress geometry on any case?" | `tools/baseline_post_218.py --diff prev curr` |

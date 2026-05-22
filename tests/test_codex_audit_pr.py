@@ -83,13 +83,44 @@ def test_parse_handles_duplicated_summary():
     assert p_total == 0
 
 
-def test_parse_no_codex_marker_returns_safe_default():
-    """If the stdout doesn't have a `codex` final-verdict marker (e.g.,
-    the subprocess crashed before producing one), parser returns a PASS-
-    shaped verdict with a flag in the prose so caller can detect."""
+def test_parse_no_codex_marker_returns_unknown():
+    """Codex round 3 of #234 — P2: if the stdout doesn't have a `codex`
+    final-verdict marker, parser MUST NOT return PASS (which would
+    silently mark unaudited PRs as done). Instead returns UNKNOWN so
+    the orchestrator emits the requeue trailer.
+    """
     parsed = c.parse_codex_output("some random output without the marker")
-    assert parsed.verdict == "PASS"
+    assert parsed.verdict == "UNKNOWN"
     assert "no codex final-verdict block" in parsed.prose.lower()
+
+
+def test_audit_pr_unknown_verdict_requeues_with_stale_trailer(monkeypatch):
+    """Codex round 3 of #234 — P2 follow-on: when parser returns UNKNOWN,
+    audit_pr must format a requeue comment (STALE_TRAILER) and report
+    verdict="UNKNOWN", NOT silently post a done comment."""
+    pr_meta = _fake_pr(head_sha="aaaa11112222")
+    posted: List[Dict[str, Any]] = []
+    _install_audit_mocks(
+        monkeypatch,
+        pr_meta=pr_meta,
+        # Output without the `codex` final marker — parser → UNKNOWN
+        codex_stdout="some exec output but no final codex line",
+        posted_records=posted,
+    )
+    config = c.AuditConfig(
+        github_token="test",
+        repo_paths={"jeffhuber/cube-two-view-debugger": Path("/tmp/fake-repo")},
+    )
+    Path("/tmp/fake-repo").mkdir(exist_ok=True)
+    try:
+        result = c.audit_pr(config, "jeffhuber/cube-two-view-debugger", 17)
+    finally:
+        Path("/tmp/fake-repo").rmdir()
+    assert result.verdict == "UNKNOWN"
+    assert result.trailer == c.STALE_TRAILER
+    assert c.STALE_TRAILER in posted[0]["body"]
+    assert c.DONE_TRAILER not in posted[0]["body"]
+    assert "Could not parse a Codex verdict" in posted[0]["body"]
 
 
 def test_parse_p0_alone_triggers_blocked():

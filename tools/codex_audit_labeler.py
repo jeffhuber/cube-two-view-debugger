@@ -89,10 +89,15 @@ TRAILER_PATTERN = re.compile(
 
 
 def classify_audit_comment(body: str) -> Optional[str]:
-    # Machine-readable trailer is authoritative.
-    trailer = TRAILER_PATTERN.search(body)
-    if trailer:
-        label = trailer.group(1).lower()
+    # Machine-readable trailer is authoritative. Use the LAST trailer in
+    # the body, not the first — Codex round 3 of #234 found that quoting
+    # the trailer text in protocol docs / tests / earlier review prose
+    # would make `search()` return the quoted occurrence, mislabeling a
+    # BLOCKED result as done. The real trailer is the one `format_comment`
+    # appends as the final line.
+    trailers = list(TRAILER_PATTERN.finditer(body))
+    if trailers:
+        label = trailers[-1].group(1).lower()
         if label == "codex-audit-done":
             return "done"
         if label == "codex-audit-blocked":

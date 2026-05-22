@@ -86,6 +86,55 @@ def test_main_skips_pr_head_fetch_on_non_pr_comment(monkeypatch, tmp_path):
     assert fetch_calls == [], "must not call /pulls/{n} on non-PR comments"
 
 
+def test_classify_uses_last_trailer_when_body_quotes_an_earlier_one(monkeypatch):
+    """Codex round 3 of #234 — P2: when a comment body quotes the trailer
+    text earlier (e.g., the comment was reviewing the protocol doc or
+    an earlier review comment), `search()` would return the FIRST match.
+    A real BLOCKED verdict could be mislabeled as done because the
+    quoted trailer earlier in the body was `codex-audit-done`.
+
+    Fix uses `finditer` and takes the last match — which is what
+    `format_comment` actually appends as the final line.
+    """
+    monkeypatch.setenv("CODEX_BOT_AUTHORS", "codex-audit-bot")
+    from tools import codex_audit_labeler
+    importlib.reload(codex_audit_labeler)
+
+    # Body that quotes a "done" trailer earlier (e.g., in a code block
+    # showing example trailers), with the REAL trailer at the end
+    # marking BLOCKED.
+    body = """## Codex audit
+
+Verdict: BLOCKED
+
+Some example trailers documented in the protocol:
+- `<!-- CODEX_AUDIT_STATE: codex-audit-done -->` for PASS
+- `<!-- CODEX_AUDIT_STATE: codex-audit-blocked -->` for BLOCKED
+
+[P2] Real finding here.
+
+<!-- CODEX_AUDIT_STATE: codex-audit-blocked -->
+"""
+    result = codex_audit_labeler.classify_audit_comment(body)
+    assert result == "blocked", (
+        f"trailer-match-first bug regressed: got {result!r}, expected 'blocked'"
+    )
+
+
+def test_classify_uses_last_trailer_with_three_trailers(monkeypatch):
+    """Stress test: three trailers in the body — the LAST one wins."""
+    monkeypatch.setenv("CODEX_BOT_AUTHORS", "codex-audit-bot")
+    from tools import codex_audit_labeler
+    importlib.reload(codex_audit_labeler)
+
+    body = (
+        "<!-- CODEX_AUDIT_STATE: codex-audit-done -->\n"
+        "<!-- CODEX_AUDIT_STATE: needs-codex-audit -->\n"
+        "<!-- CODEX_AUDIT_STATE: codex-audit-blocked -->\n"
+    )
+    assert codex_audit_labeler.classify_audit_comment(body) == "blocked"
+
+
 def test_main_does_fetch_pr_head_on_pr_comment(monkeypatch, tmp_path):
     """Inverse: when the comment IS on a PR, the fetch still happens."""
     import json

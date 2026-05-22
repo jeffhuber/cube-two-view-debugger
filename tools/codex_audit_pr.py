@@ -239,12 +239,17 @@ def parse_codex_output(stdout: str) -> CodexVerdict:
         if line.strip() == "codex":
             last_codex_idx = i
     if last_codex_idx == -1:
-        # No final codex marker found — bail with PASS-shaped empty block
-        # but flag for the caller. The caller treats this as suspicious and
-        # may decide to requeue rather than auto-PASS.
+        # No final `codex` marker found. Codex round 3 of #234 — P2: the
+        # original code returned a PASS-shaped verdict here, which would
+        # silently mark unaudited PRs as `codex-audit-done` on format
+        # drift or empty/partial successful output. The safe behavior is
+        # to surface this as UNKNOWN so the orchestrator emits the
+        # `needs-codex-audit` (requeue) trailer instead of auto-PASS.
         return CodexVerdict(
-            verdict="PASS",
-            prose="(no codex final-verdict block found in output)",
+            verdict="UNKNOWN",
+            prose="(no codex final-verdict block found in output — "
+                  "the codex CLI may have produced no review or its "
+                  "output format may have drifted; requeue and retry)",
         )
 
     verdict_block = "\n".join(lines[last_codex_idx + 1 :]).strip()
@@ -408,6 +413,7 @@ def format_comment(
     head_sha: str,
     is_stale: bool = False,
     stale_end_sha: Optional[str] = None,
+    is_unknown: bool = False,
 ) -> str:
     """Build the GitHub comment body with header, prose, and trailer."""
     header = "## Codex audit (calibration phase — informational only)\n\n"
@@ -418,6 +424,16 @@ def format_comment(
             + f"\nHead SHA changed during review (`{head_sha[:8]}` → "
             + f"`{(stale_end_sha or '?')[:8]}`). Skipping this verdict and "
             + f"requeuing for re-review of the new head.\n\n"
+            + STALE_TRAILER
+            + "\n"
+        )
+    if is_unknown:
+        return (
+            header
+            + "\nCould not parse a Codex verdict from the CLI output "
+            + "(no `codex` final-verdict marker found). The CLI may have "
+            + "produced no review, or its output format may have drifted. "
+            + "Requeuing for re-review.\n\n"
             + STALE_TRAILER
             + "\n"
         )
@@ -495,6 +511,14 @@ def audit_pr(config: AuditConfig, repo: str, pr_number: int) -> AuditResult:
         comment_body = format_comment(parsed, head_sha_start, is_stale=True,
                                        stale_end_sha=head_sha_end)
         result_verdict = "STALE"
+        trailer = STALE_TRAILER
+    elif parsed.verdict == "UNKNOWN":
+        # Codex round 3 of #234 — P2: when the parser can't find the
+        # `codex` final-verdict marker, requeue rather than auto-PASS.
+        # The trailer is the same as STALE because the downstream
+        # outcome (re-run, don't trust this comment) is identical.
+        comment_body = format_comment(parsed, head_sha_start, is_unknown=True)
+        result_verdict = "UNKNOWN"
         trailer = STALE_TRAILER
     else:
         comment_body = format_comment(parsed, head_sha_start)

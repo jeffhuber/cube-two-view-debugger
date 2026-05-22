@@ -171,6 +171,112 @@ def test_summarize_counts_outcomes_and_cases():
     assert s["n_marginal"] == 1
 
 
+def _stub_recomputed(rows):
+    """rows: list of dicts (already in the recompute schema). Returns the
+    full {summary, by_case} envelope."""
+    by_case: Dict[str, list] = {}
+    for r in rows:
+        case = r.pop("_case", "x")
+        by_case.setdefault(case, []).append(r)
+    return {"summary": {}, "by_case": by_case}
+
+
+def test_build_matrix_from_recomputed_extracts_continuous_signals():
+    """The recomputed builder must populate all continuous signal fields,
+    not just the existing-signal fields. This pins the field mapping
+    between the recompute schema and TrustRow."""
+    recomp = _stub_recomputed([
+        {
+            "_case": "12_A", "run": 0, "status": "ok",
+            "err_near_deg": 5.0, "err_far_deg": 15.0,
+            "phase_check": "correct", "category": "GOOD",
+            "phase_darkness_separation": 3.2,
+            "fit_residual_rms_px": 95.0,
+            "pnp_rms_px": 100.0,
+            "hexagon_centroid_vs_bezel_vertex_offset_px": 25.0,
+            "bezel_vs_fit_cube_center_offset_px": 5.0,
+            "junction_score_at_ensemble": 180.0,
+            "ensemble_shift_px": 15.0,
+            "ensemble_n_candidates": 3,
+        },
+    ])
+    cv = _stub_cv_local({"12_A": "ok"})
+    rows = p2b.build_matrix_from_recomputed(recomp, cv)
+    assert len(rows) == 1
+    r = rows[0]
+    assert r.outcome == "GOOD"
+    assert r.phase_sep == 3.2
+    assert r.fit_residual_rms_px == 95.0
+    assert r.pnp_rms_px == 100.0
+    assert r.hexagon_centroid_vs_bezel_vertex_offset_px == 25.0
+    assert r.junction_score_at_ensemble == 180.0
+    assert r.ensemble_shift_px == 15.0
+
+
+def test_build_matrix_from_recomputed_handles_fit_failure():
+    """A fit-failure run must produce a CATASTROPHIC outcome row with most
+    signals None. The verdict logic naturally treats this as 'retake'."""
+    recomp = _stub_recomputed([
+        {
+            "_case": "99_X", "run": 0, "status": "model_fit_failed",
+            "category": "TRUE_GEOMETRY_FAIL",
+        },
+    ])
+    cv = _stub_cv_local({"99_X": "cluster_pattern_mismatch"})
+    rows = p2b.build_matrix_from_recomputed(recomp, cv)
+    assert len(rows) == 1
+    r = rows[0]
+    assert r.outcome == "CATASTROPHIC"
+    assert r.category == "TRUE_GEOMETRY_FAIL"
+    assert r.fit_residual_rms_px is None
+    assert r.hexagon_centroid_vs_bezel_vertex_offset_px is None
+
+
+def test_recomputed_signal_rules_include_expected_compositions():
+    """Smoke check: the recomputed-rule list includes fit_residual,
+    pnp_rms, hex_bezel, ensemble_shift, junction_score thresholds, plus
+    OR-compounds with phaseANDcv, plus AND-compounds."""
+    rules = p2b.recomputed_signal_rules()
+    names = [name for name, _, _ in rules]
+    assert any("fit_residual_alone" in n for n in names)
+    assert any("pnp_rms_alone" in n for n in names)
+    assert any("hex_bezel_disagree" in n for n in names)
+    assert any("ensemble_shift" in n for n in names)
+    assert any("junction_score_below" in n for n in names)
+    assert any("phaseANDcv_OR_fit_residual" in n for n in names)
+    assert any("phaseANDcv_OR_fit80.0_OR_hex50.0" in n for n in names)
+    assert any("fit80.0_AND_hex50.0" in n for n in names)
+
+
+def test_recomputed_rules_handle_missing_signals_gracefully():
+    """Rules over continuous signals must return False (= don't retake) on
+    rows where the signal is None. The matrix may legitimately have rows
+    with some signals missing (model_fit_failed cases)."""
+    row_missing = p2b.TrustRow(
+        case="x", run=0, outcome="GOOD", category="GOOD",
+        phase_sep=None, phase_check="?",
+        cv_status="ok", cv_consistent=True,
+    )
+    assert p2b._signal_above(row_missing, "fit_residual_rms_px", 100.0) is False
+    assert p2b._signal_below(row_missing, "junction_score_at_ensemble", 50.0) is False
+
+
+def test_signal_above_and_below_inequality_boundaries():
+    """_signal_above uses >=, _signal_below uses <. Pin the boundaries —
+    Phase 2 calibration depends on which side of the threshold counts."""
+    row = p2b.TrustRow(
+        case="x", run=0, outcome="GOOD", category="GOOD",
+        phase_sep=None, phase_check="?",
+        cv_status="ok", cv_consistent=True,
+        fit_residual_rms_px=100.0,
+        junction_score_at_ensemble=100.0,
+    )
+    assert p2b._signal_above(row, "fit_residual_rms_px", 100.0) is True
+    assert p2b._signal_above(row, "fit_residual_rms_px", 100.1) is False
+    assert p2b._signal_below(row, "junction_score_at_ensemble", 100.0) is False
+    assert p2b._signal_below(row, "junction_score_at_ensemble", 100.1) is True
+
+
 def test_candidate_rule_thresholds_are_correctly_bound_per_rule():
     """Regression guard for a Python closure gotcha that Qwen's audit of
     PR #232 flagged (incorrectly — see commit history). Each thresholded

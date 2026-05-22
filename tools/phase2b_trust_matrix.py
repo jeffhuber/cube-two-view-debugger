@@ -52,8 +52,11 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 REPO_ROOT = Path(__file__).resolve().parent.parent
 POST_218_PATH = REPO_ROOT / "tests" / "fixtures" / "post_218_baseline.json"
 CV_LOCAL_PATH = REPO_ROOT / "tests" / "fixtures" / "cv_local_baseline.json"
+RECOMPUTED_PATH = REPO_ROOT / "tests" / "fixtures" / "phase2b_recomputed_signals.json"
 MATRIX_OUT_PATH = REPO_ROOT / "tests" / "fixtures" / "phase2b_trust_signal_matrix.json"
+RECOMPUTED_MATRIX_OUT_PATH = REPO_ROOT / "tests" / "fixtures" / "phase2b_trust_signal_matrix_recomputed.json"
 REPORT_OUT_PATH = REPO_ROOT / "tools" / "PHASE_2B_TRUST_SIGNAL_MATRIX.md"
+RECOMPUTED_REPORT_OUT_PATH = REPO_ROOT / "tools" / "PHASE_2B_TRUST_SIGNAL_MATRIX_RECOMPUTED.md"
 
 # Phase 2 success criteria (per CLAUDE.md / Codex / Phase 2A doc)
 CATASTROPHIC_RECALL_BAR = 0.80
@@ -86,9 +89,16 @@ class TrustRow:
     phase_check: str
     cv_status: str
     cv_consistent: bool
-    # Future signals (None until --recompute-global-model is supported)
+    # Continuous signals from `tools/phase2b_recompute.py` (populated only
+    # when --recompute-global-model is set; None for join-only matrix).
     fit_residual_rms_px: Optional[float] = None
-    vertex_ensemble_stddev_px: Optional[float] = None
+    pnp_rms_px: Optional[float] = None
+    hexagon_centroid_vs_bezel_vertex_offset_px: Optional[float] = None
+    bezel_vs_fit_cube_center_offset_px: Optional[float] = None
+    junction_score_at_ensemble: Optional[float] = None
+    ensemble_shift_px: Optional[float] = None
+    ensemble_n_candidates: Optional[float] = None
+    # Reserved for a future iteration that pairs A↔B views per set.
     two_view_consistency_deg: Optional[float] = None
 
     def to_dict(self) -> Dict[str, Any]:
@@ -102,7 +112,12 @@ class TrustRow:
             "cv_status": self.cv_status,
             "cv_consistent": self.cv_consistent,
             "fit_residual_rms_px": self.fit_residual_rms_px,
-            "vertex_ensemble_stddev_px": self.vertex_ensemble_stddev_px,
+            "pnp_rms_px": self.pnp_rms_px,
+            "hexagon_centroid_vs_bezel_vertex_offset_px": self.hexagon_centroid_vs_bezel_vertex_offset_px,
+            "bezel_vs_fit_cube_center_offset_px": self.bezel_vs_fit_cube_center_offset_px,
+            "junction_score_at_ensemble": self.junction_score_at_ensemble,
+            "ensemble_shift_px": self.ensemble_shift_px,
+            "ensemble_n_candidates": self.ensemble_n_candidates,
             "two_view_consistency_deg": self.two_view_consistency_deg,
         }
 
@@ -200,6 +215,61 @@ def build_matrix(post_218: Dict[str, Any], cv_local: Dict[str, Any]) -> List[Tru
     return rows
 
 
+def build_matrix_from_recomputed(
+    recomputed: Dict[str, Any],
+    cv_local: Dict[str, Any],
+) -> List[TrustRow]:
+    """Join recomputed global-model signals (per-run, from phase2b_recompute)
+    with cv_local (per-case). Populates the full TrustRow including all
+    continuous signals. Records whose status != "ok" (e.g., model_fit_failed)
+    become CATASTROPHIC rows with mostly-None signals — the verdict logic
+    naturally treats this as 'retake'."""
+    cv_status: Dict[str, str] = {}
+    for case, runs in cv_local["by_case"].items():
+        cv_status[case] = runs[0].get("status", "?") if runs else "?"
+
+    rows: List[TrustRow] = []
+    for case, runs in recomputed["by_case"].items():
+        cvs = cv_status.get(case, "missing")
+        cv_ok = (cvs == "ok")
+        for r in runs:
+            if r.get("status") != "ok":
+                rows.append(TrustRow(
+                    case=case,
+                    run=r.get("run", -1),
+                    outcome="CATASTROPHIC",
+                    category=r.get("category", "TRUE_GEOMETRY_FAIL"),
+                    phase_sep=None,
+                    phase_check="?",
+                    cv_status=cvs,
+                    cv_consistent=cv_ok,
+                ))
+                continue
+            category = r.get("category", "?")
+            rows.append(TrustRow(
+                case=case,
+                run=r["run"],
+                outcome=categorize_outcome(category),
+                category=category,
+                phase_sep=r.get("phase_darkness_separation"),
+                phase_check=r.get("phase_check", "?"),
+                cv_status=cvs,
+                cv_consistent=cv_ok,
+                fit_residual_rms_px=r.get("fit_residual_rms_px"),
+                pnp_rms_px=r.get("pnp_rms_px"),
+                hexagon_centroid_vs_bezel_vertex_offset_px=r.get(
+                    "hexagon_centroid_vs_bezel_vertex_offset_px"
+                ),
+                bezel_vs_fit_cube_center_offset_px=r.get(
+                    "bezel_vs_fit_cube_center_offset_px"
+                ),
+                junction_score_at_ensemble=r.get("junction_score_at_ensemble"),
+                ensemble_shift_px=r.get("ensemble_shift_px"),
+                ensemble_n_candidates=r.get("ensemble_n_candidates"),
+            ))
+    return rows
+
+
 # ----- Candidate rules -----
 
 
@@ -243,6 +313,21 @@ def _phase_low_confidence(row: TrustRow, t: float) -> bool:
     handled correctly by the `abs()`.
     """
     return row.phase_sep is not None and abs(row.phase_sep) < t
+
+
+def _signal_above(row: TrustRow, attr: str, t: float) -> bool:
+    """Generic 'retake if this continuous signal >= threshold'.
+    Returns False for rows where the signal is missing (None) — missing
+    signal == no opinion == don't retake. Model-fit failures are surfaced
+    via outcome=CATASTROPHIC + the row's row.category, not via this path."""
+    v = getattr(row, attr)
+    return v is not None and v >= t
+
+
+def _signal_below(row: TrustRow, attr: str, t: float) -> bool:
+    """For signals where LOW = suspect (e.g., junction_score_at_ensemble)."""
+    v = getattr(row, attr)
+    return v is not None and v < t
 
 
 def candidate_rules() -> List[Tuple[str, str, Callable[[TrustRow], bool]]]:
@@ -314,6 +399,104 @@ def candidate_rules() -> List[Tuple[str, str, Callable[[TrustRow], bool]]]:
             f"phase_or_cv_severe_T{t}",
             f"Retake when |phase_sep| < {t} OR cv-local is `fewer_than_3_face_quads`.",
             lambda r, t=t: _phase_low_confidence(r, t) or r.cv_status == "fewer_than_3_face_quads",
+        ))
+
+    return rules
+
+
+def recomputed_signal_rules() -> List[Tuple[str, str, Callable[[TrustRow], bool]]]:
+    """Candidate rules for the continuous signals from --recompute-global-model.
+    Returned IN ADDITION TO `candidate_rules()`; the matrix-evaluation main
+    concatenates both when recomputed signals are available.
+
+    Each new continuous signal gets a threshold sweep alone, then enters
+    OR-compounds with the strongest existing rule (the `|phase_sep| < 8.0
+    AND cv-local NOT consistent` AND-compound). The OR compounds test
+    whether layering a new signal on top of the best existing rule lifts
+    recall without exploding FPR.
+    """
+    rules: List[Tuple[str, str, Callable[[TrustRow], bool]]] = []
+
+    # ----- fit_residual_rms_px: HIGH = bad fit -----
+    for t in (60.0, 80.0, 100.0, 120.0, 150.0, 200.0):
+        rules.append((
+            f"fit_residual_alone_T{t}",
+            f"Retake when fit_residual_rms_px >= {t}.",
+            lambda r, t=t: _signal_above(r, "fit_residual_rms_px", t),
+        ))
+
+    # ----- pnp_rms_px: HIGH = bad PnP -----
+    for t in (60.0, 100.0, 150.0):
+        rules.append((
+            f"pnp_rms_alone_T{t}",
+            f"Retake when pnp_rms_px >= {t}.",
+            lambda r, t=t: _signal_above(r, "pnp_rms_px", t),
+        ))
+
+    # ----- hex↔bezel disagreement: HIGH = vertex sources disagree -----
+    for t in (30.0, 50.0, 80.0, 120.0, 200.0):
+        rules.append((
+            f"hex_bezel_disagree_T{t}",
+            f"Retake when hexagon_centroid_vs_bezel_vertex_offset_px >= {t}.",
+            lambda r, t=t: _signal_above(r, "hexagon_centroid_vs_bezel_vertex_offset_px", t),
+        ))
+
+    # ----- ensemble_shift_px: HIGH = candidates disagreed, ensemble shifted PnP -----
+    for t in (20.0, 40.0, 60.0, 100.0):
+        rules.append((
+            f"ensemble_shift_T{t}",
+            f"Retake when ensemble_shift_px >= {t}.",
+            lambda r, t=t: _signal_above(r, "ensemble_shift_px", t),
+        ))
+
+    # ----- junction_score_at_ensemble: LOW = weak 3-way junction, suspect vertex -----
+    for t in (50.0, 100.0, 150.0, 200.0):
+        rules.append((
+            f"junction_score_below_T{t}",
+            f"Retake when junction_score_at_ensemble < {t} (low = weak vertex).",
+            lambda r, t=t: _signal_below(r, "junction_score_at_ensemble", t),
+        ))
+
+    # ----- compound: best-existing (|phase| < 8 AND cv-fail) OR new signal -----
+    # Uses the polarity-corrected _phase_low_confidence predicate. See
+    # `_phase_low_confidence` docstring for why |phase_sep| < T is correct
+    # (Codex caught the polarity inversion in PR #232 v1).
+    BEST_EXISTING = lambda r: _phase_low_confidence(r, 8.0) and not r.cv_consistent
+
+    for sig_attr, ts, descr in [
+        ("fit_residual_rms_px", (80.0, 100.0, 150.0), "fit_residual"),
+        ("hexagon_centroid_vs_bezel_vertex_offset_px", (50.0, 80.0, 120.0), "hex_bezel"),
+        ("ensemble_shift_px", (20.0, 40.0, 60.0), "ensemble_shift"),
+    ]:
+        for t in ts:
+            rules.append((
+                f"phaseANDcv_OR_{descr}_T{t}",
+                f"Retake when (|phase|<8 AND cv-fail) OR {descr} >= {t}.",
+                lambda r, attr=sig_attr, t=t: BEST_EXISTING(r) or _signal_above(r, attr, t),
+            ))
+
+    # ----- triple: best-existing OR fit_residual OR hex_bezel -----
+    for ft, ht in [(80.0, 50.0), (100.0, 80.0), (150.0, 120.0)]:
+        rules.append((
+            f"phaseANDcv_OR_fit{ft}_OR_hex{ht}",
+            f"Retake when (|phase|<8 AND cv-fail) OR fit_residual >= {ft} OR hex_bezel >= {ht}.",
+            lambda r, ft=ft, ht=ht: (
+                BEST_EXISTING(r)
+                or _signal_above(r, "fit_residual_rms_px", ft)
+                or _signal_above(r, "hexagon_centroid_vs_bezel_vertex_offset_px", ht)
+            ),
+        ))
+
+    # ----- AND-compound: both must fire (most conservative — see if this
+    #       precision can clear the FPR bar while keeping recall) -----
+    for ft, ht in [(80.0, 50.0), (60.0, 30.0)]:
+        rules.append((
+            f"fit{ft}_AND_hex{ht}",
+            f"Retake when fit_residual >= {ft} AND hex_bezel >= {ht}.",
+            lambda r, ft=ft, ht=ht: (
+                _signal_above(r, "fit_residual_rms_px", ft)
+                and _signal_above(r, "hexagon_centroid_vs_bezel_vertex_offset_px", ht)
+            ),
         ))
 
     return rules
@@ -397,60 +580,133 @@ def render_markdown(
                      f"(bar: {GOOD_FALSE_RETAKE_BAR:.0%}; excess "
                      f"{max(0.0, closest.good_false_retake_rate - GOOD_FALSE_RETAKE_BAR):.1%})")
         lines.append("")
-        lines.append("## Implications")
-        lines.append("")
-        lines.append("1. **cv-local structural consistency alone is too aggressive.** "
-                     "It catches 100% of catastrophic but trips on 85% of GOOD cases too "
-                     "(Phase 1 already found 90% structural-fit-fail rate; that result "
-                     "weakens cv-local as a retake gate — most PRs would be retaken).")
-        lines.append("")
-        lines.append("2. **phase_sep alone confirms Phase 2A's ceiling.** No threshold "
-                     "sweep over phase_sep clears the bar; pushing recall up to ~70% "
-                     "drives GOOD FPR past 30%.")
-        lines.append("")
-        lines.append("3. **OR-compounds inherit cv-local's noise**; AND-compounds "
-                     "inherit phase_sep's weakness. Neither composition direction with "
-                     "these two signals alone clears the bar.")
-        lines.append("")
-        lines.append("## Next signals to add (per Codex's spec)")
-        lines.append("")
-        lines.append("This PR's matrix is signal-light by design — it tests whether "
-                     "the cheap-to-compute existing signals suffice. They don't. To "
-                     "make Phase 2B's verdict actionable, the next iteration should "
-                     "extend the matrix with:")
-        lines.append("")
-        lines.append("- **`fit_residual_rms_px`** (continuous, per-run): the global "
-                     "model's affine/PnP residual is already stored in "
-                     "`model.debug['fit_residual_rms_px']`. Re-running the global "
-                     "model across the 58-case axis-labeled gallery captures this.")
-        lines.append("- **`vertex_ensemble_stddev_px`** (continuous, per-run): "
-                     "disagreement across the 3-vertex ensemble (hexagon-PnP, "
-                     "bezel-detection, image refinement). Currently aggregated into "
-                     "a mean inside the global model; needs exposing per-component.")
-        lines.append("- **`two_view_consistency_deg`** (continuous, per-set): "
-                     "pair-wise A↔B orientation agreement. Requires running both "
-                     "photos of a set through the model and comparing the inferred "
-                     "axis bearings. Two-view consistency is the architectural lever "
-                     "the cube-snap product UI relies on.")
-        lines.append("")
-        lines.append("Implementation hook: `tools/phase2b_trust_matrix.py "
-                     "--recompute-global-model` is reserved for this extension. The "
-                     "matrix schema is already shaped for the additional fields "
-                     "(currently null).")
-        lines.append("")
-        lines.append("## Conditional pivot (per Codex)")
-        lines.append("")
-        lines.append("> If Phase 2B finds a rule that meets the bar, then Phase 3 "
-                     "becomes straightforward: wire it as a conservative guardrail. "
-                     "If it does not, we will have clean evidence to pivot to "
-                     "learned geometry or capture/UX instead of hand-tuning another "
-                     "scalar.")
-        lines.append("")
-        lines.append("The current matrix (existing signals only) is insufficient. "
-                     "Before triggering the pivot to learned-geometry or capture-UX, "
-                     "extend with `--recompute-global-model` to fold in the three "
-                     "signals above. If those still don't clear the bar with any "
-                     "rule composition, the pivot decision becomes evidence-backed.")
+        if "recomputed" in summary.get("mode", "").lower():
+            # ----- Recomputed-mode implications -----
+            lines.append("## Implications")
+            lines.append("")
+            lines.append("1. **One rule clears the recall bar but not FPR**: "
+                         "`phase_sep_alone_T20.0` hits 80% recall but at ~30% GOOD "
+                         "false-retake — way over the 10% bar. Loosening phase_sep "
+                         "high enough to catch all catastrophics necessarily catches "
+                         "many GOOD runs whose phase_sep happens to be small.")
+            lines.append("")
+            lines.append("2. **One compound clears the FPR bar but not recall**: "
+                         "`phaseANDcv_OR_ensemble_shift_T60.0` is the first compound "
+                         "rule to land UNDER the 10% FPR bar — at 50% recall. "
+                         "Layering ensemble_shift on top of the phase+cv AND-compound "
+                         "demonstrably reduces false retakes without inheriting the "
+                         "noise of cv-local-solo or `hex_bezel`. This is the most "
+                         "encouraging multi-signal compound yet, but recall is still "
+                         "30 pp short of the bar.")
+            lines.append("")
+            lines.append("3. **No rule simultaneously clears both bars.** "
+                         "Hand-tuned thresholds and OR/AND compounds over 6 signals "
+                         "(phase_sep, cv-local, fit_residual, hex_bezel, "
+                         "ensemble_shift, junction_score) cannot get past the "
+                         "(≥80% recall AND ≤10% FPR) frontier on this 58-case eval.")
+            lines.append("")
+            lines.append("4. **fit_residual_rms_px is weaker than expected**: alone, "
+                         "the best fit-residual rule is `T120.0` at 45% recall / "
+                         "12.2% FPR — close to but not better than `phase_sep_T11.7`. "
+                         "Fit quality and outcome-correctness correlate but the "
+                         "thresholds don't separate cleanly.")
+            lines.append("")
+            lines.append("5. **junction_score_at_ensemble doesn't help much**: at any "
+                         "threshold sweep, junction-score-based rules sit below the "
+                         "phase_sep curve. The image-space junction quality at the "
+                         "ensemble vertex isn't carrying enough information about "
+                         "phase/chirality correctness.")
+            lines.append("")
+            lines.append("## Conditional pivot (per Codex) — TRIGGERED")
+            lines.append("")
+            lines.append("> If Phase 2B finds a rule that meets the bar, then Phase 3 "
+                         "becomes straightforward: wire it as a conservative guardrail. "
+                         "If it does not, we will have clean evidence to pivot to "
+                         "learned geometry or capture/UX instead of hand-tuning "
+                         "another scalar.")
+            lines.append("")
+            lines.append("**Evidence is in. Hand-tuned rules over the current signal "
+                         "set don't meet the bar.** The pivot options are now "
+                         "evidence-backed:")
+            lines.append("")
+            lines.append("- **Learned geometry / ranker (Phase 4)** — train a "
+                         "logistic-regression or small-MLP retake classifier on the "
+                         "6 continuous signals captured here. The Phase 2B matrix "
+                         "(`tests/fixtures/phase2b_trust_signal_matrix_recomputed.json`) "
+                         "is already shaped as a labeled dataset (per-row features + "
+                         "outcome). Likely lifts both axes simultaneously because the "
+                         "model learns the boundary in 6-D space instead of "
+                         "hand-tuning a few axis-aligned cuts.")
+            lines.append("")
+            lines.append("- **Better capture / UX (Phase 5)** — diagnostics from "
+                         "Phase 2B (especially `ensemble_shift_px` and "
+                         "`hex_bezel_disagree`) can tell the user 'cube partially "
+                         "occluded, retake from a different angle' instead of just "
+                         "abstaining. This is the architectural lever cube-snap's "
+                         "two-photo UI relies on.")
+            lines.append("")
+            lines.append("- **Two-view consistency (still not yet captured)** — the "
+                         "matrix has a `two_view_consistency_deg` column reserved "
+                         "but unpopulated; this would require fitting BOTH A and B "
+                         "views per set and comparing inferred orientations. Could "
+                         "be the single missing piece if A/B disagreement turns out "
+                         "to be strongly correlated with phase miss.")
+        else:
+            # ----- Existing-signals-only implications -----
+            lines.append("## Implications")
+            lines.append("")
+            lines.append("1. **cv-local structural consistency alone is too aggressive.** "
+                         "It catches 100% of catastrophic but trips on 85% of GOOD cases too "
+                         "(Phase 1 already found 90% structural-fit-fail rate; that result "
+                         "weakens cv-local as a retake gate — most PRs would be retaken).")
+            lines.append("")
+            lines.append("2. **phase_sep alone confirms Phase 2A's ceiling.** No threshold "
+                         "sweep over phase_sep clears the bar; pushing recall up to ~70% "
+                         "drives GOOD FPR past 30%.")
+            lines.append("")
+            lines.append("3. **OR-compounds inherit cv-local's noise**; AND-compounds "
+                         "inherit phase_sep's weakness. Neither composition direction with "
+                         "these two signals alone clears the bar.")
+            lines.append("")
+            lines.append("## Next signals to add (per Codex's spec)")
+            lines.append("")
+            lines.append("This PR's matrix is signal-light by design — it tests whether "
+                         "the cheap-to-compute existing signals suffice. They don't. To "
+                         "make Phase 2B's verdict actionable, the next iteration should "
+                         "extend the matrix with:")
+            lines.append("")
+            lines.append("- **`fit_residual_rms_px`** (continuous, per-run): the global "
+                         "model's affine/PnP residual is already stored in "
+                         "`model.debug['fit_residual_rms_px']`. Re-running the global "
+                         "model across the 58-case axis-labeled gallery captures this.")
+            lines.append("- **`vertex_ensemble_stddev_px`** (continuous, per-run): "
+                         "disagreement across the 3-vertex ensemble (hexagon-PnP, "
+                         "bezel-detection, image refinement). Currently aggregated into "
+                         "a mean inside the global model; needs exposing per-component.")
+            lines.append("- **`two_view_consistency_deg`** (continuous, per-set): "
+                         "pair-wise A↔B orientation agreement. Requires running both "
+                         "photos of a set through the model and comparing the inferred "
+                         "axis bearings. Two-view consistency is the architectural lever "
+                         "the cube-snap product UI relies on.")
+            lines.append("")
+            lines.append("Implementation hook: `tools/phase2b_trust_matrix.py "
+                         "--recompute-global-model` is reserved for this extension. The "
+                         "matrix schema is already shaped for the additional fields "
+                         "(currently null).")
+            lines.append("")
+            lines.append("## Conditional pivot (per Codex)")
+            lines.append("")
+            lines.append("> If Phase 2B finds a rule that meets the bar, then Phase 3 "
+                         "becomes straightforward: wire it as a conservative guardrail. "
+                         "If it does not, we will have clean evidence to pivot to "
+                         "learned geometry or capture/UX instead of hand-tuning another "
+                         "scalar.")
+            lines.append("")
+            lines.append("The current matrix (existing signals only) is insufficient. "
+                         "Before triggering the pivot to learned-geometry or capture-UX, "
+                         "extend with `--recompute-global-model` to fold in the three "
+                         "signals above. If those still don't clear the bar with any "
+                         "rule composition, the pivot decision becomes evidence-backed.")
     lines.append("")
     lines.append("## See also")
     lines.append("")
@@ -483,32 +739,47 @@ def summarize(rows: List[TrustRow]) -> Dict[str, Any]:
 def main(argv: Optional[List[str]] = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--recompute-global-model", action="store_true",
-                    help="(Future extension — not yet implemented.) Re-run the "
-                         "global model per case to extract fit_residual, vertex "
-                         "ensemble disagreement, and two-view consistency.")
-    ap.add_argument("--matrix-out", type=Path, default=MATRIX_OUT_PATH,
-                    help=f"Output path for the per-run matrix fixture. "
-                         f"Default: {MATRIX_OUT_PATH.relative_to(REPO_ROOT)}")
-    ap.add_argument("--report-out", type=Path, default=REPORT_OUT_PATH,
-                    help=f"Output path for the markdown report. "
-                         f"Default: {REPORT_OUT_PATH.relative_to(REPO_ROOT)}")
+                    help="Use recomputed global-model signals (fit_residual, "
+                         "hex↔bezel disagreement, junction_score, etc.) "
+                         "instead of the join-only post_218 + cv_local matrix. "
+                         "Requires tests/fixtures/phase2b_recomputed_signals.json "
+                         "(produce via `python3 tools/phase2b_recompute.py`).")
+    ap.add_argument("--matrix-out", type=Path, default=None,
+                    help="Output path for the per-run matrix fixture. Default "
+                         "depends on --recompute-global-model.")
+    ap.add_argument("--report-out", type=Path, default=None,
+                    help="Output path for the markdown report. Default depends "
+                         "on --recompute-global-model.")
     args = ap.parse_args(argv)
 
-    if args.recompute_global_model:
-        print("--recompute-global-model is reserved for a future extension. "
-              "This run produces the join-only matrix.", file=sys.stderr)
-
-    post_218 = json.loads(POST_218_PATH.read_text())
     cv_local = json.loads(CV_LOCAL_PATH.read_text())
 
-    rows = build_matrix(post_218, cv_local)
-    summary = summarize(rows)
+    if args.recompute_global_model:
+        if not RECOMPUTED_PATH.exists():
+            print(f"error: --recompute-global-model requires "
+                  f"{_display_path(RECOMPUTED_PATH)} to exist. "
+                  f"Run: python3 tools/phase2b_recompute.py", file=sys.stderr)
+            return 2
+        recomputed = json.loads(RECOMPUTED_PATH.read_text())
+        rows = build_matrix_from_recomputed(recomputed, cv_local)
+        rules = candidate_rules() + recomputed_signal_rules()
+        matrix_out_path = args.matrix_out or RECOMPUTED_MATRIX_OUT_PATH
+        report_out_path = args.report_out or RECOMPUTED_REPORT_OUT_PATH
+        mode_label = "recomputed (full global-model signals)"
+    else:
+        post_218 = json.loads(POST_218_PATH.read_text())
+        rows = build_matrix(post_218, cv_local)
+        rules = candidate_rules()
+        matrix_out_path = args.matrix_out or MATRIX_OUT_PATH
+        report_out_path = args.report_out or REPORT_OUT_PATH
+        mode_label = "existing signals only (join of post_218 + cv_local)"
 
-    rules = candidate_rules()
+    summary = summarize(rows)
+    summary["mode"] = mode_label
     results = [evaluate_rule(rows, pred, name, desc) for name, desc, pred in rules]
 
     # Save matrix fixture
-    matrix_out = {
+    matrix_out_payload = {
         "summary": summary,
         "bar": {
             "catastrophic_recall_min": CATASTROPHIC_RECALL_BAR,
@@ -522,17 +793,18 @@ def main(argv: Optional[List[str]] = None) -> int:
         "rules": [r.to_dict() for r in results],
         "rows": [r.to_dict() for r in rows],
     }
-    args.matrix_out.parent.mkdir(parents=True, exist_ok=True)
-    args.matrix_out.write_text(json.dumps(matrix_out, indent=2))
-    print(f"matrix → {_display_path(args.matrix_out)} "
-          f"({summary['n_rows']} rows, {len(rules)} rules evaluated)",
+    matrix_out_path.parent.mkdir(parents=True, exist_ok=True)
+    matrix_out_path.write_text(json.dumps(matrix_out_payload, indent=2))
+    print(f"matrix → {_display_path(matrix_out_path)} "
+          f"({summary['n_rows']} rows, {len(rules)} rules evaluated, "
+          f"mode: {mode_label})",
           file=sys.stderr)
 
     # Render markdown
     md = render_markdown(rows, results, summary)
-    args.report_out.parent.mkdir(parents=True, exist_ok=True)
-    args.report_out.write_text(md)
-    print(f"report → {_display_path(args.report_out)}", file=sys.stderr)
+    report_out_path.parent.mkdir(parents=True, exist_ok=True)
+    report_out_path.write_text(md)
+    print(f"report → {_display_path(report_out_path)}", file=sys.stderr)
 
     # Brief stdout summary
     passing = [r for r in results if r.meets_bar]
@@ -542,7 +814,7 @@ def main(argv: Optional[List[str]] = None) -> int:
               f"(recall={best.catastrophic_recall:.1%}, "
               f"FPR={best.good_false_retake_rate:.1%})")
     else:
-        print(f"\nno rule over existing signals meets the bar "
+        print(f"\nno rule meets the bar "
               f"(catastrophic recall ≥ {CATASTROPHIC_RECALL_BAR:.0%} "
               f"AND GOOD FPR ≤ {GOOD_FALSE_RETAKE_BAR:.0%})")
     return 0

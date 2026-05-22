@@ -113,6 +113,10 @@
       "Bash(.venv/bin/pip list:*)",
       "Bash(.venv/bin/pip show:*)",
 
+      "Bash(curl -sSL -o /tmp/sam2_checkpoints/:*)",
+      "Bash(curl -L -o /tmp/sam2_checkpoints/:*)",
+      "Bash(curl -o /tmp/sam2_checkpoints/:*)",
+
       "Bash(python3 -m pytest:*)",
       "Bash(python3 -m py_compile:*)",
       "Bash(python3 -m json.tool:*)",

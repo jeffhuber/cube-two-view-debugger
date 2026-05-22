@@ -4,3 +4,5 @@ __pycache__/
 .venv/
 /tmp/
 runs/
+.DS_Store
+.claude/worktrees/

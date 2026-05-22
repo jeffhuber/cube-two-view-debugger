@@ -340,8 +340,11 @@ def _fetch_base_ref(local_repo: Path, base_ref: str) -> None:
     to update the corresponding tracking ref.
     """
     # Parse `origin/<branch>` or fall back to the full ref string.
+    # Codex meta-review round 2 — P2: avoid str.removeprefix() (Python 3.9+
+    # only). The repo's local `python3` is 3.7, and we don't want this
+    # tool to require .venv just to extract a branch name.
     if "/" in base_ref and base_ref.startswith("origin/"):
-        remote_branch = base_ref.removeprefix("origin/")
+        remote_branch = base_ref[len("origin/"):]
         subprocess.run(
             ["git", "-C", str(local_repo), "fetch", "origin", remote_branch],
             check=True, capture_output=True, text=True,

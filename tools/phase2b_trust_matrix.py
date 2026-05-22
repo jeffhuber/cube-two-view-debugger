@@ -546,10 +546,24 @@ def render_markdown(
                  f"**{summary['n_marginal']} MARGINAL**, "
                  f"**{summary['n_catastrophic']} CATASTROPHIC**")
     lines.append("")
-    lines.append("Joined from `tests/fixtures/post_218_baseline.json` (per-run "
-                 "phase_sep + outcome category) and `tests/fixtures/"
-                 "cv_local_baseline.json` (per-case cv-local face-quad "
-                 "structural status).")
+    if "recomputed" in summary.get("mode", "").lower():
+        lines.append("**Source**: `tests/fixtures/phase2b_recomputed_signals.json` "
+                     "(per-run global-model re-fit on the 58-case axis-labeled "
+                     "gallery, capturing `fit_residual_rms_px`, `pnp_rms_px`, "
+                     "`hexagon_centroid_vs_bezel_vertex_offset_px`, "
+                     "`junction_score_at_ensemble`, `ensemble_shift_px`, and "
+                     "`phase_darkness_separation` at native precision) joined "
+                     "with `tests/fixtures/cv_local_baseline.json` (per-case "
+                     "cv-local face-quad structural status). "
+                     "Outcome counts differ from `post_218_baseline.json` "
+                     "(74/22/20 vs 76/16/24) because the re-fit is "
+                     "non-deterministic (PnP basin-of-attraction) and runs "
+                     "are paired with the signals from the same fit.")
+    else:
+        lines.append("Joined from `tests/fixtures/post_218_baseline.json` (per-run "
+                     "phase_sep + outcome category) and `tests/fixtures/"
+                     "cv_local_baseline.json` (per-case cv-local face-quad "
+                     "structural status).")
     lines.append("")
     lines.append("## Candidate rule evaluation")
     lines.append("")

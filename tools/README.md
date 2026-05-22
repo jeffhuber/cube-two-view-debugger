@@ -140,10 +140,11 @@
 |---|---|
 | `devin_audit_bridge.py` | Bridge from PR events → Devin audit dispatch. **Mirrored byte-identical with `cube-snap/tools/`.** |
 | `devin_audit_labeler.py` | Apply `devin-audit-done` / `devin-audit-blocked` labels based on Devin's audit trailer. **Mirrored byte-identical with `cube-snap/tools/`.** |
-| `qwen_audit_pr.py` / `qwen_audit_bridge.py` | Qwen audit lane CLI + polling daemon. Calls local LM Studio. **Mirrored byte-identical.** Calibration-phase informational only. |
+| `qwen_audit_pr.py` / `qwen_audit_bridge.py` | Qwen audit lane CLI + polling daemon (local LM Studio). **Mirrored byte-identical.** Calibration-phase informational only. |
 | `qwen_audit_labeler.py` | Apply `qwen-audit-{done,blocked,needs}` labels. **Mirrored byte-identical.** |
 | `codex_audit_pr.py` | Codex audit lane CLI. Invokes `codex review --base origin/main` against a worktree at PR head; parses `[P0]/[P1]/[P2]/[P3]` severity tags; posts comment with `CODEX_AUDIT_STATE` trailer. **Mirrored byte-identical.** Calibration-phase informational only. See `tools/CODEX_AUDIT_PROTOCOL.md`. |
 | `codex_audit_labeler.py` | Apply `codex-audit-{done,blocked,needs}` labels. **Mirrored byte-identical.** |
+| `greptile_audit_labeler.py` | Apply `greptile-audit-{done,blocked,needs}` labels by parsing P0/P1/P2/P3 severity badges in Greptile's inline review comments. Fires on `pull_request_review` events from `greptile-apps[bot]`. **Mirrored byte-identical.** Calibration-phase informational only. Dormant until Greptile GitHub App is installed. See `tools/GREPTILE_AUDIT_PROTOCOL.md`. |
 | `view_photo.py` | EXIF-correct + view a photo (works around Read tool's raw-pixel quirk). |
 
 ### 🟡 Historical — vertex-localizer probes (negative results, kept for memory)

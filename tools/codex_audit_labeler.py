@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Apply Codex audit result labels from Codex-bot PR comments.
 
-Parallels `devin_audit_labeler.py` and `qwen_audit_labeler.py` for the
-informational calibration phase. Same label state-machine shape, different
-label prefix and bot author. Codex audit empirically catches real bugs the
-other reviewers miss (PR #233 calibration: 6 real findings vs Devin's
-final-state-PASS and Qwen's 7 false positives) — but it currently does NOT
-authorize Claude's standing in-thread merge delegation. See
+Parallels `devin_audit_labeler.py`. Same label state-machine shape,
+different label prefix and bot author. Codex audit empirically catches
+real bugs the other reviewers miss (PR #233 calibration: 6 real findings
+vs Devin's final-state-PASS and Qwen's 7 false positives), and is now
+the **preferred** merge-authority signal — Claude's standing in-thread
+merge delegation accepts EITHER `codex-audit-done` OR `devin-audit-done`
++ CLEAN, with Codex's verdict leading when both are available. See
 `tools/CODEX_AUDIT_PROTOCOL.md`.
 
 Trailer protocol (machine-readable, authoritative over prose):

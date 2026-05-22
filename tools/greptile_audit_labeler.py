@@ -412,6 +412,50 @@ def resolve_label_decision(
 # ----- CLI entry point (run inside the GitHub Action) -----
 
 
+def _fail_closed_requeue(
+    *,
+    repo: str,
+    event: Dict[str, Any],
+    review: Dict[str, Any],
+    pr_labels: List[str],
+    reason: str,
+    token: Optional[str],
+) -> int:
+    """Re-apply `needs-greptile-audit` after author + opt-in gates pass.
+
+    Used by paths where we cannot fully classify the review (missing
+    `review.id` in the event payload, pagination cap hit, etc.).
+    Replicates the same author + opt-in gates that `resolve_label_decision`
+    enforces, so a non-Greptile review or a non-opted-in PR can never
+    mutate labels via the fail-closed path.
+    """
+    review_author = (review.get("user") or {}).get("login", "")
+    if not is_greptile_review_author(review_author):
+        print(f"skip fail-closed: review author "
+              f"{review_author!r} is not a Greptile bot")
+        return 0
+    pr_labels_set = set(pr_labels) if pr_labels else set()
+    if not (pr_labels_set & {NEEDS_LABEL, DONE_LABEL, BLOCKED_LABEL}):
+        print(f"skip fail-closed: PR has no "
+              f"greptile-audit-* label (not opted in)")
+        return 0
+    issue_number = (event.get("pull_request") or {}).get("number")
+    if issue_number:
+        apply_label_decision(
+            repo,
+            LabelDecision(
+                issue_number=int(issue_number),
+                add_label=NEEDS_LABEL,
+                remove_labels=(DONE_LABEL, BLOCKED_LABEL),
+                reviewed_sha=(review.get("commit_id") or None),
+                reason=reason,
+            ),
+            token=token or "",
+        )
+        print(f"applied (fail-closed): add {NEEDS_LABEL} ({reason})")
+    return 0
+
+
 def main() -> int:
     event_path = Path(os.environ["GITHUB_EVENT_PATH"])
     repo = os.environ["GITHUB_REPOSITORY"]
@@ -444,48 +488,49 @@ def main() -> int:
         current_head_sha = pr_current.get("head", {}).get("sha")
         review = event.get("review") or {}
         review_id = review.get("id")
-        if review_id:
-            try:
-                review_comments = fetch_review_comments(
-                    repo, pr_number, review_id, token=token or "",
-                )
-            except ReviewCommentsTruncated as exc:
-                # Codex PR #235 — P2 (round 2): hitting the pagination
-                # safety cap means we cannot classify on complete data.
-                # Fail closed to needs-greptile-audit, surfacing the
-                # cause in the apply log.
-                #
-                # Codex PR #235 — P3 (round 3): the fallback must
-                # respect the same author/opt-in gates that
-                # `resolve_label_decision` enforces. Otherwise a
-                # non-Greptile review or non-opted-in PR could
-                # mutate labels on the truncation path.
-                print(f"warn: review comments truncated — {exc}", file=sys.stderr)
-                review_author = (review.get("user") or {}).get("login", "")
-                if not is_greptile_review_author(review_author):
-                    print(f"skip truncation fallback: review author "
-                          f"{review_author!r} is not a Greptile bot")
-                    return 0
-                pr_labels_set = set(pr_labels) if pr_labels else set()
-                if not (pr_labels_set & {NEEDS_LABEL, DONE_LABEL, BLOCKED_LABEL}):
-                    print(f"skip truncation fallback: PR has no "
-                          f"greptile-audit-* label (not opted in)")
-                    return 0
-                issue_number = (event.get("pull_request") or {}).get("number")
-                if issue_number:
-                    apply_label_decision(
-                        repo,
-                        LabelDecision(
-                            issue_number=int(issue_number),
-                            add_label=NEEDS_LABEL,
-                            remove_labels=(DONE_LABEL, BLOCKED_LABEL),
-                            reviewed_sha=(review.get("commit_id") or None),
-                            reason=f"pagination truncated: {exc}",
-                        ),
-                        token=token or "",
-                    )
-                    print(f"applied (fail-closed): add {NEEDS_LABEL}")
-                return 0
+        if not review_id:
+            # Devin audit on cube-snap #145 — missing `review.id` in the
+            # event payload (malformed event, mock, redelivery oddity)
+            # means we cannot fetch the inline comments needed to score
+            # severity. Previously `review_comments` stayed `[]` and
+            # fell through to `resolve_label_decision`, which classifies
+            # empty comments as a clean review and applies
+            # `greptile-audit-done` — false-PASS on incomplete data.
+            # Fail closed to needs-greptile-audit instead.
+            print("warn: review.id missing from event — "
+                  "cannot fetch inline comments", file=sys.stderr)
+            return _fail_closed_requeue(
+                repo=repo,
+                event=event,
+                review=review,
+                pr_labels=pr_labels,
+                reason="review.id missing from event payload",
+                token=token,
+            )
+        try:
+            review_comments = fetch_review_comments(
+                repo, pr_number, review_id, token=token or "",
+            )
+        except ReviewCommentsTruncated as exc:
+            # Codex PR #235 — P2 (round 2): hitting the pagination
+            # safety cap means we cannot classify on complete data.
+            # Fail closed to needs-greptile-audit, surfacing the
+            # cause in the apply log.
+            #
+            # Codex PR #235 — P3 (round 3): the fallback must
+            # respect the same author/opt-in gates that
+            # `resolve_label_decision` enforces. Otherwise a
+            # non-Greptile review or non-opted-in PR could
+            # mutate labels on the truncation path.
+            print(f"warn: review comments truncated — {exc}", file=sys.stderr)
+            return _fail_closed_requeue(
+                repo=repo,
+                event=event,
+                review=review,
+                pr_labels=pr_labels,
+                reason=f"pagination truncated: {exc}",
+                token=token,
+            )
 
     decision, reason = resolve_label_decision(
         event,

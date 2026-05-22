@@ -420,6 +420,90 @@ def test_fetch_review_comments_filters_by_review_id(monkeypatch):
     assert result[0]["body"] == "the one we want"
 
 
+# ----- Fail-closed helper (missing review.id + truncation paths) -----
+
+
+def _bootstrap_fail_closed_call(monkeypatch, *, review_user_login, pr_labels):
+    """Drive `_fail_closed_requeue` with the same gates the production
+    path runs, capturing whether `apply_label_decision` was called.
+
+    Returns (rc, called) where rc is the function return code and
+    called is True iff a label POST was issued.
+    """
+    called: List[bool] = []
+    monkeypatch.setattr(
+        g, "apply_label_decision",
+        lambda repo, decision, token: called.append(True),
+    )
+    event = {
+        "pull_request": {"number": 42},
+        "review": {
+            "id": 1234,
+            "user": {"login": review_user_login},
+            "commit_id": "abc123",
+        },
+    }
+    rc = g._fail_closed_requeue(
+        repo="o/r",
+        event=event,
+        review=event["review"],
+        pr_labels=list(pr_labels),
+        reason="test",
+        token="x",
+    )
+    return rc, bool(called)
+
+
+def test_fail_closed_requeue_applies_label_when_gates_pass(monkeypatch):
+    """Greptile bot + opted-in PR: fail-closed re-applies needs-greptile-audit."""
+    rc, called = _bootstrap_fail_closed_call(
+        monkeypatch,
+        review_user_login="greptile-apps[bot]",
+        pr_labels=[g.NEEDS_LABEL],
+    )
+    assert rc == 0
+    assert called is True
+
+
+def test_fail_closed_requeue_skips_when_not_greptile_author(monkeypatch):
+    """Non-Greptile reviewer: fail-closed does NOT touch labels even
+    if the PR is opted in. Prevents arbitrary reviewers from forcing
+    re-queue via a malformed/missing review.id event."""
+    rc, called = _bootstrap_fail_closed_call(
+        monkeypatch,
+        review_user_login="some-human",
+        pr_labels=[g.NEEDS_LABEL],
+    )
+    assert rc == 0
+    assert called is False
+
+
+def test_fail_closed_requeue_skips_when_not_opted_in(monkeypatch):
+    """PR carries no greptile-audit-* label: fail-closed is a no-op.
+    Greptile auto-fires on every PR but only opted-in PRs participate."""
+    rc, called = _bootstrap_fail_closed_call(
+        monkeypatch,
+        review_user_login="greptile-apps[bot]",
+        pr_labels=[],
+    )
+    assert rc == 0
+    assert called is False
+
+
+def test_fail_closed_requeue_accepts_done_or_blocked_as_opt_in(monkeypatch):
+    """After the first Greptile review flips needs→done, a subsequent
+    truncated/missing-id review should still requeue via fail-closed.
+    Mirror of the Gate-1 fix that accepts any greptile-audit-* label."""
+    for prior in (g.DONE_LABEL, g.BLOCKED_LABEL):
+        rc, called = _bootstrap_fail_closed_call(
+            monkeypatch,
+            review_user_login="greptile-apps[bot]",
+            pr_labels=[prior],
+        )
+        assert rc == 0, f"prior={prior}"
+        assert called is True, f"prior={prior}"
+
+
 # ----- Author authority (env var override) -----
 
 

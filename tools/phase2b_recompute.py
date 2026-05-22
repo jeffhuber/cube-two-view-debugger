@@ -245,21 +245,29 @@ def recompute_all(
 
     summary = _summarize(by_case)
 
-    # Codex #233 round-4 P2: fail-fast if every case errored. `by_case` is
-    # non-empty (it has status="error" records) but n_runs (which counts only
-    # categorized OK rows) is 0. The downstream matrix builder would then skip
-    # every row and produce a valid-looking no-data benchmark.
-    if approved_keys and summary["n_runs"] == 0:
+    # Codex #233 round-4/6 P2: fail-fast if zero cases yielded a successful
+    # fit. `summary["n_runs"]` counts everything with a `category` field
+    # (including `status="model_fit_failed"` rows, which `_run_one_case`
+    # marks with category=TRUE_GEOMETRY_FAIL) — so it's NOT a clean proxy
+    # for "did any model actually fit". Count status=="ok" separately.
+    n_ok = sum(
+        1 for runs in by_case.values()
+        for r in runs if r.get("status") == "ok"
+    )
+    if approved_keys and n_ok == 0:
         n_errors = sum(
             1 for runs in by_case.values()
             for r in runs if r.get("status") == "error"
         )
+        n_failed = sum(
+            1 for runs in by_case.values()
+            for r in runs if r.get("status") == "model_fit_failed"
+        )
         raise RuntimeError(
-            f"recompute produced 0 OK runs out of {len(approved_keys)} approved "
-            f"cases (errors: {n_errors}, model_fit_failed: "
-            f"{sum(1 for runs in by_case.values() for r in runs if r.get('status') == 'model_fit_failed')}). "
+            f"recompute produced 0 successful fits out of {len(approved_keys)} "
+            f"approved cases (errors: {n_errors}, model_fit_failed: {n_failed}). "
             f"Diagnose recompute before trusting the matrix; refusing to write "
-            f"a zero-OK-run fixture."
+            f"a fixture with no continuous-signal data."
         )
 
     return {"summary": summary, "by_case": by_case}

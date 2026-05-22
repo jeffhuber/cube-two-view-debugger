@@ -88,11 +88,11 @@ Closest-to-bar rule: `phase_sep_alone_T15.0`
 
 ## Implications
 
-1. **One rule clears the recall bar but not FPR**: `phase_sep_alone_T20.0` hits 80% recall but at ~30% GOOD false-retake — way over the 10% bar. Loosening phase_sep high enough to catch all catastrophics necessarily catches many GOOD runs whose phase_sep happens to be small.
+1. **6 rule(s) clear the ≥80% recall bar, none also clear the ≤10% FPR bar.** Best (by recall − FPR margin): `phase_sep_alone_T20.0` at 80.0% recall / 31.1% FPR. Loosening retake thresholds high enough to catch all catastrophics necessarily also retakes many GOOD runs.
 
-2. **One compound clears the FPR bar but not recall**: `phaseANDcv_OR_ensemble_shift_T60.0` is the first compound rule to land UNDER the 10% FPR bar — at 50% recall. Layering ensemble_shift on top of the phase+cv AND-compound demonstrably reduces false retakes without inheriting the noise of cv-local-solo or `hex_bezel`. This is the most encouraging multi-signal compound yet, but recall is still 30 pp short of the bar.
+2. **19 rule(s) clear the ≤10% FPR bar, none also clear the ≥80% recall bar.** Best (by recall − FPR margin): `phaseANDcv_OR_ensemble_shift_T60.0` at 50.0% recall / 8.1% FPR. These are predominantly OR-compounds of the phase+cv AND-rule with a high-threshold continuous signal — they hold FPR down by being narrow but pay for it on recall.
 
-3. **No rule simultaneously clears both bars.** Hand-tuned thresholds and OR/AND compounds over 6 signals (phase_sep, cv-local, fit_residual, hex_bezel, ensemble_shift, junction_score) cannot get past the (≥80% recall AND ≤10% FPR) frontier on this 58-case eval.
+3. **No rule simultaneously clears both bars.** Hand-tuned thresholds and OR/AND compounds over 6 signals (phase_sep, cv-local, fit_residual, hex_bezel, ensemble_shift, junction_score, pnp_rms) cannot get past the (≥80% recall AND ≤10% FPR) frontier on this 58-case eval.
 
 4. **fit_residual_rms_px is weaker than expected**: alone, the best fit-residual rule is `T120.0` at 45% recall / 12.2% FPR — close to but not better than `phase_sep_T11.7`. Fit quality and outcome-correctness correlate but the thresholds don't separate cleanly.
 

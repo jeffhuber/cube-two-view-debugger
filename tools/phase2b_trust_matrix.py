@@ -661,27 +661,49 @@ def render_markdown(
         lines.append("")
         if "recomputed" in summary.get("mode", "").lower():
             # ----- Recomputed-mode implications -----
+            # Codex #233 round-7 P2: derive these from `results` instead of
+            # hardcoding rule names, so the report stays consistent with the
+            # actual rule table as the rule set grows.
+            recall_clearers = [
+                r for r in results
+                if r.catastrophic_recall >= CATASTROPHIC_RECALL_BAR
+            ]
+            fpr_clearers = [
+                r for r in results
+                if r.good_false_retake_rate <= GOOD_FALSE_RETAKE_BAR
+            ]
+            best_recall = max(recall_clearers,
+                              key=lambda r: r.catastrophic_recall - r.good_false_retake_rate,
+                              default=None)
+            best_fpr = max(fpr_clearers,
+                           key=lambda r: r.catastrophic_recall - r.good_false_retake_rate,
+                           default=None)
+
             lines.append("## Implications")
             lines.append("")
-            lines.append("1. **One rule clears the recall bar but not FPR**: "
-                         "`phase_sep_alone_T20.0` hits 80% recall but at ~30% GOOD "
-                         "false-retake — way over the 10% bar. Loosening phase_sep "
-                         "high enough to catch all catastrophics necessarily catches "
-                         "many GOOD runs whose phase_sep happens to be small.")
+            lines.append(f"1. **{len(recall_clearers)} rule(s) clear the ≥{CATASTROPHIC_RECALL_BAR:.0%} "
+                         f"recall bar, none also clear the ≤{GOOD_FALSE_RETAKE_BAR:.0%} FPR bar.** "
+                         + (f"Best (by recall − FPR margin): "
+                            f"`{best_recall.name}` at "
+                            f"{best_recall.catastrophic_recall:.1%} recall / "
+                            f"{best_recall.good_false_retake_rate:.1%} FPR. " if best_recall else "")
+                         + "Loosening retake thresholds high enough to catch all catastrophics "
+                         "necessarily also retakes many GOOD runs.")
             lines.append("")
-            lines.append("2. **One compound clears the FPR bar but not recall**: "
-                         "`phaseANDcv_OR_ensemble_shift_T60.0` is the first compound "
-                         "rule to land UNDER the 10% FPR bar — at 50% recall. "
-                         "Layering ensemble_shift on top of the phase+cv AND-compound "
-                         "demonstrably reduces false retakes without inheriting the "
-                         "noise of cv-local-solo or `hex_bezel`. This is the most "
-                         "encouraging multi-signal compound yet, but recall is still "
-                         "30 pp short of the bar.")
+            lines.append(f"2. **{len(fpr_clearers)} rule(s) clear the ≤{GOOD_FALSE_RETAKE_BAR:.0%} FPR "
+                         f"bar, none also clear the ≥{CATASTROPHIC_RECALL_BAR:.0%} recall bar.** "
+                         + (f"Best (by recall − FPR margin): "
+                            f"`{best_fpr.name}` at "
+                            f"{best_fpr.catastrophic_recall:.1%} recall / "
+                            f"{best_fpr.good_false_retake_rate:.1%} FPR. " if best_fpr else "")
+                         + "These are predominantly OR-compounds of the phase+cv AND-rule with "
+                         "a high-threshold continuous signal — they hold FPR down by being "
+                         "narrow but pay for it on recall.")
             lines.append("")
             lines.append("3. **No rule simultaneously clears both bars.** "
                          "Hand-tuned thresholds and OR/AND compounds over 6 signals "
                          "(phase_sep, cv-local, fit_residual, hex_bezel, "
-                         "ensemble_shift, junction_score) cannot get past the "
+                         "ensemble_shift, junction_score, pnp_rms) cannot get past the "
                          "(≥80% recall AND ≤10% FPR) frontier on this 58-case eval.")
             lines.append("")
             lines.append("4. **fit_residual_rms_px is weaker than expected**: alone, "

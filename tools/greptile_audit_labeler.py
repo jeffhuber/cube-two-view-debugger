@@ -150,13 +150,17 @@ class GreptileVerdict:
 
     def classify(self) -> str:
         """Return 'done', 'blocked', or 'needs' (the latter means
-        fail-closed because format couldn't be parsed)."""
-        # If we got inline comments but couldn't parse any severity badges,
-        # fail closed — format may have drifted.
-        if self.total_comments > 0 and (
-            self.p0_count == 0 and self.p1_count == 0
-            and self.p2_count == 0 and self.p3_count == 0
-        ):
+        fail-closed because format couldn't be parsed).
+
+        Codex review of PR #235 — P2 (round 1): ANY unparsed comment
+        triggers fail-closed, not only the all-unparsed case. Each
+        unparsed inline comment is unknown signal — could be a
+        malformed P0/P1 the regex missed. Requeueing is the
+        conservative choice; the original 'use what we got'
+        semantics could silently ignore a drifted blocker if the
+        same review also contained a parseable P2/P3 alongside it.
+        """
+        if self.unparsed_count > 0:
             return "needs"
         if self.blocker_count > 0:
             return "blocked"
@@ -227,15 +231,32 @@ def fetch_review_comments(
 ) -> List[Dict[str, Any]]:
     """Fetch inline review comments that belong to a specific review.
 
-    GitHub's `/pulls/{n}/comments` lists ALL inline comments on the PR.
-    Each has a `pull_request_review_id` field; we filter to the ones
-    that belong to the review we're labeling for.
+    GitHub's `/pulls/{n}/comments` lists ALL inline comments on the PR
+    (paginated, 100/page). Each has a `pull_request_review_id` field;
+    we filter to the ones that belong to the review we're labeling for.
+
+    Codex review of PR #235 — P2 (round 1): paginate explicitly.
+    Without this, a PR with >100 prior inline comments OR a Greptile
+    review with >100 findings would miss target comments on later
+    pages — a P0/P1 on page 2 would be invisible and the labeler
+    would auto-apply `greptile-audit-done`.
     """
-    all_comments = github_request(
-        "GET",
-        f"/repos/{repo}/pulls/{pr_number}/comments?per_page=100",
-        token=token,
-    ) or []
+    all_comments: List[Dict[str, Any]] = []
+    page = 1
+    # Cap at 5 pages = 500 comments. Greptile reviews with >500 findings
+    # are degenerate; treat as a separate failure mode.
+    while page <= 5:
+        chunk = github_request(
+            "GET",
+            f"/repos/{repo}/pulls/{pr_number}/comments?per_page=100&page={page}",
+            token=token,
+        ) or []
+        if not chunk:
+            break
+        all_comments.extend(chunk)
+        if len(chunk) < 100:
+            break
+        page += 1
     return [c for c in all_comments if c.get("pull_request_review_id") == review_id]
 
 

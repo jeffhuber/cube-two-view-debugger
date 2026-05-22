@@ -155,18 +155,42 @@ def test_classify_format_drift_fails_closed():
     assert v.unparsed_count == 2
 
 
-def test_classify_mixed_parsed_and_unparsed_still_uses_parsed():
-    """If SOME comments are parseable, use those to classify. Only
-    fail closed when NONE are parseable."""
+def test_classify_mixed_parsed_and_unparsed_fails_closed():
+    """Codex review of PR #235 — P2 (round 1): ANY unparsed comment
+    triggers fail-closed, not only the all-unparsed case. Rationale:
+    an unparsed comment could be a malformed P0/P1 the regex missed;
+    requeueing is conservative; trusting the parseable subset alone
+    could silently ignore a drifted blocker.
+
+    Updated from the original test (which asserted 'use what we got')
+    — the new policy is stricter."""
     comments = [
         {"body": _REAL_P1_BODY},  # parseable P1
         {"body": "Unrecognizable format"},  # unparsed
     ]
     v = g.parse_review_comments(comments)
-    # P1 → blocked. We have signal; don't fail closed.
-    assert v.classify() == "blocked"
+    # New policy: ANY unparsed → fail closed (needs).
+    assert v.classify() == "needs"
     assert v.p1_count == 1
     assert v.unparsed_count == 1
+
+
+def test_classify_one_unparsed_alone_still_fails_closed():
+    """Single unparsed comment → needs (was already covered; restates
+    after the policy change)."""
+    v = g.parse_review_comments([{"body": "unknown format"}])
+    assert v.classify() == "needs"
+
+
+def test_classify_unparsed_alongside_p3_only_fails_closed():
+    """P3-only + 1 unparsed → needs (the unparsed could be a hidden
+    P0/P1). Used to be 'done' under old policy."""
+    comments = [
+        {"body": '<img alt="P3"> nit'},
+        {"body": "drifted-format comment"},
+    ]
+    v = g.parse_review_comments(comments)
+    assert v.classify() == "needs"
 
 
 # ----- Decision logic (gates 1-4) -----
@@ -293,6 +317,57 @@ def test_decision_p2_p3_only_is_done():
     assert decision.add_label == g.DONE_LABEL
     assert "P2=1" in decision.reason
     assert "P3=1" in decision.reason
+
+
+# ----- Pagination -----
+
+
+def test_fetch_review_comments_paginates_until_empty(monkeypatch):
+    """Codex PR #235 P2 (round 1): fetch_review_comments must paginate.
+    Without pagination, a PR with >100 inline comments could have its
+    target Greptile review comments on page 2+ — and the labeler would
+    label `greptile-audit-done` for a P0/P1 it never saw."""
+    # Simulate two full pages + a partial third page.
+    page_1 = [{"pull_request_review_id": 999, "body": "comment a"}] * 100
+    page_2 = [{"pull_request_review_id": 999, "body": "comment b"}] * 100
+    page_3 = [{"pull_request_review_id": 999, "body": "comment c"}] * 30
+    pages = [page_1, page_2, page_3]
+
+    fetch_calls: List[str] = []
+
+    def fake_github_request(method, path, *, token, **_kw):
+        fetch_calls.append(path)
+        # Extract `&page=N` from the query string (regex anchored to `&`
+        # so it doesn't accidentally match `per_page=100`'s `page=100`).
+        import re
+        m = re.search(r"&page=(\d+)", path)
+        page_num = int(m.group(1)) if m else 1
+        return pages[page_num - 1] if page_num - 1 < len(pages) else []
+
+    monkeypatch.setattr(g, "github_request", fake_github_request)
+    result = g.fetch_review_comments("owner/repo", 42, 999, token="x")
+    # All 230 comments fetched + filtered (all matched review 999).
+    assert len(result) == 230
+    # Made 3 page fetches (stopped after partial page 3).
+    assert len(fetch_calls) == 3
+    assert all("per_page=100" in c for c in fetch_calls)
+    assert "page=1" in fetch_calls[0]
+    assert "page=2" in fetch_calls[1]
+    assert "page=3" in fetch_calls[2]
+
+
+def test_fetch_review_comments_filters_by_review_id(monkeypatch):
+    """Verify the filter still works with the new paginated fetch."""
+    page_1 = [
+        {"pull_request_review_id": 111, "body": "from review 111"},
+        {"pull_request_review_id": 222, "body": "from review 222"},
+        {"pull_request_review_id": 999, "body": "the one we want"},
+    ]
+    monkeypatch.setattr(g, "github_request",
+                        lambda *a, **k: page_1 if "page=1" in a[1] else [])
+    result = g.fetch_review_comments("owner/repo", 1, 999, token="x")
+    assert len(result) == 1
+    assert result[0]["body"] == "the one we want"
 
 
 # ----- Author authority (env var override) -----

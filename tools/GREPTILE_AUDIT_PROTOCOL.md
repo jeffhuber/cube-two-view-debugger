@@ -2,8 +2,10 @@
 
 ## Status
 
-**Labeler implemented; dormant until Greptile GitHub App is installed.**
-Four-way bake-off with Devin + Qwen + Codex during the next ~20 PRs.
+**Live on cube-snap (free OSS tier); ctvd not yet installed.**
+Three-way bake-off with Devin + Codex during the next ~20 PRs (Qwen
+was originally in the bake-off but is currently paused — see
+`tools/CODEX_AUDIT_PROTOCOL.md` for the empirical reasoning).
 Claude's standing in-thread merge delegation stays on
 `devin-audit-done` + CLEAN; Greptile's verdict is purely calibration
 data, no merge authority.
@@ -18,13 +20,13 @@ installed, the labeler workflow doesn't fire (no events to react to).
 
 Cost vs. quality trade-off:
 
-| | Devin | Qwen (local) | Greptile |
-|---|---|---|---|
-| Cost | ~$500/mo serious use | free | $30/seat/mo (50 reviews) OR free for OSS w/ MIT |
-| Where it runs | cloud | user's machine | cloud |
-| Codebase context | what bridge sends | what CLI sends (full files, post-v2) | **graph-indexed whole repo** |
-| Convention learning | re-prompt each PR | re-prompt each PR | claims to learn from review-comment history |
-| Setup work for us | bridge + labeler + workflow | bridge + CLI + labeler + workflow | labeler only (no bridge — SaaS) |
+| | Devin | Codex (local) | Qwen (paused) | Greptile |
+|---|---|---|---|---|
+| Cost | ~$500/mo serious use | paid per OpenAI pricing | free | $30/seat/mo (50 reviews) OR free for OSS w/ MIT |
+| Where it runs | cloud | user's machine (Codex CLI subprocess) | user's machine (LM Studio) | cloud |
+| Codebase context | what bridge sends | real git worktree at head SHA | what CLI sends (full files, post-v2) | **graph-indexed whole repo** |
+| Convention learning | re-prompt each PR | re-prompt each PR | re-prompt each PR | claims to learn from review-comment history |
+| Setup work for us | bridge + labeler + workflow | CLI + labeler + workflow | bridge + CLI + labeler + workflow | labeler only (no bridge — SaaS) |
 
 The unique value vs. our existing two: graph-indexed cross-file context
 (can catch "you changed X but didn't update its caller Y in another file"
@@ -102,7 +104,7 @@ silent false-PASS on format drift or stale reviews:
      below)
 
 **Comparison tool:** `tools/audit_bakeoff_compare.py` (new) pulls
-Devin / Qwen / Greptile verdicts from the last N closed PRs and
+Devin / Codex / Greptile verdicts from the last N closed PRs and
 produces:
 
 - 3-way agreement matrix
@@ -141,7 +143,7 @@ exist) or the per-file Qwen response fixtures.
 
 | File | Purpose |
 |---|---|
-| `tools/greptile_audit_labeler.py` | Parses Greptile's review, counts P1s, applies label. Mirrors `qwen_audit_labeler.py` structure. |
+| `tools/greptile_audit_labeler.py` | Parses Greptile's review, counts P1s, applies label. Same labeler-pattern shape as the Devin / Codex labelers. |
 | `.github/workflows/greptile-audit-labeler.yml` | Triggers on `pull_request_review` from `greptile-apps[bot]`. |
 | `tools/GREPTILE_AUDIT_PROTOCOL.md` | This document, finalized. |
 | `tests/test_greptile_audit_labeler.py` | Fixture-driven unit tests on real Greptile comment bodies (with P1, P2, P3, mixed, none). |
@@ -171,31 +173,38 @@ The privacy decisions to make explicit before installing:
   from the cube-snap decision. Skipping ctvd is a viable bake-off
   config (cube-snap-only sample is smaller but still informative).
 
-## Setup required after merge (not in this PR)
+## Setup status
 
-1. **Install Greptile GitHub App on cube-snap first** (free OSS tier —
+Done:
+
+1. ✅ **Greptile GitHub App installed on cube-snap** (free OSS tier —
    cube-snap is MIT-licensed, qualifies per "free for qualified
    non-commercial projects with MIT, Apache, or GPL licenses").
+2. ✅ **Labels created** on cube-snap (`needs-greptile-audit` yellow,
+   `greptile-audit-done` green, `greptile-audit-blocked` red — colors
+   matching Devin / Codex for UI consistency). Also created on ctvd
+   even though the App isn't installed there, so they're ready if the
+   ctvd decision flips.
+3. ✅ **Labeler shipped** with the 4 defensive gates (opt-in,
+   stale-HEAD, severity-parse fail-closed, verdict). PR #145 + #145's
+   bootstrap-guard follow-up + the `review.id`-missing fail-closed fix
+   that Devin caught on the bootstrap PR.
+4. ✅ **Test fixtures captured** in
+   `tests/test_greptile_audit_labeler.py` — a real P1 finding body
+   from `ssvlabs/ssv` PR #2835 plus synthetic variants for P0/P2/P3,
+   no-marker, and pagination cases. The "fixture-driven dev" plan
+   above is implemented in those tests.
 
-2. **Capture real payload fixtures** (see "Fixture-driven dev" above)
-   from a low-risk PR before writing the labeler. Codex's recommended
-   implementation order: install → capture fixtures → write labeler
-   against fixtures → opt-in only → P0/P1 = blocked, P2/P3 = done →
-   informational for 10–20 PRs → build comparison report after data
-   is in.
+Remaining:
 
-3. **Decide ctvd:** see "Privacy / security tradeoff" above. Options:
-   - Skip ctvd, run bake-off on cube-snap only
+1. **Decide ctvd** (see "Privacy / security tradeoff" above). Options:
+   - Skip ctvd, run bake-off on cube-snap only (current default)
    - Pay $30/mo for the Pro seat (accept the cloud-storage tradeoff)
    - Apply for the early-stage startup 50% discount ($15/mo)
 
-4. **Create three labels** in each repo we install on:
-   `needs-greptile-audit` (yellow), `greptile-audit-done` (green),
-   `greptile-audit-blocked` (red) — colors matching Devin / Qwen for
-   UI consistency.
-
-5. **Add `.greptile/rules.md`** with our review protocol (per Codex's
-   recommendation):
+2. **Add `.greptile/rules.md`** with our review protocol (per Codex's
+   original recommendation; not strictly required to use the lane,
+   but improves signal):
    - focus on correctness, stale fixtures, generated-report
      consistency, missing tests, unsafe production behavior
    - ignore style-only nits unless they hide a bug
@@ -203,31 +212,34 @@ The privacy decisions to make explicit before installing:
      artifacts (the regression-gate convention already documented in
      `CLAUDE.md`)
    - for production recognizer changes, flag any confident-wrong risk
-   - same lane-discipline rules the Qwen prompt enforces
+   - same lane-discipline rules the Codex prompt enforces
 
-6. **Update Claude's PR-creation routine** to apply
+3. **Update Claude's PR-creation routine** to apply
    `needs-greptile-audit` alongside `needs-devin-audit` and
-   `needs-qwen-audit` during the bake-off, so the agreement matrix
+   `needs-codex-audit` during the bake-off, so the agreement matrix
    has 3 rows per PR. **Reminder:** the labeler only flips labels
    when `needs-greptile-audit` is present (opt-in gate), so this
    step is what actually puts a PR into the bake-off.
 
+4. **Build the comparison report** (`tools/audit_bakeoff_compare.py`)
+   after 10–20 opted-in PRs have accumulated data.
+
 ## Bake-off decision criteria (after ~20 PRs)
 
-Same shape as the Qwen calibration plan, generalized to 3 reviewers:
+Calibration plan (3 reviewers: Devin + Codex + Greptile):
 
 Greptile graduates to merge-authority eligibility when:
 
 - Agrees with Devin on every Devin-blocker (zero misses on real bugs)
 - False-positive rate (Greptile blocks, Devin clears) is below ~20%
 - Distinct value-add: catches at least one real bug that neither Devin
-  nor Qwen caught (otherwise it's redundant cost)
+  nor Codex caught (otherwise it's redundant cost)
 
 If Greptile graduates, the merge-delegation contract becomes
 `devin-audit-done` OR `greptile-audit-done` (per-PR — whichever fires
-first AND agrees with the local Qwen run).
+first AND agrees with the Codex run).
 
-If Qwen ALSO graduates: Devin can be retired entirely.
+If Codex ALSO graduates: Devin can be retired entirely.
 
 ## Open questions (resolve during fixture-capture phase)
 
@@ -273,7 +285,7 @@ control. Format changes, billing surprises, security incidents, and
 service outages are all real. The opt-in gate limits blast radius:
 worst case, the labeler stops working on PRs that have
 `needs-greptile-audit`, which leaves the PR's `needs-devin-audit` /
-`needs-qwen-audit` lanes intact.
+`needs-codex-audit` lanes intact.
 
 **Privacy risk: medium for cube-snap (public anyway), real for ctvd
 (private).** See "Privacy / security tradeoff" above. Listed as an
@@ -282,5 +294,8 @@ explicit decision rather than buried.
 ## See also
 
 - `tools/devin_audit_*.py` — the Devin protocol this parallels
-- `tools/qwen_audit_*.py` — the Qwen protocol this parallels
+- `tools/codex_audit_*.py` + `tools/CODEX_AUDIT_PROTOCOL.md` — the
+  Codex lane this runs alongside
+- `tools/qwen_audit_*.py` — the original Qwen lane this paralleled in
+  design (paused; files kept on disk so the lane is trivial to revive)
 - `tools/audit_bakeoff_compare.py` (planned) — the 3-way comparison tool

@@ -2,14 +2,18 @@
 
 ## Status
 
-**Informational only.** Codex runs as a 4th audit lane in parallel with
-Devin (cloud webhook), Qwen (local LM Studio), and Greptile (SaaS GitHub
-App). Claude's standing in-thread merge delegation authorizes merge on
-`devin-audit-done` + CLEAN — it does NOT yet authorize merge on
-`codex-audit-done`. The user may extend the delegation after enough
-calibration data justifies it.
+**Informational only.** Codex runs as a 3rd audit lane in parallel with
+Devin (cloud webhook) and Greptile (SaaS GitHub App). Qwen (local LM
+Studio) was the original 2nd lane but is currently **paused** — its
+calibration showed too many false positives to justify the LM Studio
+runtime cost; see `tools/QWEN_AUDIT_PROTOCOL.md` and the inert files
+under `tools/qwen_audit_*.py` if reviving it. Claude's standing
+in-thread merge delegation authorizes merge on `devin-audit-done` +
+CLEAN — it does NOT yet authorize merge on `codex-audit-done`. The
+user may extend the delegation after enough calibration data
+justifies it.
 
-## Why a fourth lane
+## Why a 3rd lane (originally the 4th)
 
 PR #233 (Phase 2B v2) produced concrete calibration data across three
 reviewers on the same buggy commit (`a2ddd70`):
@@ -18,11 +22,12 @@ reviewers on the same buggy commit (`a2ddd70`):
 |---|---|---|---|
 | Codex | **6** (all confirmed by Devin) | 0 | Code tracing |
 | Devin | 0 (PASS) → 6 confirmed on follow-up | 0 | Final-state QA |
-| Qwen | 0 | 7 | Pattern matching |
+| Qwen (paused) | 0 | 7 | Pattern matching |
 
-Codex demonstrably catches logic bugs the other two miss. Devin is
-strongest at "does this match the claims" verification. The two are
-complementary; Qwen's calibration is too noisy to add value yet.
+Codex demonstrably catches logic bugs Devin misses. Devin is strongest
+at "does this match the claims" verification. The two are complementary.
+Qwen's calibration was too noisy to justify the LM Studio runtime cost;
+the lane was paused — Greptile took its bake-off slot.
 
 ## Components
 
@@ -100,7 +105,7 @@ fail the `/pulls/{n}` fetch before any label is applied.
 ### 3. Labels
 
 Three labels per repo (need to be created via `gh label create`
-before the first audit lands — same colors as Devin / Qwen for UI
+before the first audit lands — same colors as Devin for UI
 consistency):
 
 ```bash
@@ -153,21 +158,25 @@ python3 tools/codex_audit_pr.py --repo OWNER/REPO --pr N
 
 Apply `needs-codex-audit` as a marker label when a PR is ready for
 calibration. The CLI itself doesn't read the label — it's purely a
-manual trigger for now. (A polling daemon analogous to
-`qwen_audit_bridge.py` would close the loop; not built yet.)
+manual trigger for now. (A polling daemon would close the loop; not
+built yet. The original `tools/qwen_audit_bridge.py` was that shape
+for the now-paused Qwen lane, kept on disk as a starting point.)
 
 ## Differences from the other protocols
 
-| Aspect | Devin | Qwen | Codex |
+| Aspect | Devin | Codex | Greptile |
 |---|---|---|---|
-| Trigger | GitHub webhook (cloud) | Polling daemon (local LM Studio) | Manual CLI invocation (local subprocess) |
-| Model | Devin's hosted (paid) | Local Qwen3-Coder-Next (free) | OpenAI Codex (paid per OpenAI's pricing; uses user's `~/.codex/auth.json`) |
-| Code access | Diff text via webhook | File contents via GitHub API at head SHA | Real git worktree at head SHA |
-| Latency | 2–10 min typical | ~30s per file × N files (chunked) | 5–10 min typical for `codex review` |
-| Review style | Final-state QA + checklist | Per-file LLM review with synthesis | Whole-repo code tracing |
+| Trigger | GitHub webhook (cloud) | Manual CLI invocation (local subprocess) | GitHub App auto-fires on every PR |
+| Model | Devin's hosted (paid) | OpenAI Codex (paid per OpenAI pricing; uses user's `~/.codex/auth.json`) | Greptile's hosted (free OSS tier) |
+| Code access | Diff text via webhook | Real git worktree at head SHA | Diff + repo context via Greptile's GitHub App |
+| Latency | 2–10 min typical | 5–10 min typical for `codex review` | 30s–2 min typical |
+| Review style | Final-state QA + checklist | Whole-repo code tracing | Inline comments with severity badges (P0/P1/P2/P3) |
 | Merge authority | YES (per CLAUDE.md) | NO (calibration phase) | NO (calibration phase) |
 | Mirror in both repos | Required (byte-identical) | Required (byte-identical) | Required (byte-identical) |
-| Audit at a SHA different from HEAD | No (always current) | No (always current) | Yes (worktree at any SHA) |
+| Audit at a SHA different from HEAD | No (always current) | Yes (worktree at any SHA) | No (current PR head only) |
+
+Qwen was the original calibration partner before being paused; see
+`tools/QWEN_AUDIT_PROTOCOL.md` for that lane's design.
 
 ## Calibration plan
 
@@ -202,9 +211,10 @@ gh label delete codex-audit-blocked
 
 - `tools/devin_audit_bridge.py` / `tools/devin_audit_labeler.py` — the
   Devin protocol this one parallels.
-- `tools/qwen_audit_pr.py` / `tools/qwen_audit_labeler.py` — the Qwen
-  protocol this one parallels.
-- `tools/GREPTILE_AUDIT_PROTOCOL.md` (when landed) — the Greptile
-  protocol this one parallels.
+- `tools/GREPTILE_AUDIT_PROTOCOL.md` — the Greptile protocol this one
+  parallels.
+- `tools/qwen_audit_pr.py` / `tools/qwen_audit_labeler.py` — the
+  original Qwen lane this one paralleled in design (now paused; files
+  kept on disk so the lane is trivial to revive).
 - `CLAUDE.md` "Devin PR audit routing" section — the merge-delegation
   contract that currently authorizes only Devin's labels.

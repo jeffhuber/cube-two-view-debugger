@@ -33,7 +33,7 @@ not a replacement for it. The role split reflects that:
 - `tests/test_white_up_rules.py`, `tests/test_hard_cases.py`, `tests/test_recognizer.py` and other production-recognizer tests
 - `tests/fixtures/corpus_manifest.json`, `tests/fixtures/hard_case_manifest.json` — corpus/hard-case baselines
 - `tools/probe_corpus.py`, `tools/probe_hard_cases.py` — production contract probes
-- `app.py` — the Rubik Two-View Recognizer Flask server
+- `app.py` — the Rubik Two-View Recognizer HTTP server (stdlib `ThreadingHTTPServer`)
 - **Production guardrail behavior** (Phase 3 onward): retake/manual-fixer routing, low-trust abstention
 
 ### Claude owns (geometry research + tooling)
@@ -76,9 +76,9 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 | Owner | Branch | PR | What | Touches | ETA |
 |---|---|---|---|---|---|
-| Codex | `codex/trihedral-axis-labeler` | #201 | Diagnostics/data-only vertex+axis human label scaffold plus trihedral-axis scorer; no production wiring. | `tools/vertex_axis_feedback.py`, `tools/vertex_axis_label_server.py`, `tools/trihedral_axis_fit_v0.py`, new vertex/axis fixtures and reports | ready for audit |
+| *(nothing in flight)* | | | | | |
 
-*(Codex: please populate your row when you start something.)*
+*(Either side: populate your row when you start something.)*
 
 ---
 
@@ -88,7 +88,9 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 ### Claude
 
-- **#221 (in flight)** — Mechanical rename `chirality_*` → `phase_*` / `_resolve_near_far_phase`. Names stripped of misnomer; legitimate true-chirality reference (CCW/CW hexagon ordering) kept with clarifying comment.
+- **#223** — Hygiene: gitignore `.DS_Store` + `.claude/worktrees/`, allow `curl /tmp/sam2_checkpoints/` permissions.
+- **#222** — Phase 0 consolidation: new `STATE_OF_THE_WORLD.md`, `FAILURE_TAXONOMY.md`, `BENCHMARK_INDEX.md`, `README.md`; rewritten `FIRST_PRINCIPLES_RECOGNIZER_DESIGN.md`; refreshed `COORDINATION.md` with new role split + regression-gate; downstream `baseline_post_218.py` field rename.
+- **#221** — Mechanical rename `chirality_*` → `phase_*` / `_resolve_near_far_phase`. Names stripped of misnomer; legitimate true-chirality reference (CCW/CW hexagon ordering) kept with clarifying comment.
 - **#220** — Post-#218 baseline + failure taxonomy (decision spine). Committed `tests/fixtures/post_218_baseline.json` regression-gate snapshot, taxonomy categories, `--diff` mode, 6-step recommended next sequence per Codex+Devin.
 - **#218** — Run phase check AFTER vertex ensemble. +33pp end-to-end accuracy (45.7% → 79.3%) from a single block reorder; demonstrates the detector is sensitive to vertex-offset noise.
 - **#213** — Enable chirality (now phase) auto-correction with empirical polarity. `sep<0` ≡ correct, opposite of naive bezel-darkness reasoning; ~82% detector agreement with position truth on non-ambiguous runs.

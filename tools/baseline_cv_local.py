@@ -264,37 +264,65 @@ def _run_one_case(
     }
 
 
-def _summarize(by_case: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
+def _summarize(by_case: Dict[str, List[Dict[str, Any]]]) -> Dict[str, Any]:
+    """Schema matches baseline_post_218.py: by_case[key] is a list of
+    run dicts (cv-local has 1 run per case since it's deterministic;
+    the global model has N runs). Summary fields match too, so the
+    same `--diff` renderer works on both snapshots.
+    """
     cat_counts: Counter = Counter()
     err_distribution: Counter = Counter()
-    n_status_ok = 0
-    n_status_fail = 0
-    for case in by_case.values():
-        status = case.get("status")
-        if status != "ok":
-            n_status_fail += 1
-            cat_counts["CV_LOCAL_FIT_FAIL"] += 1
-            continue
-        n_status_ok += 1
-        cat = case.get("category", "?")
-        cat_counts[cat] += 1
-        err = case.get("err_near_deg", 0)
-        if err < 5:
-            err_distribution["<5°"] += 1
-        elif err < 10:
-            err_distribution["5-10°"] += 1
-        elif err < 25:
-            err_distribution["10-25°"] += 1
-        elif err < 45:
-            err_distribution["25-45°"] += 1
+    n_runs = 0
+    for runs in by_case.values():
+        for run in runs:
+            n_runs += 1
+            status = run.get("status")
+            if status != "ok":
+                cat_counts["CV_LOCAL_FIT_FAIL"] += 1
+                continue
+            cat = run.get("category", "?")
+            cat_counts[cat] += 1
+            err = run.get("err_near_deg", 0)
+            if err < 5:
+                err_distribution["<5°"] += 1
+            elif err < 10:
+                err_distribution["5-10°"] += 1
+            elif err < 25:
+                err_distribution["10-25°"] += 1
+            elif err < 45:
+                err_distribution["25-45°"] += 1
+            else:
+                err_distribution[">45°"] += 1
+
+    # Case-level stability across runs (matches baseline_post_218.py).
+    # cv-local runs deterministically so a case is "stable GOOD" iff
+    # its single run is GOOD, etc.
+    stable_good = 0
+    stable_bad = 0
+    mixed = 0
+    BAD_CATS = {"CHIRALITY_MISS", "CHIRALITY_FALSE_FLIP", "TRUE_GEOMETRY_FAIL", "CV_LOCAL_FIT_FAIL"}
+    for runs in by_case.values():
+        cats = set()
+        for r in runs:
+            if r.get("status") == "ok":
+                cats.add(r.get("category", "?"))
+            else:
+                cats.add("CV_LOCAL_FIT_FAIL")
+        if cats == {"GOOD"}:
+            stable_good += 1
+        elif cats and cats.issubset(BAD_CATS):
+            stable_bad += 1
         else:
-            err_distribution[">45°"] += 1
+            mixed += 1
+
     return {
         "n_cases": len(by_case),
-        "n_ok": n_status_ok,
-        "n_fit_fail": n_status_fail,
+        "n_runs": n_runs,
         "category_counts": dict(cat_counts),
         "error_distribution": dict(err_distribution),
+        "stable_good_cases": stable_good,
+        "stable_bad_cases": stable_bad,
+        "mixed_cases": mixed,
     }
 
 
@@ -335,8 +363,10 @@ def _render_markdown(summary: Dict[str, Any], by_case: Dict[str, Dict[str, Any]]
     lines.append("")
     lines.append("## Headline accuracy")
     lines.append("")
-    lines.append(f"**{summary['n_cases']} cases** ({summary['n_ok']} scorable, "
-                 f"{summary['n_fit_fail']} cv-local fit-fail).")
+    n_fit_fail = cats.get("CV_LOCAL_FIT_FAIL", 0)
+    n_ok = summary["n_runs"] - n_fit_fail
+    lines.append(f"**{summary['n_cases']} cases × {summary['n_runs']//max(summary['n_cases'],1)} runs each** "
+                 f"({n_ok} scorable, {n_fit_fail} cv-local fit-fail).")
     lines.append("")
     lines.append("| accuracy band | cases |  %  |")
     lines.append("|---------------|------:|----:|")
@@ -357,11 +387,13 @@ def _render_markdown(summary: Dict[str, Any], by_case: Dict[str, Dict[str, Any]]
     # Worst 10 (by err_near, treating fit-fails as worse than any err)
     cases_with_err = []
     cases_failed = []
-    for k, v in by_case.items():
-        if v.get("status") == "ok":
-            cases_with_err.append((k, v))
+    for k, runs in by_case.items():
+        # cv-local is deterministic so 1 run per case; take run 0
+        run = runs[0] if runs else {}
+        if run.get("status") == "ok":
+            cases_with_err.append((k, run))
         else:
-            cases_failed.append((k, v))
+            cases_failed.append((k, run))
     cases_with_err.sort(key=lambda kv: -kv[1].get("err_near_deg", 0))
     lines.append("## 10 worst (scorable) cases")
     lines.append("")
@@ -495,11 +527,16 @@ def main() -> int:
         user_v = tuple(L["vertex"])
         user_near = [tuple(L["near_x"]), tuple(L["near_y"]), tuple(L["near_z"])]
         try:
-            by_case[key] = _run_one_case(path, side, user_v, user_near)
+            run = _run_one_case(path, side, user_v, user_near)
         except Exception as e:  # noqa: BLE001
-            by_case[key] = {"status": "exception", "error": f"{type(e).__name__}: {e}"}
+            run = {"status": "exception", "error": f"{type(e).__name__}: {e}"}
+        # Wrap in a list to match baseline_post_218.py's schema
+        # (case -> list of run dicts). cv-local is deterministic so the
+        # list has length 1.
+        run.setdefault("run", 0)
+        by_case[key] = [run]
         if i % 5 == 0 or i == len(keys):
-            cat = by_case[key].get("category") or by_case[key].get("status", "?")
+            cat = run.get("category") or run.get("status", "?")
             print(f"  [{i}/{len(keys)}] {key}: {cat}", file=sys.stderr, flush=True)
 
     summary = _summarize(by_case)

@@ -26,7 +26,7 @@ doesn't emerge count as `CV_LOCAL_FIT_FAIL`.
 
 ## Headline accuracy
 
-**58 cases** (6 scorable, 52 cv-local fit-fail).
+**58 cases × 1 runs each** (6 scorable, 52 cv-local fit-fail).
 
 | accuracy band | cases |  %  |
 |---------------|------:|----:|

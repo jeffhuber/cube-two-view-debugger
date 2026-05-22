@@ -1,0 +1,468 @@
+{
+  "summary": {
+    "n_cases": 58,
+    "n_runs": 58,
+    "category_counts": {
+      "CV_LOCAL_FIT_FAIL": 52,
+      "CHIRALITY_MISS": 3,
+      "TRUE_GEOMETRY_FAIL": 3
+    },
+    "error_distribution": {
+      ">45\u00b0": 5,
+      "25-45\u00b0": 1
+    },
+    "stable_good_cases": 0,
+    "stable_bad_cases": 58,
+    "mixed_cases": 0
+  },
+  "by_case": {
+    "12_A": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "12_B": [
+      {
+        "status": "ok",
+        "err_near_deg": 59.9,
+        "err_far_deg": 1.3,
+        "category": "CHIRALITY_MISS",
+        "vertex": [
+          600.6,
+          421.3
+        ],
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "14_A": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "14_B": [
+      {
+        "status": "fewer_than_3_face_quads",
+        "n_face_quads": 2,
+        "run": 0
+      }
+    ],
+    "15_A": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "15_B": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "17_A": [
+      {
+        "status": "ok",
+        "err_near_deg": 80.3,
+        "err_far_deg": 45.8,
+        "category": "TRUE_GEOMETRY_FAIL",
+        "vertex": [
+          680.6,
+          191.3
+        ],
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "17_B": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "21_A": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "21_B": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "22_A": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "22_B": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "23_A": [
+      {
+        "status": "ok",
+        "err_near_deg": 59.9,
+        "err_far_deg": 1.3,
+        "category": "CHIRALITY_MISS",
+        "vertex": [
+          511.7,
+          365.2
+        ],
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "23_B": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "24_A": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "24_B": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "25_A": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "25_B": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "26_A": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "26_B": [
+      {
+        "status": "fewer_than_3_face_quads",
+        "n_face_quads": 2,
+        "run": 0
+      }
+    ],
+    "27_A": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "27_B": [
+      {
+        "status": "fewer_than_3_face_quads",
+        "n_face_quads": 2,
+        "run": 0
+      }
+    ],
+    "28_A": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "28_B": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "29_A": [
+      {
+        "status": "fewer_than_3_face_quads",
+        "n_face_quads": 0,
+        "run": 0
+      }
+    ],
+    "29_B": [
+      {
+        "status": "ok",
+        "err_near_deg": 39.9,
+        "err_far_deg": 61.5,
+        "category": "TRUE_GEOMETRY_FAIL",
+        "vertex": [
+          574.4,
+          412.5
+        ],
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "30_A": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "30_B": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "31_A": [
+      {
+        "status": "ok",
+        "err_near_deg": 51.6,
+        "err_far_deg": 64.5,
+        "category": "TRUE_GEOMETRY_FAIL",
+        "vertex": [
+          658.2,
+          517.3
+        ],
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "31_B": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "32_A": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "32_B": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "36_A": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "36_B": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "37_A": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "37_B": [
+      {
+        "status": "ok",
+        "err_near_deg": 46.4,
+        "err_far_deg": 25.0,
+        "category": "CHIRALITY_MISS",
+        "vertex": [
+          546.8,
+          573.2
+        ],
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "39_A": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "39_B": [
+      {
+        "status": "fewer_than_3_face_quads",
+        "n_face_quads": 1,
+        "run": 0
+      }
+    ],
+    "42_A": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "42_B": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "44_A": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "44_B": [
+      {
+        "status": "fewer_than_3_face_quads",
+        "n_face_quads": 1,
+        "run": 0
+      }
+    ],
+    "46_A": [
+      {
+        "status": "fewer_than_3_face_quads",
+        "n_face_quads": 1,
+        "run": 0
+      }
+    ],
+    "46_B": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "47_A": [
+      {
+        "status": "fewer_than_3_face_quads",
+        "n_face_quads": 0,
+        "run": 0
+      }
+    ],
+    "47_B": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "48_A": [
+      {
+        "status": "fewer_than_3_face_quads",
+        "n_face_quads": 1,
+        "run": 0
+      }
+    ],
+    "48_B": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "49_A": [
+      {
+        "status": "fewer_than_3_face_quads",
+        "n_face_quads": 2,
+        "run": 0
+      }
+    ],
+    "49_B": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "57_A": [
+      {
+        "status": "fewer_than_3_face_quads",
+        "n_face_quads": 0,
+        "run": 0
+      }
+    ],
+    "57_B": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "58_A": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "58_B": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "61_A": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "61_B": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "62_A": [
+      {
+        "status": "cluster_pattern_mismatch",
+        "n_face_quads": 3,
+        "run": 0
+      }
+    ],
+    "62_B": [
+      {
+        "status": "fewer_than_3_face_quads",
+        "n_face_quads": 2,
+        "run": 0
+      }
+    ]
+  }
+}

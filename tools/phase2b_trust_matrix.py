@@ -242,7 +242,10 @@ def build_matrix_from_recomputed(
         cvs = cv_status.get(case, "missing")
         cv_ok = (cvs == "ok")
         for r in runs:
-            if r.get("status") != "ok":
+            status = r.get("status")
+            if status == "model_fit_failed":
+                # Real model-fit failure: the global model couldn't fit at
+                # all. Auto-retake regardless of any signal predicate.
                 rows.append(TrustRow(
                     case=case,
                     run=r.get("run", -1),
@@ -255,6 +258,29 @@ def build_matrix_from_recomputed(
                     model_fit_failed=True,
                 ))
                 continue
+            if status == "error":
+                # Codex #233 round-3 P2: a harness exception during recompute
+                # (corrupt image, transient dep error, etc.) is NOT a model-
+                # fit failure — we never got far enough to know if the model
+                # could fit. Conflating the two would silently distort the
+                # benchmark (every harness error would count as a "perfectly-
+                # caught catastrophic" via the auto-retake short-circuit, and
+                # inflate recall). Skip these rows and warn loudly so the
+                # user diagnoses the recompute before trusting the matrix.
+                print(
+                    f"  warn: skipping {case} run {r.get('run', '?')} — "
+                    f"recompute status='error', error='{r.get('error', '?')}'. "
+                    f"Re-run phase2b_recompute.py to get clean data for this case.",
+                    file=sys.stderr,
+                )
+                continue
+            if status != "ok":
+                # Unknown status — should not happen, but fail loudly rather
+                # than silently corrupting the matrix.
+                raise ValueError(
+                    f"unknown recompute status for {case} run {r.get('run', '?')}: "
+                    f"{status!r}. Expected 'ok', 'model_fit_failed', or 'error'."
+                )
             category = r.get("category", "?")
             rows.append(TrustRow(
                 case=case,

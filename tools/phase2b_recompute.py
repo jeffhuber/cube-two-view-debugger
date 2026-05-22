@@ -184,6 +184,17 @@ def recompute_all(
 
     If `progress_path` is given, writes a JSON checkpoint after each case so
     a crash mid-run doesn't lose progress."""
+    # Codex #233 round-3 P2: fail-fast on missing gallery_dir. Without this,
+    # every approved case logs "PNG missing — skipping" and main() writes an
+    # empty 0-cases fixture that `--recompute-global-model` would happily
+    # consume, silently overwriting the benchmark with no-data.
+    if not gallery_dir.exists():
+        raise FileNotFoundError(
+            f"gallery_dir does not exist: {gallery_dir}. "
+            f"Run from a machine with the axis-labeling gallery, or pass "
+            f"--gallery to a valid path."
+        )
+
     from rembg import new_session  # type: ignore
 
     labels = json.loads(truth_path.read_text())
@@ -223,6 +234,14 @@ def recompute_all(
         if progress_path is not None:
             progress_path.parent.mkdir(parents=True, exist_ok=True)
             progress_path.write_text(json.dumps({"by_case": by_case}, indent=2))
+
+    # Codex #233 round-3 P2: fail-fast if nothing got processed. This guards
+    # against the gallery_dir existing but being empty / mis-named.
+    if approved_keys and not by_case:
+        raise RuntimeError(
+            f"recompute processed 0 cases out of {len(approved_keys)} approved. "
+            f"Check that gallery PNGs exist as set_<key>.png under {gallery_dir}."
+        )
 
     summary = _summarize(by_case)
     return {"summary": summary, "by_case": by_case}

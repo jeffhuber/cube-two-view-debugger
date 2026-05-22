@@ -266,6 +266,42 @@ def test_evaluate_rule_auto_retakes_model_fit_failures():
     assert result.good_retaken == 0  # "c" has phase_sep=20, doesn't fire; not fit-failed
 
 
+def test_build_matrix_from_recomputed_skips_harness_error_rows(capsys):
+    """Codex #233 round-3 P2: harness errors (`status: "error"`) are NOT
+    model-fit failures — they're recompute-side exceptions that should be
+    re-run, not silently counted as "auto-retaken catastrophics". The
+    builder must skip them and warn loudly.
+    """
+    recomp = _stub_recomputed([
+        {"_case": "A", "run": 0, "status": "ok",
+         "err_near_deg": 5.0, "phase_check": "correct", "category": "GOOD",
+         "phase_darkness_separation": 1.0},
+        {"_case": "B", "run": 0, "status": "error",
+         "error": "ZeroDivisionError: boom"},
+    ])
+    cv = _stub_cv_local({"A": "ok", "B": "ok"})
+    rows = p2b.build_matrix_from_recomputed(recomp, cv)
+    # Only the OK row survives; the error row is skipped.
+    assert len(rows) == 1
+    assert rows[0].case == "A"
+    # Warning written to stderr (captured via capsys).
+    captured = capsys.readouterr()
+    assert "warn: skipping B" in captured.err
+    assert "ZeroDivisionError" in captured.err
+
+
+def test_build_matrix_from_recomputed_raises_on_unknown_status():
+    """Unknown statuses should fail loudly, not silently corrupt the
+    matrix. Codex #233 round-3 P2 follow-on guard."""
+    import pytest
+    recomp = _stub_recomputed([
+        {"_case": "X", "run": 0, "status": "weird_new_status"},
+    ])
+    cv = _stub_cv_local({"X": "ok"})
+    with pytest.raises(ValueError, match="unknown recompute status"):
+        p2b.build_matrix_from_recomputed(recomp, cv)
+
+
 def test_evaluate_rule_auto_retake_doesnt_affect_good_rows():
     """The auto-retake short-circuit applies to ALL outcomes — including
     GOOD. A fit-failed GOOD row would be counted as a false-retake (which

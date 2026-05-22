@@ -1,0 +1,51 @@
+# Greptile audit labeler
+#
+# UNLIKE Devin/Qwen/Codex labelers (which fire on issue_comment events),
+# Greptile fires on pull_request_review events: Greptile posts a single
+# review submission (state: COMMENTED) with inline review comments that
+# carry P0/P1/P2/P3 severity badges. The labeler reads those badges and
+# applies the appropriate `greptile-audit-*` label.
+#
+# This labeler is OPT-IN: it only flips labels on PRs that currently
+# carry `needs-greptile-audit`. Greptile auto-reviews every PR via the
+# GitHub App, but only opted-in PRs participate in the bake-off — keeps
+# UI / calibration data clean.
+#
+# Bot identity: the labeler's `is_greptile_review_author()` reads the
+# `GREPTILE_BOT_AUTHORS` repo variable (comma-separated). Default
+# accepts `greptile-apps[bot]` (the GitHub App identity) or
+# `greptile-apps`. Override for self-hosted Greptile installs.
+#
+# If GitHub's built-in token cannot label the bot's reviews, configure
+# GREPTILE_AUDIT_LABEL_TOKEN as a fine-grained token with BOTH:
+#   - Issues: read + write   (apply/remove labels)
+#   - Pull requests: read    (fetch PR head SHA for stale-review gate
+#                             and inline review comments)
+
+name: Greptile audit labeler
+
+on:
+  pull_request_review:
+    types: [submitted, edited]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out labeler code from default branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+
+      - name: Apply Greptile audit labels
+        env:
+          GITHUB_TOKEN: ${{ secrets.GREPTILE_AUDIT_LABEL_TOKEN || github.token }}
+          GREPTILE_BOT_AUTHORS: ${{ vars.GREPTILE_BOT_AUTHORS }}
+        run: python3 tools/greptile_audit_labeler.py

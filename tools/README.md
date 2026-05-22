@@ -94,6 +94,7 @@
 | **`baseline_post_218.py`** | **THE global-model benchmark.** Runs global model on 58-case labeled gallery, categorizes, emits JSON + report. Supports `--diff` for row-level regression checks. |
 | **`baseline_cv_local.py`** | **THE cv-local benchmark.** Same 58 cases; derives (vertex, 3 near, 3 far) from cv-local's face-quads via union-find clustering. JSON schema uniform with `baseline_post_218.py` so `--diff` works across both sides. Headline: 90% structural fit-fail. |
 | **`main_solvable_baseline.py`** | **THE production solvable-rate benchmark.** Aggregates `tools/probe_corpus.py` JSON for corpus + hard-case manifests into per-sticker, exact, legal-state, confident-solve, and confident-wrong metrics. |
+| **`phase2b_trust_matrix.py`** | **Phase 2B trust-signal matrix.** Joins phase_sep + cv-local status per case/run; evaluates 17 candidate trust rules vs Phase 2 bar (≥80% recall, ≤10% GOOD FPR). Diagnostics-only. Headline: no rule over existing signals meets the bar; `--recompute-global-model` flag reserved for fit_residual / vertex disagreement / two-view extension. |
 | `evaluate_axis_ground_truth.py` | Per-axis bearing/length error against a candidate model output. |
 | `evaluate_hybrid_pipeline.py` | End-to-end production-recognizer accuracy on hard-case corpus. |
 | `evaluate_color_classifier_modes.py` | Color classifier mode comparison. |

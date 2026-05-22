@@ -48,4 +48,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GREPTILE_AUDIT_LABEL_TOKEN || github.token }}
           GREPTILE_BOT_AUTHORS: ${{ vars.GREPTILE_BOT_AUTHORS }}
-        run: python3 tools/greptile_audit_labeler.py
+        run: |
+          # Bootstrap guard: the workflow checks out the default branch,
+          # so on the bootstrap PR that ADDS this workflow + labeler,
+          # `tools/greptile_audit_labeler.py` does not exist on `main`
+          # yet. Skip gracefully rather than failing the workflow run.
+          # Devin caught this on cube-snap #145: Greptile auto-fired a
+          # review on the bootstrap PR; the workflow tried to run the
+          # not-yet-present labeler and crashed.
+          if [ ! -f tools/greptile_audit_labeler.py ]; then
+            echo "tools/greptile_audit_labeler.py not present on default branch — bootstrap PR; skipping"
+            exit 0
+          fi
+          python3 tools/greptile_audit_labeler.py

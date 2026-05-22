@@ -70,9 +70,9 @@ principles work.
 
 | Phase | Status | What it produces | Success criterion |
 |---|---|---|---|
-| **0 — Consolidate** | **In flight (this PR)** | Updated docs: this file, FIRST_PRINCIPLES_RECOGNIZER_DESIGN, FAILURE_TAXONOMY, BENCHMARK_INDEX, tools/README, COORDINATION. | All 6 docs land; no code changes. |
-| **1 — Re-baseline both sides** | Pending | Post-#218 global model snapshot (done; `tests/fixtures/post_218_baseline.json`) + matching cv-local snapshot. Documented gap between them. | Two committed JSON snapshots, both runnable via `--diff`. |
-| **2 — Trust policy diagnostics** | Pending | New `model.debug` fields: phase confidence, axis-vs-bezel agreement, two-view consistency. Diagnostics-only, no behavior change. | Per-case "would-have-routed-to-retake" prediction logged. Diagnostic confidence correlates >0.6 with position-truth on 58 cases. |
+| **0 — Consolidate** | ✅ Done (#222) | Docs: this file, FIRST_PRINCIPLES_RECOGNIZER_DESIGN, FAILURE_TAXONOMY, BENCHMARK_INDEX, tools/README, COORDINATION. | All 6 docs landed; no code changes. |
+| **1 — Re-baseline both sides** | Pending (next) | Post-#218 global model snapshot (done; `tests/fixtures/post_218_baseline.json`) + matching cv-local snapshot. Documented gap between them. | Two committed JSON snapshots, both runnable via `--diff`. |
+| **2 — Trust policy diagnostics** | Pending | New `model.debug` fields: phase confidence, axis-vs-bezel agreement, two-view consistency. Diagnostics-only, no behavior change. | Product-shaped: catches catastrophic / phase-wrong cases with low false-retake on GOOD cases on the 58-case eval. Concretely: ≥80% recall on the catastrophic band at ≤10% false-retake on GOOD. (Aggregate-correlation thresholds like "r > 0.6" are an internal sanity check, not the success bar.) |
 | **3 — Guardrail experiment** | Pending | Production behavior change: low-trust cases route to retake/manual-fixer. First phase where production behavior changes. | Confident-wrong rate drops without abstention >15% (or agreed budget). Tracked in `--diff`. |
 | **4 — Learned geometry** | Pending | Trained vertex/axis/phase ranker on 58+ labels with held-out splits + calibrated abstention. | Held-out test accuracy + abstention curves match or beat Phase-3 heuristic. |
 | **5 — Better capture / UX** | Pending | Phase-3 diagnostics drive retake instructions / manual fixer rather than forcing repair. | Reduction in user-reported confident-wrong rate (production metric). |

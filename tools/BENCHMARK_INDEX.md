@@ -1,0 +1,76 @@
+# Benchmark index
+
+> Which fixture / report / script answers which question.
+> Treat this as a one-page lookup — if you can't find the question
+> here, the answer probably doesn't exist yet (good signal).
+
+## Fixtures (labeled data)
+
+| Path | What it is | n | Format | Used by |
+|---|---|---|---|---|
+| `tests/fixtures/gcm_axis_ground_truth.json` | **Vertex + 3 near corners** per photo, user-labeled in original-image coords | 58 photos (29 sets × A/B) | per-key: vertex, near_x, near_y, near_z, approved | `tools/baseline_post_218.py`, future learned ranker |
+| `tests/fixtures/gcm_vertex_ground_truth.json` | **Vertex only** per photo (earlier, smaller corpus) | 27 photos | per-key: vertex | older vertex evaluators (superseded by axis ground truth) |
+| `tests/fixtures/post_218_baseline.json` | **Committed accuracy snapshot** of current-main global model on the 58-case set, run 2× per case = 116 runs | 116 runs / 58 cases | per-case list of run results | regression gate via `--diff` |
+| `tests/fixtures/overlay_visual_labels.json` | **Hex-fitter overlay correctness** labels from May-18 review | (varies) | per-case overlay verdict | `tools/generate_hex_fitter_walkthroughs.py` |
+| `tests/fixtures/vertex_axis_active_learning_feedback_v0.json` | Active-learning iteration of vertex/axis labels | (varies) | per-case feedback | `tools/active_vertex_axis_label_queue.py` |
+| `tests/fixtures/trihedral_junction_extraction_v0_summary.json` | Per-case extracted trihedral junction quality summary | (varies) | per-case summary | `tools/trihedral_junction_extraction_v0.py` |
+| `tests/fixtures/axis_ray_vertex_refinement_v0_summary.json` | Per-case axis-ray refinement output | (varies) | per-case summary | `tools/axis_ray_vertex_refinement_v0.py` |
+
+## Scripts that produce baselines
+
+| Script | What it benchmarks | Output | Notes |
+|---|---|---|---|
+| **`tools/baseline_post_218.py`** | **Global model accuracy vs axis-labeled ground truth.** Categorizes each case GOOD / MARGINAL / CHIRALITY_MISS / CHIRALITY_FALSE_FLIP / TRUE_GEOMETRY_FAIL. | `tests/fixtures/post_218_baseline.json` + `POST_218_BASELINE_AND_TAXONOMY.md` | **The decision spine.** Use `--diff` for row-level regression checks. ~14 min for full re-run. |
+| `tools/evaluate_axis_ground_truth.py` | Per-axis bearing + length error against a candidate model output | per-pair score | Lower-level than baseline_post_218; useful for one-off candidate checks |
+| `tools/evaluate_hybrid_pipeline.py` | **End-to-end production-recognizer accuracy** on the hard-case corpus (per-sticker, per-state, exact-match) | `runs/eval_results.json` + summary | Production-side eval, not global-model |
+| `tools/evaluate_color_classifier_modes.py` | Color classifier accuracy under different modes (canonical / knn5_lab / knn5_lab_full ± adaptive) | per-mode confusion matrix | Used to choose `CUBE_RECOGNIZER_CLASSIFIER` default |
+| `tools/evaluate_two_view_consistency.py` | A+B center-color consistency for face-ID assignment | per-pair consistency score | Two-view fusion diagnostics |
+| `tools/evaluate_per_sticker_confidence.py` | Per-sticker classifier-confidence calibration | calibration plot | Color-confidence calibration |
+| `tools/evaluate_mask_pipeline.py` | Mask-path end-to-end accuracy (rembg → hexagon → rectify → classify) | per-pair scores | Mask-path comparison vs current production |
+| `tools/evaluate_equalize_lift.py` | Color-equalization preprocessing lift | mode comparison | Negative result — equalize doesn't close the gap |
+| `tools/evaluate_geometry_labels.py` | Geometry-label round-trip via overlay JSON | per-case overlay validation | Used during May-18 overlay analysis |
+| `tools/evaluate_auto_geometry.py` | Auto-geometry pipeline (silhouette → hexagon → rectify) | per-pair scores | Earlier mask-path eval |
+
+## Specific questions → where to look
+
+| Question | Answer in |
+|---|---|
+| "How accurate is the current global model?" | `tests/fixtures/post_218_baseline.json` + `POST_218_BASELINE_AND_TAXONOMY.md` |
+| "How accurate is current-main cv-local?" | `tools/evaluate_hybrid_pipeline.py` output (run on demand; Phase-1 commit pending) |
+| "Did my PR regress geometry on any case?" | `tools/baseline_post_218.py --diff prev curr` |
+| "Which sets are always-failing across reruns?" | `POST_218_BASELINE_AND_TAXONOMY.md` "Case-level stability" table |
+| "Why did Set X fail?" | Look up its category in the baseline JSON, then read the failure-mode meaning in `FAILURE_TAXONOMY.md`. Visual: `tools/render_global_cube_model_v0_overlays.py` for that case. |
+| "Is dark-line junction extraction worth pursuing?" | No — see `tools/PATCH_JUNCTION_VERTEX_LOCALIZER_V0_REPORT.md`, `tools/RAW_PATCH_VERTEX_LOCALIZER_V0_REPORT.md`, `tools/RAY_START_VERTEX_REFINEMENT_V0_REPORT.md` (all negative results). |
+| "Did SAM3 beat rembg?" | `tools/SAM3_*` and `tools/FOUNDATION_SEGMENTATION_BAKEOFF_V0_REPORT.md` — not by enough to switch. |
+| "How does the chirality / phase detector work?" | `tools/NEAR_FAR_PHASE_REPORT.md` |
+| "What's the full per-axis error history on a specific case?" | Run `tools/render_global_cube_model_v0_overlays.py` + check `tools/GLOBAL_CUBE_MODEL_*REPORT.md` series. |
+
+## Cross-corpus questions
+
+The labeled fixtures don't all overlap. Match what you're trying to
+measure to the right corpus:
+
+| Corpus | What's in it | Coverage |
+|---|---|---|
+| **Axis-labeled gallery (58)** | Vertex + 3 near corners | Across-cube-types, includes hard cases. **THE eval set going forward.** |
+| Easy-corpus (~30) | Per-pair production eval cases | Originally chosen as "easy" — many are now well-handled by post-#218 main |
+| Hard-case corpus (~14) | Sets 12/14/17/57/58/61/62 and friends | Where production currently struggles |
+| OOD corpus | Sets with non-standard cubes (Set 46 Rubik's brand, etc.) | Used to check generalization |
+| 27-vertex-only corpus | Earlier vertex-only labels (superseded) | Historical |
+
+## When to add a new benchmark
+
+Add to this index AND to `BENCHMARK_INDEX.md` when:
+
+- A new fixture file lands in `tests/fixtures/`.
+- A new evaluator lands in `tools/evaluate_*.py` or `tools/baseline_*.py`.
+- A class of question becomes recurring (e.g., "trust-policy
+  abstention rate" once Phase 2 has data).
+
+Don't add when:
+
+- A one-shot probe answers an in-the-moment question. Keep those in
+  `tools/probe_*.py` without registering them as a benchmark.
+- A report is a snapshot of a single experiment (those live as
+  `*_V0_REPORT.md` and don't need indexing here unless they're
+  durable answers).

@@ -18,12 +18,14 @@ edit any section. To minimize edit conflicts, keep entries terse
 Strict ownership boundaries. Avoid touching anything outside your lane
 without coordinating in this doc first.
 
-**Current posture (2026-05-21):** Claude and Codex are mostly working on
-independent prototyping efforts rather than the earlier tight frontend/backend
-split. Close step-by-step coordination is not required unless a PR touches
-the same files, production recognizer behavior, or shared labeled fixtures.
-Keep this doc current, but prefer lightweight status updates over blocking
-each other.
+**Current posture (2026-05-22):** Post-strategic-shift (see
+`tools/STATE_OF_THE_WORLD.md`), Claude's geometry research is now
+positioned as **scaffolding around** Codex's production `cv-local`,
+not a replacement for it. The role split reflects that:
+
+- **Claude**: geometry research + diagnostics + benchmark harness + docs.
+- **Codex**: production recognizer + guardrail experiments + corpus/hard-case probes + API/server behavior.
+- **Shared**: first-principles docs, labeled fixtures, the regression-gate harness.
 
 ### Codex owns (production recognizer)
 
@@ -32,23 +34,33 @@ each other.
 - `tests/fixtures/corpus_manifest.json`, `tests/fixtures/hard_case_manifest.json` — corpus/hard-case baselines
 - `tools/probe_corpus.py`, `tools/probe_hard_cases.py` — production contract probes
 - `app.py` — the Rubik Two-View Recognizer Flask server
+- **Production guardrail behavior** (Phase 3 onward): retake/manual-fixer routing, low-trust abstention
 
-### Claude owns (parallel-track tooling)
+### Claude owns (geometry research + tooling)
 
+- `tools/global_cube_model.py` and adjacent scripts (`interior_bezel_detection.py`, `render_global_cube_model_v0_overlays.py`, etc.)
+- `tools/baseline_post_218.py` — **the regression-gate harness.** Re-generate the committed snapshot when the global model changes.
 - `tools/sample_stickers_from_hull.py`, `tools/extract_clean_dataset.py` — clean-label dataset extractor (PR #126)
-- `tools/propose_geometry_labels.py`, `tools/evaluate_auto_geometry.py`, `tools/diagnose_grid_rejection.py` — auto-geometry framework (PR #127, #133, #137)
-- `tools/rectify_faces.py` — face rectification (PR #136)
-- `tools/render_synthetic_cube.py` — synthetic corpus renderer (PR #132)
-- `tools/evaluate_mask_pipeline.py` — end-to-end mask-path evaluator (in flight)
-- `tools/equalize_faces.py`, `tools/recognizer_mask.py` — future
-- All `tools/*.md` docs that ship alongside the above
+- `tools/propose_geometry_labels.py`, `tools/evaluate_auto_geometry.py`, `tools/diagnose_grid_rejection.py` — auto-geometry framework
+- `tools/rectify_faces.py` — face rectification helper
+- `tools/render_synthetic_cube.py` — synthetic corpus renderer
+- `tools/evaluate_mask_pipeline.py`, `tools/equalize_faces.py` — mask-path experiments
+- **`tools/README.md`** — tool inventory + status tags.
+- All `tools/*_v0.py` localizer/refiner experiments (negative results kept as institutional memory).
 
-### Shared (touch with care)
+### Shared (touch with care, coordinate first)
 
+- `COORDINATION.md` — this file. Either can edit any section.
+- `CLAUDE.md` (both repos) — operating envelope. Either can update; mention here.
+- `tools/FIRST_PRINCIPLES_RECOGNIZER_DESIGN.md` — north-star design.
+- `tools/STATE_OF_THE_WORLD.md` — entry point / current architecture map.
+- `tools/FAILURE_TAXONOMY.md` — failure-mode reference.
+- `tools/BENCHMARK_INDEX.md` — fixture/report/script lookup.
+- `tools/POST_218_BASELINE_AND_TAXONOMY.md` — the decision spine. Updates happen only via committed re-baseline runs of `baseline_post_218.py`.
+- `tests/fixtures/gcm_axis_ground_truth.json` — user-labeled axis ground truth. Treat as append-only (extend, don't rewrite).
+- `tests/fixtures/post_218_baseline.json` — committed accuracy snapshot. Regenerate via `baseline_post_218.py`.
 - `tools/extract_color_samples.py` — Claude's, but Codex added the `white[- ]up` regex fix in #135. **Coordinate before editing.**
 - `tests/test_auto_geometry_metrics.py` — Claude's, but a growing surface. **Coordinate before adding tests that interact with discovery/geometry.**
-- `CLAUDE.md` — repo guidance. Either can update; mention here.
-- `COORDINATION.md` — this file. Either can edit any section.
 
 ### Off limits unless explicitly coordinated
 
@@ -76,12 +88,15 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 ### Claude
 
-- **#182** — Global cube model, ground-truth-validated pipeline. Lands PnP/mean3/refinement prototype and durable `gcm_vertex_ground_truth.json`; still diagnostics-only, with median vertex error ~72 px.
-- **#178** — Iterative interior-bezel refinement + per-line quality + slot/cell join helper. Exposes `crosses_high_quality_bezel`; still diagnostics-only.
-- **#177** — Interior bezel-line detection probe + human-review fixture. Single-pass detector showed 5/18 honest pass rate and motivated per-line quality.
-- **#176** — Hex-fitter failure taxonomy + walkthrough generator (diagnostics-only). 12/18 worst-pair hexagons are degenerate (min_edge < 20 px); structural finding that h1/h3/h5 are interior to silhouette on yawed cubes — bounds what hull-based fitters can achieve.
-- **#163** — Full-hull lookup for shared vertices + sweep-state cache fix. Tooling evaluator gains +4.0pp and beats WhiteUpRecognizer in that lane.
-- **#157** — Slot/src filter for hybrid pipeline. Real diagnostic signal, but negative deployment result; kept as experimental infrastructure.
+- **#221 (in flight)** — Mechanical rename `chirality_*` → `phase_*` / `_resolve_near_far_phase`. Names stripped of misnomer; legitimate true-chirality reference (CCW/CW hexagon ordering) kept with clarifying comment.
+- **#220** — Post-#218 baseline + failure taxonomy (decision spine). Committed `tests/fixtures/post_218_baseline.json` regression-gate snapshot, taxonomy categories, `--diff` mode, 6-step recommended next sequence per Codex+Devin.
+- **#218** — Run phase check AFTER vertex ensemble. +33pp end-to-end accuracy (45.7% → 79.3%) from a single block reorder; demonstrates the detector is sensitive to vertex-offset noise.
+- **#213** — Enable chirality (now phase) auto-correction with empirical polarity. `sep<0` ≡ correct, opposite of naive bezel-darkness reasoning; ~82% detector agreement with position truth on non-ambiguous runs.
+- **#210** — Chirality detection diagnostic (diagnostic-only). Initial framework for per-corner darkness sampling; landed as visibility-only before #213 enabled correction.
+- **#182** — Global cube model, ground-truth-validated pipeline. PnP/mean3/refinement prototype and durable `gcm_vertex_ground_truth.json`; diagnostics-only with median vertex error ~72 px.
+- **#178** — Iterative interior-bezel refinement + per-line quality + slot/cell join helper.
+- **#177** — Interior bezel-line detection probe + human-review fixture.
+- **#176** — Hex-fitter failure taxonomy + walkthrough generator (diagnostics-only).
 
 ### Infra (Devin-authored, mirrored across both repos)
 
@@ -109,6 +124,10 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 Newest first. Each entry: date, decision, one-line why.
 
+- **2026-05-22** — **Strategic shift: first-principles geometry is scaffolding around `cv-local`, not a replacement.** Per the Codex+Devin synthesis ("a plausible cube model is cheap; a trustworthy cube model is hard"), the global cube model is no longer on a near-term path to replace production. Its role: (a) trust layer / guardrails around cv-local, (b) labeled-training-data source for a future learned ranker, (c) benchmark harness. Three policy bars now gate all first-principles work — see `tools/FIRST_PRINCIPLES_RECOGNIZER_DESIGN.md`. Phased roadmap Phase 0–5 in `tools/STATE_OF_THE_WORLD.md`. Decision spine: `tools/POST_218_BASELINE_AND_TAXONOMY.md`.
+- **2026-05-22** — Chirality → near_far_phase rename (#221) — "chirality" is a misnomer for what is actually a 60° body-diagonal rotational degeneracy. See `tools/NEAR_FAR_PHASE_REPORT.md`.
+- **2026-05-22** — Standing in-thread merge delegation for Claude (#140 cube-snap, #219 ctvd): "Keep going" / "continue" / "proceed" authorize merge of any Claude-owned PR that is `devin-audit-done` + CLEAN. Does NOT cover Codex's PRs, missing labels, `--admin` overrides, or topic redirects.
+- **2026-05-21** — Phase auto-correction enabled in production (#213/#218). Empirically validated polarity (`sep<0` ≡ correct) + vertex-ensemble-first ordering yields 77.6% non-catastrophic vs 45.7% pre-#213. 95%+ of remaining catastrophic failures are phase-decision miscalls; vertex precision is the dominant remaining lever.
 - **2026-05-20** — Bezel+discontinuity cell join remains diagnostics-only. On #175's 270 human-reviewed overlay cells, default `line_q>=0.40 && distance<=30px && discontinuity` hit 32 human-bad cells and 0 human-good cells, but 54 human-bad cells were both-miss and labels are slot-level; use as guard evidence, not behavior.
 - **2026-05-19** — Human overlay feedback is now structured supervision for hybrid geometry. The first 5 reviewed sets have 28/30 bad slots, led by B:L and A:F wrong-source/bad-quad failures; use this to guide diagnostics, not production behavior.
 - **2026-05-19** — Cell-discontinuity scoring remains diagnostics-only. On the 30 human-reviewed overlay slots, human-bad rows have much higher mean score than the 2 human-good rows, but the sample is too small/skewed to become a guard.
@@ -143,6 +162,8 @@ Before opening any PR or requesting Devin audit:
 - [ ] If touching anything in **Shared** above: mention in the PR description.
 - [ ] If the PR's results depend on a long-running sweep: post the full `runs/*_summary.txt` as a PR comment so reviewers don't need to re-run.
 - [ ] For Claude: tools-only, no `rubik_recognizer/*` edits. For Codex: production-only, no edits to Claude-owned auto-geometry / rectify / mask-path tooling listed above unless coordinated.
+- [ ] **Geometry regression gate.** If the PR touches `tools/global_cube_model.py` or any downstream behavior (cv-local recognition pipeline, mask-path, rectify), run `tools/baseline_post_218.py --diff tests/fixtures/post_218_baseline.json /tmp/your_new_baseline.json` and paste the row-level diff into the PR body. Aggregate metrics alone are insufficient — per Devin, "some changes improve averages while worsening critical rows." A PR that regresses any case from GOOD → catastrophic without offsetting wins is a merge blocker.
+- [ ] **Stacked PRs.** If your PR depends on an unmerged PR, branch from the parent's branch (not main) and document the stack in the PR body ("Stacks on #NNN"). Merge order is then forced and reviewers can audit the diff against the parent rather than against main.
 - [ ] Update **In Flight** in this doc when opening the PR.
 - [ ] Update **Recently Shipped** when the PR merges.
 

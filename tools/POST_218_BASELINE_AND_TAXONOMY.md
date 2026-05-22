@@ -60,7 +60,7 @@ noise-shaped at our anchor-extraction precision.
   bezel-darkness reasoning), and the |sep| < 10 ambiguous band.
   These are calibrated against the 58 cases, not derived from
   first principles. PR #218's 33pp accuracy lift from a single
-  block reorder (vertex ensemble BEFORE chirality check) is
+  block reorder (vertex ensemble BEFORE phase check) is
   itself evidence that the detector is sensitive to non-
   geometric noise.
 
@@ -74,8 +74,8 @@ lands.
 
 ## Baseline snapshot
 
-Re-baseline of the global cube model after PR #213 (chirality
-auto-correct) and PR #218 (vertex ensemble before chirality
+Re-baseline of the global cube model after PR #213 (phase
+auto-correct) and PR #218 (vertex ensemble before phase
 check) landed.
 
 **Eval set**: 58 cases × 2 runs each = 116 total runs.
@@ -91,38 +91,38 @@ needed.
 
 | accuracy band                    | runs |  %  |
 |----------------------------------|-----:|----:|
-| <5°                              |   28 | 24.1% |
-| 5-10°                            |   50 | 43.1% |
-| 10-25°                           |   12 | 10.3% |
-| 25-45°                           |    1 | 0.9% |
-| >45°                             |   25 | 21.6% |
+| <5°                              |   27 | 23.3% |
+| 5-10°                            |   49 | 42.2% |
+| 10-25°                           |   16 | 13.8% |
+| 25-45°                           |    2 | 1.7% |
+| >45°                             |   22 | 19.0% |
 
-- **77.6% of runs land at <25° bearing error** (GOOD + MARGINAL).
-- **22.4% of runs are catastrophic** (>25° err in one of the failure
+- **79.3% of runs land at <25° bearing error** (GOOD + MARGINAL).
+- **20.7% of runs are catastrophic** (>25° err in one of the failure
   modes below).
 
 ## Failure taxonomy
 
 | category                  | runs |  %  | meaning |
 |---------------------------|-----:|----:|---------|
-| GOOD                      |   78 | 67.2% | All axes within 10° of user labels — model is essentially right. |
-| MARGINAL                  |   12 | 10.3% | 10–25° err — small jitter, color sampling probably still OK. |
-| CHIRALITY_MISS            |   14 | 12.1% | Model.far matches user.near; detector said `correct` or `ambiguous` — flip needed but missed. |
+| GOOD                      |   76 | 65.5% | All axes within 10° of user labels — model is essentially right. |
+| MARGINAL                  |   16 | 13.8% | 10–25° err — small jitter, color sampling probably still OK. |
+| CHIRALITY_MISS            |   12 | 10.3% | Model.far matches user.near; detector said `correct` or `ambiguous` — flip needed but missed. |
 | CHIRALITY_FALSE_FLIP      |   10 | 8.6% | Model.far matches user.near; detector said `corrected_60deg_flip` — wrongly flipped a previously-correct model. |
-| TRUE_GEOMETRY_FAIL        |    2 | 1.7% | Neither model.near nor model.far matches user.near — fit is bad regardless of chirality. |
+| TRUE_GEOMETRY_FAIL        |    2 | 1.7% | Neither model.near nor model.far matches user.near — fit is bad regardless of phase. |
 
 ## Case-level stability across runs
 
 | outcome                       | cases |  %  |
 |-------------------------------|------:|----:|
 | always GOOD across runs       |    32 | 55.2% |
-| always BAD (catastrophic+)    |     9 | 15.5% |
-| mixed / varies between runs   |    17 | 29.3% |
+| always BAD (catastrophic+)    |    11 | 19.0% |
+| mixed / varies between runs   |    15 | 25.9% |
 
 Mixed cases are where the Procrustes 6! brute-force still picks
 different symmetry-equivalent permutations across runs and the
-chirality detector doesn't reliably rescue all of them. The
-deterministic-tie-breaker path was scoped (see CHIRALITY_DETECTION_REPORT.md
+phase detector doesn't reliably rescue all of them. The
+deterministic-tie-breaker path was scoped (see NEAR_FAR_PHASE_REPORT.md
 "What's next") but deprioritized in favor of higher-leverage work
 on vertex localization.
 
@@ -130,22 +130,22 @@ on vertex localization.
 
 | set | err_near | category | chir_check | sep |
 |-----|---------:|----------|------------|----:|
-| 62_B |   60.0° |         CHIRALITY_MISS |        ambiguous_no_correction | -5.7 |
-| 47_B |   59.6° |   CHIRALITY_FALSE_FLIP |           corrected_60deg_flip | +41.6 |
-| 25_B |   59.3° |         CHIRALITY_MISS |        ambiguous_no_correction | +6.9 |
-| 46_B |   58.9° |         CHIRALITY_MISS |                        correct | -17.1 |
-| 62_A |   58.1° |   CHIRALITY_FALSE_FLIP |           corrected_60deg_flip | +31.2 |
-| 44_B |   56.6° |   CHIRALITY_FALSE_FLIP |           corrected_60deg_flip | +18.1 |
-| 26_A |   56.5° |         CHIRALITY_MISS |        ambiguous_no_correction | +4.7 |
-| 58_A |   56.0° |         CHIRALITY_MISS |        ambiguous_no_correction | -0.1 |
-| 57_A |   55.9° |   CHIRALITY_FALSE_FLIP |           corrected_60deg_flip | +22.6 |
-| 39_A |   55.8° |         CHIRALITY_MISS |        ambiguous_no_correction | +4.7 |
+| 62_B |   59.9° |   CHIRALITY_FALSE_FLIP |           corrected_60deg_flip | +13.9 |
+| 46_B |   59.7° |         CHIRALITY_MISS |        ambiguous_no_correction | -7.6 |
+| 47_B |   59.7° |   CHIRALITY_FALSE_FLIP |           corrected_60deg_flip | +34.4 |
+| 62_A |   59.2° |   CHIRALITY_FALSE_FLIP |           corrected_60deg_flip | +28.5 |
+| 25_B |   58.4° |   CHIRALITY_FALSE_FLIP |           corrected_60deg_flip | +16.9 |
+| 44_A |   57.1° |         CHIRALITY_MISS |                        correct | -35.5 |
+| 57_A |   55.7° |         CHIRALITY_MISS |                        correct | -10.9 |
+| 46_A |   55.5° |   CHIRALITY_FALSE_FLIP |           corrected_60deg_flip | +10.1 |
+| 58_A |   55.1° |         CHIRALITY_MISS |        ambiguous_no_correction | -6.9 |
+| 30_A |   52.6° |         CHIRALITY_MISS |                        correct | -22.0 |
 
 ## What this baseline says
 
-1. The chirality auto-correction (PRs #210/#213/#218) handles the
+1. The phase auto-correction (PRs #210/#213/#218) handles the
    dominant failure mode at the symptom level. The remaining
-   catastrophic band is largely chirality-decision miscalls
+   catastrophic band is largely phase-decision miscalls
    (detector said correct/ambig but should have flipped, or
    flipped when shouldn't have).
 2. Detector confidence (|sep|) tracks success. Strong-|sep| commits
@@ -155,7 +155,7 @@ on vertex localization.
    brute-force is the root cause. A deterministic tie-breaker
    would address it directly, but is **explicitly deprioritized**
    per the Codex+Devin strategic shift (no more handcrafted
-   vertex/chirality heuristics — the bar is now "safe held-out
+   vertex/phase heuristics — the bar is now "safe held-out
    improvement" or "feeds the trust layer").
 
 ## Recommended next sequence (per Codex+Devin)
@@ -165,7 +165,7 @@ In order, gated on the previous step demonstrating value:
 1. **This baseline + taxonomy artifact** — done by this PR. Sets
    the regression gate.
 2. **Geometry trust-policy diagnostics** — add `model.debug`
-   fields for chirality confidence, axis agreement against the
+   fields for phase confidence, axis agreement against the
    detected bezels, face-quad-consistency, grid/source-
    contamination. Diagnostics-only; no behavior change.
 3. **Guardrail experiment** — route low-trust cases to
@@ -197,7 +197,7 @@ In order, gated on the previous step demonstrating value:
 
 Per the Codex+Devin synthesis, these are NOT next bets:
 
-- More handcrafted vertex/chirality heuristics (dark-line variants,
+- More handcrafted vertex/phase heuristics (dark-line variants,
   junction extractors, scalar scorers). Diminishing returns; the
   sprint repeatedly falsified them at the safe-coverage bar.
 - More SAM3 prompt bakeoffs without a materially new signal.

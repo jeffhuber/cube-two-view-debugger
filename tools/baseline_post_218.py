@@ -8,17 +8,17 @@ categorizes each case into one of:
 
   GOOD                  mean per-axis bearing error < 10°
   MARGINAL              10° ≤ err < 25°
-  CHIRALITY_MISS        err > 25° AND chirality_check ∈ {correct, ambiguous}
+  CHIRALITY_MISS        err > 25° AND phase_check ∈ {correct, ambiguous}
                         AND best-perm rotation of model.far matches user.near
                         within 25° (i.e., the right 3 corners ARE in the
                         model's far set, the detector just missed)
-  CHIRALITY_FALSE_FLIP  err > 25° AND chirality_check == corrected_60deg_flip
+  CHIRALITY_FALSE_FLIP  err > 25° AND phase_check == corrected_60deg_flip
                         AND best-perm rotation of model.far matches user.near
                         within 25° (the detector flipped a model that was
                         already correct, making it wrong)
   TRUE_GEOMETRY_FAIL    err > 25° AND neither model.near nor model.far matches
                         user.near within 25° — fit is bad regardless of
-                        chirality choice
+                        phase choice
 
 Bearings are scale+translation invariant, so we work in gallery coords
 directly (no crop reconstruction needed).
@@ -87,7 +87,7 @@ def _categorize(
     if err_near < 25.0:
         return "MARGINAL"
     if err_far < 25.0:
-        # model.far matches user.near — chirality is geometrically wrong
+        # model.far matches user.near — phase is geometrically wrong
         if chir_status == "corrected_60deg_flip":
             return "CHIRALITY_FALSE_FLIP"
         return "CHIRALITY_MISS"
@@ -126,16 +126,16 @@ def _run_one_case(
 
         err_near = _best_perm_err(near_b, user_bearings)
         err_far = _best_perm_err(far_b, user_bearings)
-        chir = model.debug.get("chirality_check", "?")
-        sep = model.debug.get("chirality_darkness_separation")
+        chir = model.debug.get("phase_check", "?")
+        sep = model.debug.get("phase_darkness_separation")
         category = _categorize(err_near, err_far, chir)
 
         results.append({
             "run": run,
             "err_near_deg": round(err_near, 1),
             "err_far_deg": round(err_far, 1),
-            "chirality_check": chir,
-            "chirality_sep": round(sep, 1) if sep is not None else None,
+            "phase_check": chir,
+            "phase_sep": round(sep, 1) if sep is not None else None,
             "category": category,
         })
     return results
@@ -262,7 +262,7 @@ def _render_markdown(summary: Dict[str, Any], by_case: Dict[str, List[Dict[str, 
     lines.append("  bezel-darkness reasoning), and the |sep| < 10 ambiguous band.")
     lines.append("  These are calibrated against the 58 cases, not derived from")
     lines.append("  first principles. PR #218's 33pp accuracy lift from a single")
-    lines.append("  block reorder (vertex ensemble BEFORE chirality check) is")
+    lines.append("  block reorder (vertex ensemble BEFORE phase check) is")
     lines.append("  itself evidence that the detector is sensitive to non-")
     lines.append("  geometric noise.")
     lines.append("")
@@ -276,8 +276,8 @@ def _render_markdown(summary: Dict[str, Any], by_case: Dict[str, List[Dict[str, 
     lines.append("")
     lines.append("## Baseline snapshot")
     lines.append("")
-    lines.append("Re-baseline of the global cube model after PR #213 (chirality")
-    lines.append("auto-correct) and PR #218 (vertex ensemble before chirality")
+    lines.append("Re-baseline of the global cube model after PR #213 (phase")
+    lines.append("auto-correct) and PR #218 (vertex ensemble before phase")
     lines.append("check) landed.")
     lines.append("")
     lines.append(f"**Eval set**: {summary['n_cases']} cases × "
@@ -315,7 +315,7 @@ def _render_markdown(summary: Dict[str, Any], by_case: Dict[str, List[Dict[str, 
         "MARGINAL": "10–25° err — small jitter, color sampling probably still OK.",
         "CHIRALITY_MISS": "Model.far matches user.near; detector said `correct` or `ambiguous` — flip needed but missed.",
         "CHIRALITY_FALSE_FLIP": "Model.far matches user.near; detector said `corrected_60deg_flip` — wrongly flipped a previously-correct model.",
-        "TRUE_GEOMETRY_FAIL": "Neither model.near nor model.far matches user.near — fit is bad regardless of chirality.",
+        "TRUE_GEOMETRY_FAIL": "Neither model.near nor model.far matches user.near — fit is bad regardless of phase.",
     }
     for cat in ["GOOD", "MARGINAL", "CHIRALITY_MISS", "CHIRALITY_FALSE_FLIP", "TRUE_GEOMETRY_FAIL"]:
         c = cats.get(cat, 0)
@@ -336,8 +336,8 @@ def _render_markdown(summary: Dict[str, Any], by_case: Dict[str, List[Dict[str, 
     lines.append("")
     lines.append("Mixed cases are where the Procrustes 6! brute-force still picks")
     lines.append("different symmetry-equivalent permutations across runs and the")
-    lines.append("chirality detector doesn't reliably rescue all of them. The")
-    lines.append("deterministic-tie-breaker path was scoped (see CHIRALITY_DETECTION_REPORT.md")
+    lines.append("phase detector doesn't reliably rescue all of them. The")
+    lines.append("deterministic-tie-breaker path was scoped (see NEAR_FAR_PHASE_REPORT.md")
     lines.append("\"What's next\") but deprioritized in favor of higher-leverage work")
     lines.append("on vertex localization.")
     lines.append("")
@@ -354,16 +354,16 @@ def _render_markdown(summary: Dict[str, Any], by_case: Dict[str, List[Dict[str, 
     lines.append("| set | err_near | category | chir_check | sep |")
     lines.append("|-----|---------:|----------|------------|----:|")
     for k, r in case_worst[:10]:
-        sep = r["chirality_sep"] if r.get("chirality_sep") is not None else "n/a"
+        sep = r["phase_sep"] if r.get("phase_sep") is not None else "n/a"
         sep_s = f"{sep:+.1f}" if isinstance(sep, (int, float)) else str(sep)
-        lines.append(f"| {k} | {r['err_near_deg']:>6.1f}° | {r['category']:>22s} | {r['chirality_check']:>30s} | {sep_s} |")
+        lines.append(f"| {k} | {r['err_near_deg']:>6.1f}° | {r['category']:>22s} | {r['phase_check']:>30s} | {sep_s} |")
     lines.append("")
 
     lines.append("## What this baseline says")
     lines.append("")
-    lines.append("1. The chirality auto-correction (PRs #210/#213/#218) handles the")
+    lines.append("1. The phase auto-correction (PRs #210/#213/#218) handles the")
     lines.append("   dominant failure mode at the symptom level. The remaining")
-    lines.append("   catastrophic band is largely chirality-decision miscalls")
+    lines.append("   catastrophic band is largely phase-decision miscalls")
     lines.append("   (detector said correct/ambig but should have flipped, or")
     lines.append("   flipped when shouldn't have).")
     lines.append("2. Detector confidence (|sep|) tracks success. Strong-|sep| commits")
@@ -373,7 +373,7 @@ def _render_markdown(summary: Dict[str, Any], by_case: Dict[str, List[Dict[str, 
     lines.append("   brute-force is the root cause. A deterministic tie-breaker")
     lines.append("   would address it directly, but is **explicitly deprioritized**")
     lines.append("   per the Codex+Devin strategic shift (no more handcrafted")
-    lines.append("   vertex/chirality heuristics — the bar is now \"safe held-out")
+    lines.append("   vertex/phase heuristics — the bar is now \"safe held-out")
     lines.append("   improvement\" or \"feeds the trust layer\").")
     lines.append("")
     lines.append("## Recommended next sequence (per Codex+Devin)")
@@ -383,7 +383,7 @@ def _render_markdown(summary: Dict[str, Any], by_case: Dict[str, List[Dict[str, 
     lines.append("1. **This baseline + taxonomy artifact** — done by this PR. Sets")
     lines.append("   the regression gate.")
     lines.append("2. **Geometry trust-policy diagnostics** — add `model.debug`")
-    lines.append("   fields for chirality confidence, axis agreement against the")
+    lines.append("   fields for phase confidence, axis agreement against the")
     lines.append("   detected bezels, face-quad-consistency, grid/source-")
     lines.append("   contamination. Diagnostics-only; no behavior change.")
     lines.append("3. **Guardrail experiment** — route low-trust cases to")
@@ -415,7 +415,7 @@ def _render_markdown(summary: Dict[str, Any], by_case: Dict[str, List[Dict[str, 
     lines.append("")
     lines.append("Per the Codex+Devin synthesis, these are NOT next bets:")
     lines.append("")
-    lines.append("- More handcrafted vertex/chirality heuristics (dark-line variants,")
+    lines.append("- More handcrafted vertex/phase heuristics (dark-line variants,")
     lines.append("  junction extractors, scalar scorers). Diminishing returns; the")
     lines.append("  sprint repeatedly falsified them at the safe-coverage bar.")
     lines.append("- More SAM3 prompt bakeoffs without a materially new signal.")

@@ -3,345 +3,345 @@
     "n_runs": 116,
     "n_cases": 58,
     "category_counts": {
+      "CHIRALITY_MISS": 12,
       "CHIRALITY_FALSE_FLIP": 10,
+      "GOOD": 76,
       "TRUE_GEOMETRY_FAIL": 2,
-      "GOOD": 78,
-      "MARGINAL": 12,
-      "CHIRALITY_MISS": 14
+      "MARGINAL": 16
     },
     "error_distribution": {
-      ">45\u00b0": 25,
-      "5-10\u00b0": 50,
-      "<5\u00b0": 28,
-      "10-25\u00b0": 12,
-      "25-45\u00b0": 1
+      ">45\u00b0": 22,
+      "<5\u00b0": 27,
+      "5-10\u00b0": 49,
+      "25-45\u00b0": 2,
+      "10-25\u00b0": 16
     },
     "stable_good_cases": 32,
-    "stable_bad_cases": 9,
-    "mixed_cases": 17
+    "stable_bad_cases": 11,
+    "mixed_cases": 15
   },
   "by_case": {
     "12_A": [
       {
         "run": 0,
-        "err_near_deg": 48.6,
-        "err_far_deg": 11.4,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 14.7,
-        "category": "CHIRALITY_FALSE_FLIP"
+        "err_near_deg": 49.4,
+        "err_far_deg": 10.6,
+        "phase_check": "ambiguous_no_correction",
+        "phase_sep": -2.7,
+        "category": "CHIRALITY_MISS"
       },
       {
         "run": 1,
-        "err_near_deg": 53.0,
-        "err_far_deg": 42.1,
-        "chirality_check": "ambiguous_no_correction",
-        "chirality_sep": -0.6,
-        "category": "TRUE_GEOMETRY_FAIL"
+        "err_near_deg": 48.8,
+        "err_far_deg": 11.2,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 10.7,
+        "category": "CHIRALITY_FALSE_FLIP"
       }
     ],
     "12_B": [
       {
         "run": 0,
-        "err_near_deg": 6.9,
-        "err_far_deg": 59.6,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 90.3,
+        "err_near_deg": 2.1,
+        "err_far_deg": 59.4,
+        "phase_check": "correct",
+        "phase_sep": -72.5,
         "category": "GOOD"
       },
       {
         "run": 1,
-        "err_near_deg": 6.1,
+        "err_near_deg": 3.4,
         "err_far_deg": 59.9,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 92.9,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 95.9,
         "category": "GOOD"
       }
     ],
     "14_A": [
       {
         "run": 0,
-        "err_near_deg": 8.0,
-        "err_far_deg": 59.4,
-        "chirality_check": "ambiguous_no_correction",
-        "chirality_sep": 2.0,
+        "err_near_deg": 6.2,
+        "err_far_deg": 58.7,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 52.0,
         "category": "GOOD"
       },
       {
         "run": 1,
-        "err_near_deg": 4.9,
-        "err_far_deg": 59.2,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 63.7,
+        "err_near_deg": 7.7,
+        "err_far_deg": 59.7,
+        "phase_check": "ambiguous_no_correction",
+        "phase_sep": 4.7,
         "category": "GOOD"
       }
     ],
     "14_B": [
       {
         "run": 0,
-        "err_near_deg": 9.3,
-        "err_far_deg": 50.7,
-        "chirality_check": "correct",
-        "chirality_sep": -33.3,
+        "err_near_deg": 9.2,
+        "err_far_deg": 50.8,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 45.6,
         "category": "GOOD"
       },
       {
         "run": 1,
         "err_near_deg": 8.6,
         "err_far_deg": 51.4,
-        "chirality_check": "correct",
-        "chirality_sep": -32.9,
+        "phase_check": "correct",
+        "phase_sep": -35.0,
         "category": "GOOD"
       }
     ],
     "15_A": [
       {
         "run": 0,
-        "err_near_deg": 8.5,
-        "err_far_deg": 51.5,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 22.9,
-        "category": "GOOD"
-      },
-      {
-        "run": 1,
-        "err_near_deg": 9.0,
-        "err_far_deg": 51.0,
-        "chirality_check": "correct",
-        "chirality_sep": -28.0,
-        "category": "GOOD"
-      }
-    ],
-    "15_B": [
-      {
-        "run": 0,
-        "err_near_deg": 5.1,
-        "err_far_deg": 54.9,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 20.1,
-        "category": "GOOD"
-      },
-      {
-        "run": 1,
-        "err_near_deg": 4.1,
-        "err_far_deg": 56.3,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 43.0,
-        "category": "GOOD"
-      }
-    ],
-    "17_A": [
-      {
-        "run": 0,
-        "err_near_deg": 5.2,
-        "err_far_deg": 54.8,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 56.3,
-        "category": "GOOD"
-      },
-      {
-        "run": 1,
-        "err_near_deg": 10.5,
-        "err_far_deg": 49.5,
-        "chirality_check": "correct",
-        "chirality_sep": -34.4,
-        "category": "MARGINAL"
-      }
-    ],
-    "17_B": [
-      {
-        "run": 0,
-        "err_near_deg": 10.3,
-        "err_far_deg": 55.4,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 69.2,
-        "category": "MARGINAL"
-      },
-      {
-        "run": 1,
-        "err_near_deg": 9.5,
-        "err_far_deg": 53.7,
-        "chirality_check": "correct",
-        "chirality_sep": -80.7,
-        "category": "GOOD"
-      }
-    ],
-    "21_A": [
-      {
-        "run": 0,
-        "err_near_deg": 4.3,
-        "err_far_deg": 55.7,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 17.7,
-        "category": "GOOD"
-      },
-      {
-        "run": 1,
-        "err_near_deg": 4.5,
-        "err_far_deg": 55.5,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 18.0,
-        "category": "GOOD"
-      }
-    ],
-    "21_B": [
-      {
-        "run": 0,
-        "err_near_deg": 50.8,
-        "err_far_deg": 9.2,
-        "chirality_check": "ambiguous_no_correction",
-        "chirality_sep": 8.8,
-        "category": "CHIRALITY_MISS"
-      },
-      {
-        "run": 1,
-        "err_near_deg": 51.0,
-        "err_far_deg": 9.0,
-        "chirality_check": "ambiguous_no_correction",
-        "chirality_sep": 7.8,
-        "category": "CHIRALITY_MISS"
-      }
-    ],
-    "22_A": [
-      {
-        "run": 0,
-        "err_near_deg": 5.2,
-        "err_far_deg": 59.4,
-        "chirality_check": "correct",
-        "chirality_sep": -40.8,
-        "category": "GOOD"
-      },
-      {
-        "run": 1,
-        "err_near_deg": 8.8,
-        "err_far_deg": 58.6,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 48.3,
-        "category": "GOOD"
-      }
-    ],
-    "22_B": [
-      {
-        "run": 0,
-        "err_near_deg": 4.9,
-        "err_far_deg": 56.8,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 20.9,
-        "category": "GOOD"
-      },
-      {
-        "run": 1,
-        "err_near_deg": 50.8,
-        "err_far_deg": 9.2,
-        "chirality_check": "ambiguous_no_correction",
-        "chirality_sep": 6.8,
-        "category": "CHIRALITY_MISS"
-      }
-    ],
-    "23_A": [
-      {
-        "run": 0,
-        "err_near_deg": 6.9,
-        "err_far_deg": 59.2,
-        "chirality_check": "correct",
-        "chirality_sep": -56.5,
-        "category": "GOOD"
-      },
-      {
-        "run": 1,
-        "err_near_deg": 7.6,
-        "err_far_deg": 60.0,
-        "chirality_check": "correct",
-        "chirality_sep": -59.5,
-        "category": "GOOD"
-      }
-    ],
-    "23_B": [
-      {
-        "run": 0,
-        "err_near_deg": 4.8,
-        "err_far_deg": 57.6,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 59.5,
-        "category": "GOOD"
-      },
-      {
-        "run": 1,
-        "err_near_deg": 5.3,
-        "err_far_deg": 59.8,
-        "chirality_check": "correct",
-        "chirality_sep": -49.8,
-        "category": "GOOD"
-      }
-    ],
-    "24_A": [
-      {
-        "run": 0,
-        "err_near_deg": 7.4,
-        "err_far_deg": 55.6,
-        "chirality_check": "correct",
-        "chirality_sep": -31.8,
-        "category": "GOOD"
-      },
-      {
-        "run": 1,
-        "err_near_deg": 3.3,
-        "err_far_deg": 56.9,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 32.3,
-        "category": "GOOD"
-      }
-    ],
-    "24_B": [
-      {
-        "run": 0,
-        "err_near_deg": 4.1,
-        "err_far_deg": 55.9,
-        "chirality_check": "correct",
-        "chirality_sep": -43.3,
+        "err_near_deg": 9.7,
+        "err_far_deg": 50.3,
+        "phase_check": "correct",
+        "phase_sep": -17.5,
         "category": "GOOD"
       },
       {
         "run": 1,
         "err_near_deg": 3.4,
         "err_far_deg": 56.6,
-        "chirality_check": "correct",
-        "chirality_sep": -48.8,
+        "phase_check": "correct",
+        "phase_sep": -55.7,
+        "category": "GOOD"
+      }
+    ],
+    "15_B": [
+      {
+        "run": 0,
+        "err_near_deg": 3.0,
+        "err_far_deg": 57.0,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 38.8,
+        "category": "GOOD"
+      },
+      {
+        "run": 1,
+        "err_near_deg": 4.1,
+        "err_far_deg": 55.9,
+        "phase_check": "correct",
+        "phase_sep": -47.2,
+        "category": "GOOD"
+      }
+    ],
+    "17_A": [
+      {
+        "run": 0,
+        "err_near_deg": 9.9,
+        "err_far_deg": 50.2,
+        "phase_check": "correct",
+        "phase_sep": -54.7,
+        "category": "GOOD"
+      },
+      {
+        "run": 1,
+        "err_near_deg": 5.0,
+        "err_far_deg": 55.0,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 56.9,
+        "category": "GOOD"
+      }
+    ],
+    "17_B": [
+      {
+        "run": 0,
+        "err_near_deg": 8.3,
+        "err_far_deg": 55.7,
+        "phase_check": "correct",
+        "phase_sep": -13.2,
+        "category": "GOOD"
+      },
+      {
+        "run": 1,
+        "err_near_deg": 9.9,
+        "err_far_deg": 55.4,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 63.1,
+        "category": "GOOD"
+      }
+    ],
+    "21_A": [
+      {
+        "run": 0,
+        "err_near_deg": 4.6,
+        "err_far_deg": 55.4,
+        "phase_check": "correct",
+        "phase_sep": -21.7,
+        "category": "GOOD"
+      },
+      {
+        "run": 1,
+        "err_near_deg": 9.2,
+        "err_far_deg": 50.8,
+        "phase_check": "correct",
+        "phase_sep": -11.8,
+        "category": "GOOD"
+      }
+    ],
+    "21_B": [
+      {
+        "run": 0,
+        "err_near_deg": 9.8,
+        "err_far_deg": 50.2,
+        "phase_check": "correct",
+        "phase_sep": -39.3,
+        "category": "GOOD"
+      },
+      {
+        "run": 1,
+        "err_near_deg": 9.1,
+        "err_far_deg": 50.9,
+        "phase_check": "correct",
+        "phase_sep": -11.7,
+        "category": "GOOD"
+      }
+    ],
+    "22_A": [
+      {
+        "run": 0,
+        "err_near_deg": 5.8,
+        "err_far_deg": 59.1,
+        "phase_check": "correct",
+        "phase_sep": -35.8,
+        "category": "GOOD"
+      },
+      {
+        "run": 1,
+        "err_near_deg": 5.1,
+        "err_far_deg": 59.5,
+        "phase_check": "correct",
+        "phase_sep": -29.3,
+        "category": "GOOD"
+      }
+    ],
+    "22_B": [
+      {
+        "run": 0,
+        "err_near_deg": 9.0,
+        "err_far_deg": 51.2,
+        "phase_check": "ambiguous_no_correction",
+        "phase_sep": -10.0,
+        "category": "GOOD"
+      },
+      {
+        "run": 1,
+        "err_near_deg": 50.9,
+        "err_far_deg": 9.1,
+        "phase_check": "ambiguous_no_correction",
+        "phase_sep": 8.2,
+        "category": "CHIRALITY_MISS"
+      }
+    ],
+    "23_A": [
+      {
+        "run": 0,
+        "err_near_deg": 5.1,
+        "err_far_deg": 58.9,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 68.5,
+        "category": "GOOD"
+      },
+      {
+        "run": 1,
+        "err_near_deg": 7.4,
+        "err_far_deg": 59.4,
+        "phase_check": "correct",
+        "phase_sep": -60.7,
+        "category": "GOOD"
+      }
+    ],
+    "23_B": [
+      {
+        "run": 0,
+        "err_near_deg": 5.1,
+        "err_far_deg": 59.9,
+        "phase_check": "correct",
+        "phase_sep": -46.3,
+        "category": "GOOD"
+      },
+      {
+        "run": 1,
+        "err_near_deg": 4.5,
+        "err_far_deg": 59.5,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 62.1,
+        "category": "GOOD"
+      }
+    ],
+    "24_A": [
+      {
+        "run": 0,
+        "err_near_deg": 43.6,
+        "err_far_deg": 75.3,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 36.2,
+        "category": "TRUE_GEOMETRY_FAIL"
+      },
+      {
+        "run": 1,
+        "err_near_deg": 36.2,
+        "err_far_deg": 72.4,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 18.8,
+        "category": "TRUE_GEOMETRY_FAIL"
+      }
+    ],
+    "24_B": [
+      {
+        "run": 0,
+        "err_near_deg": 2.8,
+        "err_far_deg": 57.2,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 40.9,
+        "category": "GOOD"
+      },
+      {
+        "run": 1,
+        "err_near_deg": 3.2,
+        "err_far_deg": 56.8,
+        "phase_check": "correct",
+        "phase_sep": -46.9,
         "category": "GOOD"
       }
     ],
     "25_A": [
       {
         "run": 0,
-        "err_near_deg": 49.9,
-        "err_far_deg": 10.9,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 13.4,
-        "category": "CHIRALITY_FALSE_FLIP"
+        "err_near_deg": 10.4,
+        "err_far_deg": 50.6,
+        "phase_check": "ambiguous_no_correction",
+        "phase_sep": 6.9,
+        "category": "MARGINAL"
       },
       {
         "run": 1,
-        "err_near_deg": 49.9,
-        "err_far_deg": 11.1,
-        "chirality_check": "correct",
-        "chirality_sep": -12.4,
+        "err_near_deg": 49.6,
+        "err_far_deg": 11.3,
+        "phase_check": "correct",
+        "phase_sep": -18.4,
         "category": "CHIRALITY_MISS"
       }
     ],
     "25_B": [
       {
         "run": 0,
-        "err_near_deg": 59.3,
-        "err_far_deg": 7.8,
-        "chirality_check": "ambiguous_no_correction",
-        "chirality_sep": 6.9,
-        "category": "CHIRALITY_MISS"
+        "err_near_deg": 58.4,
+        "err_far_deg": 4.8,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 16.9,
+        "category": "CHIRALITY_FALSE_FLIP"
       },
       {
         "run": 1,
-        "err_near_deg": 1.4,
-        "err_far_deg": 58.8,
-        "chirality_check": "correct",
-        "chirality_sep": -22.3,
+        "err_near_deg": 1.5,
+        "err_far_deg": 59.9,
+        "phase_check": "correct",
+        "phase_sep": -15.8,
         "category": "GOOD"
       }
     ],
@@ -349,719 +349,719 @@
       {
         "run": 0,
         "err_near_deg": 6.7,
-        "err_far_deg": 54.6,
-        "chirality_check": "ambiguous_no_correction",
-        "chirality_sep": -4.1,
+        "err_far_deg": 55.4,
+        "phase_check": "ambiguous_no_correction",
+        "phase_sep": -7.2,
         "category": "GOOD"
       },
       {
         "run": 1,
-        "err_near_deg": 56.5,
-        "err_far_deg": 8.2,
-        "chirality_check": "ambiguous_no_correction",
-        "chirality_sep": 4.7,
-        "category": "CHIRALITY_MISS"
+        "err_near_deg": 6.0,
+        "err_far_deg": 57.3,
+        "phase_check": "correct",
+        "phase_sep": -15.3,
+        "category": "GOOD"
       }
     ],
     "26_B": [
       {
         "run": 0,
-        "err_near_deg": 9.0,
-        "err_far_deg": 51.0,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 21.5,
-        "category": "GOOD"
+        "err_near_deg": 10.8,
+        "err_far_deg": 49.2,
+        "phase_check": "correct",
+        "phase_sep": -13.9,
+        "category": "MARGINAL"
       },
       {
         "run": 1,
-        "err_near_deg": 9.8,
-        "err_far_deg": 50.2,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 18.8,
+        "err_near_deg": 3.5,
+        "err_far_deg": 56.5,
+        "phase_check": "correct",
+        "phase_sep": -26.4,
         "category": "GOOD"
       }
     ],
     "27_A": [
       {
         "run": 0,
-        "err_near_deg": 5.0,
-        "err_far_deg": 60.0,
-        "chirality_check": "correct",
-        "chirality_sep": -49.5,
+        "err_near_deg": 4.1,
+        "err_far_deg": 59.8,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 80.6,
         "category": "GOOD"
       },
       {
         "run": 1,
-        "err_near_deg": 7.1,
-        "err_far_deg": 58.9,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 75.8,
+        "err_near_deg": 4.0,
+        "err_far_deg": 59.7,
+        "phase_check": "correct",
+        "phase_sep": -23.2,
         "category": "GOOD"
       }
     ],
     "27_B": [
       {
         "run": 0,
-        "err_near_deg": 6.7,
-        "err_far_deg": 54.6,
-        "chirality_check": "ambiguous_no_correction",
-        "chirality_sep": -1.1,
+        "err_near_deg": 4.4,
+        "err_far_deg": 56.2,
+        "phase_check": "correct",
+        "phase_sep": -46.4,
         "category": "GOOD"
       },
       {
         "run": 1,
-        "err_near_deg": 4.7,
-        "err_far_deg": 57.4,
-        "chirality_check": "correct",
-        "chirality_sep": -23.3,
+        "err_near_deg": 6.0,
+        "err_far_deg": 55.0,
+        "phase_check": "correct",
+        "phase_sep": -20.6,
         "category": "GOOD"
       }
     ],
     "28_A": [
       {
         "run": 0,
-        "err_near_deg": 5.0,
-        "err_far_deg": 58.8,
-        "chirality_check": "correct",
-        "chirality_sep": -51.8,
+        "err_near_deg": 3.9,
+        "err_far_deg": 59.4,
+        "phase_check": "correct",
+        "phase_sep": -40.6,
         "category": "GOOD"
       },
       {
         "run": 1,
-        "err_near_deg": 4.5,
-        "err_far_deg": 58.6,
-        "chirality_check": "correct",
-        "chirality_sep": -45.8,
+        "err_near_deg": 4.1,
+        "err_far_deg": 59.5,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 65.8,
         "category": "GOOD"
       }
     ],
     "28_B": [
       {
         "run": 0,
-        "err_near_deg": 7.6,
-        "err_far_deg": 59.9,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 56.2,
+        "err_near_deg": 4.2,
+        "err_far_deg": 59.0,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 37.7,
         "category": "GOOD"
       },
       {
         "run": 1,
-        "err_near_deg": 5.3,
-        "err_far_deg": 58.3,
-        "chirality_check": "correct",
-        "chirality_sep": -41.9,
+        "err_near_deg": 7.1,
+        "err_far_deg": 59.7,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 66.3,
         "category": "GOOD"
       }
     ],
     "29_A": [
       {
         "run": 0,
-        "err_near_deg": 4.6,
-        "err_far_deg": 55.4,
-        "chirality_check": "correct",
-        "chirality_sep": -39.6,
+        "err_near_deg": 5.3,
+        "err_far_deg": 54.7,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 12.4,
         "category": "GOOD"
       },
       {
         "run": 1,
-        "err_near_deg": 9.5,
-        "err_far_deg": 50.5,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 16.7,
+        "err_near_deg": 8.7,
+        "err_far_deg": 51.3,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 12.4,
         "category": "GOOD"
       }
     ],
     "29_B": [
       {
         "run": 0,
-        "err_near_deg": 2.7,
-        "err_far_deg": 59.7,
-        "chirality_check": "correct",
-        "chirality_sep": -16.1,
+        "err_near_deg": 3.2,
+        "err_far_deg": 59.9,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 67.8,
         "category": "GOOD"
       },
       {
         "run": 1,
-        "err_near_deg": 2.6,
-        "err_far_deg": 59.2,
-        "chirality_check": "correct",
-        "chirality_sep": -29.9,
+        "err_near_deg": 7.9,
+        "err_far_deg": 58.4,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 56.4,
         "category": "GOOD"
       }
     ],
     "30_A": [
       {
         "run": 0,
-        "err_near_deg": 3.3,
-        "err_far_deg": 59.7,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 18.6,
-        "category": "GOOD"
+        "err_near_deg": 52.6,
+        "err_far_deg": 7.5,
+        "phase_check": "correct",
+        "phase_sep": -22.0,
+        "category": "CHIRALITY_MISS"
       },
       {
         "run": 1,
         "err_near_deg": 3.6,
-        "err_far_deg": 59.8,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 23.2,
+        "err_far_deg": 59.9,
+        "phase_check": "correct",
+        "phase_sep": -20.9,
         "category": "GOOD"
       }
     ],
     "30_B": [
       {
         "run": 0,
-        "err_near_deg": 1.1,
-        "err_far_deg": 59.5,
-        "chirality_check": "correct",
-        "chirality_sep": -19.1,
+        "err_near_deg": 1.5,
+        "err_far_deg": 58.5,
+        "phase_check": "correct",
+        "phase_sep": -28.4,
         "category": "GOOD"
       },
       {
         "run": 1,
-        "err_near_deg": 0.7,
-        "err_far_deg": 59.5,
-        "chirality_check": "correct",
-        "chirality_sep": -15.5,
+        "err_near_deg": 1.8,
+        "err_far_deg": 58.2,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 18.7,
         "category": "GOOD"
       }
     ],
     "31_A": [
       {
         "run": 0,
-        "err_near_deg": 3.1,
-        "err_far_deg": 57.3,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 19.4,
+        "err_near_deg": 3.2,
+        "err_far_deg": 56.8,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 20.3,
         "category": "GOOD"
       },
       {
         "run": 1,
-        "err_near_deg": 3.0,
-        "err_far_deg": 57.3,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 22.1,
+        "err_near_deg": 2.6,
+        "err_far_deg": 57.4,
+        "phase_check": "correct",
+        "phase_sep": -11.9,
         "category": "GOOD"
       }
     ],
     "31_B": [
       {
         "run": 0,
-        "err_near_deg": 4.4,
-        "err_far_deg": 60.0,
-        "chirality_check": "correct",
-        "chirality_sep": -67.8,
+        "err_near_deg": 4.7,
+        "err_far_deg": 58.7,
+        "phase_check": "correct",
+        "phase_sep": -62.1,
         "category": "GOOD"
       },
       {
         "run": 1,
-        "err_near_deg": 4.4,
-        "err_far_deg": 59.7,
-        "chirality_check": "correct",
-        "chirality_sep": -57.2,
+        "err_near_deg": 7.1,
+        "err_far_deg": 59.0,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 58.9,
         "category": "GOOD"
       }
     ],
     "32_A": [
       {
         "run": 0,
-        "err_near_deg": 8.8,
-        "err_far_deg": 51.2,
-        "chirality_check": "correct",
-        "chirality_sep": -40.1,
+        "err_near_deg": 7.1,
+        "err_far_deg": 53.7,
+        "phase_check": "correct",
+        "phase_sep": -27.8,
         "category": "GOOD"
       },
       {
         "run": 1,
-        "err_near_deg": 8.1,
-        "err_far_deg": 51.9,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 43.5,
-        "category": "GOOD"
+        "err_near_deg": 10.3,
+        "err_far_deg": 49.7,
+        "phase_check": "correct",
+        "phase_sep": -28.2,
+        "category": "MARGINAL"
       }
     ],
     "32_B": [
       {
         "run": 0,
-        "err_near_deg": 5.5,
-        "err_far_deg": 59.5,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 49.5,
+        "err_near_deg": 4.3,
+        "err_far_deg": 59.7,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 47.3,
         "category": "GOOD"
       },
       {
         "run": 1,
-        "err_near_deg": 5.8,
-        "err_far_deg": 58.4,
-        "chirality_check": "ambiguous_no_correction",
-        "chirality_sep": -7.1,
+        "err_near_deg": 5.4,
+        "err_far_deg": 57.5,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 53.0,
         "category": "GOOD"
       }
     ],
     "36_A": [
       {
         "run": 0,
-        "err_near_deg": 6.4,
-        "err_far_deg": 59.0,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 32.4,
-        "category": "GOOD"
+        "err_near_deg": 13.8,
+        "err_far_deg": 59.8,
+        "phase_check": "correct",
+        "phase_sep": -32.8,
+        "category": "MARGINAL"
       },
       {
         "run": 1,
-        "err_near_deg": 13.3,
-        "err_far_deg": 59.3,
-        "chirality_check": "correct",
-        "chirality_sep": -28.8,
-        "category": "MARGINAL"
+        "err_near_deg": 7.2,
+        "err_far_deg": 48.3,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 37.1,
+        "category": "GOOD"
       }
     ],
     "36_B": [
       {
         "run": 0,
-        "err_near_deg": 11.5,
-        "err_far_deg": 50.5,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 19.6,
-        "category": "MARGINAL"
+        "err_near_deg": 8.0,
+        "err_far_deg": 55.7,
+        "phase_check": "correct",
+        "phase_sep": -15.3,
+        "category": "GOOD"
       },
       {
         "run": 1,
-        "err_near_deg": 8.2,
-        "err_far_deg": 56.0,
-        "chirality_check": "correct",
-        "chirality_sep": -15.3,
+        "err_near_deg": 7.8,
+        "err_far_deg": 56.3,
+        "phase_check": "correct",
+        "phase_sep": -16.9,
         "category": "GOOD"
       }
     ],
     "37_A": [
       {
         "run": 0,
-        "err_near_deg": 15.6,
-        "err_far_deg": 50.4,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 23.2,
+        "err_near_deg": 16.2,
+        "err_far_deg": 50.0,
+        "phase_check": "correct",
+        "phase_sep": -27.4,
         "category": "MARGINAL"
       },
       {
         "run": 1,
-        "err_near_deg": 16.1,
-        "err_far_deg": 50.9,
-        "chirality_check": "correct",
-        "chirality_sep": -24.4,
+        "err_near_deg": 16.4,
+        "err_far_deg": 50.4,
+        "phase_check": "correct",
+        "phase_sep": -24.8,
         "category": "MARGINAL"
       }
     ],
     "37_B": [
       {
         "run": 0,
-        "err_near_deg": 17.8,
-        "err_far_deg": 59.2,
-        "chirality_check": "ambiguous_no_correction",
-        "chirality_sep": -7.8,
+        "err_near_deg": 18.5,
+        "err_far_deg": 59.3,
+        "phase_check": "ambiguous_no_correction",
+        "phase_sep": -2.8,
         "category": "MARGINAL"
       },
       {
         "run": 1,
-        "err_near_deg": 18.2,
-        "err_far_deg": 58.1,
-        "chirality_check": "correct",
-        "chirality_sep": -10.6,
-        "category": "MARGINAL"
+        "err_near_deg": 7.1,
+        "err_far_deg": 51.1,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 33.6,
+        "category": "GOOD"
       }
     ],
     "39_A": [
       {
         "run": 0,
-        "err_near_deg": 55.8,
-        "err_far_deg": 7.8,
-        "chirality_check": "ambiguous_no_correction",
-        "chirality_sep": 4.7,
-        "category": "CHIRALITY_MISS"
+        "err_near_deg": 8.3,
+        "err_far_deg": 56.5,
+        "phase_check": "ambiguous_no_correction",
+        "phase_sep": 7.9,
+        "category": "GOOD"
       },
       {
         "run": 1,
-        "err_near_deg": 7.4,
-        "err_far_deg": 57.0,
-        "chirality_check": "ambiguous_no_correction",
-        "chirality_sep": -0.7,
+        "err_near_deg": 7.5,
+        "err_far_deg": 56.9,
+        "phase_check": "ambiguous_no_correction",
+        "phase_sep": -7.1,
         "category": "GOOD"
       }
     ],
     "39_B": [
       {
         "run": 0,
-        "err_near_deg": 9.6,
-        "err_far_deg": 55.6,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 40.9,
+        "err_near_deg": 9.7,
+        "err_far_deg": 54.7,
+        "phase_check": "correct",
+        "phase_sep": -48.3,
         "category": "GOOD"
       },
       {
         "run": 1,
         "err_near_deg": 9.9,
-        "err_far_deg": 53.7,
-        "chirality_check": "correct",
-        "chirality_sep": -47.7,
+        "err_far_deg": 55.1,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 47.4,
         "category": "GOOD"
       }
     ],
     "42_A": [
       {
         "run": 0,
-        "err_near_deg": 9.6,
-        "err_far_deg": 56.2,
-        "chirality_check": "correct",
-        "chirality_sep": -11.5,
+        "err_near_deg": 5.5,
+        "err_far_deg": 57.4,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 30.2,
         "category": "GOOD"
       },
       {
         "run": 1,
-        "err_near_deg": 5.2,
-        "err_far_deg": 55.9,
-        "chirality_check": "correct",
-        "chirality_sep": -24.7,
-        "category": "GOOD"
+        "err_near_deg": 10.3,
+        "err_far_deg": 55.6,
+        "phase_check": "correct",
+        "phase_sep": -12.2,
+        "category": "MARGINAL"
       }
     ],
     "42_B": [
       {
         "run": 0,
-        "err_near_deg": 7.5,
-        "err_far_deg": 54.9,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 39.4,
+        "err_near_deg": 7.2,
+        "err_far_deg": 55.5,
+        "phase_check": "correct",
+        "phase_sep": -46.1,
         "category": "GOOD"
       },
       {
         "run": 1,
         "err_near_deg": 7.3,
-        "err_far_deg": 56.2,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 37.5,
+        "err_far_deg": 55.1,
+        "phase_check": "correct",
+        "phase_sep": -36.8,
         "category": "GOOD"
       }
     ],
     "44_A": [
       {
         "run": 0,
-        "err_near_deg": 51.5,
-        "err_far_deg": 9.9,
-        "chirality_check": "correct",
-        "chirality_sep": -33.1,
-        "category": "CHIRALITY_MISS"
+        "err_near_deg": 10.1,
+        "err_far_deg": 49.9,
+        "phase_check": "correct",
+        "phase_sep": -23.2,
+        "category": "MARGINAL"
       },
       {
         "run": 1,
-        "err_near_deg": 52.0,
-        "err_far_deg": 9.6,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 39.1,
-        "category": "CHIRALITY_FALSE_FLIP"
+        "err_near_deg": 57.1,
+        "err_far_deg": 6.4,
+        "phase_check": "correct",
+        "phase_sep": -35.5,
+        "category": "CHIRALITY_MISS"
       }
     ],
     "44_B": [
       {
         "run": 0,
-        "err_near_deg": 43.8,
-        "err_far_deg": 76.0,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 20.5,
-        "category": "TRUE_GEOMETRY_FAIL"
+        "err_near_deg": 51.6,
+        "err_far_deg": 8.4,
+        "phase_check": "ambiguous_no_correction",
+        "phase_sep": -3.6,
+        "category": "CHIRALITY_MISS"
       },
       {
         "run": 1,
-        "err_near_deg": 56.6,
-        "err_far_deg": 3.4,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 18.1,
-        "category": "CHIRALITY_FALSE_FLIP"
+        "err_near_deg": 51.4,
+        "err_far_deg": 8.6,
+        "phase_check": "ambiguous_no_correction",
+        "phase_sep": -5.0,
+        "category": "CHIRALITY_MISS"
       }
     ],
     "46_A": [
       {
         "run": 0,
-        "err_near_deg": 52.0,
-        "err_far_deg": 13.3,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 10.2,
-        "category": "CHIRALITY_FALSE_FLIP"
+        "err_near_deg": 50.7,
+        "err_far_deg": 13.4,
+        "phase_check": "ambiguous_no_correction",
+        "phase_sep": -7.7,
+        "category": "CHIRALITY_MISS"
       },
       {
         "run": 1,
-        "err_near_deg": 9.9,
-        "err_far_deg": 56.0,
-        "chirality_check": "ambiguous_no_correction",
-        "chirality_sep": 2.1,
-        "category": "GOOD"
+        "err_near_deg": 55.5,
+        "err_far_deg": 9.7,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 10.1,
+        "category": "CHIRALITY_FALSE_FLIP"
       }
     ],
     "46_B": [
       {
         "run": 0,
-        "err_near_deg": 58.9,
-        "err_far_deg": 5.5,
-        "chirality_check": "correct",
-        "chirality_sep": -17.1,
-        "category": "CHIRALITY_MISS"
+        "err_near_deg": 58.6,
+        "err_far_deg": 14.9,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 19.1,
+        "category": "CHIRALITY_FALSE_FLIP"
       },
       {
         "run": 1,
-        "err_near_deg": 57.8,
-        "err_far_deg": 8.2,
-        "chirality_check": "correct",
-        "chirality_sep": -14.6,
+        "err_near_deg": 59.7,
+        "err_far_deg": 6.9,
+        "phase_check": "ambiguous_no_correction",
+        "phase_sep": -7.6,
         "category": "CHIRALITY_MISS"
       }
     ],
     "47_A": [
       {
         "run": 0,
-        "err_near_deg": 5.7,
-        "err_far_deg": 55.5,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 43.8,
+        "err_near_deg": 9.1,
+        "err_far_deg": 59.1,
+        "phase_check": "ambiguous_no_correction",
+        "phase_sep": -8.5,
         "category": "GOOD"
       },
       {
         "run": 1,
-        "err_near_deg": 2.2,
-        "err_far_deg": 58.7,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 55.7,
+        "err_near_deg": 9.0,
+        "err_far_deg": 58.3,
+        "phase_check": "correct",
+        "phase_sep": -11.7,
         "category": "GOOD"
       }
     ],
     "47_B": [
       {
         "run": 0,
-        "err_near_deg": 59.1,
+        "err_near_deg": 59.5,
         "err_far_deg": 11.0,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 42.2,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 43.5,
         "category": "CHIRALITY_FALSE_FLIP"
       },
       {
         "run": 1,
-        "err_near_deg": 59.6,
-        "err_far_deg": 12.8,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 41.6,
+        "err_near_deg": 59.7,
+        "err_far_deg": 14.4,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 34.4,
         "category": "CHIRALITY_FALSE_FLIP"
       }
     ],
     "48_A": [
       {
         "run": 0,
-        "err_near_deg": 7.1,
-        "err_far_deg": 59.4,
-        "chirality_check": "correct",
-        "chirality_sep": -21.5,
+        "err_near_deg": 6.6,
+        "err_far_deg": 59.5,
+        "phase_check": "correct",
+        "phase_sep": -25.2,
         "category": "GOOD"
       },
       {
         "run": 1,
-        "err_near_deg": 6.9,
-        "err_far_deg": 59.5,
-        "chirality_check": "correct",
-        "chirality_sep": -19.0,
+        "err_near_deg": 7.3,
+        "err_far_deg": 59.1,
+        "phase_check": "correct",
+        "phase_sep": -18.6,
         "category": "GOOD"
       }
     ],
     "48_B": [
       {
         "run": 0,
-        "err_near_deg": 10.3,
-        "err_far_deg": 59.5,
-        "chirality_check": "ambiguous_no_correction",
-        "chirality_sep": -0.5,
-        "category": "MARGINAL"
+        "err_near_deg": 5.6,
+        "err_far_deg": 54.9,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 57.3,
+        "category": "GOOD"
       },
       {
         "run": 1,
-        "err_near_deg": 8.5,
-        "err_far_deg": 59.8,
-        "chirality_check": "ambiguous_no_correction",
-        "chirality_sep": 6.6,
-        "category": "GOOD"
+        "err_near_deg": 10.2,
+        "err_far_deg": 58.5,
+        "phase_check": "ambiguous_no_correction",
+        "phase_sep": 1.5,
+        "category": "MARGINAL"
       }
     ],
     "49_A": [
       {
         "run": 0,
-        "err_near_deg": 50.8,
-        "err_far_deg": 15.6,
-        "chirality_check": "correct",
-        "chirality_sep": -32.5,
-        "category": "CHIRALITY_MISS"
+        "err_near_deg": 14.8,
+        "err_far_deg": 49.7,
+        "phase_check": "ambiguous_no_correction",
+        "phase_sep": 1.7,
+        "category": "MARGINAL"
       },
       {
         "run": 1,
-        "err_near_deg": 49.9,
-        "err_far_deg": 14.2,
-        "chirality_check": "ambiguous_no_correction",
-        "chirality_sep": -0.3,
+        "err_near_deg": 48.9,
+        "err_far_deg": 14.3,
+        "phase_check": "ambiguous_no_correction",
+        "phase_sep": 3.6,
         "category": "CHIRALITY_MISS"
       }
     ],
     "49_B": [
       {
         "run": 0,
-        "err_near_deg": 15.8,
-        "err_far_deg": 57.8,
-        "chirality_check": "correct",
-        "chirality_sep": -15.8,
+        "err_near_deg": 15.5,
+        "err_far_deg": 58.3,
+        "phase_check": "correct",
+        "phase_sep": -20.1,
         "category": "MARGINAL"
       },
       {
         "run": 1,
-        "err_near_deg": 15.6,
-        "err_far_deg": 59.1,
-        "chirality_check": "correct",
-        "chirality_sep": -22.1,
+        "err_near_deg": 13.9,
+        "err_far_deg": 59.8,
+        "phase_check": "correct",
+        "phase_sep": -15.7,
         "category": "MARGINAL"
       }
     ],
     "57_A": [
       {
         "run": 0,
-        "err_near_deg": 55.9,
-        "err_far_deg": 4.8,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 22.6,
-        "category": "CHIRALITY_FALSE_FLIP"
+        "err_near_deg": 4.4,
+        "err_far_deg": 56.8,
+        "phase_check": "ambiguous_no_correction",
+        "phase_sep": -8.6,
+        "category": "GOOD"
       },
       {
         "run": 1,
-        "err_near_deg": 4.4,
-        "err_far_deg": 57.7,
-        "chirality_check": "correct",
-        "chirality_sep": -12.7,
-        "category": "GOOD"
+        "err_near_deg": 55.7,
+        "err_far_deg": 5.0,
+        "phase_check": "correct",
+        "phase_sep": -10.9,
+        "category": "CHIRALITY_MISS"
       }
     ],
     "57_B": [
       {
         "run": 0,
-        "err_near_deg": 3.4,
-        "err_far_deg": 58.2,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 26.3,
-        "category": "GOOD"
+        "err_near_deg": 10.6,
+        "err_far_deg": 59.8,
+        "phase_check": "ambiguous_no_correction",
+        "phase_sep": -8.9,
+        "category": "MARGINAL"
       },
       {
         "run": 1,
-        "err_near_deg": 11.0,
-        "err_far_deg": 59.2,
-        "chirality_check": "correct",
-        "chirality_sep": -11.9,
+        "err_near_deg": 11.9,
+        "err_far_deg": 59.3,
+        "phase_check": "correct",
+        "phase_sep": -10.0,
         "category": "MARGINAL"
       }
     ],
     "58_A": [
       {
         "run": 0,
-        "err_near_deg": 4.2,
-        "err_far_deg": 57.7,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 13.5,
+        "err_near_deg": 4.3,
+        "err_far_deg": 57.6,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 13.4,
         "category": "GOOD"
       },
       {
         "run": 1,
-        "err_near_deg": 56.0,
-        "err_far_deg": 7.4,
-        "chirality_check": "ambiguous_no_correction",
-        "chirality_sep": -0.1,
+        "err_near_deg": 55.1,
+        "err_far_deg": 7.6,
+        "phase_check": "ambiguous_no_correction",
+        "phase_sep": -6.9,
         "category": "CHIRALITY_MISS"
       }
     ],
     "58_B": [
       {
         "run": 0,
-        "err_near_deg": 7.4,
-        "err_far_deg": 59.5,
-        "chirality_check": "correct",
-        "chirality_sep": -16.9,
+        "err_near_deg": 6.1,
+        "err_far_deg": 59.8,
+        "phase_check": "correct",
+        "phase_sep": -18.0,
         "category": "GOOD"
       },
       {
         "run": 1,
         "err_near_deg": 6.5,
-        "err_far_deg": 59.7,
-        "chirality_check": "correct",
-        "chirality_sep": -18.7,
+        "err_far_deg": 57.8,
+        "phase_check": "correct",
+        "phase_sep": -28.1,
         "category": "GOOD"
       }
     ],
     "61_A": [
       {
         "run": 0,
-        "err_near_deg": 7.9,
-        "err_far_deg": 58.7,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 45.8,
+        "err_near_deg": 5.3,
+        "err_far_deg": 58.9,
+        "phase_check": "correct",
+        "phase_sep": -57.9,
         "category": "GOOD"
       },
       {
         "run": 1,
-        "err_near_deg": 5.1,
-        "err_far_deg": 58.4,
-        "chirality_check": "correct",
-        "chirality_sep": -56.2,
-        "category": "GOOD"
+        "err_near_deg": 14.5,
+        "err_far_deg": 51.4,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 53.5,
+        "category": "MARGINAL"
       }
     ],
     "61_B": [
       {
         "run": 0,
-        "err_near_deg": 9.2,
-        "err_far_deg": 55.6,
-        "chirality_check": "correct",
-        "chirality_sep": -45.2,
+        "err_near_deg": 9.4,
+        "err_far_deg": 54.7,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 47.1,
         "category": "GOOD"
       },
       {
         "run": 1,
-        "err_near_deg": 9.1,
-        "err_far_deg": 55.1,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 41.0,
+        "err_near_deg": 9.4,
+        "err_far_deg": 55.4,
+        "phase_check": "correct",
+        "phase_sep": -47.7,
         "category": "GOOD"
       }
     ],
     "62_A": [
       {
         "run": 0,
-        "err_near_deg": 58.1,
-        "err_far_deg": 3.9,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 31.2,
+        "err_near_deg": 59.0,
+        "err_far_deg": 4.5,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 31.1,
         "category": "CHIRALITY_FALSE_FLIP"
       },
       {
         "run": 1,
-        "err_near_deg": 2.1,
-        "err_far_deg": 58.2,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 23.5,
-        "category": "GOOD"
+        "err_near_deg": 59.2,
+        "err_far_deg": 1.5,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 28.5,
+        "category": "CHIRALITY_FALSE_FLIP"
       }
     ],
     "62_B": [
       {
         "run": 0,
-        "err_near_deg": 60.0,
-        "err_far_deg": 1.7,
-        "chirality_check": "ambiguous_no_correction",
-        "chirality_sep": -5.7,
-        "category": "CHIRALITY_MISS"
+        "err_near_deg": 58.5,
+        "err_far_deg": 11.7,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 27.7,
+        "category": "CHIRALITY_FALSE_FLIP"
       },
       {
         "run": 1,
-        "err_near_deg": 58.7,
-        "err_far_deg": 8.1,
-        "chirality_check": "corrected_60deg_flip",
-        "chirality_sep": 32.1,
+        "err_near_deg": 59.9,
+        "err_far_deg": 8.0,
+        "phase_check": "corrected_60deg_flip",
+        "phase_sep": 13.9,
         "category": "CHIRALITY_FALSE_FLIP"
       }
     ]

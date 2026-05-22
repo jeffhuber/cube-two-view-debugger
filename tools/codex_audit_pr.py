@@ -327,6 +327,33 @@ def _fetch_pr_head(local_repo: Path, pr_number: int) -> None:
     )
 
 
+def _fetch_base_ref(local_repo: Path, base_ref: str) -> None:
+    """Refresh the base ref (typically `origin/main`) so the codex review
+    diff is against current upstream, not a stale local snapshot. Codex
+    round 1 of #234 — P2: without this, a long-lived local checkout
+    whose `origin/main` is stale would have Codex diff the PR against
+    an older base, including already-merged changes and/or missing
+    current-base context.
+
+    `base_ref` is in the form passed to `codex review --base` — typically
+    `origin/main`. We `git fetch origin main` (the remote branch part)
+    to update the corresponding tracking ref.
+    """
+    # Parse `origin/<branch>` or fall back to the full ref string.
+    if "/" in base_ref and base_ref.startswith("origin/"):
+        remote_branch = base_ref.removeprefix("origin/")
+        subprocess.run(
+            ["git", "-C", str(local_repo), "fetch", "origin", remote_branch],
+            check=True, capture_output=True, text=True,
+        )
+    else:
+        # Generic fetch — let git figure out the remote.
+        subprocess.run(
+            ["git", "-C", str(local_repo), "fetch", "origin", base_ref],
+            check=True, capture_output=True, text=True,
+        )
+
+
 # ----- Codex CLI invocation -----
 
 
@@ -334,7 +361,15 @@ def run_codex_review(
     config: AuditConfig,
     worktree_path: Path,
 ) -> str:
-    """Run `codex review --base <ref>` from the worktree. Returns stdout."""
+    """Run `codex review --base <ref>` from the worktree. Returns stdout.
+
+    Raises `subprocess.CalledProcessError` on non-zero exit so the caller
+    can fail the audit rather than silently parse partial/empty output.
+    (Codex review round 1 of #234 — P2: without this check, an auth or
+    CLI failure would return empty stdout, the parser would see "no codex
+    marker", and the safe-default PASS-shaped verdict would mark the run
+    as `codex-audit-done`.)
+    """
     if not Path(config.codex_cli_path).exists():
         raise FileNotFoundError(
             f"Codex CLI not found at {config.codex_cli_path}. "
@@ -348,6 +383,15 @@ def run_codex_review(
         text=True,
         timeout=config.timeout,
     )
+    if result.returncode != 0:
+        # Surface as CalledProcessError so the orchestrator can fail
+        # the audit (and main() can format an error exit code).
+        raise subprocess.CalledProcessError(
+            result.returncode,
+            [config.codex_cli_path, "review", "--base", config.base_ref],
+            output=result.stdout,
+            stderr=result.stderr,
+        )
     # Codex writes its review to stdout; stderr has progress chatter.
     # We capture both and prefer stdout for the verdict.
     return result.stdout + ("\n" + result.stderr if result.stderr.strip() else "")
@@ -422,8 +466,10 @@ def audit_pr(config: AuditConfig, repo: str, pr_number: int) -> AuditResult:
     print(f"audit {repo}#{pr_number} head={head_sha_start[:8]} "
           f"(local: {local_repo})", file=sys.stderr, flush=True)
 
-    # Ensure the head SHA is locally fetched, then create a worktree.
+    # Ensure both the PR head AND the base ref are locally fetched
+    # before running the review. Stale base = wrong diff = wrong review.
     _fetch_pr_head(local_repo, pr_number)
+    _fetch_base_ref(local_repo, config.base_ref)
     worktree_path = _create_temp_worktree(local_repo, head_sha_start)
     try:
         t0 = time.time()

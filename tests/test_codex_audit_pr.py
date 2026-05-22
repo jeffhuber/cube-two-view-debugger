@@ -239,6 +239,7 @@ def _install_audit_mocks(
 
     monkeypatch.setattr(c, "post_pr_comment", fake_post)
     monkeypatch.setattr(c, "_fetch_pr_head", lambda *a, **k: None)
+    monkeypatch.setattr(c, "_fetch_base_ref", lambda *a, **k: None)
     monkeypatch.setattr(c, "_create_temp_worktree",
                         lambda *a, **k: Path("/tmp/fake-wt-test"))
     monkeypatch.setattr(c, "_remove_worktree", lambda *a, **k: None)
@@ -357,3 +358,124 @@ def test_audit_pr_raises_without_repo_path(monkeypatch):
     )
     with pytest.raises(ValueError, match="no local repo path configured"):
         c.audit_pr(config, "jeffhuber/cube-two-view-debugger", 17)
+
+
+# ----- Regression tests for Codex meta-review on #234 -----
+
+
+def test_run_codex_review_raises_on_nonzero_exit(monkeypatch):
+    """Codex meta-review on #234 — P2: a non-zero exit from `codex review`
+    (auth failure, base ref missing, CLI crash, etc.) MUST raise
+    CalledProcessError rather than returning partial/empty output that
+    the parser would treat as a PASS-shaped safe default. Without this
+    fix, broken-Codex runs would silently flow into `codex-audit-done`.
+    """
+    import pytest
+
+    class FakeResult:
+        returncode = 2
+        stdout = ""
+        stderr = "error: not authenticated\n"
+
+    monkeypatch.setattr(c.subprocess, "run", lambda *a, **k: FakeResult())
+    monkeypatch.setattr(c.Path, "exists", lambda self: True)  # codex_cli_path exists
+    config = c.AuditConfig(
+        github_token="x", repo_paths={},
+        codex_cli_path="/fake/codex",
+    )
+    with pytest.raises(c.subprocess.CalledProcessError) as exc_info:
+        c.run_codex_review(config, Path("/tmp/fake-wt"))
+    assert exc_info.value.returncode == 2
+    assert "not authenticated" in (exc_info.value.stderr or "")
+
+
+def test_run_codex_review_returns_stdout_on_success(monkeypatch):
+    """Mirror of above: successful (returncode=0) runs should NOT raise
+    and should return the captured stdout."""
+    class FakeResult:
+        returncode = 0
+        stdout = "codex\nPASS\n"
+        stderr = ""
+
+    monkeypatch.setattr(c.subprocess, "run", lambda *a, **k: FakeResult())
+    monkeypatch.setattr(c.Path, "exists", lambda self: True)
+    config = c.AuditConfig(github_token="x", repo_paths={}, codex_cli_path="/fake/codex")
+    result = c.run_codex_review(config, Path("/tmp/fake-wt"))
+    assert "PASS" in result
+
+
+def test_fetch_base_ref_calls_git_fetch_with_correct_remote_branch(monkeypatch):
+    """Codex meta-review on #234 — P2: the original code only fetched the
+    PR head, leaving `origin/main` stale on long-lived local checkouts.
+    `_fetch_base_ref` must fetch the remote branch that the base ref
+    references.
+    """
+    calls = []
+
+    class FakeResult:
+        returncode = 0
+        stdout = ""
+        stderr = ""
+
+    def fake_run(*args, **kwargs):
+        calls.append(args[0])
+        return FakeResult()
+
+    monkeypatch.setattr(c.subprocess, "run", fake_run)
+    c._fetch_base_ref(Path("/fake/repo"), "origin/main")
+
+    assert len(calls) == 1
+    assert calls[0] == ["git", "-C", "/fake/repo", "fetch", "origin", "main"]
+
+
+def test_fetch_base_ref_handles_non_origin_prefixed_ref(monkeypatch):
+    """Fallback for unusual base refs (e.g., a release branch named
+    without the `origin/` prefix). Should still attempt a fetch and not
+    crash."""
+    calls = []
+
+    class FakeResult:
+        returncode = 0; stdout = ""; stderr = ""
+
+    monkeypatch.setattr(c.subprocess, "run",
+                        lambda *a, **k: calls.append(a[0]) or FakeResult())
+    c._fetch_base_ref(Path("/fake/repo"), "release-2026-05")
+    assert calls[0] == ["git", "-C", "/fake/repo", "fetch", "origin", "release-2026-05"]
+
+
+def test_audit_pr_fetches_both_pr_head_and_base_ref(monkeypatch):
+    """Integration: `audit_pr` should call both `_fetch_pr_head` and
+    `_fetch_base_ref` before creating the worktree (Codex meta-review P2)."""
+    pr_meta = _fake_pr(head_sha="aaaa00001111")
+    posted: List[Dict[str, Any]] = []
+    fetch_calls: List[str] = []
+
+    def track_pr_head(local_repo, pr_number):
+        fetch_calls.append(f"pr_head({pr_number})")
+
+    def track_base_ref(local_repo, base_ref):
+        fetch_calls.append(f"base_ref({base_ref})")
+
+    monkeypatch.setattr(c, "fetch_pull_request", lambda *a, **k: pr_meta)
+    monkeypatch.setattr(c, "post_pr_comment",
+                        lambda *a, **k: posted.append("p") or {"html_url": "u"})
+    monkeypatch.setattr(c, "_fetch_pr_head", track_pr_head)
+    monkeypatch.setattr(c, "_fetch_base_ref", track_base_ref)
+    monkeypatch.setattr(c, "_create_temp_worktree",
+                        lambda *a, **k: Path("/tmp/fake-wt-test"))
+    monkeypatch.setattr(c, "_remove_worktree", lambda *a, **k: None)
+    monkeypatch.setattr(c, "run_codex_review", lambda *a, **k: REAL_PASS_OUTPUT)
+
+    config = c.AuditConfig(
+        github_token="test",
+        repo_paths={"jeffhuber/cube-two-view-debugger": Path("/tmp/fake-repo")},
+        base_ref="origin/main",
+    )
+    Path("/tmp/fake-repo").mkdir(exist_ok=True)
+    try:
+        c.audit_pr(config, "jeffhuber/cube-two-view-debugger", 17)
+    finally:
+        Path("/tmp/fake-repo").rmdir()
+    # Both fetches happened before the review.
+    assert "pr_head(17)" in fetch_calls
+    assert "base_ref(origin/main)" in fetch_calls

@@ -36,10 +36,17 @@ BLOCKED_LABEL = "codex-audit-blocked"
 # Author login(s) that the Codex bridge posts audit comments under.
 # Override via CODEX_BOT_AUTHORS env var (comma-separated) so users can
 # point at their own service account without forking the labeler.
+#
+# Codex round 1 of #234 — P2: the GitHub Actions workflow always
+# exports `CODEX_BOT_AUTHORS: ${{ vars.CODEX_BOT_AUTHORS }}`; when the
+# repo variable is unset, GitHub passes an empty string (NOT an unset
+# env var). `os.environ.get(name, default)` returns the default ONLY
+# if the key is missing — an empty-string value defeats the default.
+# Use `or _DEFAULT_AUTHORS` to fall back when the value is empty.
 _DEFAULT_AUTHORS = "codex-audit-bot,codex-audit-bot[bot]"
 CODEX_COMMENT_AUTHORS = {
     a.strip().lower()
-    for a in os.environ.get("CODEX_BOT_AUTHORS", _DEFAULT_AUTHORS).split(",")
+    for a in (os.environ.get("CODEX_BOT_AUTHORS") or _DEFAULT_AUTHORS).split(",")
     if a.strip()
 }
 
@@ -239,8 +246,14 @@ def main() -> int:
         if not token:
             print("error: GITHUB_TOKEN is required", file=sys.stderr)
             return 1
-        issue_number = int((event.get("issue") or {}).get("number", 0))
-        if issue_number:
+        # Codex round 1 of #234 — P3: the workflow fires on every
+        # `issue_comment`, including comments on regular (non-PR) issues.
+        # Skip the `/pulls/{n}` fetch when the issue isn't a PR — otherwise
+        # the call 404s and the Action fails for unrelated issue comments.
+        issue = event.get("issue") or {}
+        issue_number = int(issue.get("number", 0))
+        is_pr = "pull_request" in issue
+        if issue_number and is_pr:
             current_head_sha = fetch_pull_request(repo, issue_number, token=token)["head"]["sha"]
 
     decision, reason = resolve_label_decision(event, current_head_sha=current_head_sha)

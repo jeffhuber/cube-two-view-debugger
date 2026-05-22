@@ -507,8 +507,14 @@ def recomputed_signal_rules() -> List[Tuple[str, str, Callable[[TrustRow], bool]
     # (Codex caught the polarity inversion in PR #232 v1).
     BEST_EXISTING = lambda r: _phase_low_confidence(r, 8.0) and not r.cv_consistent
 
+    # Codex #233 round-5 P2: include EVERY advertised signal in the
+    # OR-compound sweep, not just fit/hex/ensemble. Without pnp_rms and
+    # junction_score compounds, the "no rule meets the bar" conclusion
+    # would be incomplete (could false-trigger the Phase 4/5 pivot).
+    # junction_score is LOW = suspect, so the compound uses _signal_below.
     for sig_attr, ts, descr in [
         ("fit_residual_rms_px", (80.0, 100.0, 150.0), "fit_residual"),
+        ("pnp_rms_px", (60.0, 100.0, 150.0), "pnp_rms"),
         ("hexagon_centroid_vs_bezel_vertex_offset_px", (50.0, 80.0, 120.0), "hex_bezel"),
         ("ensemble_shift_px", (20.0, 40.0, 60.0), "ensemble_shift"),
     ]:
@@ -518,6 +524,13 @@ def recomputed_signal_rules() -> List[Tuple[str, str, Callable[[TrustRow], bool]
                 f"Retake when (|phase|<8 AND cv-fail) OR {descr} >= {t}.",
                 lambda r, attr=sig_attr, t=t: BEST_EXISTING(r) or _signal_above(r, attr, t),
             ))
+    # junction_score uses below-threshold semantics (LOW = weak vertex)
+    for t in (50.0, 100.0, 150.0, 200.0):
+        rules.append((
+            f"phaseANDcv_OR_junction_below_T{t}",
+            f"Retake when (|phase|<8 AND cv-fail) OR junction_score < {t}.",
+            lambda r, t=t: BEST_EXISTING(r) or _signal_below(r, "junction_score_at_ensemble", t),
+        ))
 
     # ----- triple: best-existing OR fit_residual OR hex_bezel -----
     for ft, ht in [(80.0, 50.0), (100.0, 80.0), (150.0, 120.0)]:

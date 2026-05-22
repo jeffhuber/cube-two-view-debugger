@@ -59,12 +59,19 @@
 | `phaseANDcv_OR_fit_residual_T80.0` | Retake when (|phase|<8 AND cv-fail) OR fit_residual >= 80.0. | 65.0% (13/20) | 48.6% (36/74) | 59.1% (13/22) | ❌ |
 | `phaseANDcv_OR_fit_residual_T100.0` | Retake when (|phase|<8 AND cv-fail) OR fit_residual >= 100.0. | 60.0% (12/20) | 24.3% (18/74) | 54.5% (12/22) | ❌ |
 | `phaseANDcv_OR_fit_residual_T150.0` | Retake when (|phase|<8 AND cv-fail) OR fit_residual >= 150.0. | 25.0% (5/20) | 2.7% (2/74) | 13.6% (3/22) | ❌ |
+| `phaseANDcv_OR_pnp_rms_T60.0` | Retake when (|phase|<8 AND cv-fail) OR pnp_rms >= 60.0. | 65.0% (13/20) | 56.8% (42/74) | 59.1% (13/22) | ❌ |
+| `phaseANDcv_OR_pnp_rms_T100.0` | Retake when (|phase|<8 AND cv-fail) OR pnp_rms >= 100.0. | 60.0% (12/20) | 37.8% (28/74) | 59.1% (13/22) | ❌ |
+| `phaseANDcv_OR_pnp_rms_T150.0` | Retake when (|phase|<8 AND cv-fail) OR pnp_rms >= 150.0. | 30.0% (6/20) | 2.7% (2/74) | 22.7% (5/22) | ❌ |
 | `phaseANDcv_OR_hex_bezel_T50.0` | Retake when (|phase|<8 AND cv-fail) OR hex_bezel >= 50.0. | 70.0% (14/20) | 32.4% (24/74) | 68.2% (15/22) | ❌ |
 | `phaseANDcv_OR_hex_bezel_T80.0` | Retake when (|phase|<8 AND cv-fail) OR hex_bezel >= 80.0. | 65.0% (13/20) | 25.7% (19/74) | 54.5% (12/22) | ❌ |
 | `phaseANDcv_OR_hex_bezel_T120.0` | Retake when (|phase|<8 AND cv-fail) OR hex_bezel >= 120.0. | 35.0% (7/20) | 12.2% (9/74) | 36.4% (8/22) | ❌ |
 | `phaseANDcv_OR_ensemble_shift_T20.0` | Retake when (|phase|<8 AND cv-fail) OR ensemble_shift >= 20.0. | 80.0% (16/20) | 48.6% (36/74) | 72.7% (16/22) | ❌ |
 | `phaseANDcv_OR_ensemble_shift_T40.0` | Retake when (|phase|<8 AND cv-fail) OR ensemble_shift >= 40.0. | 50.0% (10/20) | 21.6% (16/74) | 45.5% (10/22) | ❌ |
 | `phaseANDcv_OR_ensemble_shift_T60.0` | Retake when (|phase|<8 AND cv-fail) OR ensemble_shift >= 60.0. | 50.0% (10/20) | 8.1% (6/74) | 22.7% (5/22) | ❌ |
+| `phaseANDcv_OR_junction_below_T50.0` | Retake when (|phase|<8 AND cv-fail) OR junction_score < 50.0. | 30.0% (6/20) | 2.7% (2/74) | 13.6% (3/22) | ❌ |
+| `phaseANDcv_OR_junction_below_T100.0` | Retake when (|phase|<8 AND cv-fail) OR junction_score < 100.0. | 35.0% (7/20) | 4.1% (3/74) | 13.6% (3/22) | ❌ |
+| `phaseANDcv_OR_junction_below_T150.0` | Retake when (|phase|<8 AND cv-fail) OR junction_score < 150.0. | 50.0% (10/20) | 14.9% (11/74) | 13.6% (3/22) | ❌ |
+| `phaseANDcv_OR_junction_below_T200.0` | Retake when (|phase|<8 AND cv-fail) OR junction_score < 200.0. | 60.0% (12/20) | 33.8% (25/74) | 45.5% (10/22) | ❌ |
 | `phaseANDcv_OR_fit80.0_OR_hex50.0` | Retake when (|phase|<8 AND cv-fail) OR fit_residual >= 80.0 OR hex_bezel >= 50.0. | 75.0% (15/20) | 59.5% (44/74) | 68.2% (15/22) | ❌ |
 | `phaseANDcv_OR_fit100.0_OR_hex80.0` | Retake when (|phase|<8 AND cv-fail) OR fit_residual >= 100.0 OR hex_bezel >= 80.0. | 70.0% (14/20) | 35.1% (26/74) | 68.2% (15/22) | ❌ |
 | `phaseANDcv_OR_fit150.0_OR_hex120.0` | Retake when (|phase|<8 AND cv-fail) OR fit_residual >= 150.0 OR hex_bezel >= 120.0. | 35.0% (7/20) | 12.2% (9/74) | 36.4% (8/22) | ❌ |

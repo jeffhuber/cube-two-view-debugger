@@ -1,6 +1,6 @@
-"""Unit tests for chirality detection + correction in global_cube_model.
+"""Unit tests for near/far phase detection + correction in global_cube_model.
 
-The chirality check uses per-corner line-darkness sampling: for each of
+The phase check uses per-corner line-darkness sampling: for each of
 the 6 hexagon corners around the vertex, measure pixel darkness along
 the line from vertex toward that corner. The 3 NEAR corners (cube edges
 = dark bezels) should show HIGHER darkness than the 3 FAR corners
@@ -12,7 +12,7 @@ import numpy as np
 
 from tools.global_cube_model import (
     GlobalCubeModel,
-    _apply_chirality_correction,
+    _resolve_near_far_phase,
     _line_darkness_from_vertex,
     _signed_angle_diff_deg,
     derive_geometry,
@@ -21,7 +21,7 @@ from tools.interior_bezel_detection import InteriorBezelDetection
 
 
 def _solved_iso_model(edge_px: float = 100.0) -> GlobalCubeModel:
-    """Synthetic chirality-correct iso projection: near corners at
+    """Synthetic phase-correct iso projection: near corners at
     image-angle 30°, 270°, 150° (3 directions ~120° apart).
     """
     m = GlobalCubeModel(
@@ -73,19 +73,19 @@ def test_line_darkness_distinguishes_bezel_vs_sticker():
     assert dark_along > dark_perp + 50, (dark_along, dark_perp)
 
 
-def test_chirality_check_no_image_skips():
+def test_phase_check_no_image_skips():
     model = _solved_iso_model()
     detection = InteriorBezelDetection(
         cube_center=(500.0, 500.0),
         boundary_angles=[math.radians(30), math.radians(270), math.radians(150)],
         line_qualities=[0.9, 0.9, 0.9],
     )
-    _, debug = _apply_chirality_correction(model, detection, image_rgb=None)
-    assert debug["chirality_check"] == "skipped_no_image"
+    _, debug = _resolve_near_far_phase(model, detection, image_rgb=None)
+    assert debug["phase_check"] == "skipped_no_image"
 
 
-def test_chirality_correct_under_empirical_polarity():
-    """Empirically validated polarity (sep<0 ≡ correct chirality): synthetic
+def test_phase_correct_under_empirical_polarity():
+    """Empirically validated polarity (sep<0 ≡ correct phase): synthetic
     image with dark lines along the FAR directions (90°/330°/210°) and the
     model labeled correctly with near at 30°/270°/150°. Lines vertex→near
     sample light background (no dark line there), lines vertex→far sample
@@ -98,17 +98,17 @@ def test_chirality_correct_under_empirical_polarity():
         boundary_angles=[math.radians(30), math.radians(90), math.radians(150)],
         line_qualities=[0.9, 0.9, 0.9],
     )
-    corrected, debug = _apply_chirality_correction(model, detection, img)
-    assert debug["chirality_check"] == "correct", debug
+    corrected, debug = _resolve_near_far_phase(model, detection, img)
+    assert debug["phase_check"] == "correct", debug
     # Empirical polarity: near LIGHTER than far ≡ correct
-    assert debug["chirality_mean_near_darkness"] < debug["chirality_mean_far_darkness"]
+    assert debug["phase_mean_near_darkness"] < debug["phase_mean_far_darkness"]
     # Axes unchanged
     assert corrected.axis_x_2d == model.axis_x_2d
     assert corrected.axis_y_2d == model.axis_y_2d
     assert corrected.axis_z_2d == model.axis_z_2d
 
 
-def test_chirality_flip_suggested_under_empirical_polarity_diagnostic_only():
+def test_phase_flip_suggested_under_empirical_polarity_diagnostic_only():
     """Model's labeled near corners are at the 60°-flipped positions
     (90°/330°/210°). Synthetic image has dark stripes along those same
     angles. Lines vertex→model.near now sample dark stripes, vertex→model.far
@@ -131,17 +131,17 @@ def test_chirality_flip_suggested_under_empirical_polarity_diagnostic_only():
         boundary_angles=[math.radians(30), math.radians(90), math.radians(150)],
         line_qualities=[0.9, 0.9, 0.9],
     )
-    result, debug = _apply_chirality_correction(m, detection, img)
-    assert debug["chirality_check"] == "flip_suggested_diagnostic_only", debug
+    result, debug = _resolve_near_far_phase(m, detection, img)
+    assert debug["phase_check"] == "flip_suggested_diagnostic_only", debug
     # Empirical polarity: near DARKER than far ≡ flipped
-    assert debug["chirality_mean_near_darkness"] > debug["chirality_mean_far_darkness"]
+    assert debug["phase_mean_near_darkness"] > debug["phase_mean_far_darkness"]
     # Model NOT swapped because apply_correction=False (default for direct call)
     assert result.axis_x_2d == m.axis_x_2d
     assert result.axis_y_2d == m.axis_y_2d
     assert result.axis_z_2d == m.axis_z_2d
 
 
-def test_chirality_corrected_when_apply_correction_true():
+def test_phase_corrected_when_apply_correction_true():
     """With apply_correction=True the flipped-model setup actually swaps
     axes to use the far-corner positions as new near."""
     far_angles = [math.radians(90), math.radians(330), math.radians(210)]
@@ -161,17 +161,17 @@ def test_chirality_corrected_when_apply_correction_true():
         boundary_angles=[math.radians(30), math.radians(90), math.radians(150)],
         line_qualities=[0.9, 0.9, 0.9],
     )
-    corrected, debug = _apply_chirality_correction(
+    corrected, debug = _resolve_near_far_phase(
         m, detection, img, apply_correction=True
     )
-    assert debug["chirality_check"] == "corrected_60deg_flip", debug
+    assert debug["phase_check"] == "corrected_60deg_flip", debug
     assert corrected.axis_x_2d != m.axis_x_2d
-    err_after = sum(debug["chirality_axis_angle_errors_after_deg"])
-    err_before = sum(debug["chirality_axis_angle_errors_before_deg"])
+    err_after = sum(debug["phase_axis_angle_errors_after_deg"])
+    err_before = sum(debug["phase_axis_angle_errors_before_deg"])
     assert err_after < err_before
 
 
-def test_chirality_corrected_model_has_consistent_geometry():
+def test_phase_corrected_model_has_consistent_geometry():
     """After correction (apply_correction=True), derived geometry is
     well-formed (7 corners, 3 face quads, 27 sticker cells). Uses the
     empirical-polarity setup: dark lines along the FAR directions, model
@@ -191,17 +191,17 @@ def test_chirality_corrected_model_has_consistent_geometry():
         boundary_angles=[math.radians(30), math.radians(90), math.radians(150)],
         line_qualities=[0.9, 0.9, 0.9],
     )
-    corrected, debug = _apply_chirality_correction(
+    corrected, debug = _resolve_near_far_phase(
         m, detection, img, apply_correction=True
     )
-    assert debug["chirality_check"] == "corrected_60deg_flip"
+    assert debug["phase_check"] == "corrected_60deg_flip"
     expected = {"front", "h_x", "h_y", "h_z", "h_xy", "h_xz", "h_yz"}
     assert set(corrected.visible_corners.keys()) == expected
     assert len(corrected.face_quads) == 3
     assert sum(len(c) for c in corrected.sticker_cells.values()) == 27
 
 
-def test_chirality_ambiguous_on_flat_image():
+def test_phase_ambiguous_on_flat_image():
     """No dark lines anywhere → near/far darkness roughly equal → ambiguous."""
     flat = np.full((1000, 1000, 3), 180, dtype=np.uint8)
     model = _solved_iso_model()
@@ -210,6 +210,6 @@ def test_chirality_ambiguous_on_flat_image():
         boundary_angles=[math.radians(30), math.radians(90), math.radians(150)],
         line_qualities=[0.5, 0.5, 0.5],
     )
-    _, debug = _apply_chirality_correction(model, detection, flat)
-    assert debug["chirality_check"] == "ambiguous_no_correction", debug
-    assert abs(debug["chirality_darkness_separation"]) < 10.0
+    _, debug = _resolve_near_far_phase(model, detection, flat)
+    assert debug["phase_check"] == "ambiguous_no_correction", debug
+    assert abs(debug["phase_darkness_separation"]) < 10.0

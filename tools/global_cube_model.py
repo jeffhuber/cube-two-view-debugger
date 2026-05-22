@@ -524,9 +524,11 @@ def fit_cube_template_to_anchors(
         [_TEMPLATE_HEXAGON_2D_ISO[k] for k in template_ccw_order],
         dtype=np.float64,
     )
-    # Also try chirality flipped — some camera poses produce hexagons
-    # whose CCW image-space ordering corresponds to the cube's CW
-    # ordering in cube-local coords.
+    # Also try the chirality-flipped (reversed) ordering — some camera
+    # poses produce hexagons whose CCW image-space ordering corresponds
+    # to the cube's CW ordering in cube-local coords. (This IS true
+    # chirality / handedness, distinct from the near/far phase
+    # ambiguity resolved later by _resolve_near_far_phase.)
     template_cw_order = list(reversed(template_ccw_order))
     template_cw_2d = np.array(
         [_TEMPLATE_HEXAGON_2D_ISO[k] for k in template_cw_order],
@@ -858,14 +860,20 @@ def _signed_angle_diff_deg(a_rad: float, b_rad: float) -> float:
     return abs(diff)
 
 
-def _apply_chirality_correction(
+def _resolve_near_far_phase(
     model: GlobalCubeModel,
     detection: Optional["InteriorBezelDetection"] = None,
     image_rgb: Optional[np.ndarray] = None,
     apply_correction: bool = False,
 ) -> Tuple[GlobalCubeModel, Dict[str, Any]]:
-    """Detect + (optionally) correct 60° chirality flip via per-corner
-    line darkness.
+    """Detect + (optionally) correct a 60° near/far phase flip.
+
+    NAMING NOTE. Earlier versions called this "chirality" detection,
+    but the underlying phenomenon is more accurately a **60° near/far
+    phase ambiguity** — a rotational degeneracy from the cube's
+    3-fold symmetry around its body diagonal, not a handedness
+    (mirror-reflection) ambiguity in the strict-geometry sense. See
+    `tools/NEAR_FAR_PHASE_REPORT.md` for the full framing.
 
     GEOMETRIC SETUP. In iso projection there are 6 hexagon-silhouette
     corners around the central trihedral vertex:
@@ -879,38 +887,30 @@ def _apply_chirality_correction(
     A 60° rotation of the model around the cube's body diagonal yields
     the SAME silhouette but swaps the near/far labels. The Procrustes
     brute-force fit can pick either assignment based on tiny noise
-    differences in the residual — so the chirality is effectively
-    random in noisy real-photo inputs.
+    differences in the residual — so the phase choice is effectively
+    random in noisy real-photo inputs (~52% flip rate per the full
+    58-case axis-labeled gallery validation).
 
     DISCRIMINATOR. Mean pixel darkness along the line vertex→corner,
-    measured for all 6 hexagon corners. If the model's labeled NEAR
-    corners are systematically darker than its labeled FAR corners, the
-    chirality is correct. If the opposite holds, the chirality is
-    flipped — model's "near" corners are actually at the face-diagonal
-    positions and we should swap to use the model's "far" positions as
-    the new near corners.
-
-    EMPIRICAL CAVEAT (2026-05-22). Validated against 4 user-labeled
-    cases (set 12_A/B, 17_A/B): the synthetic signal is clean but the
-    real-photo signal is noisy and frequently inverted. Suspected
-    causes: (1) model vertex is slightly offset from the true cube
-    vertex (typical ~10-50 px after PnP, reduced by the post-PnP
-    mean-of-3 ensemble), so the line vertex→near doesn't actually lie
-    on the bezel; (2) dark sticker colors (red, blue) along far
-    diagonals compete with bezel darkness; (3) lighting glare on some
-    bezels brightens them. Because of this we currently compute the
-    signal and emit it as a debug field but DO NOT auto-correct by
-    default (`apply_correction=False`). Future work: re-validate on
-    the full axis-labeled gallery (in progress) to learn a reliable
-    threshold, or replace darkness with a more robust geometric signal.
+    measured for all 6 hexagon corners. EMPIRICAL POLARITY (validated
+    against the 58-case gallery, see NEAR_FAR_PHASE_REPORT.md): if
+    `sep = mean_near - mean_far` is NEGATIVE the phase is correct; if
+    POSITIVE the phase is flipped (model's labeled "near" are actually
+    at the face-diagonal positions). The inverted polarity is opposite
+    to the naive bezel-darkness reasoning, almost certainly because
+    model vertex offset shifts the near-line off the cube-edge bezel
+    while the far-line crosses multiple internal between-sticker
+    bezels at perpendicular angles. The detector is a calibrated
+    stopgap, not a first-principles signal — see the report's
+    "principled vs empirical" section.
 
     Returns (model, debug_dict). Debug contains the per-corner
     darkness, mean-near vs mean-far, signed separation, and
-    chirality_check status.
+    phase_check status.
     """
     debug: Dict[str, Any] = {}
     if image_rgb is None:
-        debug["chirality_check"] = "skipped_no_image"
+        debug["phase_check"] = "skipped_no_image"
         return model, debug
 
     near_keys = ["h_x", "h_y", "h_z"]
@@ -918,7 +918,7 @@ def _apply_chirality_correction(
     near_positions = [model.visible_corners.get(k) for k in near_keys]
     far_positions = [model.visible_corners.get(k) for k in far_keys]
     if any(p is None for p in near_positions) or any(p is None for p in far_positions):
-        debug["chirality_check"] = "skipped_missing_corners"
+        debug["phase_check"] = "skipped_missing_corners"
         return model, debug
 
     vertex = model.cube_center_screen
@@ -930,13 +930,13 @@ def _apply_chirality_correction(
         _line_darkness_from_vertex(image_rgb, vertex, p)  # type: ignore[arg-type]
         for p in far_positions
     ]
-    debug["chirality_near_line_darkness"] = [round(d, 1) for d in near_darkness]
-    debug["chirality_far_line_darkness"] = [round(d, 1) for d in far_darkness]
+    debug["phase_near_line_darkness"] = [round(d, 1) for d in near_darkness]
+    debug["phase_far_line_darkness"] = [round(d, 1) for d in far_darkness]
 
     mean_near = sum(near_darkness) / 3.0
     mean_far = sum(far_darkness) / 3.0
-    debug["chirality_mean_near_darkness"] = round(mean_near, 1)
-    debug["chirality_mean_far_darkness"] = round(mean_far, 1)
+    debug["phase_mean_near_darkness"] = round(mean_near, 1)
+    debug["phase_mean_far_darkness"] = round(mean_far, 1)
 
     # Decision threshold: meaningful separation required. If the difference
     # is too small the image evidence is ambiguous and we leave the model
@@ -944,7 +944,7 @@ def _apply_chirality_correction(
     # ~30-80 unit separation (bezels are ~20-50 darker than stickers on
     # a typical 0-255 inverted-gray scale).
     separation = mean_near - mean_far
-    debug["chirality_darkness_separation"] = round(separation, 1)
+    debug["phase_darkness_separation"] = round(separation, 1)
 
     # Also report best-permutation errors before/after, in case downstream
     # tooling wants to compare these regimes. We compute these against the
@@ -979,15 +979,15 @@ def _apply_chirality_correction(
     target_angles = _axis_angles(true_near_positions)
     current_axis_angles = _axis_angles(near_positions)
     errors_before = best_match_error(current_axis_angles, target_angles)
-    debug["chirality_axis_angle_errors_before_deg"] = [round(e, 1) for e in errors_before]
+    debug["phase_axis_angle_errors_before_deg"] = [round(e, 1) for e in errors_before]
 
     flipped_axis_angles = _axis_angles(far_positions)
     errors_after = best_match_error(flipped_axis_angles, target_angles)
-    debug["chirality_axis_angle_errors_after_deg"] = [round(e, 1) for e in errors_after]
+    debug["phase_axis_angle_errors_after_deg"] = [round(e, 1) for e in errors_after]
 
     # Insufficient lighting / texture contrast to make a call.
     if abs(separation) < 10.0:
-        debug["chirality_check"] = "ambiguous_no_correction"
+        debug["phase_check"] = "ambiguous_no_correction"
         return model, debug
 
     # EMPIRICAL POLARITY (validated 2026-05-21 on 58-case axis-labeled
@@ -995,28 +995,28 @@ def _apply_chirality_correction(
     # line vertex→model.h_x (model's labeled "near", which IS the
     # near-in-3D 1-cube-edge endpoint) samples LIGHTER pixels than the
     # line vertex→model.h_xy (model's "far", 2-cube-edge endpoint via
-    # face diagonal) when the chirality is CORRECT — i.e., sep<0 means
+    # face diagonal) when the phase is CORRECT — i.e., sep<0 means
     # CORRECT, sep>0 means FLIPPED. This is the OPPOSITE of the
     # naive bezel-darkness reasoning. Suspected cause: typical model
     # vertex offset (~10–50 px from true cube vertex after PnP) means
     # vertex→near lines skim off the cube-edge bezel into adjacent
     # sticker interior, while vertex→far lines (across face diagonals)
     # cross multiple perpendicular internal bezels and rack up more
-    # darkness. The base rate of chirality flips in the model is 52%;
+    # darkness. The base rate of phase flips in the model is 52%;
     # this polarity-corrected detector agrees with position-based
     # ground truth on ~82% of non-ambiguous runs. See
-    # tools/CHIRALITY_DETECTION_REPORT.md for the full empirical table.
+    # tools/NEAR_FAR_PHASE_REPORT.md for the full empirical table.
     if separation < 0:
         # Model's labeled "near" is LIGHTER — empirically this is the
-        # CORRECT chirality.
-        debug["chirality_check"] = "correct"
+        # CORRECT phase.
+        debug["phase_check"] = "correct"
         return model, debug
 
     # separation > +10: model's "near" is DARKER — empirically the
-    # chirality is FLIPPED, swap to use far-corner positions as new
+    # phase is FLIPPED, swap to use far-corner positions as new
     # axes.
     if not apply_correction:
-        debug["chirality_check"] = "flip_suggested_diagnostic_only"
+        debug["phase_check"] = "flip_suggested_diagnostic_only"
         return model, debug
 
     new_axes = [
@@ -1032,7 +1032,7 @@ def _apply_chirality_correction(
     )
     derive_geometry(corrected)
     corrected.debug.update(model.debug)
-    debug["chirality_check"] = "corrected_60deg_flip"
+    debug["phase_check"] = "corrected_60deg_flip"
     return corrected, debug
 
 
@@ -1104,13 +1104,13 @@ def fit_global_cube_model(
     # MEAN-OF-3 VERTEX ENSEMBLE: average PnP vertex, bezel vertex, and
     # hexagon centroid. Empirically validated against 27 user-labeled
     # ground-truth marks. Falls back to PnP-only if bezel is missing.
-    # NOTE: this MUST run BEFORE the chirality check below. The chirality
-    # detector samples pixel darkness along vertex→corner lines, and
-    # the PnP-only vertex was typically 10–50 px off from the true cube
-    # vertex, causing the near-line to skim off the cube-edge bezel and
-    # producing a counter-intuitive inverted-polarity signal. With the
-    # ensemble-corrected vertex, the line should land on the bezel
-    # again, restoring the geometric-ideal polarity (sep > 0 ≡ correct).
+    # NOTE: this MUST run BEFORE the near/far phase check below. The
+    # phase detector samples pixel darkness along vertex→corner lines,
+    # and the PnP-only vertex was typically 10–50 px off from the true
+    # cube vertex, causing the near-line to skim off the cube-edge
+    # bezel. PR #218 measured a 33pp end-to-end accuracy lift from
+    # running the ensemble before the phase check on the 58-case
+    # gallery — see tools/NEAR_FAR_PHASE_REPORT.md.
     pnp_vertex = model.cube_center_screen
     hex_centroid = cube_center
     candidates = [pnp_vertex, hex_centroid]
@@ -1153,16 +1153,19 @@ def fit_global_cube_model(
         "ensemble_shift_px": round(math.hypot(*pnp_to_avg_shift), 1),
     })
 
-    # CHIRALITY CHECK + AUTO-CORRECTION (runs AFTER vertex ensemble).
-    # The Procrustes 6! brute-force in fit_cube_template_to_anchors
-    # picks among ~6 near-degenerate symmetry-equivalent permutations,
-    # flipping chirality ~52% of the time. We detect via pixel darkness
-    # along vertex→corner lines (now sampled from the better, ensemble-
-    # corrected vertex). See tools/CHIRALITY_DETECTION_REPORT.md.
-    model, chirality_debug = _apply_chirality_correction(
+    # NEAR/FAR PHASE CHECK + AUTO-CORRECTION (runs AFTER vertex
+    # ensemble). The Procrustes 6! brute-force in
+    # fit_cube_template_to_anchors picks among ~6 near-degenerate
+    # symmetry-equivalent permutations (the cube's body-diagonal 3-fold
+    # rotation symmetry), flipping the near/far phase ~52% of the time.
+    # We detect via pixel darkness along vertex→corner lines (now
+    # sampled from the better, ensemble-corrected vertex). See
+    # tools/NEAR_FAR_PHASE_REPORT.md for the geometric framing and
+    # validation against the 58-case gallery.
+    model, phase_debug = _resolve_near_far_phase(
         model, detection, image_rgb, apply_correction=True
     )
-    model.debug.update(chirality_debug)
+    model.debug.update(phase_debug)
 
     # IMAGE-BASED VERTEX REFINEMENT (gated on absolute junction score).
     # The ensemble vertex above is silhouette-derived — for ~22% of cases

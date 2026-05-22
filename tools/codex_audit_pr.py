@@ -238,10 +238,18 @@ def parse_codex_output(stdout: str) -> CodexVerdict:
     """
     # Split by lines that are exactly "codex" (the final-verdict marker).
     # The verdict block is everything from the LAST such line onward.
+    #
+    # Codex round 7 of #234 — P2: the original code used `line.strip() ==
+    # "codex"` which would match indented `  codex  ` lines INSIDE the
+    # final review prose (e.g., when the review quotes the documented
+    # transcript shape). The last-marker-wins logic would then anchor
+    # on the quoted occurrence and discard the real findings above it.
+    # Codex's actual transcript markers are at column 0 with no
+    # indentation. Match exactly, allowing only trailing whitespace.
     lines = stdout.splitlines()
     last_codex_idx = -1
     for i, line in enumerate(lines):
-        if line.strip() == "codex":
+        if line.rstrip() == "codex":  # no .lstrip — column-0 only
             last_codex_idx = i
     if last_codex_idx == -1:
         # No final `codex` marker found. Codex round 3 of #234 — P2: the
@@ -696,7 +704,12 @@ def main(argv: Optional[List[str]] = None) -> int:
     if args.dry_run:
         print(result.comment_body)
 
-    if result.verdict == "STALE":
+    # Codex round 7 of #234 — P2: both STALE and UNKNOWN result in a
+    # `needs-codex-audit` requeue comment. Automation using the exit
+    # code to decide whether to retry must see exit 2 for BOTH cases;
+    # otherwise UNKNOWN looks like a successful audit even though the
+    # comment requests re-review.
+    if result.verdict in ("STALE", "UNKNOWN"):
         return 2
     return 0
 

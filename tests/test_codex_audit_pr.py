@@ -209,6 +209,97 @@ def test_parse_whitespace_only_verdict_block_returns_unknown():
     assert parsed.verdict == "UNKNOWN"
 
 
+def test_parse_does_not_anchor_on_indented_codex_in_prose():
+    """Codex round 7 of #234 — P2: the marker regex must match column-0
+    `codex` lines only, not indented or fenced occurrences inside the
+    final review prose (e.g., when the prose quotes the documented
+    transcript format). Anchoring on a quoted occurrence would discard
+    the real findings above it.
+    """
+    # Real marker at column 0, then findings, then a QUOTED `codex` line
+    # (indented, mimicking how Codex might quote the format in its prose).
+    output = """exec
+some pre-codex output
+
+codex
+[Real prose summary]
+
+- [P2] real blocker — file.py:10
+  This is a real finding. The transcript format looks like:
+      codex
+      <prose follows>
+  ...note the column-0 marker.
+
+- [P3] minor nit — file.py:20
+"""
+    parsed = c.parse_codex_output(output)
+    # The parser must anchor on the column-0 `codex` (the real marker),
+    # NOT the indented `      codex` inside the finding details.
+    # Both findings should be counted.
+    assert parsed.p2_count == 1, (
+        f"parser anchored on indented codex: got {parsed.p2_count} P2 "
+        f"findings, expected 1 (real findings discarded)"
+    )
+    assert parsed.p3_count == 1
+    assert parsed.verdict == "BLOCKED"
+
+
+def test_main_returns_exit_code_2_for_unknown_verdict(monkeypatch):
+    """Codex round 7 of #234 — P2: UNKNOWN verdicts emit the requeue
+    trailer (`needs-codex-audit`) just like STALE. The CLI exit code
+    must also be 2 (retry) for both, not 0 (success) for UNKNOWN.
+    Otherwise automation using the exit code can't distinguish a
+    successful audit from a format-drift requeue.
+    """
+    # Mock the audit_pr to return an UNKNOWN result
+    fake_result = c.AuditResult(
+        repo="r", pr_number=1,
+        head_sha_start="aaa", head_sha_end="aaa",
+        verdict="UNKNOWN", trailer=c.STALE_TRAILER,
+        comment_body="...",
+        codex_stdout="", codex_stderr="",
+    )
+    monkeypatch.setattr(c, "audit_pr", lambda *a, **k: fake_result)
+    monkeypatch.setenv("GITHUB_TOKEN", "tok")
+    monkeypatch.setenv("CODEX_AUDIT_REPO_PATHS", "owner/repo:/tmp/x")
+    rc = c.main(["--repo", "owner/repo", "--pr", "1", "--dry-run"])
+    assert rc == 2, (
+        f"UNKNOWN verdict exited with code {rc}, expected 2 (retry)"
+    )
+
+
+def test_main_returns_exit_code_2_for_stale_verdict(monkeypatch):
+    """Symmetric guard for STALE — already-correct behavior, locked in."""
+    fake_result = c.AuditResult(
+        repo="r", pr_number=1,
+        head_sha_start="aaa", head_sha_end="bbb",
+        verdict="STALE", trailer=c.STALE_TRAILER,
+        comment_body="...",
+        codex_stdout="", codex_stderr="",
+    )
+    monkeypatch.setattr(c, "audit_pr", lambda *a, **k: fake_result)
+    monkeypatch.setenv("GITHUB_TOKEN", "tok")
+    monkeypatch.setenv("CODEX_AUDIT_REPO_PATHS", "owner/repo:/tmp/x")
+    rc = c.main(["--repo", "owner/repo", "--pr", "1", "--dry-run"])
+    assert rc == 2
+
+
+def test_main_returns_exit_code_0_for_pass_verdict(monkeypatch):
+    """Symmetric guard for PASS — already-correct behavior, locked in."""
+    fake_result = c.AuditResult(
+        repo="r", pr_number=1,
+        head_sha_start="aaa", head_sha_end="aaa",
+        verdict="PASS", trailer=c.DONE_TRAILER,
+        comment_body="...",
+        codex_stdout="", codex_stderr="",
+    )
+    monkeypatch.setattr(c, "audit_pr", lambda *a, **k: fake_result)
+    monkeypatch.setenv("GITHUB_TOKEN", "tok")
+    monkeypatch.setenv("CODEX_AUDIT_REPO_PATHS", "owner/repo:/tmp/x")
+    rc = c.main(["--repo", "owner/repo", "--pr", "1", "--dry-run"])
+    assert rc == 0
+
+
 # ----- Comment formatter tests -----
 
 

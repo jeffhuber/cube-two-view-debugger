@@ -86,7 +86,16 @@ their personal login. Applies one of:
 - `needs-codex-audit` (re-queue if head SHA changed mid-review)
 
 If `github.token` cannot label the bot's comments, configure a
-`CODEX_AUDIT_LABEL_TOKEN` repo secret (fine-grained, Issues read/write).
+`CODEX_AUDIT_LABEL_TOKEN` repo secret. The token must be a fine-grained
+PAT with **both**:
+
+- **Issues**: read + write (to apply/remove labels)
+- **Pull requests**: read (for the labeler's stale-SHA detection,
+  which fetches `GET /repos/{repo}/pulls/{n}` to compare the
+  reviewed SHA against current PR head)
+
+Codex round 5 of #234 — P2 caught that an Issues-only PAT would
+fail the `/pulls/{n}` fetch before any label is applied.
 
 ### 3. Labels
 

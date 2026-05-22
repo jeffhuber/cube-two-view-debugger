@@ -14,8 +14,13 @@
 # (e.g., posting comments under the user's personal login).
 #
 # If GitHub's built-in token cannot label the bot's comments, configure
-# CODEX_AUDIT_LABEL_TOKEN as a fine-grained token with Issues read/write
-# access.
+# CODEX_AUDIT_LABEL_TOKEN as a fine-grained token with BOTH:
+#   - Issues: read + write   (to apply/remove labels)
+#   - Pull requests: read    (the labeler's main() reads PR head SHA
+#                             via GET /repos/{repo}/pulls/{n} for the
+#                             stale-SHA detection)
+# Codex round 5 of #234 — P2: an Issues-only token would fail the
+# /pulls/{n} fetch before any label is applied.
 
 name: Codex audit labeler
 

@@ -164,11 +164,49 @@ codex
 some prose
 exec
 codex
-final prose [P2] real finding"""
+final prose
+- [P2] real finding — file.py:1"""
     parsed = c.parse_codex_output(output)
-    # The final block has the P2 tag
+    # The final block has the P2 tag as a bullet item
     assert parsed.p2_count == 1
     assert "final prose" in parsed.prose
+
+
+def test_parse_does_not_count_quoted_p_tags_in_prose():
+    """Codex round 4 of #234 — P2: the parser must only count P-tags at
+    the START of finding bullets (`- [P2]` or `* [P2]`), not anywhere
+    on a line. Otherwise prose mentioning a priority tag (e.g., a P3
+    concern explaining 'the protocol mentions [P2] elsewhere') would
+    false-trigger BLOCKED."""
+    # A PASS-style review where the prose mentions [P2] in passing.
+    output = """codex
+The change is clean. Note that the protocol doc references [P2] as the
+typical severity for correctness fixes, but no [P2] findings here.
+
+- [P3] minor nit — file.py:1
+"""
+    parsed = c.parse_codex_output(output)
+    # The quoted [P2] in prose should NOT count; only the [P3] bullet should
+    assert parsed.p2_count == 0
+    assert parsed.p3_count == 1
+    assert parsed.verdict == "PASS"  # P3-only stays PASS
+
+
+def test_parse_empty_verdict_block_returns_unknown():
+    """Codex round 4 of #234 — P2: when the `codex` marker is present
+    but no review text follows (truncated CLI output or format drift),
+    the parser must return UNKNOWN, NOT default to PASS."""
+    output = "exec\n  ran something\n  done\n\ncodex\n"
+    parsed = c.parse_codex_output(output)
+    assert parsed.verdict == "UNKNOWN"
+    assert "no review prose" in parsed.prose.lower()
+
+
+def test_parse_whitespace_only_verdict_block_returns_unknown():
+    """Same as above but with whitespace after the marker — still UNKNOWN."""
+    output = "codex\n   \n\t\n  \n"
+    parsed = c.parse_codex_output(output)
+    assert parsed.verdict == "UNKNOWN"
 
 
 # ----- Comment formatter tests -----

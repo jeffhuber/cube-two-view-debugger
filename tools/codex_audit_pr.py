@@ -193,9 +193,13 @@ def post_pr_comment(repo: str, pr_number: int, body: str, *, token: str) -> Dict
 # ----- Codex output parsing -----
 
 
-# Match `[P0]`, `[P1]`, `[P2]`, `[P3]` finding tags exactly. Codex uses
-# these inline in `Full review comments:` lists.
-_P_TAG_RE = re.compile(r"\[P([0-3])\]")
+# Match `[P0]`, `[P1]`, `[P2]`, `[P3]` finding header tags. Codex emits
+# these as the leading token of finding bullets — e.g. `- [P2] title`
+# or `* [P2] title`. Codex round 4 of #234 — P2: anchor the regex to the
+# bullet-marker prefix so quotes of priority tags inside finding details
+# or summary prose don't get counted as real findings (which would turn
+# a P3-only or PASS review into BLOCKED).
+_P_TAG_RE = re.compile(r"^\s*[-*]\s*\[P([0-3])\]")
 
 
 def parse_codex_output(stdout: str) -> CodexVerdict:
@@ -253,6 +257,19 @@ def parse_codex_output(stdout: str) -> CodexVerdict:
         )
 
     verdict_block = "\n".join(lines[last_codex_idx + 1 :]).strip()
+
+    # Codex round 4 of #234 — P2: an empty verdict block (the marker is
+    # present but no review prose follows — truncated output, CLI format
+    # drift, etc.) MUST flow through the UNKNOWN path, not default to
+    # PASS. The auto-PASS regression would silently mark an unaudited PR
+    # as `codex-audit-done`.
+    if not verdict_block:
+        return CodexVerdict(
+            verdict="UNKNOWN",
+            prose="(codex final-verdict marker present but no review prose "
+                  "followed — the CLI output may have been truncated or its "
+                  "format drifted; requeue and retry)",
+        )
 
     # De-duplicate: Codex sometimes streams the same summary twice. If the
     # block is ≥2 copies of the same prose, keep just the first.

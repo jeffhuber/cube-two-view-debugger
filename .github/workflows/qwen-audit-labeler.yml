@@ -1,15 +1,17 @@
 # Qwen audit labeler
 #
 # Mirrors the Devin labeler workflow for the parallel Qwen calibration
-# phase. Triggered by comments from the Qwen audit bot account, parses
-# the `<!-- QWEN_AUDIT_STATE: ... -->` trailer, and applies one of the
-# `qwen-audit-{done,blocked,needs}` labels.
+# phase. Triggered by every PR-comment event, but the Python step is
+# authoritative about which authors are trusted: `tools/qwen_audit_labeler.py`
+# checks `QWEN_BOT_AUTHORS` (default: `qwen-audit-bot,qwen-audit-bot[bot]`)
+# and silently no-ops for anyone else. Workflow-level filtering was removed
+# in PR #231 so that `QWEN_BOT_AUTHORS=jeffhuber` style early-calibration
+# overrides actually take effect — previously the YAML-level `if:` gate
+# would skip the job entirely before the Python step's env var was read.
 #
-# Bot identity: by default the labeler accepts comments from any login
-# named `qwen-audit-bot` or `qwen-audit-bot[bot]`. To use a different
-# service account, set the QWEN_BOT_AUTHORS repo variable (comma-
-# separated list) — the labeler script reads it via env. The `if`
-# condition below should be updated to match the same account(s).
+# The script parses the `<!-- QWEN_AUDIT_STATE: ... -->` trailer in trusted
+# authors' comments and applies one of the `qwen-audit-{done,blocked,needs}`
+# labels.
 #
 # If GitHub's built-in token cannot label the bot's comments, configure
 # QWEN_AUDIT_LABEL_TOKEN as a fine-grained token with Issues read/write
@@ -28,7 +30,10 @@ permissions:
 
 jobs:
   label:
-    if: github.actor == 'qwen-audit-bot' || github.actor == 'qwen-audit-bot[bot]'
+    # No YAML-level actor gate by design — see the Python step for the
+    # authoritative QWEN_BOT_AUTHORS check. This workflow is cheap (under
+    # 10 seconds per run) and fires on issue_comment events, which is
+    # low volume in this repo.
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

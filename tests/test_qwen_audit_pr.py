@@ -18,18 +18,16 @@ from tools import qwen_audit_pr
 
 
 def test_parse_per_file_response_plain_json():
-    blockers, concerns = qwen_audit_pr.parse_per_file_response(
+    parsed = qwen_audit_pr.parse_per_file_response(
         '{"blockers": ["missing test"], "concerns": ["awkward name"]}'
     )
-    assert blockers == ["missing test"]
-    assert concerns == ["awkward name"]
+    assert parsed == (["missing test"], ["awkward name"])
 
 
 def test_parse_per_file_response_with_markdown_fences():
     text = '```json\n{"blockers": [], "concerns": ["nit"]}\n```'
-    blockers, concerns = qwen_audit_pr.parse_per_file_response(text)
-    assert blockers == []
-    assert concerns == ["nit"]
+    parsed = qwen_audit_pr.parse_per_file_response(text)
+    assert parsed == ([], ["nit"])
 
 
 def test_parse_per_file_response_with_leading_prose():
@@ -37,29 +35,44 @@ def test_parse_per_file_response_with_leading_prose():
         "Here is my review:\n\n"
         '{"blockers": ["calls undefined function bar"], "concerns": []}'
     )
-    blockers, concerns = qwen_audit_pr.parse_per_file_response(text)
-    assert blockers == ["calls undefined function bar"]
-    assert concerns == []
+    parsed = qwen_audit_pr.parse_per_file_response(text)
+    assert parsed == (["calls undefined function bar"], [])
 
 
-def test_parse_per_file_response_malformed_returns_empty():
-    blockers, concerns = qwen_audit_pr.parse_per_file_response("not json at all")
-    assert blockers == []
-    assert concerns == []
+def test_parse_per_file_response_malformed_returns_none():
+    # Codex blocker on #231: malformed Qwen output must NOT be treated as
+    # clean. parse_per_file_response returns None to distinguish "could
+    # not parse" from "parsed and found nothing"; the caller in
+    # review_one_file converts the former into a BLOCKER finding.
+    assert qwen_audit_pr.parse_per_file_response("not json at all") is None
 
 
-def test_parse_per_file_response_partial_json_returns_empty():
-    blockers, concerns = qwen_audit_pr.parse_per_file_response('{"blockers": ["a"')
-    assert blockers == []
-    assert concerns == []
+def test_parse_per_file_response_partial_json_returns_none():
+    assert qwen_audit_pr.parse_per_file_response('{"blockers": ["a"') is None
+
+
+def test_parse_per_file_response_wrong_shape_returns_none():
+    # Valid JSON, but doesn't have the expected blockers/concerns keys.
+    # Don't trust this as a clean review.
+    assert qwen_audit_pr.parse_per_file_response('{"verdict": "PASS"}') is None
+    assert qwen_audit_pr.parse_per_file_response('{"summary": "lgtm"}') is None
+    # JSON array (not object) — also untrusted.
+    assert qwen_audit_pr.parse_per_file_response('["a", "b"]') is None
 
 
 def test_parse_per_file_response_drops_empty_strings():
-    blockers, concerns = qwen_audit_pr.parse_per_file_response(
+    parsed = qwen_audit_pr.parse_per_file_response(
         '{"blockers": ["", "real"], "concerns": [null, "also"]}'
     )
-    assert blockers == ["real"]
-    assert concerns == ["also"]
+    assert parsed == (["real"], ["also"])
+
+
+def test_parse_per_file_response_empty_arrays_are_a_clean_review():
+    # This is distinct from the malformed case: Qwen successfully emitted
+    # well-formed JSON saying "no issues". Returning empty tuples (not None)
+    # is correct.
+    parsed = qwen_audit_pr.parse_per_file_response('{"blockers": [], "concerns": []}')
+    assert parsed == ([], [])
 
 
 def test_ensure_trailer_appends_done():
@@ -398,6 +411,106 @@ def test_audit_pr_skips_binary_files_by_extension(monkeypatch):
     binary_finding = next(f for f in result.file_findings if f.path.endswith(".png"))
     assert binary_finding.status == "skipped-binary"
     assert binary_finding.blockers == []
+
+
+def test_audit_pr_malformed_per_file_response_becomes_blocker(monkeypatch):
+    """Codex blocker on #231: if Qwen returns malformed/unparseable output
+    for a per-file pass, the file MUST be marked with a blocker (reviewer
+    breakdown), NOT recorded as a clean review. Verdict must be BLOCKED."""
+    pr_meta = _fake_pr(head_sha="garbage0")
+    files = [{"filename": "tools/x.py", "status": "modified", "patch": "+x"}]
+    _install_mocks(
+        monkeypatch,
+        pr_meta=pr_meta,
+        files=files,
+        file_contents={"tools/x.py": b"x = 1"},
+        # Per-file pass returns prose that has no JSON object at all.
+        per_file_response="Sure, the file looks fine to me overall. No issues.",
+        synthesis_response="Qwen Audit: PASS\n\nLooks clean.\n",
+    )
+    posted: List[Dict[str, Any]] = []
+    monkeypatch.setattr(
+        qwen_audit_pr,
+        "post_pr_comment",
+        lambda r, n, b, *, token: posted.append({"body": b}) or {"html_url": "u"},
+    )
+    config = qwen_audit_pr.AuditConfig(github_token="test")
+    result = qwen_audit_pr.audit_pr(config, "jeffhuber/cube-snap", 30)
+
+    # Synthesis says PASS, but the per-file pass had a parse failure that
+    # gets converted to a BLOCKER finding — verdict must be BLOCKED.
+    assert result.verdict == "BLOCKED"
+    finding = result.file_findings[0]
+    assert finding.has_blocker()
+    assert any("not parseable JSON" in b for b in finding.blockers)
+    assert qwen_audit_pr.BLOCKED_TRAILER in posted[0]["body"]
+
+
+def test_audit_pr_truncated_files_surface_as_pr_level_blocker(monkeypatch):
+    """Codex blocker on #231: PRs with more than `max_files` changed files
+    must NOT silently review only the first N. The truncation MUST be
+    surfaced as a PR-level blocker that gates the verdict."""
+    pr_meta = _fake_pr(head_sha="bigpr000")
+    # 30 files, but max_files default is 25.
+    files = [
+        {"filename": f"tools/f{i:02d}.py", "status": "modified", "patch": "+x"}
+        for i in range(30)
+    ]
+    file_contents = {f["filename"]: b"x = 1\n" for f in files}
+    _install_mocks(
+        monkeypatch,
+        pr_meta=pr_meta,
+        files=files,
+        file_contents=file_contents,
+        per_file_response='{"blockers": [], "concerns": []}',
+        synthesis_response="Qwen Audit: PASS\n\nAll reviewed files look fine.\n",
+    )
+    posted: List[Dict[str, Any]] = []
+    monkeypatch.setattr(
+        qwen_audit_pr,
+        "post_pr_comment",
+        lambda r, n, b, *, token: posted.append({"body": b}) or {"html_url": "u"},
+    )
+    config = qwen_audit_pr.AuditConfig(github_token="test", max_files=25)
+    result = qwen_audit_pr.audit_pr(config, "jeffhuber/cube-snap", 31)
+
+    # Verdict must be BLOCKED because of the PR-level blocker.
+    assert result.verdict == "BLOCKED"
+    assert result.pr_level_blockers, "truncation should produce a PR-level blocker"
+    blocker_text = result.pr_level_blockers[0]
+    assert "30 changed files" in blocker_text
+    assert "25" in blocker_text
+    assert "5 files omitted" in blocker_text or "tools/f25.py" in blocker_text
+    # The comment body must surface the PR-level blocker in the top matter.
+    assert "PR-level blockers" in posted[0]["body"]
+    assert qwen_audit_pr.BLOCKED_TRAILER in posted[0]["body"]
+    # Only the first 25 files were actually reviewed.
+    assert len(result.file_findings) == 25
+
+
+def test_audit_pr_exactly_max_files_is_not_truncated(monkeypatch):
+    """Boundary check: max_files=25 with exactly 25 files should NOT trip
+    the truncation blocker."""
+    pr_meta = _fake_pr(head_sha="exactly0")
+    files = [
+        {"filename": f"f{i:02d}.py", "status": "modified", "patch": "+x"}
+        for i in range(25)
+    ]
+    file_contents = {f["filename"]: b"x = 1\n" for f in files}
+    _install_mocks(
+        monkeypatch,
+        pr_meta=pr_meta,
+        files=files,
+        file_contents=file_contents,
+        per_file_response='{"blockers": [], "concerns": []}',
+        synthesis_response="Qwen Audit: PASS\n\nFine.\n",
+    )
+    monkeypatch.setattr(qwen_audit_pr, "post_pr_comment", lambda *a, **k: {"html_url": "u"})
+    config = qwen_audit_pr.AuditConfig(github_token="test", max_files=25)
+    result = qwen_audit_pr.audit_pr(config, "jeffhuber/cube-snap", 32)
+    assert result.verdict == "PASS"
+    assert result.pr_level_blockers == []
+    assert len(result.file_findings) == 25
 
 
 def test_audit_pr_per_file_qwen_error_becomes_blocker(monkeypatch):

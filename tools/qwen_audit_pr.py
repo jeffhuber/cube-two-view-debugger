@@ -116,6 +116,11 @@ class AuditResult:
     trailer: str        # the full HTML-comment trailer line
     comment_body: str
     posted_comment_url: Optional[str] = None
+    # PR-level blockers — issues that aren't tied to a single file but that
+    # gate the verdict. Currently used for the file-truncation case (PR has
+    # more changed files than config.max_files): Codex blocker on #231
+    # required this to be surfaced rather than silently dropped.
+    pr_level_blockers: List[str] = field(default_factory=list)
 
     def head_changed_during_review(self) -> bool:
         return self.head_sha_start != self.head_sha_end
@@ -410,8 +415,10 @@ def build_per_file_user_prompt(
 def build_synthesis_user_prompt(
     pr_meta: Dict[str, Any],
     findings: List[FileFinding],
+    pr_level_blockers: Optional[List[str]] = None,
 ) -> str:
     """Compose the synthesis Qwen prompt."""
+    pr_level_blockers = pr_level_blockers or []
     pr_title = pr_meta.get("title", "")
     pr_body = (pr_meta.get("body") or "").strip()
     pr_body_short = pr_body[:3000] + ("\n... (truncated)\n" if len(pr_body) > 3000 else "")
@@ -437,6 +444,13 @@ def build_synthesis_user_prompt(
     files_block = "\n".join(file_list_lines) or "(none)"
     findings_block = "\n".join(findings_lines) or "(per-file pass found no issues)"
 
+    pr_level_block_text = ""
+    if pr_level_blockers:
+        pr_level_lines = ["## PR-level BLOCKERs (these gate the verdict regardless of per-file findings)\n"]
+        for b in pr_level_blockers:
+            pr_level_lines.append(f"- {b}")
+        pr_level_block_text = "\n".join(pr_level_lines) + "\n\n"
+
     return textwrap.dedent(
         """\
         Repository: {repo}
@@ -446,7 +460,7 @@ def build_synthesis_user_prompt(
         Files changed ({n_files}):
         {files}
 
-        ## PR body (truncated to 3000 chars)
+        {pr_level_block}## PR body (truncated to 3000 chars)
 
         {body}
 
@@ -457,6 +471,9 @@ def build_synthesis_user_prompt(
         Now produce the FINAL audit comment per your system prompt. Remember:
         - Surface cross-file / PR-level issues the per-file pass cannot see.
         - If you cannot verify a claim in the PR body, that's a BLOCKER, not a PASS.
+        - If the PR-level BLOCKERs section above is non-empty, the verdict
+          MUST be BLOCKED and you must reference those PR-level blockers
+          in the body.
         - Final line MUST be the trailer:
             <!-- QWEN_AUDIT_STATE: qwen-audit-done -->   (PASS)
             <!-- QWEN_AUDIT_STATE: qwen-audit-blocked --> (BLOCKED)
@@ -469,6 +486,7 @@ def build_synthesis_user_prompt(
         author=pr_meta.get("user", {}).get("login", "?"),
         n_files=len(findings),
         files=files_block,
+        pr_level_block=pr_level_block_text,
         body=pr_body_short or "(empty)",
         findings=findings_block,
     )
@@ -477,9 +495,19 @@ def build_synthesis_user_prompt(
 # ----- Response parsing -----
 
 
-def parse_per_file_response(text: str) -> Tuple[List[str], List[str]]:
-    """Parse the JSON {blockers: [...], concerns: [...]} from the per-file pass.
-    Tolerant of extra prose / markdown fences."""
+def parse_per_file_response(text: str) -> Optional[Tuple[List[str], List[str]]]:
+    """Parse the JSON `{blockers: [...], concerns: [...]}` from the per-file
+    pass. Tolerant of extra prose / markdown fences.
+
+    Returns `(blockers, concerns)` on successful parse (either list may be
+    empty, meaning "Qwen reviewed this file and found nothing").
+
+    Returns ``None`` when no parseable JSON object was found in the response
+    OR when the JSON didn't have the expected shape. Callers MUST treat
+    ``None`` differently from `([], [])` — a parse failure is a reviewer
+    breakdown, not a clean review. The caller in `review_one_file` converts
+    this into a BLOCKER per Codex's "don't approve by vibes" rule on PR #231.
+    """
     text = text.strip()
     # Strip code fences if present.
     if text.startswith("```"):
@@ -493,12 +521,18 @@ def parse_per_file_response(text: str) -> Tuple[List[str], List[str]]:
     start = text.find("{")
     end = text.rfind("}")
     if start == -1 or end == -1 or end <= start:
-        return [], []
+        return None
     candidate = text[start : end + 1]
     try:
         obj = json.loads(candidate)
     except json.JSONDecodeError:
-        return [], []
+        return None
+    if not isinstance(obj, dict):
+        return None
+    # If the parsed object doesn't expose at least one of the expected keys,
+    # treat as parse failure — Qwen emitted JSON in a format we can't trust.
+    if "blockers" not in obj and "concerns" not in obj:
+        return None
     blockers = [str(x) for x in obj.get("blockers", []) if x]
     concerns = [str(x) for x in obj.get("concerns", []) if x]
     return blockers, concerns
@@ -582,7 +616,12 @@ def review_one_file(
         print(f"  review {path} (content={size_hint}ch)", file=sys.stderr, flush=True)
 
     try:
-        response = call_qwen(config, PER_FILE_SYSTEM_PROMPT, user_prompt, max_tokens=1024)
+        # 2048 tokens is empirically enough for the verbose-concerns case on
+        # files up to ~15K chars (observed on cube-snap#142 per-file passes;
+        # 1024 was hitting length truncation mid-JSON, which previously
+        # silently became PASS — now becomes a parse-failure BLOCKER per
+        # Codex's #231 review).
+        response = call_qwen(config, PER_FILE_SYSTEM_PROMPT, user_prompt, max_tokens=2048)
     except (urllib.error.URLError, KeyError, json.JSONDecodeError) as exc:
         if log:
             print(f"  qwen-error {path}: {exc}", file=sys.stderr, flush=True)
@@ -593,7 +632,27 @@ def review_one_file(
             raw_response="",
         )
 
-    blockers, concerns = parse_per_file_response(response)
+    parsed = parse_per_file_response(response)
+    if parsed is None:
+        # Codex blocker on #231: malformed Qwen output must NOT be treated
+        # as clean. Emit a BLOCKER so the synthesis pass and final verdict
+        # reflect the reviewer's breakdown.
+        preview = response.strip().replace("\n", " ")[:200]
+        if log:
+            print(f"  parse-failure {path}: {preview[:80]}",
+                  file=sys.stderr, flush=True)
+        return FileFinding(
+            path=path,
+            status=status,
+            blockers=[
+                "Per-file Qwen output was not parseable JSON — "
+                "cannot trust the verdict for this file. Response preview: "
+                f"{preview!r}"
+            ],
+            raw_response=response,
+        )
+
+    blockers, concerns = parsed
     return FileFinding(
         path=path,
         status=status,
@@ -611,14 +670,30 @@ def audit_pr(config: AuditConfig, repo: str, pr_number: int) -> AuditResult:
     pr_meta = fetch_pull_request(repo, pr_number, token=config.github_token)
     head_sha_start = pr_meta["head"]["sha"]
 
-    files = fetch_pr_files(repo, pr_number, token=config.github_token)
-    if len(files) > config.max_files:
-        # Note the truncation but proceed with the first N — synthesis prompt
-        # will flag this if relevant.
-        files = files[: config.max_files]
+    all_files = fetch_pr_files(repo, pr_number, token=config.github_token)
+    pr_level_blockers: List[str] = []
+    if len(all_files) > config.max_files:
+        # Codex blocker on #231: silently reviewing the first N files of a
+        # bigger PR could allow a blocker in an omitted file to slip past
+        # as PASS. Surface this explicitly as a PR-level blocker that gates
+        # the verdict; the synthesis prompt also sees the omitted-files list.
+        omitted = [f.get("filename", "?") for f in all_files[config.max_files :]]
+        pr_level_blockers.append(
+            f"PR has {len(all_files)} changed files, exceeding the per-audit "
+            f"budget of {config.max_files}. Reviewed only the first "
+            f"{config.max_files}; {len(omitted)} files omitted: "
+            + ", ".join(omitted[:10])
+            + (f", ... ({len(omitted) - 10} more)" if len(omitted) > 10 else "")
+            + ". Split the PR into smaller pieces, or re-audit with a larger "
+            "max_files setting, before treating this verdict as authoritative."
+        )
+        files = all_files[: config.max_files]
+    else:
+        files = all_files
 
     print(
-        f"audit {repo}#{pr_number} head={head_sha_start[:8]} files={len(files)}",
+        f"audit {repo}#{pr_number} head={head_sha_start[:8]} files={len(files)}"
+        f"{f' (of {len(all_files)} — truncated)' if pr_level_blockers else ''}",
         file=sys.stderr, flush=True,
     )
 
@@ -650,8 +725,9 @@ def audit_pr(config: AuditConfig, repo: str, pr_number: int) -> AuditResult:
             result.posted_comment_url = posted.get("html_url")
         return result
 
-    # Synthesis pass.
-    synth_user = build_synthesis_user_prompt(pr_meta, findings)
+    # Synthesis pass. The PR-level blockers (if any) are passed alongside
+    # per-file findings so Qwen can incorporate them into its reasoning.
+    synth_user = build_synthesis_user_prompt(pr_meta, findings, pr_level_blockers)
     try:
         synth_response = call_qwen(config, SYNTHESIS_SYSTEM_PROMPT, synth_user, max_tokens=3000)
     except (urllib.error.URLError, KeyError, json.JSONDecodeError) as exc:
@@ -662,13 +738,20 @@ def audit_pr(config: AuditConfig, repo: str, pr_number: int) -> AuditResult:
             f"Treating as BLOCKED out of caution.\n"
         )
 
-    # Determine verdict from per-file findings + Qwen's synthesis self-claim.
-    has_blocker = any(f.has_blocker() for f in findings)
+    # Determine verdict from per-file findings, PR-level blockers, and the
+    # synthesis self-claim. ANY of the three trips BLOCKED — per-file or
+    # PR-level blockers cannot be overridden by a synthesis-pass PASS claim
+    # (Codex's "don't approve by vibes" rule).
+    has_per_file_blocker = any(f.has_blocker() for f in findings)
+    has_pr_level_blocker = bool(pr_level_blockers)
     qwen_says_blocked = "Qwen Audit: BLOCKED" in synth_response
-    verdict = "BLOCKED" if (has_blocker or qwen_says_blocked) else "PASS"
+    verdict = "BLOCKED" if (has_per_file_blocker or has_pr_level_blocker or qwen_says_blocked) else "PASS"
 
     full_body = ensure_trailer(synth_response, verdict)
-    comment_body = _format_top_matter(repo, pr_number, head_sha_start, findings) + full_body
+    comment_body = (
+        _format_top_matter(repo, pr_number, head_sha_start, findings, pr_level_blockers)
+        + full_body
+    )
 
     result = AuditResult(
         repo=repo,
@@ -680,6 +763,7 @@ def audit_pr(config: AuditConfig, repo: str, pr_number: int) -> AuditResult:
         verdict=verdict,
         trailer=DONE_TRAILER if verdict == "PASS" else BLOCKED_TRAILER,
         comment_body=comment_body,
+        pr_level_blockers=pr_level_blockers,
     )
 
     if not config.dry_run:
@@ -689,17 +773,32 @@ def audit_pr(config: AuditConfig, repo: str, pr_number: int) -> AuditResult:
     return result
 
 
-def _format_top_matter(repo: str, pr_number: int, head_sha: str, findings: List[FileFinding]) -> str:
+def _format_top_matter(
+    repo: str,
+    pr_number: int,
+    head_sha: str,
+    findings: List[FileFinding],
+    pr_level_blockers: Optional[List[str]] = None,
+) -> str:
     n_files = len(findings)
     n_blocker_files = sum(1 for f in findings if f.has_blocker())
     n_concern_files = sum(1 for f in findings if f.concerns and not f.has_blocker())
     n_clean = n_files - n_blocker_files - n_concern_files
-    return (
+
+    top = (
         f"## Qwen audit (calibration phase — informational only)\n\n"
         f"Head SHA: `{head_sha}`\n"
         f"Files reviewed: {n_files} "
         f"(blocker findings: {n_blocker_files}, concern-only: {n_concern_files}, clean: {n_clean})\n\n"
     )
+
+    if pr_level_blockers:
+        top += "### PR-level blockers\n\n"
+        for b in pr_level_blockers:
+            top += f"- {b}\n"
+        top += "\n"
+
+    return top
 
 
 def _format_stale_comment(repo: str, pr_number: int, start_sha: str, end_sha: str) -> str:

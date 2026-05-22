@@ -29,8 +29,11 @@ Configuration (environment variables):
     QWEN_AUDIT_REPOS      — comma-separated `owner/repo` list. Default:
                             jeffhuber/cube-snap,jeffhuber/cube-two-view-debugger
     QWEN_API_BASE         — OpenAI-compatible base URL. Default:
-                            http://localhost:8000/v1
-    QWEN_API_MODEL        — model name. Default: qwen3-coder-next
+                            http://localhost:1234/v1 (LM Studio).
+                            For ollama use http://localhost:11434/v1.
+    QWEN_API_MODEL        — model name. Default: qwen3-coder-next.
+                            For ollama use the exact local tag, e.g.
+                            "hf.co/prism-ml/Bonsai-8B-gguf:latest".
     QWEN_API_KEY          — bearer for the local server (most local
                             servers accept "EMPTY" or any string).
                             Default: EMPTY
@@ -69,7 +72,7 @@ from typing import Any, Dict, List, Optional, Set
 
 
 DEFAULT_REPOS = "jeffhuber/cube-snap,jeffhuber/cube-two-view-debugger"
-DEFAULT_API_BASE = "http://localhost:8000/v1"
+DEFAULT_API_BASE = "http://localhost:1234/v1"  # LM Studio default; ollama serves at :11434/v1
 DEFAULT_MODEL = "qwen3-coder-next"
 DEFAULT_POLL_INTERVAL = 60
 DEFAULT_STATE_PATH = Path.home() / ".config" / "qwen-audit-bridge" / "state.json"

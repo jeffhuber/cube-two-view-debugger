@@ -47,7 +47,7 @@ Required environment:
 | Variable | Default | Purpose |
 |---|---|---|
 | `GITHUB_TOKEN` | (none — required) | PAT under the bot account whose comments the labeler trusts |
-| `QWEN_API_BASE` | `http://localhost:8000/v1` | OpenAI-compatible base URL for local Qwen serving |
+| `QWEN_API_BASE` | `http://localhost:1234/v1` | OpenAI-compatible base URL. LM Studio default; for ollama use `http://localhost:11434/v1` |
 | `QWEN_API_MODEL` | `qwen3-coder-next` | Model name |
 | `QWEN_API_KEY` | `EMPTY` | Bearer for local serving (most servers accept any string) |
 | `QWEN_AUDIT_REPOS` | `jeffhuber/cube-snap,jeffhuber/cube-two-view-debugger` | Comma-separated `owner/repo` list to poll |

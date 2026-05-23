@@ -130,6 +130,45 @@ exact 90° will not be flagged by this metric. Orthogonal signals
 (e.g., sticker spacing in `rubik_recognizer/recognizer.py` from
 PR #200) handle the 90°-yaw failure mode.
 
+### ⚠️ Chirality errors are structurally invisible
+
+The all-48 search includes the 24 det=-1 reflections precisely so
+legitimate left-handed-vs-right-handed labelings between A and B
+can be absorbed. That same flexibility means the search also
+absorbs **chirality errors** that are correlated across A and B —
+which is the dominant failure mode of the recognizer on the current
+matrix (`CHIRALITY_MISS` + `CHIRALITY_FALSE_FLIP` = ~23% of rows,
+versus `TRUE_GEOMETRY_FAIL` = 0.7% of rows).
+
+Empirical evidence — row-level probe on 8 catastrophic + 8 GOOD
+pairs from `phase2b_recomputed_signals.json` using the recognizer's
+actual axes (not human-labeled or synthetic-perturbed):
+
+  | Population              | canonicalized median | max     |
+  |-------------------------|----------------------|---------|
+  | Real CATASTROPHIC pairs |  12.74°              | 19.94°  |
+  | Real GOOD pairs         |   8.90°              | 32.87°  |
+
+The two distributions overlap completely in the [3°, 33°] range.
+At threshold 25°: 8/8 CAT and 7/8 GOOD both flagged GOOD. The
+metric **cannot distinguish** "chirality consistent across A and B"
+(legitimate det=-1 alignment, the GOOD case) from "chirality
+wrong-but-consistent across A and B" (the catastrophic case).
+
+**Implication for v2 integration:** adding the canonicalized scalar
+alone is unlikely to move the trust ranker bar on the current matrix.
+The catastrophic mode is chirality-dominated, and orientation
+consistency is structurally blind to chirality. Options:
+
+1. Fix the chirality detector itself (higher leverage; touches
+   `tools/global_cube_model.py`'s phase-check pipeline)
+2. Color/facelet-anchored canonicalization (use recognizer's
+   facelet output to constrain to det=+1 OR det=-1 alignment,
+   not both); requires plumbing facelet info through
+3. Ship the multi-feature dict anyway and let the classifier
+   find marginal signal across canon/raw/gap; expected lift is
+   small given the chirality-dominated catastrophic mode
+
 ### ⚠️ Unflipped / same-pose pairs (Codex P1 on PR #246)
 
 If the user fails to flip the cube and takes two photos of the

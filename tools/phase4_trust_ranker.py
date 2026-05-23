@@ -509,7 +509,7 @@ def render_report(output: Dict[str, Any]) -> str:
 **Status: diagnostics-only.** First learned-classifier pass at the
 Phase 2 bar after Phase 2B's hand-tuning hit its ceiling (see
 `PHASE_2B_TRUST_SIGNAL_MATRIX_RECOMPUTED.md`). 4 model classes
-evaluated on the same 58-case eval via leave-one-case-out CV.
+evaluated on the {inp['n_cases']}-case eval via leave-one-case-out CV.
 No production behavior change.
 
 ## Headline
@@ -556,7 +556,7 @@ No production behavior change.
   input image — leaving only one run out would leak the underlying
   difficulty of that case.
 - {inp['n_cases']} folds total. Per fold: fit on the remaining
-  {inp['n_rows']} − 2 ≈ 114 rows, predict on the 2 held-out.
+  {inp['n_rows']} − 2 = {inp['n_rows'] - 2} rows, predict on the 2 held-out.
 
 ## What the result means
 
@@ -568,27 +568,28 @@ set changes so the committed snapshot stays current with the model
 that production depends on.'''
 if cleared_anywhere else
 '''Even the best learned model (`''' + headline_name + '''` at out-of-fold)
-doesn't clear the Phase 2 bar on this 58-case corpus. But the gap is
-real and shrinking:
+doesn't clear the Phase 2 bar on this ''' + str(inp['n_cases']) + '''-case corpus.
+But the gap is real and shrinking:
 
 - Phase 2A (`phase_sep` alone, calibrated): 46% recall / 9% FPR
 - Phase 2B hand-tuned ceiling: 80% recall / 31% FPR (or 50% recall / 10% FPR)
-- Phase 4 v1 best learned: see table above
+- Phase 4 best learned: see table above
 
 The remaining gap is consistent with two simultaneous limits:
-1. **Sample size.** 20 catastrophic samples means leave-one-case-out
-   gives noisy folds. The Phase 4 corpus expansion (in-flight
-   worktree `claude/phase4-corpus-expansion`, blocked on the labeling
-   gallery viewport bug) adds 6 sets ≈ 4-8 more catastrophic samples,
-   shrinking CV variance.
+1. **Sample size.** ''' + str(inp['category_counts'].get('CHIRALITY_MISS', 0) + inp['category_counts'].get('CHIRALITY_FALSE_FLIP', 0) + inp['category_counts'].get('TRUE_GEOMETRY_FAIL', 0)) + ''' catastrophic samples means
+   leave-one-case-out gives noisy folds. Phase 4 v1.1 expanded the
+   corpus from 58 to 70 cases (adding ~13 catastrophic samples) but
+   the bar still wasn't cleared — strong evidence the data lever
+   alone is insufficient.
 2. **Feature set.** 6 features per row from the global model fit.
-   The proposed two-view orientation consistency signal (Codex's
-   pickup, per `COORDINATION.md`) would add a 7th feature derived
-   from comparing A and B view orientations — a fundamentally
-   different geometric signal than the others.
+   The two-view orientation consistency signal (shipped in
+   `tools/two_view_consistency.py`, PR #243) would add a 7th feature
+   derived from comparing A and B view orientations — a fundamentally
+   different geometric signal than the others. See
+   `tools/TWO_VIEW_CONSISTENCY.md` for the integration plan.
 
-Either lever (data, features) could close the gap. Both together
-should.'''
+Phase 4 v1.1 demonstrated the data lever alone doesn't suffice. Phase
+4 v2 (feature integration) is the highest-leverage remaining lever.'''
 )}
 
 ## Files

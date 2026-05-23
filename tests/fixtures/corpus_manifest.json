@@ -80,7 +80,7 @@
         "quarterTurns": 2,
         "normalizationApplied": true
       },
-      "notes": "Second yaw=2 corpus pair (180° rotation). cv-local success_clean direct, recognizer output equals ground truth byte-for-byte (diffFromCorrected=0). Captured 2026-05-12 on cube-snap PR #99 Fixer flow. Adds coverage for the 'recover-from-one-borderline-grid' path: image B's L grid (gridId=12) has quality=12.6 with badSamples=1/suspectSamples=4.6 — well below the typical ~95 quality of other selected grids in this pair, but pipeline still produces the correct state."
+      "notes": "Second yaw=2 corpus pair (180\u00b0 rotation). cv-local success_clean direct, recognizer output equals ground truth byte-for-byte (diffFromCorrected=0). Captured 2026-05-12 on cube-snap PR #99 Fixer flow. Adds coverage for the 'recover-from-one-borderline-grid' path: image B's L grid (gridId=12) has quality=12.6 with badSamples=1/suspectSamples=4.6 \u2014 well below the typical ~95 quality of other selected grids in this pair, but pipeline still produces the correct state."
     },
     {
       "setId": "24",
@@ -194,7 +194,7 @@
         "quarterTurns": 2,
         "normalizationApplied": true
       },
-      "notes": "First yaw=2 corpus pair (180° rotation). cv-local success_clean direct path, recognizer output equals ground truth byte-for-byte (diffFromCorrected=0). Captured 2026-05-12 on cube-snap PR #99 Fixer flow; LLM provider claude-sonnet failed validation on this pair (10 white stickers) which is the expected LLM failure mode on non-canonical-yaw captures."
+      "notes": "First yaw=2 corpus pair (180\u00b0 rotation). cv-local success_clean direct path, recognizer output equals ground truth byte-for-byte (diffFromCorrected=0). Captured 2026-05-12 on cube-snap PR #99 Fixer flow; LLM provider claude-sonnet failed validation on this pair (10 white stickers) which is the expected LLM failure mode on non-canonical-yaw captures."
     },
     {
       "setId": "37",
@@ -212,7 +212,7 @@
         "quarterTurns": 1,
         "normalizationApplied": true
       },
-      "notes": "yaw=1 corpus pair. cv-local success_clean direct path, recognizer output equals ground truth byte-for-byte (diffFromCorrected=0). GT was originally saved by the Fixer in capture-frame yaw (centers UBRDFL) — yaw-normalized to canonical WCA via _capture_yaw_state_to_wca(state, 1) on 2026-05-14 before manifest wiring; cube-snap#105 prevents this case in the Fixer save path going forward. LLM provider gpt-5 failed validation on this pair (duplicated/missing centers, the expected LLM failure mode on non-canonical-yaw captures)."
+      "notes": "yaw=1 corpus pair. cv-local success_clean direct path, recognizer output equals ground truth byte-for-byte (diffFromCorrected=0). GT was originally saved by the Fixer in capture-frame yaw (centers UBRDFL) \u2014 yaw-normalized to canonical WCA via _capture_yaw_state_to_wca(state, 1) on 2026-05-14 before manifest wiring; cube-snap#105 prevents this case in the Fixer save path going forward. LLM provider gpt-5 failed validation on this pair (duplicated/missing centers, the expected LLM failure mode on non-canonical-yaw captures)."
     },
     {
       "setId": "42",
@@ -244,6 +244,78 @@
       "expectedScoreFloor": null,
       "currentScoreObserved": 0,
       "notes": "Known rejected color/grid evidence collapse; image B D/yellow anchor is weak (5/9 matched) and is rejected before merged-candidate generation."
+    },
+    {
+      "setId": "20",
+      "imageAPath": "/Users/jhuber/Downloads/Set 20 - A - white up.JPG",
+      "imageBPath": "/Users/jhuber/Downloads/Set 20 - B - white up.JPG",
+      "groundTruthPath": "/Users/jhuber/Downloads/Set 20 v2 - cube-ground-truth-1778616039266.json",
+      "imageA_sha256_expected": "050de57efee8c44af8704d7fc14b07b6ae61aae13a63509ff6d2c0d7e0c8fd41",
+      "imageB_sha256_expected": "a318038e14ebf4bee5dc8b46a5b60d994c3d34610c65ca3d16139ef638da881e",
+      "groundTruth_sha256_expected": "be11bcb2fad4b9194a72d31e158a7fb9a5bb54da0de3b848c4c2fb084f02cb0b",
+      "expectedCategory": "not_yet_probed",
+      "currentScoreObserved": null,
+      "notes": "Added 2026-05-22 for Phase 4 trust-ranker corpus expansion. Photos + ground-truth captured offline; recognizer category/score calibration deferred (set to 'not_yet_probed' / null until tools/probe_corpus.py is run on these)."
+    },
+    {
+      "setId": "38",
+      "imageAPath": "/Users/jhuber/Downloads/Set 38 - A - white up IMG_7155.JPG",
+      "imageBPath": "/Users/jhuber/Downloads/Set 38 - B - white up IMG_7156.JPG",
+      "groundTruthPath": "/Users/jhuber/Downloads/Set 38 - really tricky - cube-ground-truth-1778723785674.json",
+      "imageA_sha256_expected": "a2128002be91f127d39dbece369973c8e3029dc8ef6fffbe242dd509c8729ec5",
+      "imageB_sha256_expected": "c5623865525d8709113d801c6a1377b37ea872df7372f4c2894cd74b00007f4a",
+      "groundTruth_sha256_expected": "7647f916c697e6ec44d3841bbc304621250de595e474e29c3c2a8ea92a9ee7f9",
+      "expectedCategory": "not_yet_probed",
+      "currentScoreObserved": null,
+      "notes": "Added 2026-05-22 for Phase 4 trust-ranker corpus expansion. Photos + ground-truth captured offline; recognizer category/score calibration deferred (set to 'not_yet_probed' / null until tools/probe_corpus.py is run on these)."
+    },
+    {
+      "setId": "40",
+      "imageAPath": "/Users/jhuber/Downloads/Set 40 - A - white up IMG_7159.JPG",
+      "imageBPath": "/Users/jhuber/Downloads/Set 40 - B - white up IMG_7160.JPG",
+      "groundTruthPath": "/Users/jhuber/Downloads/Set 40 - cube-ground-truth-1778569366275.json",
+      "imageA_sha256_expected": "86dd66700f0970b886f97dab50fc75519fe1ae632f635514a79f2e5002a02833",
+      "imageB_sha256_expected": "d330ef4fac32d336c6cae503f1c404ed4af48486599e287bac02ab63b9b0a8df",
+      "groundTruth_sha256_expected": "324752a81665c84583968d064a6f17fc18e7e9068dc66be50f7c894bcbce16ea",
+      "expectedCategory": "not_yet_probed",
+      "currentScoreObserved": null,
+      "notes": "Added 2026-05-22 for Phase 4 trust-ranker corpus expansion. Photos + ground-truth captured offline; recognizer category/score calibration deferred (set to 'not_yet_probed' / null until tools/probe_corpus.py is run on these)."
+    },
+    {
+      "setId": "41",
+      "imageAPath": "/Users/jhuber/Downloads/Set 41 - A - white up IMG_7161.JPG",
+      "imageBPath": "/Users/jhuber/Downloads/Set 41 - B - white up IMG_7162.JPG",
+      "groundTruthPath": "/Users/jhuber/Downloads/Set 41 - cube-ground-truth-1778723468375.json",
+      "imageA_sha256_expected": "e2874cd211c37946c0927a312022c7557f5c92f902468594861649fd6d439655",
+      "imageB_sha256_expected": "2cb616966ee2c8e1f7b34c285f06559e2cd8537169863eabb7a133cb554967a7",
+      "groundTruth_sha256_expected": "ee6bfb4d8570ebd3eea7658f29d63f3bdba63d470e63b8b67427ce00153c8b1f",
+      "expectedCategory": "not_yet_probed",
+      "currentScoreObserved": null,
+      "notes": "Added 2026-05-22 for Phase 4 trust-ranker corpus expansion. Photos + ground-truth captured offline; recognizer category/score calibration deferred (set to 'not_yet_probed' / null until tools/probe_corpus.py is run on these)."
+    },
+    {
+      "setId": "43",
+      "imageAPath": "/Users/jhuber/Downloads/Set 43 - A - white up IMG_7165.JPG",
+      "imageBPath": "/Users/jhuber/Downloads/Set 43 - B - white up IMG_7166.JPG",
+      "groundTruthPath": "/Users/jhuber/Downloads/Set 43 - cube-ground-truth-1778723417809.json",
+      "imageA_sha256_expected": "f3f50b1203623ab3538917769652300bfac586f6cce79ccfffd04284374edde9",
+      "imageB_sha256_expected": "836c0ab3de93a04b982b209abb68c6804ce76d31e5e0fc7cdb70b5e9361c2a32",
+      "groundTruth_sha256_expected": "ae9a19ce0f4e16c7c50a95b976b944add8f4f4de7fcaee576baa701079ca6cbd",
+      "expectedCategory": "not_yet_probed",
+      "currentScoreObserved": null,
+      "notes": "Added 2026-05-22 for Phase 4 trust-ranker corpus expansion. Photos + ground-truth captured offline; recognizer category/score calibration deferred (set to 'not_yet_probed' / null until tools/probe_corpus.py is run on these)."
+    },
+    {
+      "setId": "45",
+      "imageAPath": "/Users/jhuber/Downloads/Set 45 - A - white up IMG_7169.JPG",
+      "imageBPath": "/Users/jhuber/Downloads/Set 45 - B - white up IMG_7170.JPG",
+      "groundTruthPath": "/Users/jhuber/Downloads/Set 45 - cube-ground-truth-1778723207363.json",
+      "imageA_sha256_expected": "ca818729a9791275d350d5f6267642a2858cad71d92d0a6736fd68fcb55e8b72",
+      "imageB_sha256_expected": "cec581df549280bc9ee97c475e488989fb8cbc644fb7670f1379983081aa8b82",
+      "groundTruth_sha256_expected": "a4e4e8af91944afd7f8e84ea7d244b8d5d24eedf080fea4ab7b597e3e14f981f",
+      "expectedCategory": "not_yet_probed",
+      "currentScoreObserved": null,
+      "notes": "Added 2026-05-22 for Phase 4 trust-ranker corpus expansion. Photos + ground-truth captured offline; recognizer category/score calibration deferred (set to 'not_yet_probed' / null until tools/probe_corpus.py is run on these)."
     }
   ]
 }

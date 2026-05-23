@@ -7,8 +7,8 @@
 
 ## Dataset
 
-- 116 per-case-per-run rows across 58 cases
-- Outcome breakdown: **74 GOOD**, **22 MARGINAL**, **20 CATASTROPHIC**
+- 140 per-case-per-run rows across 70 cases
+- Outcome breakdown: **91 GOOD**, **16 MARGINAL**, **33 CATASTROPHIC**
 
 **Source**: `tests/fixtures/phase2b_recomputed_signals.json` (per-run global-model re-fit on the 58-case axis-labeled gallery, capturing `fit_residual_rms_px`, `pnp_rms_px`, `hexagon_centroid_vs_bezel_vertex_offset_px`, `junction_score_at_ensemble`, `ensemble_shift_px`, and `phase_darkness_separation` at native precision) joined with `tests/fixtures/cv_local_baseline.json` (per-case cv-local face-quad structural status). Outcome counts differ from `post_218_baseline.json` (74/22/20 vs 76/16/24) because the re-fit is non-deterministic (PnP basin-of-attraction) and runs are paired with the signals from the same fit.
 
@@ -16,81 +16,81 @@
 
 | rule | description | recall | GOOD FPR | MARGINAL routed | meets bar? |
 |---|---|---|---|---|---|
-| `phase_sep_alone_T11.7` | Retake when |phase_sep| < 11.7 (Phase 2A operating point). | 50.0% (10/20) | 12.2% (9/74) | 22.7% (5/22) | ❌ |
-| `phase_sep_alone_T0.5` | Retake when |phase_sep| < 0.5. | 0.0% (0/20) | 0.0% (0/74) | 0.0% (0/22) | ❌ |
-| `phase_sep_alone_T2.0` | Retake when |phase_sep| < 2.0. | 5.0% (1/20) | 1.4% (1/74) | 9.1% (2/22) | ❌ |
-| `phase_sep_alone_T5.0` | Retake when |phase_sep| < 5.0. | 10.0% (2/20) | 2.7% (2/74) | 13.6% (3/22) | ❌ |
-| `phase_sep_alone_T8.0` | Retake when |phase_sep| < 8.0. | 25.0% (5/20) | 2.7% (2/74) | 18.2% (4/22) | ❌ |
-| `phase_sep_alone_T15.0` | Retake when |phase_sep| < 15.0. | 70.0% (14/20) | 18.9% (14/74) | 31.8% (7/22) | ❌ |
-| `phase_sep_alone_T20.0` | Retake when |phase_sep| < 20.0. | 80.0% (16/20) | 31.1% (23/74) | 36.4% (8/22) | ❌ |
-| `cv_local_alone` | Retake when cv-local face-quad fit is NOT structurally consistent (status != 'ok'). | 100.0% (20/20) | 85.1% (63/74) | 95.5% (21/22) | ❌ |
-| `phase_or_cv_T8.0` | Retake when |phase_sep| < 8.0 OR cv-local NOT consistent. | 100.0% (20/20) | 85.1% (63/74) | 100.0% (22/22) | ❌ |
-| `phase_or_cv_T11.7` | Retake when |phase_sep| < 11.7 OR cv-local NOT consistent. | 100.0% (20/20) | 85.1% (63/74) | 100.0% (22/22) | ❌ |
-| `phase_or_cv_T15.0` | Retake when |phase_sep| < 15.0 OR cv-local NOT consistent. | 100.0% (20/20) | 85.1% (63/74) | 100.0% (22/22) | ❌ |
-| `phase_and_cv_T8.0` | Retake when |phase_sep| < 8.0 AND cv-local NOT consistent. | 25.0% (5/20) | 2.7% (2/74) | 13.6% (3/22) | ❌ |
-| `phase_and_cv_T11.7` | Retake when |phase_sep| < 11.7 AND cv-local NOT consistent. | 50.0% (10/20) | 12.2% (9/74) | 18.2% (4/22) | ❌ |
-| `phase_and_cv_T15.0` | Retake when |phase_sep| < 15.0 AND cv-local NOT consistent. | 70.0% (14/20) | 18.9% (14/74) | 27.3% (6/22) | ❌ |
-| `cv_severe_alone` | Retake when cv-local status is `fewer_than_3_face_quads` (the more severe failure mode — geometry couldn't even find 3 faces). | 40.0% (8/20) | 14.9% (11/74) | 22.7% (5/22) | ❌ |
-| `phase_or_cv_severe_T8.0` | Retake when |phase_sep| < 8.0 OR cv-local is `fewer_than_3_face_quads`. | 50.0% (10/20) | 17.6% (13/74) | 31.8% (7/22) | ❌ |
-| `phase_or_cv_severe_T11.7` | Retake when |phase_sep| < 11.7 OR cv-local is `fewer_than_3_face_quads`. | 65.0% (13/20) | 24.3% (18/74) | 36.4% (8/22) | ❌ |
-| `phase_or_cv_severe_T15.0` | Retake when |phase_sep| < 15.0 OR cv-local is `fewer_than_3_face_quads`. | 75.0% (15/20) | 31.1% (23/74) | 40.9% (9/22) | ❌ |
-| `fit_residual_alone_T60.0` | Retake when fit_residual_rms_px >= 60.0. | 60.0% (12/20) | 56.8% (42/74) | 54.5% (12/22) | ❌ |
-| `fit_residual_alone_T80.0` | Retake when fit_residual_rms_px >= 80.0. | 60.0% (12/20) | 48.6% (36/74) | 54.5% (12/22) | ❌ |
-| `fit_residual_alone_T100.0` | Retake when fit_residual_rms_px >= 100.0. | 45.0% (9/20) | 23.0% (17/74) | 50.0% (11/22) | ❌ |
-| `fit_residual_alone_T120.0` | Retake when fit_residual_rms_px >= 120.0. | 45.0% (9/20) | 12.2% (9/74) | 45.5% (10/22) | ❌ |
-| `fit_residual_alone_T150.0` | Retake when fit_residual_rms_px >= 150.0. | 0.0% (0/20) | 0.0% (0/74) | 0.0% (0/22) | ❌ |
-| `fit_residual_alone_T200.0` | Retake when fit_residual_rms_px >= 200.0. | 0.0% (0/20) | 0.0% (0/74) | 0.0% (0/22) | ❌ |
-| `pnp_rms_alone_T60.0` | Retake when pnp_rms_px >= 60.0. | 60.0% (12/20) | 56.8% (42/74) | 54.5% (12/22) | ❌ |
-| `pnp_rms_alone_T100.0` | Retake when pnp_rms_px >= 100.0. | 45.0% (9/20) | 36.5% (27/74) | 54.5% (12/22) | ❌ |
-| `pnp_rms_alone_T150.0` | Retake when pnp_rms_px >= 150.0. | 5.0% (1/20) | 0.0% (0/74) | 9.1% (2/22) | ❌ |
-| `hex_bezel_disagree_T30.0` | Retake when hexagon_centroid_vs_bezel_vertex_offset_px >= 30.0. | 70.0% (14/20) | 71.6% (53/74) | 68.2% (15/22) | ❌ |
-| `hex_bezel_disagree_T50.0` | Retake when hexagon_centroid_vs_bezel_vertex_offset_px >= 50.0. | 55.0% (11/20) | 31.1% (23/74) | 63.6% (14/22) | ❌ |
-| `hex_bezel_disagree_T80.0` | Retake when hexagon_centroid_vs_bezel_vertex_offset_px >= 80.0. | 50.0% (10/20) | 23.0% (17/74) | 50.0% (11/22) | ❌ |
-| `hex_bezel_disagree_T120.0` | Retake when hexagon_centroid_vs_bezel_vertex_offset_px >= 120.0. | 10.0% (2/20) | 9.5% (7/74) | 22.7% (5/22) | ❌ |
-| `hex_bezel_disagree_T200.0` | Retake when hexagon_centroid_vs_bezel_vertex_offset_px >= 200.0. | 0.0% (0/20) | 0.0% (0/74) | 4.5% (1/22) | ❌ |
-| `ensemble_shift_T20.0` | Retake when ensemble_shift_px >= 20.0. | 70.0% (14/20) | 47.3% (35/74) | 72.7% (16/22) | ❌ |
-| `ensemble_shift_T40.0` | Retake when ensemble_shift_px >= 40.0. | 30.0% (6/20) | 18.9% (14/74) | 31.8% (7/22) | ❌ |
-| `ensemble_shift_T60.0` | Retake when ensemble_shift_px >= 60.0. | 30.0% (6/20) | 5.4% (4/74) | 9.1% (2/22) | ❌ |
-| `ensemble_shift_T100.0` | Retake when ensemble_shift_px >= 100.0. | 10.0% (2/20) | 0.0% (0/74) | 0.0% (0/22) | ❌ |
-| `junction_score_below_T50.0` | Retake when junction_score_at_ensemble < 50.0 (low = weak vertex). | 10.0% (2/20) | 0.0% (0/74) | 0.0% (0/22) | ❌ |
-| `junction_score_below_T100.0` | Retake when junction_score_at_ensemble < 100.0 (low = weak vertex). | 15.0% (3/20) | 2.7% (2/74) | 0.0% (0/22) | ❌ |
-| `junction_score_below_T150.0` | Retake when junction_score_at_ensemble < 150.0 (low = weak vertex). | 40.0% (8/20) | 13.5% (10/74) | 9.1% (2/22) | ❌ |
-| `junction_score_below_T200.0` | Retake when junction_score_at_ensemble < 200.0 (low = weak vertex). | 60.0% (12/20) | 32.4% (24/74) | 45.5% (10/22) | ❌ |
-| `phaseANDcv_OR_fit_residual_T80.0` | Retake when (|phase|<8 AND cv-fail) OR fit_residual >= 80.0. | 65.0% (13/20) | 48.6% (36/74) | 59.1% (13/22) | ❌ |
-| `phaseANDcv_OR_fit_residual_T100.0` | Retake when (|phase|<8 AND cv-fail) OR fit_residual >= 100.0. | 60.0% (12/20) | 24.3% (18/74) | 54.5% (12/22) | ❌ |
-| `phaseANDcv_OR_fit_residual_T150.0` | Retake when (|phase|<8 AND cv-fail) OR fit_residual >= 150.0. | 25.0% (5/20) | 2.7% (2/74) | 13.6% (3/22) | ❌ |
-| `phaseANDcv_OR_pnp_rms_T60.0` | Retake when (|phase|<8 AND cv-fail) OR pnp_rms >= 60.0. | 65.0% (13/20) | 56.8% (42/74) | 59.1% (13/22) | ❌ |
-| `phaseANDcv_OR_pnp_rms_T100.0` | Retake when (|phase|<8 AND cv-fail) OR pnp_rms >= 100.0. | 60.0% (12/20) | 37.8% (28/74) | 59.1% (13/22) | ❌ |
-| `phaseANDcv_OR_pnp_rms_T150.0` | Retake when (|phase|<8 AND cv-fail) OR pnp_rms >= 150.0. | 30.0% (6/20) | 2.7% (2/74) | 22.7% (5/22) | ❌ |
-| `phaseANDcv_OR_hex_bezel_T50.0` | Retake when (|phase|<8 AND cv-fail) OR hex_bezel >= 50.0. | 70.0% (14/20) | 32.4% (24/74) | 68.2% (15/22) | ❌ |
-| `phaseANDcv_OR_hex_bezel_T80.0` | Retake when (|phase|<8 AND cv-fail) OR hex_bezel >= 80.0. | 65.0% (13/20) | 25.7% (19/74) | 54.5% (12/22) | ❌ |
-| `phaseANDcv_OR_hex_bezel_T120.0` | Retake when (|phase|<8 AND cv-fail) OR hex_bezel >= 120.0. | 35.0% (7/20) | 12.2% (9/74) | 36.4% (8/22) | ❌ |
-| `phaseANDcv_OR_ensemble_shift_T20.0` | Retake when (|phase|<8 AND cv-fail) OR ensemble_shift >= 20.0. | 80.0% (16/20) | 48.6% (36/74) | 72.7% (16/22) | ❌ |
-| `phaseANDcv_OR_ensemble_shift_T40.0` | Retake when (|phase|<8 AND cv-fail) OR ensemble_shift >= 40.0. | 50.0% (10/20) | 21.6% (16/74) | 45.5% (10/22) | ❌ |
-| `phaseANDcv_OR_ensemble_shift_T60.0` | Retake when (|phase|<8 AND cv-fail) OR ensemble_shift >= 60.0. | 50.0% (10/20) | 8.1% (6/74) | 22.7% (5/22) | ❌ |
-| `phaseANDcv_OR_junction_below_T50.0` | Retake when (|phase|<8 AND cv-fail) OR junction_score < 50.0. | 30.0% (6/20) | 2.7% (2/74) | 13.6% (3/22) | ❌ |
-| `phaseANDcv_OR_junction_below_T100.0` | Retake when (|phase|<8 AND cv-fail) OR junction_score < 100.0. | 35.0% (7/20) | 4.1% (3/74) | 13.6% (3/22) | ❌ |
-| `phaseANDcv_OR_junction_below_T150.0` | Retake when (|phase|<8 AND cv-fail) OR junction_score < 150.0. | 50.0% (10/20) | 14.9% (11/74) | 13.6% (3/22) | ❌ |
-| `phaseANDcv_OR_junction_below_T200.0` | Retake when (|phase|<8 AND cv-fail) OR junction_score < 200.0. | 60.0% (12/20) | 33.8% (25/74) | 45.5% (10/22) | ❌ |
-| `phaseANDcv_OR_fit80.0_OR_hex50.0` | Retake when (|phase|<8 AND cv-fail) OR fit_residual >= 80.0 OR hex_bezel >= 50.0. | 75.0% (15/20) | 59.5% (44/74) | 68.2% (15/22) | ❌ |
-| `phaseANDcv_OR_fit100.0_OR_hex80.0` | Retake when (|phase|<8 AND cv-fail) OR fit_residual >= 100.0 OR hex_bezel >= 80.0. | 70.0% (14/20) | 35.1% (26/74) | 68.2% (15/22) | ❌ |
-| `phaseANDcv_OR_fit150.0_OR_hex120.0` | Retake when (|phase|<8 AND cv-fail) OR fit_residual >= 150.0 OR hex_bezel >= 120.0. | 35.0% (7/20) | 12.2% (9/74) | 36.4% (8/22) | ❌ |
-| `fit80.0_AND_hex50.0` | Retake when fit_residual >= 80.0 AND hex_bezel >= 50.0. | 45.0% (9/20) | 20.3% (15/74) | 54.5% (12/22) | ❌ |
-| `fit60.0_AND_hex30.0` | Retake when fit_residual >= 60.0 AND hex_bezel >= 30.0. | 60.0% (12/20) | 56.8% (42/74) | 54.5% (12/22) | ❌ |
+| `phase_sep_alone_T11.7` | Retake when |phase_sep| < 11.7 (Phase 2A operating point). | 45.5% (15/33) | 14.3% (13/91) | 37.5% (6/16) | ❌ |
+| `phase_sep_alone_T0.5` | Retake when |phase_sep| < 0.5. | 0.0% (0/33) | 0.0% (0/91) | 0.0% (0/16) | ❌ |
+| `phase_sep_alone_T2.0` | Retake when |phase_sep| < 2.0. | 15.2% (5/33) | 5.5% (5/91) | 0.0% (0/16) | ❌ |
+| `phase_sep_alone_T5.0` | Retake when |phase_sep| < 5.0. | 18.2% (6/33) | 8.8% (8/91) | 0.0% (0/16) | ❌ |
+| `phase_sep_alone_T8.0` | Retake when |phase_sep| < 8.0. | 33.3% (11/33) | 11.0% (10/91) | 12.5% (2/16) | ❌ |
+| `phase_sep_alone_T15.0` | Retake when |phase_sep| < 15.0. | 63.6% (21/33) | 19.8% (18/91) | 43.8% (7/16) | ❌ |
+| `phase_sep_alone_T20.0` | Retake when |phase_sep| < 20.0. | 75.8% (25/33) | 30.8% (28/91) | 56.2% (9/16) | ❌ |
+| `cv_local_alone` | Retake when cv-local face-quad fit is NOT structurally consistent (status != 'ok'). | 100.0% (33/33) | 89.0% (81/91) | 87.5% (14/16) | ❌ |
+| `phase_or_cv_T8.0` | Retake when |phase_sep| < 8.0 OR cv-local NOT consistent. | 100.0% (33/33) | 90.1% (82/91) | 93.8% (15/16) | ❌ |
+| `phase_or_cv_T11.7` | Retake when |phase_sep| < 11.7 OR cv-local NOT consistent. | 100.0% (33/33) | 90.1% (82/91) | 100.0% (16/16) | ❌ |
+| `phase_or_cv_T15.0` | Retake when |phase_sep| < 15.0 OR cv-local NOT consistent. | 100.0% (33/33) | 91.2% (83/91) | 100.0% (16/16) | ❌ |
+| `phase_and_cv_T8.0` | Retake when |phase_sep| < 8.0 AND cv-local NOT consistent. | 33.3% (11/33) | 9.9% (9/91) | 6.2% (1/16) | ❌ |
+| `phase_and_cv_T11.7` | Retake when |phase_sep| < 11.7 AND cv-local NOT consistent. | 45.5% (15/33) | 13.2% (12/91) | 25.0% (4/16) | ❌ |
+| `phase_and_cv_T15.0` | Retake when |phase_sep| < 15.0 AND cv-local NOT consistent. | 63.6% (21/33) | 17.6% (16/91) | 31.2% (5/16) | ❌ |
+| `cv_severe_alone` | Retake when cv-local status is `fewer_than_3_face_quads` (the more severe failure mode — geometry couldn't even find 3 faces). | 21.2% (7/33) | 15.4% (14/91) | 18.8% (3/16) | ❌ |
+| `phase_or_cv_severe_T8.0` | Retake when |phase_sep| < 8.0 OR cv-local is `fewer_than_3_face_quads`. | 48.5% (16/33) | 24.2% (22/91) | 25.0% (4/16) | ❌ |
+| `phase_or_cv_severe_T11.7` | Retake when |phase_sep| < 11.7 OR cv-local is `fewer_than_3_face_quads`. | 57.6% (19/33) | 27.5% (25/91) | 37.5% (6/16) | ❌ |
+| `phase_or_cv_severe_T15.0` | Retake when |phase_sep| < 15.0 OR cv-local is `fewer_than_3_face_quads`. | 69.7% (23/33) | 33.0% (30/91) | 43.8% (7/16) | ❌ |
+| `fit_residual_alone_T60.0` | Retake when fit_residual_rms_px >= 60.0. | 66.7% (22/33) | 48.4% (44/91) | 50.0% (8/16) | ❌ |
+| `fit_residual_alone_T80.0` | Retake when fit_residual_rms_px >= 80.0. | 63.6% (21/33) | 37.4% (34/91) | 43.8% (7/16) | ❌ |
+| `fit_residual_alone_T100.0` | Retake when fit_residual_rms_px >= 100.0. | 42.4% (14/33) | 17.6% (16/91) | 31.2% (5/16) | ❌ |
+| `fit_residual_alone_T120.0` | Retake when fit_residual_rms_px >= 120.0. | 33.3% (11/33) | 13.2% (12/91) | 18.8% (3/16) | ❌ |
+| `fit_residual_alone_T150.0` | Retake when fit_residual_rms_px >= 150.0. | 3.0% (1/33) | 0.0% (0/91) | 0.0% (0/16) | ❌ |
+| `fit_residual_alone_T200.0` | Retake when fit_residual_rms_px >= 200.0. | 0.0% (0/33) | 0.0% (0/91) | 0.0% (0/16) | ❌ |
+| `pnp_rms_alone_T60.0` | Retake when pnp_rms_px >= 60.0. | 66.7% (22/33) | 48.4% (44/91) | 50.0% (8/16) | ❌ |
+| `pnp_rms_alone_T100.0` | Retake when pnp_rms_px >= 100.0. | 42.4% (14/33) | 28.6% (26/91) | 50.0% (8/16) | ❌ |
+| `pnp_rms_alone_T150.0` | Retake when pnp_rms_px >= 150.0. | 15.2% (5/33) | 1.1% (1/91) | 6.2% (1/16) | ❌ |
+| `hex_bezel_disagree_T30.0` | Retake when hexagon_centroid_vs_bezel_vertex_offset_px >= 30.0. | 63.6% (21/33) | 68.1% (62/91) | 56.2% (9/16) | ❌ |
+| `hex_bezel_disagree_T50.0` | Retake when hexagon_centroid_vs_bezel_vertex_offset_px >= 50.0. | 57.6% (19/33) | 39.6% (36/91) | 37.5% (6/16) | ❌ |
+| `hex_bezel_disagree_T80.0` | Retake when hexagon_centroid_vs_bezel_vertex_offset_px >= 80.0. | 45.5% (15/33) | 36.3% (33/91) | 25.0% (4/16) | ❌ |
+| `hex_bezel_disagree_T120.0` | Retake when hexagon_centroid_vs_bezel_vertex_offset_px >= 120.0. | 12.1% (4/33) | 15.4% (14/91) | 6.2% (1/16) | ❌ |
+| `hex_bezel_disagree_T200.0` | Retake when hexagon_centroid_vs_bezel_vertex_offset_px >= 200.0. | 0.0% (0/33) | 1.1% (1/91) | 0.0% (0/16) | ❌ |
+| `ensemble_shift_T20.0` | Retake when ensemble_shift_px >= 20.0. | 63.6% (21/33) | 64.8% (59/91) | 62.5% (10/16) | ❌ |
+| `ensemble_shift_T40.0` | Retake when ensemble_shift_px >= 40.0. | 33.3% (11/33) | 39.6% (36/91) | 31.2% (5/16) | ❌ |
+| `ensemble_shift_T60.0` | Retake when ensemble_shift_px >= 60.0. | 15.2% (5/33) | 24.2% (22/91) | 25.0% (4/16) | ❌ |
+| `ensemble_shift_T100.0` | Retake when ensemble_shift_px >= 100.0. | 12.1% (4/33) | 7.7% (7/91) | 6.2% (1/16) | ❌ |
+| `junction_score_below_T50.0` | Retake when junction_score_at_ensemble < 50.0 (low = weak vertex). | 12.1% (4/33) | 1.1% (1/91) | 0.0% (0/16) | ❌ |
+| `junction_score_below_T100.0` | Retake when junction_score_at_ensemble < 100.0 (low = weak vertex). | 18.2% (6/33) | 4.4% (4/91) | 6.2% (1/16) | ❌ |
+| `junction_score_below_T150.0` | Retake when junction_score_at_ensemble < 150.0 (low = weak vertex). | 36.4% (12/33) | 13.2% (12/91) | 18.8% (3/16) | ❌ |
+| `junction_score_below_T200.0` | Retake when junction_score_at_ensemble < 200.0 (low = weak vertex). | 72.7% (24/33) | 31.9% (29/91) | 50.0% (8/16) | ❌ |
+| `phaseANDcv_OR_fit_residual_T80.0` | Retake when (|phase|<8 AND cv-fail) OR fit_residual >= 80.0. | 69.7% (23/33) | 44.0% (40/91) | 43.8% (7/16) | ❌ |
+| `phaseANDcv_OR_fit_residual_T100.0` | Retake when (|phase|<8 AND cv-fail) OR fit_residual >= 100.0. | 57.6% (19/33) | 25.3% (23/91) | 37.5% (6/16) | ❌ |
+| `phaseANDcv_OR_fit_residual_T150.0` | Retake when (|phase|<8 AND cv-fail) OR fit_residual >= 150.0. | 36.4% (12/33) | 9.9% (9/91) | 6.2% (1/16) | ❌ |
+| `phaseANDcv_OR_pnp_rms_T60.0` | Retake when (|phase|<8 AND cv-fail) OR pnp_rms >= 60.0. | 72.7% (24/33) | 53.8% (49/91) | 50.0% (8/16) | ❌ |
+| `phaseANDcv_OR_pnp_rms_T100.0` | Retake when (|phase|<8 AND cv-fail) OR pnp_rms >= 100.0. | 57.6% (19/33) | 36.3% (33/91) | 50.0% (8/16) | ❌ |
+| `phaseANDcv_OR_pnp_rms_T150.0` | Retake when (|phase|<8 AND cv-fail) OR pnp_rms >= 150.0. | 42.4% (14/33) | 11.0% (10/91) | 12.5% (2/16) | ❌ |
+| `phaseANDcv_OR_hex_bezel_T50.0` | Retake when (|phase|<8 AND cv-fail) OR hex_bezel >= 50.0. | 72.7% (24/33) | 46.2% (42/91) | 43.8% (7/16) | ❌ |
+| `phaseANDcv_OR_hex_bezel_T80.0` | Retake when (|phase|<8 AND cv-fail) OR hex_bezel >= 80.0. | 66.7% (22/33) | 42.9% (39/91) | 31.2% (5/16) | ❌ |
+| `phaseANDcv_OR_hex_bezel_T120.0` | Retake when (|phase|<8 AND cv-fail) OR hex_bezel >= 120.0. | 42.4% (14/33) | 25.3% (23/91) | 12.5% (2/16) | ❌ |
+| `phaseANDcv_OR_ensemble_shift_T20.0` | Retake when (|phase|<8 AND cv-fail) OR ensemble_shift >= 20.0. | 75.8% (25/33) | 70.3% (64/91) | 68.8% (11/16) | ❌ |
+| `phaseANDcv_OR_ensemble_shift_T40.0` | Retake when (|phase|<8 AND cv-fail) OR ensemble_shift >= 40.0. | 57.6% (19/33) | 48.4% (44/91) | 37.5% (6/16) | ❌ |
+| `phaseANDcv_OR_ensemble_shift_T60.0` | Retake when (|phase|<8 AND cv-fail) OR ensemble_shift >= 60.0. | 45.5% (15/33) | 33.0% (30/91) | 31.2% (5/16) | ❌ |
+| `phaseANDcv_OR_junction_below_T50.0` | Retake when (|phase|<8 AND cv-fail) OR junction_score < 50.0. | 45.5% (15/33) | 11.0% (10/91) | 6.2% (1/16) | ❌ |
+| `phaseANDcv_OR_junction_below_T100.0` | Retake when (|phase|<8 AND cv-fail) OR junction_score < 100.0. | 48.5% (16/33) | 13.2% (12/91) | 12.5% (2/16) | ❌ |
+| `phaseANDcv_OR_junction_below_T150.0` | Retake when (|phase|<8 AND cv-fail) OR junction_score < 150.0. | 66.7% (22/33) | 19.8% (18/91) | 18.8% (3/16) | ❌ |
+| `phaseANDcv_OR_junction_below_T200.0` | Retake when (|phase|<8 AND cv-fail) OR junction_score < 200.0. | 90.9% (30/33) | 35.2% (32/91) | 50.0% (8/16) | ❌ |
+| `phaseANDcv_OR_fit80.0_OR_hex50.0` | Retake when (|phase|<8 AND cv-fail) OR fit_residual >= 80.0 OR hex_bezel >= 50.0. | 84.8% (28/33) | 60.4% (55/91) | 50.0% (8/16) | ❌ |
+| `phaseANDcv_OR_fit100.0_OR_hex80.0` | Retake when (|phase|<8 AND cv-fail) OR fit_residual >= 100.0 OR hex_bezel >= 80.0. | 72.7% (24/33) | 46.2% (42/91) | 43.8% (7/16) | ❌ |
+| `phaseANDcv_OR_fit150.0_OR_hex120.0` | Retake when (|phase|<8 AND cv-fail) OR fit_residual >= 150.0 OR hex_bezel >= 120.0. | 45.5% (15/33) | 25.3% (23/91) | 12.5% (2/16) | ❌ |
+| `fit80.0_AND_hex50.0` | Retake when fit_residual >= 80.0 AND hex_bezel >= 50.0. | 42.4% (14/33) | 22.0% (20/91) | 31.2% (5/16) | ❌ |
+| `fit60.0_AND_hex30.0` | Retake when fit_residual >= 60.0 AND hex_bezel >= 30.0. | 48.5% (16/33) | 46.2% (42/91) | 50.0% (8/16) | ❌ |
 
 ## Headline finding
 
 **No rule over the 6 evaluated signals (phase_sep, cv-local structural status, fit_residual_rms_px, pnp_rms_px, hex↔bezel disagreement, ensemble_shift_px, junction_score_at_ensemble — alone, in OR/AND compounds, or as triples) meets the Phase 2 bar.**
 
-Closest-to-bar rule: `phase_sep_alone_T15.0`
-- catastrophic recall: 70.0% (bar: 80%; shortfall 10.0%)
-- GOOD false-retake:   18.9% (bar: 10%; excess 8.9%)
+Closest-to-bar rule: `phaseANDcv_OR_junction_below_T150.0`
+- catastrophic recall: 66.7% (bar: 80%; shortfall 13.3%)
+- GOOD false-retake:   19.8% (bar: 10%; excess 9.8%)
 
 ## Implications
 
-1. **6 rule(s) clear the ≥80% recall bar, none also clear the ≤10% FPR bar.** Best (by recall − FPR margin): `phase_sep_alone_T20.0` at 80.0% recall / 31.1% FPR. Loosening retake thresholds high enough to catch all catastrophics necessarily also retakes many GOOD runs.
+1. **6 rule(s) clear the ≥80% recall bar, none also clear the ≤10% FPR bar.** Best (by recall − FPR margin): `phaseANDcv_OR_junction_below_T200.0` at 90.9% recall / 35.2% FPR. Loosening retake thresholds high enough to catch all catastrophics necessarily also retakes many GOOD runs.
 
-2. **19 rule(s) clear the ≤10% FPR bar, none also clear the ≥80% recall bar.** Best (by recall − FPR margin): `phaseANDcv_OR_ensemble_shift_T60.0` at 50.0% recall / 8.1% FPR. These are predominantly OR-compounds of the phase+cv AND-rule with a high-threshold continuous signal — they hold FPR down by being narrow but pay for it on recall.
+2. **12 rule(s) clear the ≤10% FPR bar, none also clear the ≥80% recall bar.** Best (by recall − FPR margin): `phaseANDcv_OR_fit_residual_T150.0` at 36.4% recall / 9.9% FPR. These are predominantly OR-compounds of the phase+cv AND-rule with a high-threshold continuous signal — they hold FPR down by being narrow but pay for it on recall.
 
 3. **No rule simultaneously clears both bars.** Hand-tuned thresholds and OR/AND compounds over 6 signals (phase_sep, cv-local, fit_residual, hex_bezel, ensemble_shift, junction_score, pnp_rms) cannot get past the (≥80% recall AND ≤10% FPR) frontier on this 58-case eval.
 

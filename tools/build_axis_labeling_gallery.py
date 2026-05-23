@@ -9,7 +9,7 @@ correlation experiments showed matters more than vertex precision for
 downstream sticker sampling.
 
 Workflow:
-1. Run this tool to produce a static HTML + per-photo cropped PNGs in --out.
+1. Run this tool to produce a static HTML + per-photo full-image PNGs in --out.
 2. Open the gallery in a browser. Each photo shows 4 draggable markers
    prefilled at the global cube model's current best guess.
 3. Drag each marker to the correct on-photo position. Click "Approve"
@@ -33,19 +33,17 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import base64
 import json
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
-from PIL import Image, ImageDraw, ImageOps
+from PIL import Image, ImageOps
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
-
 
 def _load_manifests() -> list:
     out = []
@@ -60,6 +58,35 @@ def _resolve_pair_paths(manifests: list, set_id: str) -> Optional[Tuple[Path, Pa
         for entry in manifest["pairs"]:
             if entry["setId"] == set_id:
                 return Path(entry["imageAPath"]), Path(entry["imageBPath"])
+
+    for root in _candidate_corpus_roots(manifests):
+        path_a = _find_corpus_side(root, set_id, "A")
+        path_b = _find_corpus_side(root, set_id, "B")
+        if path_a is not None and path_b is not None:
+            return path_a, path_b
+    return None
+
+
+def _candidate_corpus_roots(manifests: list) -> List[Path]:
+    roots: List[Path] = []
+    for manifest in manifests:
+        for entry in manifest.get("pairs", []):
+            for field in ("imageAPath", "imageBPath"):
+                path = Path(entry[field]).expanduser()
+                parent = path.parent
+                if parent not in roots:
+                    roots.append(parent)
+    home_corpus = Path.home() / "cube-corpus"
+    if home_corpus not in roots:
+        roots.append(home_corpus)
+    return roots
+
+
+def _find_corpus_side(root: Path, set_id: str, side: str) -> Optional[Path]:
+    for pattern in (f"Set {set_id} - {side} -*", f"Set {set_id} - {side} *"):
+        candidates = sorted(p for p in root.glob(pattern) if p.is_file())
+        if candidates:
+            return candidates[0]
     return None
 
 
@@ -114,31 +141,12 @@ def _global_model_prefill(
     }
 
 
-def _crop_around_points(
+def _full_image_display(
     img_size: Tuple[int, int],
-    points: List[Tuple[float, float]],
-    margin: int = 350,
-    max_dim: int = 1400,
 ) -> Tuple[Tuple[int, int, int, int], float, Tuple[int, int]]:
-    """Compute crop box around the given points, scale to fit display max_dim.
-
-    Margin (350 px on the original image) is intentionally generous so the
-    user can drag markers past corners that the prefill places too close to
-    the cube edge — especially important when the global model's prefilled
-    near-corners land slightly inside the cube outline rather than on the
-    visible cube edges. max_dim 1400 keeps the rendered cell large enough
-    to click on individual cube corners without zoom.
-    """
-    xs = [p[0] for p in points]
-    ys = [p[1] for p in points]
-    x0 = max(0, int(min(xs)) - margin)
-    y0 = max(0, int(min(ys)) - margin)
-    x1 = min(img_size[0], int(max(xs)) + margin)
-    y1 = min(img_size[1], int(max(ys)) + margin)
-    cw, ch = x1 - x0, y1 - y0
-    scale = min(1.0, max_dim / max(cw, ch))
-    nw, nh = int(cw * scale), int(ch * scale)
-    return (x0, y0, x1, y1), scale, (nw, nh)
+    """Use the whole EXIF-corrected image and let CSS fit it to the viewport."""
+    width, height = img_size
+    return (0, 0, width, height), 1.0, (width, height)
 
 
 def _build_case_data(
@@ -169,15 +177,9 @@ def _build_case_data(
             "near_z": [cx - 100, cy + 200],
         }
 
-    pts: List[Tuple[float, float]] = [
-        tuple(prefill["vertex"]),
-        tuple(prefill["near_x"]),
-        tuple(prefill["near_y"]),
-        tuple(prefill["near_z"]),
-    ]
-    crop_box, scale, (nw, nh) = _crop_around_points(img.size, pts)
+    crop_box, scale, (nw, nh) = _full_image_display(img.size)
 
-    cropped = img.crop(crop_box).resize((nw, nh))
+    cropped = img.crop(crop_box)
     out_png = out_dir / f"set_{set_id}_{side}.png"
     cropped.save(out_png, optimize=True)
 
@@ -200,58 +202,77 @@ def _build_case_data(
 HTML_TEMPLATE = """<!doctype html>
 <html><head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cube axis labeling gallery</title>
 <style>
-  body { font-family: -apple-system, sans-serif; margin: 0; background: #1a1a1a; color: #eee; }
-  .toolbar { position: sticky; top: 0; background: #2a2a2a; padding: 10px 20px;
-             border-bottom: 1px solid #444; z-index: 100; display: flex; gap: 16px; align-items: center; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #171717; color: #eee; }
+  .app { height: 100vh; min-height: 0; display: flex; flex-direction: column; }
+  .toolbar { flex: 0 0 auto; background: #292929; padding: 8px 12px;
+             border-bottom: 1px solid #444; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
   .toolbar button { background: #4a4a4a; color: white; border: none; padding: 8px 16px;
                     border-radius: 4px; cursor: pointer; font-size: 14px; }
   .toolbar button:hover { background: #5a5a5a; }
-  .toolbar .stats { margin-left: auto; font-size: 13px; color: #aaa; }
-  .case { margin: 20px; padding: 16px; background: #2a2a2a; border-radius: 8px; border: 2px solid #444; }
+  .toolbar button:disabled { opacity: .45; cursor: default; }
+  .toolbar select { background: #1f1f1f; color: #fff; border: 1px solid #555; border-radius: 4px; padding: 7px 8px; min-width: 150px; }
+  .toolbar .stats { margin-left: auto; font-size: 13px; color: #aaa; white-space: nowrap; }
+  .intro { flex: 0 0 auto; padding: 8px 12px; border-bottom: 1px solid #333; color: #cfcfcf; font-size: 13px; line-height: 1.3; }
+  .intro h2 { display: inline; margin: 0 10px 0 0; color: #fff; font-size: 16px; }
+  .intro p { display: inline; margin: 0; }
+  .viewer { flex: 1 1 auto; min-height: 0; display: grid; place-items: center; padding: 8px 12px 12px; }
+  .case { width: min(100%, 980px); max-height: 100%; min-height: 0; padding: 10px; background: #252525; border-radius: 8px; border: 2px solid #444;
+          display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 8px; }
   .case.approved { border-color: #4a8; }
-  .case h3 { margin: 0 0 8px 0; color: #fff; }
-  .case .meta { color: #aaa; font-size: 12px; margin-bottom: 8px; }
-  .case .canvas-wrap { position: relative; display: inline-block; }
-  .case canvas { display: block; cursor: crosshair; border: 1px solid #555; touch-action: none; }
-  .case .controls { margin-top: 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .case-head { min-width: 0; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .case h3 { margin: 0; color: #fff; font-size: 16px; }
+  .case .meta { min-width: 0; color: #aaa; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .case .canvas-wrap { min-height: 0; display: flex; align-items: center; justify-content: center; overflow: visible; }
+  .case canvas { display: block; cursor: crosshair; border: 1px solid #555; touch-action: none;
+                 width: auto; height: auto; max-width: 100%; max-height: 100%; }
+  .case .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .case .controls button { padding: 6px 14px; border-radius: 4px; border: 1px solid #555; cursor: pointer; }
   .btn-approve { background: #2a5a3a; color: white; }
   .btn-approve.active { background: #4a8; color: white; }
   .btn-reset { background: #5a5a2a; color: white; }
+  .btn-point { background: #333; color: white; }
+  .btn-point.active { outline: 2px solid #fff; outline-offset: 1px; }
   .legend { display: inline-flex; gap: 8px; font-size: 12px; align-items: center; }
   .swatch { display: inline-block; width: 12px; height: 12px; border: 1px solid #000; vertical-align: middle; }
-  .point-readout { font-family: monospace; font-size: 11px; color: #aaa; margin-left: 12px; }
+  .point-readout { flex: 1 1 260px; min-width: 0; font-family: monospace; font-size: 11px; color: #aaa; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .empty { color: #bbb; padding: 24px; border: 1px solid #444; border-radius: 8px; }
 </style>
 </head><body>
 
-<div class="toolbar">
-  <button onclick="downloadJSON()">Download JSON</button>
-  <button onclick="copyToClipboard()">Copy JSON</button>
-  <button onclick="approveAll()">Approve all (use prefills as-is)</button>
-  <span class="legend">
-    <span><span class="swatch" style="background:#fff"></span> vertex</span>
-    <span><span class="swatch" style="background:#f55"></span> near_x</span>
-    <span><span class="swatch" style="background:#5a5"></span> near_y</span>
-    <span><span class="swatch" style="background:#55f"></span> near_z</span>
-  </span>
-  <span class="stats" id="stats"></span>
+<div class="app">
+  <div class="toolbar">
+    <button id="prevBtn" onclick="goCase(-1)">Previous</button>
+    <select id="caseSelect" onchange="goToIndex(this.selectedIndex)"></select>
+    <button id="nextBtn" onclick="goCase(1)">Next</button>
+    <button onclick="downloadJSON()">Download JSON</button>
+    <button onclick="copyToClipboard()">Copy JSON</button>
+    <button onclick="approveAll()">Approve all</button>
+    <span class="legend">
+      <span><span class="swatch" style="background:#fff"></span> vertex</span>
+      <span><span class="swatch" style="background:#f55"></span> near_x</span>
+      <span><span class="swatch" style="background:#5a5"></span> near_y</span>
+      <span><span class="swatch" style="background:#55f"></span> near_z</span>
+    </span>
+    <span class="stats" id="stats"></span>
+  </div>
+
+  <div class="intro">
+    <h2>Cube axis labeling</h2>
+    <p>Place WHITE at the trihedral vertex and RED/GREEN/BLUE at the three one-edge-away visible corners. Drag a marker, or choose a marker button and click the photo.</p>
+  </div>
+
+  <div class="viewer" id="case-host"></div>
 </div>
-
-<h2 style="margin: 20px;">Cube axis labeling — 4 points per photo</h2>
-<p style="margin: 0 20px 8px;">For each photo, position the 4 colored markers:
-  <b>WHITE</b> at the trihedral vertex (where 3 cube faces meet),
-  <b>RED/GREEN/BLUE</b> at the 3 hexagon corners that are 1 cube-edge away from the vertex
-  (where each visible face edge terminates at a far corner of that face).</p>
-<p style="margin: 0 20px 8px;">Drag markers to reposition; or click on the photo to move the most-recently-touched marker there.</p>
-<p style="margin: 0 20px 16px;">Prefills come from the on-main global cube model. Often correct on well-lit cases; needs nudging on shadowed/hard cases.</p>
-
-<div id="cases"></div>
 
 <script>
 const CASES = __CASES_JSON__;
 const judgments = {};  // key → { vertex, near_x, near_y, near_z, approved }
+let currentIndex = 0;
 
 function deepCopy(o) { return JSON.parse(JSON.stringify(o)); }
 
@@ -263,10 +284,16 @@ function init() {
       near_y: c.prefill.near_y.slice(),
       near_z: c.prefill.near_z.slice(),
       approved: false,
-      lastTouched: null,
+      lastTouched: 'vertex',
     };
   });
-  render();
+  const select = document.getElementById('caseSelect');
+  select.innerHTML = CASES.map((c, i) => `<option value="${i}">${i + 1}. ${c.key}</option>`).join('');
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') goCase(-1);
+    if (e.key === 'ArrowRight') goCase(1);
+  });
+  renderCase();
 }
 
 function origToDisplay(c, pt) {
@@ -285,58 +312,91 @@ const POINT_COLORS = {
   near_z: '#5050ff',
 };
 
-function pointAt(c, dx, dy) {
+function canvasToCssScale(cv) {
+  const rect = cv.getBoundingClientRect();
+  if (!rect.width || !rect.height) return 1;
+  return Math.max(cv.width / rect.width, cv.height / rect.height);
+}
+
+function markerRadiusForCanvas(cv) {
+  return MARKER_RADIUS * canvasToCssScale(cv);
+}
+
+function currentCase() {
+  return CASES[currentIndex];
+}
+
+function pointAt(c, dx, dy, cv) {
   const j = judgments[c.key];
+  const hitRadius = markerRadiusForCanvas(cv) + 6 * canvasToCssScale(cv);
   for (const name of POINT_NAMES) {
     const [px, py] = origToDisplay(c, j[name]);
     const dist = Math.hypot(px - dx, py - dy);
-    if (dist <= MARKER_RADIUS + 6) return name;
+    if (dist <= hitRadius) return name;
   }
   return null;
 }
 
-function render() {
-  const root = document.getElementById('cases');
-  root.innerHTML = '';
-  CASES.forEach(c => {
-    const j = judgments[c.key];
-    const div = document.createElement('div');
-    div.className = 'case' + (j.approved ? ' approved' : '');
-    div.innerHTML = `
-      <h3>${c.key} <span style="color:#888;font-weight:normal;font-size:13px">prefill: ${c.prefill_source}</span></h3>
-      <div class="meta">${c.image_path_full}</div>
-      <canvas id="cv-${c.key}" width="${c.display_w}" height="${c.display_h}"></canvas>
+function pointButtons(c) {
+  const active = judgments[c.key].lastTouched || 'vertex';
+  return POINT_NAMES.map(name => {
+    const label = name.replace('near_', '');
+    return `<button class="btn-point ${active === name ? 'active' : ''}" onclick="selectPoint('${name}')">${label}</button>`;
+  }).join('');
+}
+
+function renderCase() {
+  const host = document.getElementById('case-host');
+  if (!CASES.length) {
+    host.innerHTML = '<div class="empty">No cases generated.</div>';
+    updateStats();
+    return;
+  }
+  const c = currentCase();
+  const j = judgments[c.key];
+  host.innerHTML = `
+    <div class="case ${j.approved ? 'approved' : ''}">
+      <div class="case-head">
+        <h3>${c.key}</h3>
+        <div class="meta">prefill: ${c.prefill_source} · ${c.image_path_full}</div>
+      </div>
+      <div class="canvas-wrap"><canvas id="caseCanvas" width="${c.display_w}" height="${c.display_h}"></canvas></div>
       <div class="controls">
-        <button class="btn-approve ${j.approved ? 'active' : ''}" onclick="toggleApprove('${c.key}')">${j.approved ? 'Approved ✓' : 'Approve'}</button>
-        <button class="btn-reset" onclick="resetToPrefill('${c.key}')">Reset to prefill</button>
+        <button class="btn-approve ${j.approved ? 'active' : ''}" onclick="toggleApprove('${c.key}')">${j.approved ? 'Approved' : 'Approve'}</button>
+        <button class="btn-approve" onclick="approveAndNext()">Approve & next</button>
+        <button class="btn-reset" onclick="resetToPrefill('${c.key}')">Reset</button>
+        ${pointButtons(c)}
         <span class="point-readout" id="readout-${c.key}"></span>
       </div>
-    `;
-    root.appendChild(div);
-    const cv = document.getElementById('cv-' + c.key);
-    const ctx = cv.getContext('2d');
-    const img = new Image();
-    img.onload = () => {
-      ctx.drawImage(img, 0, 0);
-      drawMarkers(c, ctx);
-      updateReadout(c);
-    };
-    img.src = c.image_file;
-    attachHandlers(c, cv);
-  });
+    </div>
+  `;
+  const select = document.getElementById('caseSelect');
+  if (select) select.selectedIndex = currentIndex;
+  const cv = document.getElementById('caseCanvas');
+  const ctx = cv.getContext('2d');
+  const img = new Image();
+  img.onload = () => {
+    ctx.drawImage(img, 0, 0);
+    drawMarkers(c, ctx);
+    updateReadout(c);
+  };
+  img.src = c.image_file;
+  attachHandlers(c, cv);
   updateStats();
 }
 
 function drawMarkers(c, ctx) {
   const j = judgments[c.key];
+  const markerRadius = markerRadiusForCanvas(ctx.canvas);
+  const strokeWidth = Math.max(1, 2 * canvasToCssScale(ctx.canvas));
   for (const name of POINT_NAMES) {
     const [px, py] = origToDisplay(c, j[name]);
     ctx.beginPath();
-    ctx.arc(px, py, MARKER_RADIUS, 0, 2 * Math.PI);
+    ctx.arc(px, py, markerRadius, 0, 2 * Math.PI);
     ctx.fillStyle = POINT_COLORS[name];
     ctx.fill();
     ctx.strokeStyle = '#000';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = strokeWidth;
     ctx.stroke();
   }
   // Draw axis lines from vertex
@@ -347,7 +407,7 @@ function drawMarkers(c, ctx) {
     ctx.moveTo(vx, vy);
     ctx.lineTo(nx, ny);
     ctx.strokeStyle = POINT_COLORS[name];
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = Math.max(1, 1.5 * canvasToCssScale(ctx.canvas));
     ctx.stroke();
   }
 }
@@ -358,9 +418,10 @@ function attachHandlers(c, cv) {
     const rect = cv.getBoundingClientRect();
     const dx = (e.clientX - rect.left) * (cv.width / rect.width);
     const dy = (e.clientY - rect.top) * (cv.height / rect.height);
-    const hit = pointAt(c, dx, dy);
+    const hit = pointAt(c, dx, dy, cv);
     if (hit) {
       dragging = hit;
+      judgments[c.key].lastTouched = hit;
       cv.setPointerCapture(e.pointerId);
     } else if (judgments[c.key].lastTouched) {
       const orig = displayToOrig(c, dx, dy);
@@ -383,7 +444,7 @@ function attachHandlers(c, cv) {
 }
 
 function redraw(c) {
-  const cv = document.getElementById('cv-' + c.key);
+  const cv = document.getElementById('caseCanvas');
   if (!cv) return;
   const ctx = cv.getContext('2d');
   const img = new Image();
@@ -393,6 +454,12 @@ function redraw(c) {
     updateReadout(c);
   };
   img.src = c.image_file;
+}
+
+function selectPoint(name) {
+  const c = currentCase();
+  judgments[c.key].lastTouched = name;
+  renderCase();
 }
 
 function updateReadout(c) {
@@ -405,12 +472,13 @@ function updateReadout(c) {
 
 function toggleApprove(key) {
   judgments[key].approved = !judgments[key].approved;
-  const caseDiv = document.querySelector(`#cv-${key}`).closest('.case');
-  caseDiv.classList.toggle('approved', judgments[key].approved);
-  const btn = caseDiv.querySelector('.btn-approve');
-  btn.classList.toggle('active', judgments[key].approved);
-  btn.textContent = judgments[key].approved ? 'Approved ✓' : 'Approve';
-  updateStats();
+  renderCase();
+}
+function approveAndNext() {
+  const c = currentCase();
+  judgments[c.key].approved = true;
+  if (currentIndex < CASES.length - 1) currentIndex += 1;
+  renderCase();
 }
 function resetToPrefill(key) {
   const c = CASES.find(c => c.key === key);
@@ -419,16 +487,31 @@ function resetToPrefill(key) {
   judgments[key].near_y = c.prefill.near_y.slice();
   judgments[key].near_z = c.prefill.near_z.slice();
   judgments[key].approved = false;
-  render();
+  judgments[key].lastTouched = 'vertex';
+  renderCase();
 }
 function approveAll() {
   Object.keys(judgments).forEach(k => { judgments[k].approved = true; });
-  render();
+  renderCase();
+}
+function goToIndex(index) {
+  if (!CASES.length) return;
+  currentIndex = Math.max(0, Math.min(CASES.length - 1, index));
+  renderCase();
+}
+function goCase(delta) {
+  goToIndex(currentIndex + delta);
 }
 function updateStats() {
   const n = Object.keys(judgments).length;
   const approved = Object.values(judgments).filter(j => j.approved).length;
-  document.getElementById('stats').textContent = `approved: ${approved}/${n}`;
+  document.getElementById('stats').textContent = CASES.length
+    ? `case: ${currentIndex + 1}/${CASES.length} · approved: ${approved}/${n}`
+    : `approved: ${approved}/${n}`;
+  const prev = document.getElementById('prevBtn');
+  const next = document.getElementById('nextBtn');
+  if (prev) prev.disabled = currentIndex <= 0;
+  if (next) next.disabled = currentIndex >= CASES.length - 1;
 }
 
 function buildExport() {
@@ -454,8 +537,15 @@ function downloadJSON() {
   a.href = url; a.download = 'gcm_axis_ground_truth.json'; a.click();
 }
 function copyToClipboard() {
-  navigator.clipboard.writeText(JSON.stringify(buildExport(), null, 2));
-  alert('Copied to clipboard');
+  const text = JSON.stringify(buildExport(), null, 2);
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(
+      () => alert('Copied to clipboard'),
+      () => window.prompt('Copy JSON:', text)
+    );
+  } else {
+    window.prompt('Copy JSON:', text);
+  }
 }
 
 init();
@@ -503,7 +593,7 @@ def main() -> int:
 
     html = HTML_TEMPLATE.replace("__CASES_JSON__", json.dumps(cases))
     out_path = args.out / "gallery.html"
-    out_path.write_text(html)
+    out_path.write_text(html, encoding="utf-8")
     print(f"Wrote {out_path}", file=sys.stderr)
     print(f"  {len(cases)} cases", file=sys.stderr)
     print(f"  Open: file://{out_path.resolve()}", file=sys.stderr)

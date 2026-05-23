@@ -3,26 +3,54 @@
 
 ## Why this exists
 
-Phase 4 v1 fit 4 model classes on the 6 features from the existing
-Phase 2B matrix. Best result: random_forest at 80% catastrophic recall
-/ 18% GOOD false-retake — better than Phase 2B's hand-tuned ceiling
-of 31% FPR, but still above the 10% bar.
-
-The Phase 2B fixture has a reserved-but-unpopulated column
-(`two_view_consistency_deg`) representing the angle by which A and B
-view fits *disagree* about the cube's 3D orientation. When both fits
-are physically consistent (cube was rotated 180° around Y between
-photos, camera roughly stationary), the recovered orientations should
-predict each other. When they disagree significantly, at least one
-fit is wrong — a high-signal predictor of catastrophic outcomes that
-no single-view feature can capture.
+Phase 4 v1.1 (ctvd #244) showed the data lever doesn't move the trust
+ranker bar — best learned model still well above the 10% FPR target.
+The remaining lever is a stronger feature, and the natural candidate
+is a pair-level geometric signal: do the A and B view fits agree
+about the cube's 3D pose under the documented capture rotation?
 
 This module provides the pure math for that signal. Integration into
 the matrix-regeneration pipeline (`phase2b_recompute.py`) is a
 follow-up that triggers the slow rembg re-run; see
 `tools/TWO_VIEW_CONSISTENCY.md` for the integration plan.
 
-## The math
+## The capture convention
+
+Between photo A (white-up, URF visible) and photo B (yellow-up, DLB
+visible), the user flips the cube end-over-end. **The flip is a
+single 180° rotation around the image-horizontal axis (camera X)** —
+the natural physical motion of gripping the cube by its R and L
+sides and rotating it through the horizontal axis between those
+sides. There is no additional rotation. The effect of this single
+flip is to expose the previously-hidden faces (D, L, B) to the
+camera, replacing the previously-visible faces (U, R, F).
+
+(The cube-snap CameraCapture.tsx UI text currently says "Turn it
+upside down, then rotate 90° clockwise from above" — that "then 90°
+clockwise" portion is incorrect with respect to the project's actual
+capture convention and should be fixed in cube-snap. The 54-char
+URFDLB-ordering logic in the recognizer assumes only the 180° flip.)
+
+## The metric
+
+For a well-fit pair where both fits agree about the cube's pose, the
+residual rotation `R_B · R_A⁻¹` should be the 180° rotation around
+camera X — call it `R_FLIP`. The metric reports how far the observed
+residual lies from that ideal:
+
+  consistency_deg = rotation_angle((R_FLIP · R_A) · R_B⁻¹)
+
+- **Well-fit pair, pure horizontal-axis flip:** ~0°.
+- **Well-fit pair, user's grip slightly tilted off horizontal:**
+  small residual (~5-15°) reflecting the tilt.
+- **Mis-fit pair:** large residual — the recovered transform is far
+  from a 180° around camera X.
+
+No sampling/candidate set — there's a single canonical R_FLIP, and
+small user-grip variations naturally surface as small values in the
+metric rather than being absorbed by a candidate min.
+
+## Recovery of body-to-camera rotation from 2D axis projections
 
 The global cube model encodes pose via 3 image-space axis projection
 vectors (ax_2d, ay_2d, az_2d) under weak-perspective projection. The
@@ -33,29 +61,32 @@ body axes to camera frame.
 Recovery:
 - s ≈ ||M||_F / √2  (because the 3 columns of R have unit norm; the
   top-2 rows of R have Frobenius norm √(3 − 1) = √2)
-- R[:2, :3] = M / s
+- R[:2, :3] = M / s, orthonormalized via Gram-Schmidt
 - R[2,  :3] = R[0, :] × R[1, :]  (cross product; sign-fix with det)
 
-Once R_A and R_B are recovered, the expected relationship under the
-"rotate cube 180° around world Y between photos, keep camera fixed"
-convention is **R_B ≈ Y180 · R_A** (left-multiplication: the
-rotation acts in the world/camera frame, since the camera is fixed
-and world Y is the rotation axis). The body-frame right-
-multiplication form `R_A · Y180` would only be correct if Y180 were
-the rotation expressed in the cube's body frame — which is NOT the
-documented capture convention.
+## Implementation
 
-(Codex P2 catch on the v1 draft of this module: with any non-zero
-camera pitch, the body-frame form reports a ~70° residual for a
-perfectly consistent isometric pair. Always think about whether
-rotations are in body or world frame.)
+Given recovered R_A and R_B (each 3×3 body-to-camera rotation):
 
-Consistency = the rotation angle of (Y180 · R_A · R_B.T) — 0 means
-A and B agree perfectly about the cube's pose. Large values
-indicate one (or both) of the fits is geometrically inconsistent.
-The function returns the min over (Y180, Y180.T) so a sign-
-convention disagreement (cube rotated +180° vs -180° — both visually
-identical for a 180° rotation) doesn't double-penalize.
+  R_FLIP = 180° rotation around camera X = diag(1, −1, −1)
+  consistency_deg = rotation_angle((R_FLIP · R_A) · R_B⁻¹)
+
+The expected world-frame rotation R_FLIP acts on the LEFT of R_A
+(R_B = R_FLIP · R_A) because the cube rotates in the fixed
+world/camera frame, not in its own body frame. A perfectly
+consistent pair gives a residual close to the identity; the
+returned angle is ~0°. A mis-fit pair gives a large angle.
+
+## v1 history (math bug corrected here)
+
+The v1 draft of this module (PR #243) used `R_Y(180°)` (a 180°
+rotation around the vertical axis) as the expected world transform.
+Codex caught the left-vs-right multiply convention but missed the
+more fundamental axis-of-rotation error. Empirical evidence on the
+70-case matrix: v1 reported median 124.9° for GOOD pairs (should be
+~0°) and 174.8° for catastrophic — discriminative but with a huge
+bias floor. Switching to the correct horizontal-axis flip drops the
+GOOD-pair bias to near zero while preserving discrimination.
 
 ## Limitations
 
@@ -64,11 +95,13 @@ identical for a 180° rotation) doesn't double-penalize.
 - Assumes the user kept the camera stationary between A and B photos.
   In practice, the camera moves slightly. The metric will have a
   baseline noise floor of ~5-15° even on correct fits.
-- The "expected" 180° rotation is around world Y assuming the cube
-  was rotated by the user that way. If they rotated differently
-  (e.g., 180° around camera-Z), this metric will report all pairs as
-  inconsistent. Photo capture convention is documented in
-  cube-snap's CLAUDE.md / capture flow docs.
+- The "expected" 180° rotation is around camera X (image-horizontal,
+  the documented capture convention). If the user instead spins the
+  cube around the vertical axis between photos, or rotates it some
+  other way, the metric will report a large residual — which is the
+  intended behavior (the resulting facelet string would also be
+  wrong). Capture convention is documented in cube-snap's CLAUDE.md
+  / capture flow docs.
 """
 
 from __future__ import annotations
@@ -78,8 +111,23 @@ from typing import Tuple
 import numpy as np
 
 
-# Expected world rotation between A and B photos: 180° around world Y.
-# Y axis: vertical (cube's white-up axis in A becomes white-down in B).
+# --- The expected world rotation -----------------------------------------
+
+# R_FLIP: the 180° rotation around camera X (image-horizontal axis).
+# This is the documented capture convention — see module docstring.
+# Closed form via Rodrigues' rotation formula for axis (1, 0, 0):
+# R = 2 · n nᵀ − I = diag(1, −1, −1).
+R_FLIP = np.array([
+    [1.0,  0.0,  0.0],
+    [0.0, -1.0,  0.0],
+    [0.0,  0.0, -1.0],
+], dtype=np.float64)
+
+
+# Legacy alias retained for any external caller that may have imported
+# `Y180` from this module (pre-fix docstring referenced it). Not used
+# in the metric; kept as a no-op import safety net. The v1 math
+# (180° around vertical Y) was wrong; the correct flip is R_FLIP above.
 Y180 = np.array([
     [-1.0,  0.0,  0.0],
     [ 0.0,  1.0,  0.0],
@@ -152,24 +200,16 @@ def two_view_consistency_deg(
     2D vector (in pixel coords) from the cube center to the head of
     that body axis under projection.
 
-    Output: angle in degrees. 0 means A and B agree perfectly about
-    the cube's orientation (after applying the expected 180°-around-Y
-    world/camera-frame rotation). Higher values indicate disagreement.
+    Output: angle in degrees. 0 means A and B agree perfectly that
+    the cube was flipped 180° around camera X between photos (the
+    documented capture convention — see module docstring). Higher
+    values indicate disagreement.
 
-    The expected world-frame rotation acts on the LEFT of R_A
-    (R_B = Y180 · R_A) because the cube rotates in the fixed
-    world/camera frame, not in its own body frame. See module
-    docstring for the derivation.
-
-    Returns the min across two sign conventions (Y180 vs Y180.T)
-    because a 180° rotation around the same axis is its own inverse:
-    cube rotated +180° and cube rotated -180° produce visually
-    identical photos, so we shouldn't penalize either direction.
+    The expected world-frame rotation R_FLIP acts on the LEFT of R_A
+    (R_B = R_FLIP · R_A) because the cube rotates in the fixed
+    world/camera frame, not in its own body frame.
     """
     R_A = recover_rotation_from_axes(*axes_A)
     R_B = recover_rotation_from_axes(*axes_B)
-    # Two candidate relationships: R_B = Y180 · R_A   or   R_B = Y180.T · R_A
-    # (Right-multiplication would be the body-frame form — wrong here.)
-    R_diff_1 = (Y180 @ R_A) @ R_B.T
-    R_diff_2 = (Y180.T @ R_A) @ R_B.T
-    return min(rotation_angle_deg(R_diff_1), rotation_angle_deg(R_diff_2))
+    residual = (R_FLIP @ R_A) @ R_B.T
+    return rotation_angle_deg(residual)

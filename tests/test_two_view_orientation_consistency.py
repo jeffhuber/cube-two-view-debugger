@@ -11,8 +11,9 @@ Coverage:
 - recover_rotation_from_axes: synthetic round-trip from known R →
   projected 2D axes → recovered R should match within tolerance.
 - rotation_angle_deg: identity = 0, Y180 = 180, 90° around Z = 90.
-- two_view_consistency_deg: ~0° for ground-truth consistent pair,
-  meaningfully larger for explicit yaw disagreement.
+- R_FLIP: documented capture convention is 180° around camera X.
+- two_view_consistency_deg: ~0° for a consistent pair flipped by
+  R_FLIP, large for other rotations (yaw spin, off-axis flips, etc).
 """
 
 from __future__ import annotations
@@ -94,53 +95,122 @@ def test_rotation_angle_90_around_z():
     assert tvc.rotation_angle_deg(R) == pytest.approx(90.0, abs=1e-6)
 
 
+# ----- R_FLIP (the expected world rotation) -----
+
+
+def test_R_FLIP_is_180deg_total():
+    """The documented capture rotation is a 180° flip; verify R_FLIP
+    has rotation angle exactly 180°."""
+    assert tvc.rotation_angle_deg(tvc.R_FLIP) == pytest.approx(180.0, abs=1e-6)
+
+
+def test_R_FLIP_axis_is_camera_X():
+    """R_FLIP should fix the camera-X axis (the rotation axis) and
+    negate the other two unit axes (since 180° around (1,0,0) sends
+    (0,1,0)→(0,-1,0) and (0,0,1)→(0,0,-1))."""
+    expected = np.array([[1, 0, 0], [0, -1, 0], [0, 0, -1]], dtype=np.float64)
+    assert np.allclose(tvc.R_FLIP, expected, atol=1e-12)
+
+
+def test_R_FLIP_is_orthogonal_with_det_plus_one():
+    """Sanity: R_FLIP is a proper rotation (R @ R.T = I, det = +1)."""
+    assert np.allclose(tvc.R_FLIP @ tvc.R_FLIP.T, np.eye(3), atol=1e-12)
+    assert float(np.linalg.det(tvc.R_FLIP)) == pytest.approx(1.0, abs=1e-12)
+
+
 # ----- two_view_consistency_deg -----
 
 
-def test_consistency_zero_for_truly_consistent_pair():
-    """A and B from the same body-to-camera pose, but the cube was
-    rotated 180° around world-Y between photos (camera fixed). The
-    pose transforms as R_B = Y180 · R_A (LEFT-multiplication — the
-    rotation happens in the world frame, not the cube's body frame).
-    Expected: ~0°.
-
-    Codex P2 catch on the v1 draft: using R_A @ Y180 (right-multiply,
-    body-frame convention) gave ~70° residual on this exact synthetic
-    pose because of the isometric pitch.
-    """
+def test_consistency_zero_for_camera_X_flip():
+    """Cube flipped 180° around camera X between photos — the
+    documented capture convention ("grip by R/L sides, flip end-over-
+    end"). Expected: ~0°."""
     R_A = _euler_to_R(yaw_deg=45.0, pitch_deg=-35.26, roll_deg=0.0)
-    R_B = tvc.Y180 @ R_A  # World-frame rotation: left-multiply
+    R_B = tvc.R_FLIP @ R_A
     axes_A = _project_axes(R_A)
     axes_B = _project_axes(R_B)
     deg = tvc.two_view_consistency_deg(axes_A, axes_B)
-    assert deg < 1.0, f"expected ~0° for consistent pair, got {deg:.2f}°"
+    assert deg < 1.0, f"expected ~0° for camera-X flip, got {deg:.2f}°"
 
 
-def test_consistency_handles_sign_ambiguity():
-    """A 180° rotation around the same axis is its own inverse — cube
-    rotated +180° and cube rotated -180° produce visually identical
-    photos. The function should not penalize either sign convention."""
-    R_A = _euler_to_R(yaw_deg=45.0, pitch_deg=-35.26, roll_deg=0.0)
-    R_B = tvc.Y180.T @ R_A  # Reversed sign, world-frame
+def test_consistency_zero_for_identity_pair_after_flip():
+    """Cube starts at identity in A and identity-then-flip in B —
+    most trivial possible consistent pair."""
+    R_A = np.eye(3)
+    R_B = tvc.R_FLIP
     axes_A = _project_axes(R_A)
     axes_B = _project_axes(R_B)
     deg = tvc.two_view_consistency_deg(axes_A, axes_B)
-    assert deg < 1.0, (
-        f"sign-flipped pair should still be ~0° consistent, got {deg:.2f}°"
+    assert deg < 1e-3, f"expected ~0° for identity-then-flip, got {deg:.4f}°"
+
+
+def test_consistency_detects_camera_Z_flip_as_inconsistent():
+    """If A and B differ by a 180° rotation around camera Z (the depth
+    axis) rather than the documented camera-X flip, the metric should
+    report a large residual. Camera Z is NOT the capture convention —
+    this is the kind of mis-fit the signal exists to catch."""
+    R_A = _euler_to_R(yaw_deg=45.0, pitch_deg=-35.26, roll_deg=0.0)
+    R_Z_180 = np.array([[-1, 0, 0], [0, -1, 0], [0, 0, 1]], dtype=np.float64)
+    R_B = R_Z_180 @ R_A
+    axes_A = _project_axes(R_A)
+    axes_B = _project_axes(R_B)
+    deg = tvc.two_view_consistency_deg(axes_A, axes_B)
+    assert deg > 60.0, (
+        f"camera-Z 180° (wrong axis) should produce large residual, "
+        f"got {deg:.2f}°"
     )
 
 
-def test_consistency_detects_yaw_disagreement():
-    """If A and B disagree about the cube's yaw by a meaningful amount,
-    consistency should report nontrivial degrees of disagreement."""
+def test_consistency_detects_vertical_axis_rotation_as_inconsistent():
+    """If A and B differ by a rotation around the VERTICAL axis (e.g.,
+    the user spun the cube around its top-to-bottom axis instead of
+    flipping it end-over-end), R_FLIP does not match. The metric
+    should report a large residual."""
     R_A = _euler_to_R(yaw_deg=45.0, pitch_deg=-35.26, roll_deg=0.0)
-    # B is what would be observed if the underlying cube had different
-    # yaw (75° instead of 45°), then was rotated 180° around world-Y.
-    R_B = tvc.Y180 @ _euler_to_R(yaw_deg=75.0, pitch_deg=-35.26, roll_deg=0.0)
+    # B = A spun 180° around vertical (camera Y). This is the
+    # "spinning, not flipping" failure mode.
+    R_Y_180 = np.array([[-1, 0, 0], [0, 1, 0], [0, 0, -1]], dtype=np.float64)
+    R_B = R_Y_180 @ R_A
     axes_A = _project_axes(R_A)
     axes_B = _project_axes(R_B)
     deg = tvc.two_view_consistency_deg(axes_A, axes_B)
-    assert deg > 10.0, (
-        f"30° yaw disagreement should surface as a clearly nonzero "
-        f"consistency angle, got {deg:.2f}°"
+    assert deg > 60.0, (
+        f"vertical-axis 180° (spin, not flip) should produce large "
+        f"residual, got {deg:.2f}°"
     )
+
+
+def test_consistency_small_for_slightly_tilted_grip():
+    """If the user's grip tilts the flip axis ~5° off pure camera X,
+    the residual should be small (reflecting just the tilt) — not
+    zero (it's not pure R_FLIP) and not large (it's close)."""
+    R_A = _euler_to_R(yaw_deg=45.0, pitch_deg=-35.26, roll_deg=0.0)
+    # 5° tilt: flip around an axis (cos 5°, 0, sin 5°) in the horizontal
+    # plane, but with a 180° magnitude. Rodrigues: R = 2 n nᵀ − I.
+    t = np.radians(5.0)
+    c, s = np.cos(t), np.sin(t)
+    R_tilted = np.array([
+        [2 * c * c - 1, 0.0,            2 * c * s],
+        [0.0,           -1.0,           0.0],
+        [2 * c * s,     0.0,            2 * s * s - 1],
+    ], dtype=np.float64)
+    R_B = R_tilted @ R_A
+    axes_A = _project_axes(R_A)
+    axes_B = _project_axes(R_B)
+    deg = tvc.two_view_consistency_deg(axes_A, axes_B)
+    # 5° tilt of the axis of a 180° rotation produces ~10° of residual
+    # rotation (the metric responds to axis tilt at ~2× the tilt
+    # magnitude for 180° rotations). Bound generously to allow some
+    # slop without being so loose the test stops gating.
+    assert 0.0 < deg < 25.0, (
+        f"expected small-but-nonzero residual for 5° grip tilt, "
+        f"got {deg:.2f}°"
+    )
+
+
+def test_consistency_legacy_Y180_alias_still_importable():
+    """v1 used `tvc.Y180`. Kept as a no-op safety-net alias; not used
+    in the metric. Removing it could break any orphan script that
+    grabbed the symbol from the pre-fix module."""
+    assert hasattr(tvc, "Y180")
+    assert tvc.Y180.shape == (3, 3)

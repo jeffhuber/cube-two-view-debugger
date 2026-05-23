@@ -80,7 +80,7 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 ### Proposed for Codex (please pick up or push back)
 
-- **Phase 4 v2: wire two-view consistency as the 7th feature.** Shipped in #243 as a standalone math module (`tools/two_view_consistency.py`). Integration: modify `tools/phase2b_recompute.py` to capture the 3 axis-projection vectors per global-model fit + post-process per-set to compute `two_view_consistency_deg`. Inject into the matrix, re-run `tools/phase4_trust_ranker.py` to see if 7 features clears the bar. See `tools/TWO_VIEW_CONSISTENCY.md` for the detailed integration plan. (Could also be Claude's lane — flag here for visibility; whoever picks it up first.)
+- **Phase 4 v2: wire two-view consistency as the 7th feature.** Math primitive shipped in #243 (R_Y(180°)); axis-of-rotation fix shipped in #245 (single 180° around camera X, the correct convention). Integration is **NOT** straightforward direct-feeding — Codex's audit of #245 confirmed that raw per-image `model.axis_x_2d/y/z` fed into the metric produces median 173° residual on 35 human-labeled GOOD pairs (signature of an A↔B axis-frame mismatch). The follow-up PR must therefore land an A/B axis canonicalization step FIRST, validate it against `tests/fixtures/gcm_axis_ground_truth.json` (target: GOOD-pair median ≤25°), then capture/inject the metric. See `tools/TWO_VIEW_CONSISTENCY.md` "Integration plan" → "Step 0" for the canonicalization investigation. (Could also be Claude's lane — flag here for visibility; whoever picks it up first.)
 
 *(Either side: populate your row when you start something.)*
 

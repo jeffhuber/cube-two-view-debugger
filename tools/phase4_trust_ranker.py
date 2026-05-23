@@ -9,9 +9,10 @@ signals to test whether a learned decision boundary in 6-D feature
 space can clear the bar where axis-aligned thresholds couldn't.
 
 Methodology:
-  - Load `tests/fixtures/phase2b_recomputed_signals.json` (116 rows =
-    58 cases × 2 runs each; the second run captures PnP basin-of-
-    attraction variability).
+  - Load `tests/fixtures/phase2b_recomputed_signals.json` (140 rows =
+    70 cases × 2 runs each as of v1.1; per-run captures PnP
+    basin-of-attraction variability). Exact row/case counts come from
+    the fixture summary at load time, not this docstring.
   - Binary label: catastrophic (CHIRALITY_MISS, CHIRALITY_FALSE_FLIP,
     TRUE_GEOMETRY_FAIL) = 1; non-catastrophic (GOOD, MARGINAL) = 0.
   - 6 features: fit_residual_rms_px, pnp_rms_px,

@@ -641,12 +641,21 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(f"running model {name} …", file=sys.stderr)
         model_results[name] = run_model(rows, name, factory)
 
+    # Record the sklearn version that produced this snapshot. Devin
+    # caught reproducibility drift on the v1 PR: random-forest
+    # probabilities shifted ~0.017 between sklearn 1.4 and 1.8 within
+    # the original `>=1.4,<2` pin. requirements.txt is now narrowed
+    # to `>=1.8.0,<1.9` so anyone reproducing gets bit-identical
+    # output, and we surface the version here as belt-and-suspenders.
+    import sklearn  # type: ignore
     output = build_output(
         rows, model_results,
         metadata={
             "input_path": str(args.input),
             "tool": "tools/phase4_trust_ranker.py",
             "models_evaluated": list(model_results.keys()),
+            "sklearn_version": sklearn.__version__,
+            "numpy_version": np.__version__,
         },
     )
 

@@ -8,7 +8,9 @@
       "gradient_boosting",
       "random_forest",
       "mlp_16_8"
-    ]
+    ],
+    "sklearn_version": "1.8.0",
+    "numpy_version": "2.3.5"
   },
   "input_summary": {
     "n_rows": 116,

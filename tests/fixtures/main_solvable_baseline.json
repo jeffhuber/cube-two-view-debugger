@@ -3,32 +3,32 @@
     "success_clean",
     "success_repaired_high_confidence"
   ],
-  "gitHead": "e2f9fc04e74d33a7fceb2f40ff38e5be9ddd6c39",
+  "gitHead": "fabbac936247cfe3d78e8b6975bdc48da60db843",
   "groups": {
     "corpus": {
       "categoryCounts": {
-        "needs_manual_review": 4,
-        "reject_retake": 2,
-        "success_clean": 8,
+        "needs_manual_review": 9,
+        "reject_retake": 5,
+        "success_clean": 12,
         "success_repaired_high_confidence": 1
       },
-      "confidentSolveCount": 9,
-      "confidentSolveRate": 0.6,
+      "confidentSolveCount": 13,
+      "confidentSolveRate": 0.481481,
       "confidentWrongAmongConfidentSolveRate": 0.0,
       "confidentWrongCount": 0,
       "confidentWrongRate": 0.0,
-      "exactMatchCount": 9,
-      "exactMatchRate": 0.6,
-      "legalStateCount": 13,
-      "legalStateRate": 0.866667,
-      "manifestStickerDenominator": 810,
-      "perStickerAccuracy": 0.814815,
-      "perStickerAccuracyAllRowsSkippedAsZero": 0.814815,
-      "rowCount": 15,
-      "scoreSum": 660,
-      "scoredRowCount": 15,
+      "exactMatchCount": 16,
+      "exactMatchRate": 0.592593,
+      "legalStateCount": 22,
+      "legalStateRate": 0.814815,
+      "manifestStickerDenominator": 1458,
+      "perStickerAccuracy": 0.773663,
+      "perStickerAccuracyAllRowsSkippedAsZero": 0.773663,
+      "rowCount": 27,
+      "scoreSum": 1128,
+      "scoredRowCount": 27,
       "skippedRowCount": 0,
-      "stickerDenominator": 810
+      "stickerDenominator": 1458
     },
     "hard": {
       "categoryCounts": {
@@ -71,28 +71,28 @@
   "overall": {
     "categoryCounts": {
       "missing_files": 1,
-      "needs_manual_review": 9,
-      "reject_retake": 9,
-      "success_clean": 9,
+      "needs_manual_review": 14,
+      "reject_retake": 12,
+      "success_clean": 13,
       "success_repaired_high_confidence": 2
     },
-    "confidentSolveCount": 11,
-    "confidentSolveRate": 0.37931,
+    "confidentSolveCount": 15,
+    "confidentSolveRate": 0.365854,
     "confidentWrongAmongConfidentSolveRate": 0.0,
     "confidentWrongCount": 0,
     "confidentWrongRate": 0.0,
-    "exactMatchCount": 12,
-    "exactMatchRate": 0.413793,
-    "legalStateCount": 20,
-    "legalStateRate": 0.689655,
-    "manifestStickerDenominator": 1620,
-    "perStickerAccuracy": 0.603448,
-    "perStickerAccuracyAllRowsSkippedAsZero": 0.583333,
-    "rowCount": 30,
-    "scoreSum": 945,
-    "scoredRowCount": 29,
+    "exactMatchCount": 19,
+    "exactMatchRate": 0.463415,
+    "legalStateCount": 29,
+    "legalStateRate": 0.707317,
+    "manifestStickerDenominator": 2268,
+    "perStickerAccuracy": 0.638211,
+    "perStickerAccuracyAllRowsSkippedAsZero": 0.623016,
+    "rowCount": 42,
+    "scoreSum": 1413,
+    "scoredRowCount": 41,
     "skippedRowCount": 1,
-    "stickerDenominator": 1566
+    "stickerDenominator": 2214
   },
   "retakeCategories": [
     "missing_files",
@@ -353,6 +353,210 @@
       "scored": true,
       "setId": "44",
       "status": "rejected"
+    },
+    {
+      "category": "needs_manual_review",
+      "categoryReason": "direct_legal_but_low_margin_or_grid_quality",
+      "confidentSolve": false,
+      "confidentWrong": false,
+      "contractFailures": [],
+      "contractPassed": true,
+      "exactMatch": true,
+      "group": "corpus",
+      "hamming": 0,
+      "legalState": true,
+      "missingFiles": [],
+      "score": 54,
+      "scored": true,
+      "setId": "20",
+      "status": "success"
+    },
+    {
+      "category": "needs_manual_review",
+      "categoryReason": "repair_path_unstable_pre_repair_piece_evidence",
+      "confidentSolve": false,
+      "confidentWrong": false,
+      "contractFailures": [],
+      "contractPassed": true,
+      "exactMatch": false,
+      "group": "corpus",
+      "hamming": 6,
+      "legalState": true,
+      "missingFiles": [],
+      "score": 48,
+      "scored": true,
+      "setId": "38",
+      "status": "success"
+    },
+    {
+      "category": "success_clean",
+      "categoryReason": "direct_unique_legal_high_confidence",
+      "confidentSolve": true,
+      "confidentWrong": false,
+      "contractFailures": [],
+      "contractPassed": true,
+      "exactMatch": true,
+      "group": "corpus",
+      "hamming": 0,
+      "legalState": true,
+      "missingFiles": [],
+      "score": 54,
+      "scored": true,
+      "setId": "40",
+      "status": "success"
+    },
+    {
+      "category": "success_clean",
+      "categoryReason": "direct_unique_legal_high_confidence",
+      "confidentSolve": true,
+      "confidentWrong": false,
+      "contractFailures": [],
+      "contractPassed": true,
+      "exactMatch": true,
+      "group": "corpus",
+      "hamming": 0,
+      "legalState": true,
+      "missingFiles": [],
+      "score": 54,
+      "scored": true,
+      "setId": "41",
+      "status": "success"
+    },
+    {
+      "category": "success_clean",
+      "categoryReason": "direct_unique_legal_high_confidence",
+      "confidentSolve": true,
+      "confidentWrong": false,
+      "contractFailures": [],
+      "contractPassed": true,
+      "exactMatch": true,
+      "group": "corpus",
+      "hamming": 0,
+      "legalState": true,
+      "missingFiles": [],
+      "score": 54,
+      "scored": true,
+      "setId": "43",
+      "status": "success"
+    },
+    {
+      "category": "success_clean",
+      "categoryReason": "direct_unique_legal_high_confidence",
+      "confidentSolve": true,
+      "confidentWrong": false,
+      "contractFailures": [],
+      "contractPassed": true,
+      "exactMatch": true,
+      "group": "corpus",
+      "hamming": 0,
+      "legalState": true,
+      "missingFiles": [],
+      "score": 54,
+      "scored": true,
+      "setId": "45",
+      "status": "success"
+    },
+    {
+      "category": "needs_manual_review",
+      "categoryReason": "repair_path_pre_repair_color_count_skew",
+      "confidentSolve": false,
+      "confidentWrong": false,
+      "contractFailures": [],
+      "contractPassed": true,
+      "exactMatch": true,
+      "group": "corpus",
+      "hamming": 0,
+      "legalState": true,
+      "missingFiles": [],
+      "score": 54,
+      "scored": true,
+      "setId": "63",
+      "status": "success"
+    },
+    {
+      "category": "reject_retake",
+      "categoryReason": "recognizer_rejected",
+      "confidentSolve": false,
+      "confidentWrong": false,
+      "contractFailures": [],
+      "contractPassed": true,
+      "exactMatch": false,
+      "group": "corpus",
+      "hamming": 54,
+      "legalState": false,
+      "missingFiles": [],
+      "score": 0,
+      "scored": true,
+      "setId": "64",
+      "status": "rejected"
+    },
+    {
+      "category": "reject_retake",
+      "categoryReason": "recognizer_rejected",
+      "confidentSolve": false,
+      "confidentWrong": false,
+      "contractFailures": [],
+      "contractPassed": true,
+      "exactMatch": false,
+      "group": "corpus",
+      "hamming": 54,
+      "legalState": false,
+      "missingFiles": [],
+      "score": 0,
+      "scored": true,
+      "setId": "65",
+      "status": "rejected"
+    },
+    {
+      "category": "reject_retake",
+      "categoryReason": "recognizer_rejected",
+      "confidentSolve": false,
+      "confidentWrong": false,
+      "contractFailures": [],
+      "contractPassed": true,
+      "exactMatch": false,
+      "group": "corpus",
+      "hamming": 54,
+      "legalState": false,
+      "missingFiles": [],
+      "score": 0,
+      "scored": true,
+      "setId": "66",
+      "status": "rejected"
+    },
+    {
+      "category": "needs_manual_review",
+      "categoryReason": "repair_path_pre_repair_color_count_skew",
+      "confidentSolve": false,
+      "confidentWrong": false,
+      "contractFailures": [],
+      "contractPassed": true,
+      "exactMatch": false,
+      "group": "corpus",
+      "hamming": 12,
+      "legalState": true,
+      "missingFiles": [],
+      "score": 42,
+      "scored": true,
+      "setId": "67",
+      "status": "success"
+    },
+    {
+      "category": "needs_manual_review",
+      "categoryReason": "repair_path_unstable_pre_repair_piece_evidence",
+      "confidentSolve": false,
+      "confidentWrong": false,
+      "contractFailures": [],
+      "contractPassed": true,
+      "exactMatch": true,
+      "group": "corpus",
+      "hamming": 0,
+      "legalState": true,
+      "missingFiles": [],
+      "score": 54,
+      "scored": true,
+      "setId": "68",
+      "status": "success"
     },
     {
       "category": "reject_retake",
@@ -618,82 +822,82 @@
       "environmentPolicyWarningCount": 0,
       "group": "corpus",
       "manifest": "tests/fixtures/corpus_manifest.json",
-      "probeJson": "/tmp/current_main_corpus_probe.json",
+      "probeJson": "/tmp/current_main_corpus_probe_with_63_68.json",
       "probeSchemaVersion": 1,
       "timingSummary": {
-        "meanSeconds": 7.0153,
-        "p50Seconds": 6.1742,
-        "p95Seconds": 12.0787,
-        "rowCount": 15,
+        "meanSeconds": 10.3415,
+        "p50Seconds": 6.2241,
+        "p95Seconds": 42.2295,
+        "rowCount": 27,
         "slowestRows": [
           {
-            "recognizeSeconds": 11.8287,
+            "recognizeSeconds": 59.5982,
+            "setId": "67",
+            "totalSeconds": 59.9651
+          },
+          {
+            "recognizeSeconds": 41.9124,
+            "setId": "43",
+            "totalSeconds": 42.2295
+          },
+          {
+            "recognizeSeconds": 11.8051,
             "setId": "24",
-            "totalSeconds": 12.0787
+            "totalSeconds": 12.0553
           },
           {
-            "recognizeSeconds": 9.5663,
+            "recognizeSeconds": 10.7098,
+            "setId": "38",
+            "totalSeconds": 11.0572
+          },
+          {
+            "recognizeSeconds": 9.2226,
             "setId": "28",
-            "totalSeconds": 9.8889
-          },
-          {
-            "recognizeSeconds": 8.2602,
-            "setId": "27",
-            "totalSeconds": 8.5934
-          },
-          {
-            "recognizeSeconds": 7.9594,
-            "setId": "29",
-            "totalSeconds": 8.2918
-          },
-          {
-            "recognizeSeconds": 6.0786,
-            "setId": "31",
-            "totalSeconds": 6.91
+            "totalSeconds": 9.542
           }
         ],
-        "totalSeconds": 105.2295
+        "totalSeconds": 279.2218
       }
     },
     {
       "environmentPolicyWarningCount": 0,
       "group": "hard",
       "manifest": "tests/fixtures/hard_case_manifest.json",
-      "probeJson": "/tmp/current_main_hard_probe.json",
+      "probeJson": "/tmp/current_main_hard_probe_with_63_68.json",
       "probeSchemaVersion": 1,
       "timingSummary": {
-        "meanSeconds": 7.5273,
-        "p50Seconds": 6.1137,
-        "p95Seconds": 13.1503,
+        "meanSeconds": 7.6047,
+        "p50Seconds": 6.1961,
+        "p95Seconds": 13.3066,
         "rowCount": 14,
         "slowestRows": [
           {
-            "recognizeSeconds": 12.779,
-            "setId": "62",
-            "totalSeconds": 13.1503
-          },
-          {
-            "recognizeSeconds": 12.8991,
+            "recognizeSeconds": 13.0737,
             "setId": "61",
-            "totalSeconds": 13.1356
+            "totalSeconds": 13.3066
           },
           {
-            "recognizeSeconds": 11.324,
+            "recognizeSeconds": 12.7953,
+            "setId": "62",
+            "totalSeconds": 13.1544
+          },
+          {
+            "recognizeSeconds": 11.3859,
             "setId": "57",
-            "totalSeconds": 11.6337
+            "totalSeconds": 11.6996
           },
           {
-            "recognizeSeconds": 7.5202,
+            "recognizeSeconds": 7.5228,
             "setId": "39",
-            "totalSeconds": 9.0614
+            "totalSeconds": 9.0021
           },
           {
-            "recognizeSeconds": 8.1904,
+            "recognizeSeconds": 8.3168,
             "setId": "30",
-            "totalSeconds": 8.4519
+            "totalSeconds": 8.585
           }
         ],
-        "totalSeconds": 105.3818
+        "totalSeconds": 106.4662
       }
     }
   ]

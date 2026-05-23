@@ -10,7 +10,7 @@
 - 140 per-case-per-run rows across 70 cases
 - Outcome breakdown: **91 GOOD**, **16 MARGINAL**, **33 CATASTROPHIC**
 
-**Source**: `tests/fixtures/phase2b_recomputed_signals.json` (per-run global-model re-fit on the 58-case axis-labeled gallery, capturing `fit_residual_rms_px`, `pnp_rms_px`, `hexagon_centroid_vs_bezel_vertex_offset_px`, `junction_score_at_ensemble`, `ensemble_shift_px`, and `phase_darkness_separation` at native precision) joined with `tests/fixtures/cv_local_baseline.json` (per-case cv-local face-quad structural status). Outcome counts differ from `post_218_baseline.json` (74/22/20 vs 76/16/24) because the re-fit is non-deterministic (PnP basin-of-attraction) and runs are paired with the signals from the same fit.
+**Source**: `tests/fixtures/phase2b_recomputed_signals.json` (per-run global-model re-fit on the 70-case axis-labeled gallery, capturing `fit_residual_rms_px`, `pnp_rms_px`, `hexagon_centroid_vs_bezel_vertex_offset_px`, `junction_score_at_ensemble`, `ensemble_shift_px`, and `phase_darkness_separation` at native precision) joined with `tests/fixtures/cv_local_baseline.json` (per-case cv-local face-quad structural status). Outcome counts differ from `post_218_baseline.json` (74/22/20 vs 76/16/24) because the re-fit is non-deterministic (PnP basin-of-attraction) and runs are paired with the signals from the same fit.
 
 ## Candidate rule evaluation
 
@@ -92,7 +92,7 @@ Closest-to-bar rule: `phaseANDcv_OR_junction_below_T150.0`
 
 2. **12 rule(s) clear the ≤10% FPR bar, none also clear the ≥80% recall bar.** Best (by recall − FPR margin): `phaseANDcv_OR_fit_residual_T150.0` at 36.4% recall / 9.9% FPR. These are predominantly OR-compounds of the phase+cv AND-rule with a high-threshold continuous signal — they hold FPR down by being narrow but pay for it on recall.
 
-3. **No rule simultaneously clears both bars.** Hand-tuned thresholds and OR/AND compounds over 6 signals (phase_sep, cv-local, fit_residual, hex_bezel, ensemble_shift, junction_score, pnp_rms) cannot get past the (≥80% recall AND ≤10% FPR) frontier on this 58-case eval.
+3. **No rule simultaneously clears both bars.** Hand-tuned thresholds and OR/AND compounds over 6 signals (phase_sep, cv-local, fit_residual, hex_bezel, ensemble_shift, junction_score, pnp_rms) cannot get past the (≥80% recall AND ≤10% FPR) frontier on this 70-case eval.
 
 4. **fit_residual_rms_px is weaker than expected**: alone, the best fit-residual rule is `T120.0` at 45% recall / 12.2% FPR — close to but not better than `phase_sep_T11.7`. Fit quality and outcome-correctness correlate but the thresholds don't separate cleanly.
 

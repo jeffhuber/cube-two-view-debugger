@@ -587,8 +587,8 @@ def render_markdown(
     lines.append("")
     if "recomputed" in summary.get("mode", "").lower():
         lines.append("**Source**: `tests/fixtures/phase2b_recomputed_signals.json` "
-                     "(per-run global-model re-fit on the 58-case axis-labeled "
-                     "gallery, capturing `fit_residual_rms_px`, `pnp_rms_px`, "
+                     f"(per-run global-model re-fit on the {summary['n_cases']}-case "
+                     "axis-labeled gallery, capturing `fit_residual_rms_px`, `pnp_rms_px`, "
                      "`hexagon_centroid_vs_bezel_vertex_offset_px`, "
                      "`junction_score_at_ensemble`, `ensemble_shift_px`, and "
                      "`phase_darkness_separation` at native precision) joined "
@@ -704,7 +704,7 @@ def render_markdown(
                          "Hand-tuned thresholds and OR/AND compounds over 6 signals "
                          "(phase_sep, cv-local, fit_residual, hex_bezel, "
                          "ensemble_shift, junction_score, pnp_rms) cannot get past the "
-                         "(≥80% recall AND ≤10% FPR) frontier on this 58-case eval.")
+                         f"(≥80% recall AND ≤10% FPR) frontier on this {summary['n_cases']}-case eval.")
             lines.append("")
             lines.append("4. **fit_residual_rms_px is weaker than expected**: alone, "
                          "the best fit-residual rule is `T120.0` at 45% recall / "
@@ -779,7 +779,7 @@ def render_markdown(
             lines.append("- **`fit_residual_rms_px`** (continuous, per-run): the global "
                          "model's affine/PnP residual is already stored in "
                          "`model.debug['fit_residual_rms_px']`. Re-running the global "
-                         "model across the 58-case axis-labeled gallery captures this.")
+                         f"model across the {summary['n_cases']}-case axis-labeled gallery captures this.")
             lines.append("- **`vertex_ensemble_stddev_px`** (continuous, per-run): "
                          "disagreement across the 3-vertex ensemble (hexagon-PnP, "
                          "bezel-detection, image refinement). Currently aggregated into "

@@ -10,9 +10,26 @@ to the canonical corpus JSON files.
 All six rows now have pinned image/ground-truth SHA-256 hashes and calibrated
 current-recognizer contracts from `tools/probe_corpus.py`.
 
+Important provenance note: the seed-provider fields embedded in these
+ground-truth JSONs describe the machine attempt that started the Fixer session,
+not the authority of the final label. Sets 64-66 started from LLM-generated
+seed states after cv-local failed to produce a useful result; those seed states
+were extensively corrected in Fixer. Treat the final `corrected` state as the
+human-corrected ground truth and the provider/diff fields as debugging
+provenance.
+
+All six sets share the same final `corrected` cube state:
+
+```text
+LBBBUUUBRULLRRLFFRFRBFFFDFDLLRUDUDBUDDLRLDBRFUUBDBDFLR
+```
+
+That makes Sets 63-68 a controlled repeated-capture/yaw cohort: the cube state
+is constant while capture/yaw/geometry evidence varies.
+
 ## Current Recognizer Results
 
-| Set | Ground-truth provider | Ground-truth source category | Source diff | Source yaw | Source canonicalization | Current status | Current category | Score | Hamming |
+| Set | Seed provider | Seed category | Seed diff before Fixer | Recorded yaw | Canonicalization source | Current status | Current category | Score | Hamming |
 |---:|---|---|---:|---:|---|---|---|---:|---:|
 | 63 | cv-local | needs_manual_review | 0 | 2 | explicit-yaw | success | needs_manual_review | 54/54 | 0 |
 | 64 | gemini-3.1-pro | n/a | 31 | n/a | n/a | rejected | reject_retake | 0/54 | 54 |

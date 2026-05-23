@@ -1,0 +1,3768 @@
+{
+  "schema_version": 2,
+  "metadata": {
+    "input_path": "tests/fixtures/phase2b_recomputed_signals.json",
+    "tool": "tools/phase4_trust_ranker.py",
+    "models_evaluated": [
+      "logistic_regression",
+      "gradient_boosting",
+      "random_forest",
+      "mlp_16_8"
+    ]
+  },
+  "input_summary": {
+    "n_rows": 116,
+    "n_cases": 58,
+    "category_counts": {
+      "CHIRALITY_FALSE_FLIP": 7,
+      "CHIRALITY_MISS": 12,
+      "GOOD": 74,
+      "MARGINAL": 22,
+      "TRUE_GEOMETRY_FAIL": 1
+    },
+    "feature_columns": [
+      "fit_residual_rms_px",
+      "pnp_rms_px",
+      "hexagon_centroid_vs_bezel_vertex_offset_px",
+      "junction_score_at_ensemble",
+      "ensemble_shift_px",
+      "phase_darkness_separation"
+    ]
+  },
+  "models": {
+    "logistic_regression": {
+      "name": "logistic_regression",
+      "feature_importance": [
+        {
+          "feature": "fit_residual_rms_px",
+          "value": 0.9051559741916143,
+          "abs": 0.9051559741916143
+        },
+        {
+          "feature": "ensemble_shift_px",
+          "value": 0.877584930668705,
+          "abs": 0.877584930668705
+        },
+        {
+          "feature": "junction_score_at_ensemble",
+          "value": -0.6920074178662602,
+          "abs": 0.6920074178662602
+        },
+        {
+          "feature": "hexagon_centroid_vs_bezel_vertex_offset_px",
+          "value": -0.40661980358629024,
+          "abs": 0.40661980358629024
+        },
+        {
+          "feature": "phase_darkness_separation",
+          "value": 0.2936226276249717,
+          "abs": 0.2936226276249717
+        },
+        {
+          "feature": "pnp_rms_px",
+          "value": -0.11640286548309631,
+          "abs": 0.11640286548309631
+        }
+      ],
+      "in_sample": {
+        "operating_points": {
+          "bar_clearing": null,
+          "at_catastrophic_recall_80pct": {
+            "threshold": 0.4679164390096638,
+            "catastrophic_recall": 0.8,
+            "good_fpr": 0.25675675675675674,
+            "marginal_retake_rate": 0.5,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 16,
+            "n_good_false_retakes": 19,
+            "n_marginal_retakes": 11
+          },
+          "at_good_fpr_10pct": {
+            "threshold": 0.5978056813835654,
+            "catastrophic_recall": 0.6,
+            "good_fpr": 0.0945945945945946,
+            "marginal_retake_rate": 0.36363636363636365,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 12,
+            "n_good_false_retakes": 7,
+            "n_marginal_retakes": 8
+          },
+          "best_recall_minus_fpr": {
+            "threshold": 0.4256859413206235,
+            "catastrophic_recall": 0.9,
+            "good_fpr": 0.2702702702702703,
+            "marginal_retake_rate": 0.5909090909090909,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 18,
+            "n_good_false_retakes": 20,
+            "n_marginal_retakes": 13
+          }
+        }
+      },
+      "out_of_fold": {
+        "method": "leave_one_case_out",
+        "n_folds": 58,
+        "operating_points": {
+          "bar_clearing": null,
+          "at_catastrophic_recall_80pct": {
+            "threshold": 0.36129163601053194,
+            "catastrophic_recall": 0.8,
+            "good_fpr": 0.3918918918918919,
+            "marginal_retake_rate": 0.5909090909090909,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 16,
+            "n_good_false_retakes": 29,
+            "n_marginal_retakes": 13
+          },
+          "at_good_fpr_10pct": {
+            "threshold": 0.5768078128565978,
+            "catastrophic_recall": 0.5,
+            "good_fpr": 0.0945945945945946,
+            "marginal_retake_rate": 0.4090909090909091,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 10,
+            "n_good_false_retakes": 7,
+            "n_marginal_retakes": 9
+          },
+          "best_recall_minus_fpr": {
+            "threshold": 0.36129163601053194,
+            "catastrophic_recall": 0.8,
+            "good_fpr": 0.3918918918918919,
+            "marginal_retake_rate": 0.5909090909090909,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 16,
+            "n_good_false_retakes": 29,
+            "n_marginal_retakes": 13
+          }
+        },
+        "predictions": [
+          {
+            "case": "12_A",
+            "run": 0,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.7600309396610173
+          },
+          {
+            "case": "12_A",
+            "run": 1,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.6204106496019207
+          },
+          {
+            "case": "12_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.5547296322116154
+          },
+          {
+            "case": "12_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.10386072102261931
+          },
+          {
+            "case": "14_A",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.4843637538157142
+          },
+          {
+            "case": "14_A",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.4471907762632957
+          },
+          {
+            "case": "14_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.39232728261144906
+          },
+          {
+            "case": "14_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.523458327941307
+          },
+          {
+            "case": "15_A",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.521815972793054
+          },
+          {
+            "case": "15_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.5450633344857022
+          },
+          {
+            "case": "15_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.42751344920743334
+          },
+          {
+            "case": "15_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.3990002418820443
+          },
+          {
+            "case": "17_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.2595289149673097
+          },
+          {
+            "case": "17_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.4181438411170597
+          },
+          {
+            "case": "17_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.23475692501092815
+          },
+          {
+            "case": "17_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.43824198544503556
+          },
+          {
+            "case": "21_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.5437731552943429
+          },
+          {
+            "case": "21_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.4280526573972065
+          },
+          {
+            "case": "21_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.5468135770901927
+          },
+          {
+            "case": "21_B",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.6465799009643671
+          },
+          {
+            "case": "22_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.4130336756044396
+          },
+          {
+            "case": "22_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.08749016632989999
+          },
+          {
+            "case": "22_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.2597048628981995
+          },
+          {
+            "case": "22_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.30988423374968427
+          },
+          {
+            "case": "23_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.14087815048432656
+          },
+          {
+            "case": "23_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.19854181792175885
+          },
+          {
+            "case": "23_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.0856884896200761
+          },
+          {
+            "case": "23_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.23400627684161332
+          },
+          {
+            "case": "24_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.7606360688668923
+          },
+          {
+            "case": "24_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.6948503242380466
+          },
+          {
+            "case": "24_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.5432720178001956
+          },
+          {
+            "case": "24_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.4418967122836304
+          },
+          {
+            "case": "25_A",
+            "run": 0,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.36129163601053194
+          },
+          {
+            "case": "25_A",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.371454082895228
+          },
+          {
+            "case": "25_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.2729796623967826
+          },
+          {
+            "case": "25_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.3321333216755908
+          },
+          {
+            "case": "26_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.5681662208474596
+          },
+          {
+            "case": "26_A",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.5768078128565978
+          },
+          {
+            "case": "26_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.6086699646690533
+          },
+          {
+            "case": "26_B",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.4535061463012927
+          },
+          {
+            "case": "27_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.17944673685355889
+          },
+          {
+            "case": "27_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.12797117049389595
+          },
+          {
+            "case": "27_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.3208946368607366
+          },
+          {
+            "case": "27_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.2921030839903028
+          },
+          {
+            "case": "28_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.12351020102170361
+          },
+          {
+            "case": "28_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.11689747655064688
+          },
+          {
+            "case": "28_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.10410564114382459
+          },
+          {
+            "case": "28_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.17866905228540808
+          },
+          {
+            "case": "29_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.3488773850244172
+          },
+          {
+            "case": "29_A",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.7565407342388509
+          },
+          {
+            "case": "29_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.4928638985877565
+          },
+          {
+            "case": "29_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.23683107801041023
+          },
+          {
+            "case": "30_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.5515161259342565
+          },
+          {
+            "case": "30_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.625523492062858
+          },
+          {
+            "case": "30_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.3551172278811588
+          },
+          {
+            "case": "30_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.4156955718753877
+          },
+          {
+            "case": "31_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.49845350397754856
+          },
+          {
+            "case": "31_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.5511747386301655
+          },
+          {
+            "case": "31_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.12920056855930692
+          },
+          {
+            "case": "31_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.2051399858462436
+          },
+          {
+            "case": "32_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.5377018660428345
+          },
+          {
+            "case": "32_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.35057938077014644
+          },
+          {
+            "case": "32_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.3007100815664617
+          },
+          {
+            "case": "32_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.3223452072152137
+          },
+          {
+            "case": "36_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.34716595259941907
+          },
+          {
+            "case": "36_A",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.12884997011863103
+          },
+          {
+            "case": "36_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.3306470182799082
+          },
+          {
+            "case": "36_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.33881248200118463
+          },
+          {
+            "case": "37_A",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.695987604129415
+          },
+          {
+            "case": "37_A",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.6770715935927185
+          },
+          {
+            "case": "37_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.24207860908995976
+          },
+          {
+            "case": "37_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.7705447475704607
+          },
+          {
+            "case": "39_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.33885232721745984
+          },
+          {
+            "case": "39_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.35775300525842657
+          },
+          {
+            "case": "39_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.21288489229305455
+          },
+          {
+            "case": "39_B",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.22992075867018566
+          },
+          {
+            "case": "42_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.20456320836489414
+          },
+          {
+            "case": "42_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.3301669758367277
+          },
+          {
+            "case": "42_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.22469190059460917
+          },
+          {
+            "case": "42_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.3567131098215265
+          },
+          {
+            "case": "44_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.7888409567910012
+          },
+          {
+            "case": "44_A",
+            "run": 1,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.7375333755792545
+          },
+          {
+            "case": "44_B",
+            "run": 0,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.6928891020846312
+          },
+          {
+            "case": "44_B",
+            "run": 1,
+            "category": "TRUE_GEOMETRY_FAIL",
+            "is_catastrophic": true,
+            "predicted_proba": 0.9990201569940674
+          },
+          {
+            "case": "46_A",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.7827839771735305
+          },
+          {
+            "case": "46_A",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.7483316179194677
+          },
+          {
+            "case": "46_B",
+            "run": 0,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.6374794243410309
+          },
+          {
+            "case": "46_B",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.9197775703535325
+          },
+          {
+            "case": "47_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.25167232497047026
+          },
+          {
+            "case": "47_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.5629815495951868
+          },
+          {
+            "case": "47_B",
+            "run": 0,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.1004876222228661
+          },
+          {
+            "case": "47_B",
+            "run": 1,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.0329824305799424
+          },
+          {
+            "case": "48_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.24362406671965384
+          },
+          {
+            "case": "48_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.20694243550682404
+          },
+          {
+            "case": "48_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.288833227187558
+          },
+          {
+            "case": "48_B",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.2849993004234122
+          },
+          {
+            "case": "49_A",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.8201690651375482
+          },
+          {
+            "case": "49_A",
+            "run": 1,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.8543326337236544
+          },
+          {
+            "case": "49_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.33558831960771157
+          },
+          {
+            "case": "49_B",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.2998258886316306
+          },
+          {
+            "case": "57_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.47967993785946494
+          },
+          {
+            "case": "57_A",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.3918977321726121
+          },
+          {
+            "case": "57_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.21104645754113227
+          },
+          {
+            "case": "57_B",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.3203569839329363
+          },
+          {
+            "case": "58_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.8107828832652454
+          },
+          {
+            "case": "58_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.8415852861407593
+          },
+          {
+            "case": "58_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.708220903706528
+          },
+          {
+            "case": "58_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.3556539977748828
+          },
+          {
+            "case": "61_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.17921145253619328
+          },
+          {
+            "case": "61_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.20556799433687653
+          },
+          {
+            "case": "61_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.634032457330393
+          },
+          {
+            "case": "61_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.27337732243491997
+          },
+          {
+            "case": "62_A",
+            "run": 0,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.11449411157042022
+          },
+          {
+            "case": "62_A",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.45971517048790345
+          },
+          {
+            "case": "62_B",
+            "run": 0,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.1221229364666852
+          },
+          {
+            "case": "62_B",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.4294417789114067
+          }
+        ]
+      }
+    },
+    "gradient_boosting": {
+      "name": "gradient_boosting",
+      "feature_importance": [
+        {
+          "feature": "junction_score_at_ensemble",
+          "value": 0.3080717650191272,
+          "abs": 0.3080717650191272
+        },
+        {
+          "feature": "phase_darkness_separation",
+          "value": 0.25352513069770255,
+          "abs": 0.25352513069770255
+        },
+        {
+          "feature": "pnp_rms_px",
+          "value": 0.18215796759135824,
+          "abs": 0.18215796759135824
+        },
+        {
+          "feature": "fit_residual_rms_px",
+          "value": 0.11900477127549274,
+          "abs": 0.11900477127549274
+        },
+        {
+          "feature": "ensemble_shift_px",
+          "value": 0.08942925803326991,
+          "abs": 0.08942925803326991
+        },
+        {
+          "feature": "hexagon_centroid_vs_bezel_vertex_offset_px",
+          "value": 0.047811107383049424,
+          "abs": 0.047811107383049424
+        }
+      ],
+      "in_sample": {
+        "operating_points": {
+          "bar_clearing": {
+            "threshold": 0.11410941334281259,
+            "catastrophic_recall": 1.0,
+            "good_fpr": 0.08108108108108109,
+            "marginal_retake_rate": 0.09090909090909091,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 20,
+            "n_good_false_retakes": 6,
+            "n_marginal_retakes": 2
+          },
+          "at_catastrophic_recall_80pct": {
+            "threshold": 0.6996137623343345,
+            "catastrophic_recall": 0.8,
+            "good_fpr": 0.0,
+            "marginal_retake_rate": 0.0,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 16,
+            "n_good_false_retakes": 0,
+            "n_marginal_retakes": 0
+          },
+          "at_good_fpr_10pct": {
+            "threshold": 0.11410941334281259,
+            "catastrophic_recall": 1.0,
+            "good_fpr": 0.08108108108108109,
+            "marginal_retake_rate": 0.09090909090909091,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 20,
+            "n_good_false_retakes": 6,
+            "n_marginal_retakes": 2
+          },
+          "best_recall_minus_fpr": {
+            "threshold": 0.5542212527528918,
+            "catastrophic_recall": 1.0,
+            "good_fpr": 0.0,
+            "marginal_retake_rate": 0.0,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 20,
+            "n_good_false_retakes": 0,
+            "n_marginal_retakes": 0
+          }
+        }
+      },
+      "out_of_fold": {
+        "method": "leave_one_case_out",
+        "n_folds": 58,
+        "operating_points": {
+          "bar_clearing": null,
+          "at_catastrophic_recall_80pct": {
+            "threshold": 0.058071261802833014,
+            "catastrophic_recall": 0.8,
+            "good_fpr": 0.2972972972972973,
+            "marginal_retake_rate": 0.5454545454545454,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 16,
+            "n_good_false_retakes": 22,
+            "n_marginal_retakes": 12
+          },
+          "at_good_fpr_10pct": {
+            "threshold": 0.2569959333896844,
+            "catastrophic_recall": 0.35,
+            "good_fpr": 0.0945945945945946,
+            "marginal_retake_rate": 0.2727272727272727,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 7,
+            "n_good_false_retakes": 7,
+            "n_marginal_retakes": 6
+          },
+          "best_recall_minus_fpr": {
+            "threshold": 0.04846324588542994,
+            "catastrophic_recall": 0.9,
+            "good_fpr": 0.32432432432432434,
+            "marginal_retake_rate": 0.5909090909090909,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 18,
+            "n_good_false_retakes": 24,
+            "n_marginal_retakes": 13
+          }
+        },
+        "predictions": [
+          {
+            "case": "12_A",
+            "run": 0,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.058071261802833014
+          },
+          {
+            "case": "12_A",
+            "run": 1,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.04846324588542994
+          },
+          {
+            "case": "12_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.0170288963744729
+          },
+          {
+            "case": "12_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.00927271093174887
+          },
+          {
+            "case": "14_A",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.01794472061281339
+          },
+          {
+            "case": "14_A",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.01794472061281339
+          },
+          {
+            "case": "14_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.010569473480348616
+          },
+          {
+            "case": "14_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.1833677928421753
+          },
+          {
+            "case": "15_A",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.04047727095725683
+          },
+          {
+            "case": "15_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.16899730100971916
+          },
+          {
+            "case": "15_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.062163083599662494
+          },
+          {
+            "case": "15_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.049750373588406525
+          },
+          {
+            "case": "17_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.01669058588451448
+          },
+          {
+            "case": "17_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.039375740328694744
+          },
+          {
+            "case": "17_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.014044659438674749
+          },
+          {
+            "case": "17_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.016273634380923184
+          },
+          {
+            "case": "21_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.1668940878567369
+          },
+          {
+            "case": "21_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.0494072538197927
+          },
+          {
+            "case": "21_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.4991591476141842
+          },
+          {
+            "case": "21_B",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.48014644996765843
+          },
+          {
+            "case": "22_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.023432484196356677
+          },
+          {
+            "case": "22_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.012804317529169934
+          },
+          {
+            "case": "22_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.011068340566825567
+          },
+          {
+            "case": "22_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.012040150283490002
+          },
+          {
+            "case": "23_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.010089301512401486
+          },
+          {
+            "case": "23_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.0235094751532579
+          },
+          {
+            "case": "23_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.012804317529169926
+          },
+          {
+            "case": "23_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.023432484196356677
+          },
+          {
+            "case": "24_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.12310620302517995
+          },
+          {
+            "case": "24_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.20454836082825809
+          },
+          {
+            "case": "24_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.33984952171868366
+          },
+          {
+            "case": "24_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.03553194401512658
+          },
+          {
+            "case": "25_A",
+            "run": 0,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.3227450015817507
+          },
+          {
+            "case": "25_A",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.18725369272328793
+          },
+          {
+            "case": "25_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.11541976552606834
+          },
+          {
+            "case": "25_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.3942139203968863
+          },
+          {
+            "case": "26_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.22318914311151478
+          },
+          {
+            "case": "26_A",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.11903063013756836
+          },
+          {
+            "case": "26_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.6035144554745527
+          },
+          {
+            "case": "26_B",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.05175251853730481
+          },
+          {
+            "case": "27_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.004780135391164339
+          },
+          {
+            "case": "27_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.01505509365095885
+          },
+          {
+            "case": "27_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.1472107642897681
+          },
+          {
+            "case": "27_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.024677191443513876
+          },
+          {
+            "case": "28_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.00947820337657156
+          },
+          {
+            "case": "28_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.00947820337657156
+          },
+          {
+            "case": "28_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.009261749222419884
+          },
+          {
+            "case": "28_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.022521527829429545
+          },
+          {
+            "case": "29_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.013671948270491063
+          },
+          {
+            "case": "29_A",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.13695008101983622
+          },
+          {
+            "case": "29_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.02053970298866389
+          },
+          {
+            "case": "29_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.02324279915349307
+          },
+          {
+            "case": "30_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.015458884739426824
+          },
+          {
+            "case": "30_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.0318308724979027
+          },
+          {
+            "case": "30_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.014688223898260739
+          },
+          {
+            "case": "30_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.014688223898260739
+          },
+          {
+            "case": "31_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.05899885314208775
+          },
+          {
+            "case": "31_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.04123601681517906
+          },
+          {
+            "case": "31_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.006474651038130901
+          },
+          {
+            "case": "31_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.006689230463792341
+          },
+          {
+            "case": "32_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.24543115984886102
+          },
+          {
+            "case": "32_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.028436398341942275
+          },
+          {
+            "case": "32_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.02214460168264897
+          },
+          {
+            "case": "32_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.01793271406450726
+          },
+          {
+            "case": "36_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.0170288963744729
+          },
+          {
+            "case": "36_A",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.00927271093174887
+          },
+          {
+            "case": "36_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.021527989353483212
+          },
+          {
+            "case": "36_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.2051142791343907
+          },
+          {
+            "case": "37_A",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.6447912604458998
+          },
+          {
+            "case": "37_A",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.555422019556352
+          },
+          {
+            "case": "37_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.14694270293244782
+          },
+          {
+            "case": "37_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.031103530539667835
+          },
+          {
+            "case": "39_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.22466645238722482
+          },
+          {
+            "case": "39_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.2569959333896844
+          },
+          {
+            "case": "39_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.01083093524573318
+          },
+          {
+            "case": "39_B",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.01083093524573318
+          },
+          {
+            "case": "42_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.014710235250427552
+          },
+          {
+            "case": "42_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.1101013851232567
+          },
+          {
+            "case": "42_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.023438485389285398
+          },
+          {
+            "case": "42_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.04129640505605709
+          },
+          {
+            "case": "44_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.034721356395062665
+          },
+          {
+            "case": "44_A",
+            "run": 1,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.028515907692927188
+          },
+          {
+            "case": "44_B",
+            "run": 0,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.3533245249797947
+          },
+          {
+            "case": "44_B",
+            "run": 1,
+            "category": "TRUE_GEOMETRY_FAIL",
+            "is_catastrophic": true,
+            "predicted_proba": 0.38024061208513105
+          },
+          {
+            "case": "46_A",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.10337123201734794
+          },
+          {
+            "case": "46_A",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.10337123201734794
+          },
+          {
+            "case": "46_B",
+            "run": 0,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.4244990449261452
+          },
+          {
+            "case": "46_B",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.6579931938945524
+          },
+          {
+            "case": "47_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.06919182413042897
+          },
+          {
+            "case": "47_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.01733865808709131
+          },
+          {
+            "case": "47_B",
+            "run": 0,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.0882715613271563
+          },
+          {
+            "case": "47_B",
+            "run": 1,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.14016578494782997
+          },
+          {
+            "case": "48_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.011343658908478478
+          },
+          {
+            "case": "48_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.5500018033346941
+          },
+          {
+            "case": "48_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.01399250074256798
+          },
+          {
+            "case": "48_B",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.11733349097348188
+          },
+          {
+            "case": "49_A",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.7203187059375703
+          },
+          {
+            "case": "49_A",
+            "run": 1,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.539460367817455
+          },
+          {
+            "case": "49_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.008719621287687543
+          },
+          {
+            "case": "49_B",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.008719621287687543
+          },
+          {
+            "case": "57_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.6782677446090757
+          },
+          {
+            "case": "57_A",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.23254220378163157
+          },
+          {
+            "case": "57_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.19402524979219152
+          },
+          {
+            "case": "57_B",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.018109879244222454
+          },
+          {
+            "case": "58_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.8854364156226598
+          },
+          {
+            "case": "58_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.9115315642989623
+          },
+          {
+            "case": "58_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.13404740133932067
+          },
+          {
+            "case": "58_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.022917583887104187
+          },
+          {
+            "case": "61_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.04616124076043591
+          },
+          {
+            "case": "61_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.04616124076043591
+          },
+          {
+            "case": "61_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.04864044363211311
+          },
+          {
+            "case": "61_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.014169321125235248
+          },
+          {
+            "case": "62_A",
+            "run": 0,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.07048180841980209
+          },
+          {
+            "case": "62_A",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.029766612271005823
+          },
+          {
+            "case": "62_B",
+            "run": 0,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.08844895387801652
+          },
+          {
+            "case": "62_B",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.5463395116228552
+          }
+        ]
+      }
+    },
+    "random_forest": {
+      "name": "random_forest",
+      "feature_importance": [
+        {
+          "feature": "phase_darkness_separation",
+          "value": 0.27201532869218936,
+          "abs": 0.27201532869218936
+        },
+        {
+          "feature": "junction_score_at_ensemble",
+          "value": 0.17986501572212224,
+          "abs": 0.17986501572212224
+        },
+        {
+          "feature": "pnp_rms_px",
+          "value": 0.1509219036075965,
+          "abs": 0.1509219036075965
+        },
+        {
+          "feature": "ensemble_shift_px",
+          "value": 0.15020965057398056,
+          "abs": 0.15020965057398056
+        },
+        {
+          "feature": "fit_residual_rms_px",
+          "value": 0.1365543083840589,
+          "abs": 0.1365543083840589
+        },
+        {
+          "feature": "hexagon_centroid_vs_bezel_vertex_offset_px",
+          "value": 0.11043379302005235,
+          "abs": 0.11043379302005235
+        }
+      ],
+      "in_sample": {
+        "operating_points": {
+          "bar_clearing": {
+            "threshold": 0.2600175180583819,
+            "catastrophic_recall": 1.0,
+            "good_fpr": 0.0945945945945946,
+            "marginal_retake_rate": 0.18181818181818182,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 20,
+            "n_good_false_retakes": 7,
+            "n_marginal_retakes": 4
+          },
+          "at_catastrophic_recall_80pct": {
+            "threshold": 0.682463457996932,
+            "catastrophic_recall": 0.8,
+            "good_fpr": 0.0,
+            "marginal_retake_rate": 0.0,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 16,
+            "n_good_false_retakes": 0,
+            "n_marginal_retakes": 0
+          },
+          "at_good_fpr_10pct": {
+            "threshold": 0.2600175180583819,
+            "catastrophic_recall": 1.0,
+            "good_fpr": 0.0945945945945946,
+            "marginal_retake_rate": 0.18181818181818182,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 20,
+            "n_good_false_retakes": 7,
+            "n_marginal_retakes": 4
+          },
+          "best_recall_minus_fpr": {
+            "threshold": 0.5202950825114827,
+            "catastrophic_recall": 1.0,
+            "good_fpr": 0.013513513513513514,
+            "marginal_retake_rate": 0.13636363636363635,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 20,
+            "n_good_false_retakes": 1,
+            "n_marginal_retakes": 3
+          }
+        }
+      },
+      "out_of_fold": {
+        "method": "leave_one_case_out",
+        "n_folds": 58,
+        "operating_points": {
+          "bar_clearing": null,
+          "at_catastrophic_recall_80pct": {
+            "threshold": 0.2806686631099866,
+            "catastrophic_recall": 0.8,
+            "good_fpr": 0.17567567567567569,
+            "marginal_retake_rate": 0.4090909090909091,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 16,
+            "n_good_false_retakes": 13,
+            "n_marginal_retakes": 9
+          },
+          "at_good_fpr_10pct": {
+            "threshold": 0.3943025808071157,
+            "catastrophic_recall": 0.4,
+            "good_fpr": 0.0945945945945946,
+            "marginal_retake_rate": 0.22727272727272727,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 8,
+            "n_good_false_retakes": 7,
+            "n_marginal_retakes": 5
+          },
+          "best_recall_minus_fpr": {
+            "threshold": 0.27859846134982186,
+            "catastrophic_recall": 0.85,
+            "good_fpr": 0.1891891891891892,
+            "marginal_retake_rate": 0.4090909090909091,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 17,
+            "n_good_false_retakes": 14,
+            "n_marginal_retakes": 9
+          }
+        },
+        "predictions": [
+          {
+            "case": "12_A",
+            "run": 0,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.27859846134982186
+          },
+          {
+            "case": "12_A",
+            "run": 1,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.2806686631099866
+          },
+          {
+            "case": "12_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.04450772209639906
+          },
+          {
+            "case": "12_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.05447469568386788
+          },
+          {
+            "case": "14_A",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.10798849094372176
+          },
+          {
+            "case": "14_A",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.09858849094372177
+          },
+          {
+            "case": "14_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.06435482336664723
+          },
+          {
+            "case": "14_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.5084889601994032
+          },
+          {
+            "case": "15_A",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.1971182472252467
+          },
+          {
+            "case": "15_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.18504633878119178
+          },
+          {
+            "case": "15_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.1000842502056596
+          },
+          {
+            "case": "15_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.19309584213578024
+          },
+          {
+            "case": "17_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.037314218530826365
+          },
+          {
+            "case": "17_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.12864236627990314
+          },
+          {
+            "case": "17_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.04263625450492748
+          },
+          {
+            "case": "17_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.028167123262657582
+          },
+          {
+            "case": "21_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.25376980417192735
+          },
+          {
+            "case": "21_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.37115540414401516
+          },
+          {
+            "case": "21_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.41257118520795105
+          },
+          {
+            "case": "21_B",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.32810991344341495
+          },
+          {
+            "case": "22_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.019708116663973964
+          },
+          {
+            "case": "22_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.02202426318685989
+          },
+          {
+            "case": "22_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.005852049221540527
+          },
+          {
+            "case": "22_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.028653426517395962
+          },
+          {
+            "case": "23_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.04197483966952856
+          },
+          {
+            "case": "23_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.0691977811848332
+          },
+          {
+            "case": "23_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.0399683947964754
+          },
+          {
+            "case": "23_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.024621914813914098
+          },
+          {
+            "case": "24_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.17635203533714272
+          },
+          {
+            "case": "24_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.44160356847573695
+          },
+          {
+            "case": "24_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.555760225356563
+          },
+          {
+            "case": "24_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.1420850880971509
+          },
+          {
+            "case": "25_A",
+            "run": 0,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.4979792321126051
+          },
+          {
+            "case": "25_A",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.3722717683346589
+          },
+          {
+            "case": "25_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.24593079160624837
+          },
+          {
+            "case": "25_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.26373536935295655
+          },
+          {
+            "case": "26_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.25365324351816726
+          },
+          {
+            "case": "26_A",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.4048249132319603
+          },
+          {
+            "case": "26_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.7329394169519113
+          },
+          {
+            "case": "26_B",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.2836607338596154
+          },
+          {
+            "case": "27_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.12305112442383732
+          },
+          {
+            "case": "27_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.060604890604890604
+          },
+          {
+            "case": "27_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.3121012705481535
+          },
+          {
+            "case": "27_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.09115305500135756
+          },
+          {
+            "case": "28_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.014589954572283497
+          },
+          {
+            "case": "28_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.024589954572283496
+          },
+          {
+            "case": "28_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.010383534970690935
+          },
+          {
+            "case": "28_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.05744402180532216
+          },
+          {
+            "case": "29_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.050646647555695166
+          },
+          {
+            "case": "29_A",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.3943025808071157
+          },
+          {
+            "case": "29_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.02007292307139561
+          },
+          {
+            "case": "29_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.07708437726785027
+          },
+          {
+            "case": "30_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.05877292606246778
+          },
+          {
+            "case": "30_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.2824717653961539
+          },
+          {
+            "case": "30_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.04008595538183012
+          },
+          {
+            "case": "30_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.06053566512585844
+          },
+          {
+            "case": "31_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.15593565956062014
+          },
+          {
+            "case": "31_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.1859356595606201
+          },
+          {
+            "case": "31_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.016650922705239324
+          },
+          {
+            "case": "31_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.03580553649890549
+          },
+          {
+            "case": "32_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.2317630599156849
+          },
+          {
+            "case": "32_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.08102456291133726
+          },
+          {
+            "case": "32_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.007745101010939186
+          },
+          {
+            "case": "32_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.007745101010939186
+          },
+          {
+            "case": "36_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.0650445284651632
+          },
+          {
+            "case": "36_A",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.016103896103896106
+          },
+          {
+            "case": "36_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.08916125190938021
+          },
+          {
+            "case": "36_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.44336247615731006
+          },
+          {
+            "case": "37_A",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.3359982859051482
+          },
+          {
+            "case": "37_A",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.3425260636829259
+          },
+          {
+            "case": "37_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.11767829561995975
+          },
+          {
+            "case": "37_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.09711778481894916
+          },
+          {
+            "case": "39_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.36975790154672566
+          },
+          {
+            "case": "39_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.3881449760954372
+          },
+          {
+            "case": "39_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.020122741204049846
+          },
+          {
+            "case": "39_B",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.020122741204049846
+          },
+          {
+            "case": "42_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.02901444493312757
+          },
+          {
+            "case": "42_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.38507517231810495
+          },
+          {
+            "case": "42_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.035029726664253975
+          },
+          {
+            "case": "42_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.26933822552161824
+          },
+          {
+            "case": "44_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.2300390053678704
+          },
+          {
+            "case": "44_A",
+            "run": 1,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.3550449334253844
+          },
+          {
+            "case": "44_B",
+            "run": 0,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.35534681995173384
+          },
+          {
+            "case": "44_B",
+            "run": 1,
+            "category": "TRUE_GEOMETRY_FAIL",
+            "is_catastrophic": true,
+            "predicted_proba": 0.5106906072613963
+          },
+          {
+            "case": "46_A",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.46392813190609306
+          },
+          {
+            "case": "46_A",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.44820266716857554
+          },
+          {
+            "case": "46_B",
+            "run": 0,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.1706734539999481
+          },
+          {
+            "case": "46_B",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.29315726633215466
+          },
+          {
+            "case": "47_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.2563879476834243
+          },
+          {
+            "case": "47_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.2576904897244978
+          },
+          {
+            "case": "47_B",
+            "run": 0,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.16
+          },
+          {
+            "case": "47_B",
+            "run": 1,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.184
+          },
+          {
+            "case": "48_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.0670278482676338
+          },
+          {
+            "case": "48_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.12280709368654166
+          },
+          {
+            "case": "48_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.061626827901713685
+          },
+          {
+            "case": "48_B",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.3011010439228406
+          },
+          {
+            "case": "49_A",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.5829410023775881
+          },
+          {
+            "case": "49_A",
+            "run": 1,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.512492633169696
+          },
+          {
+            "case": "49_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.036047509393102584
+          },
+          {
+            "case": "49_B",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.00523173202698197
+          },
+          {
+            "case": "57_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.7355967863097458
+          },
+          {
+            "case": "57_A",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.3279951165471401
+          },
+          {
+            "case": "57_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.1040890776847413
+          },
+          {
+            "case": "57_B",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.03820558526440879
+          },
+          {
+            "case": "58_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.656186760032218
+          },
+          {
+            "case": "58_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.8047984874799448
+          },
+          {
+            "case": "58_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.04148264984227129
+          },
+          {
+            "case": "58_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.0239144263668629
+          },
+          {
+            "case": "61_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.2786383932145611
+          },
+          {
+            "case": "61_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.26809310103395045
+          },
+          {
+            "case": "61_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.26595224180498483
+          },
+          {
+            "case": "61_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.09552750405435761
+          },
+          {
+            "case": "62_A",
+            "run": 0,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.37103167162273043
+          },
+          {
+            "case": "62_A",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.4351869155708458
+          },
+          {
+            "case": "62_B",
+            "run": 0,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.4649077773225461
+          },
+          {
+            "case": "62_B",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.54133519346164
+          }
+        ]
+      }
+    },
+    "mlp_16_8": {
+      "name": "mlp_16_8",
+      "feature_importance": null,
+      "in_sample": {
+        "operating_points": {
+          "bar_clearing": {
+            "threshold": 0.03337588881280133,
+            "catastrophic_recall": 1.0,
+            "good_fpr": 0.0945945945945946,
+            "marginal_retake_rate": 0.3181818181818182,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 20,
+            "n_good_false_retakes": 7,
+            "n_marginal_retakes": 7
+          },
+          "at_catastrophic_recall_80pct": {
+            "threshold": 0.6649758055974401,
+            "catastrophic_recall": 0.8,
+            "good_fpr": 0.0,
+            "marginal_retake_rate": 0.0,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 16,
+            "n_good_false_retakes": 0,
+            "n_marginal_retakes": 0
+          },
+          "at_good_fpr_10pct": {
+            "threshold": 0.03337588881280133,
+            "catastrophic_recall": 1.0,
+            "good_fpr": 0.0945945945945946,
+            "marginal_retake_rate": 0.3181818181818182,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 20,
+            "n_good_false_retakes": 7,
+            "n_marginal_retakes": 7
+          },
+          "best_recall_minus_fpr": {
+            "threshold": 0.278710823407075,
+            "catastrophic_recall": 1.0,
+            "good_fpr": 0.0,
+            "marginal_retake_rate": 0.09090909090909091,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 20,
+            "n_good_false_retakes": 0,
+            "n_marginal_retakes": 2
+          }
+        }
+      },
+      "out_of_fold": {
+        "method": "leave_one_case_out",
+        "n_folds": 58,
+        "operating_points": {
+          "bar_clearing": null,
+          "at_catastrophic_recall_80pct": {
+            "threshold": 0.034219095899317035,
+            "catastrophic_recall": 0.8,
+            "good_fpr": 0.2702702702702703,
+            "marginal_retake_rate": 0.45454545454545453,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 16,
+            "n_good_false_retakes": 20,
+            "n_marginal_retakes": 10
+          },
+          "at_good_fpr_10pct": {
+            "threshold": 0.24665083050388995,
+            "catastrophic_recall": 0.5,
+            "good_fpr": 0.0945945945945946,
+            "marginal_retake_rate": 0.3181818181818182,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 10,
+            "n_good_false_retakes": 7,
+            "n_marginal_retakes": 7
+          },
+          "best_recall_minus_fpr": {
+            "threshold": 0.016423341113501178,
+            "catastrophic_recall": 0.9,
+            "good_fpr": 0.3108108108108108,
+            "marginal_retake_rate": 0.45454545454545453,
+            "n_catastrophic": 20,
+            "n_good": 74,
+            "n_marginal": 22,
+            "n_catastrophic_caught": 18,
+            "n_good_false_retakes": 23,
+            "n_marginal_retakes": 10
+          }
+        },
+        "predictions": [
+          {
+            "case": "12_A",
+            "run": 0,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.01776158725175794
+          },
+          {
+            "case": "12_A",
+            "run": 1,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.12692172266684967
+          },
+          {
+            "case": "12_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 4.900910416771808e-07
+          },
+          {
+            "case": "12_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 1.4422683822637441e-10
+          },
+          {
+            "case": "14_A",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.0005301532371901649
+          },
+          {
+            "case": "14_A",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.00023208665193577357
+          },
+          {
+            "case": "14_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 7.510776785441458e-05
+          },
+          {
+            "case": "14_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 2.8427890486086715e-05
+          },
+          {
+            "case": "15_A",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.26889412943123175
+          },
+          {
+            "case": "15_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.045492784918251164
+          },
+          {
+            "case": "15_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 4.6167551362200093e-07
+          },
+          {
+            "case": "15_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.019028599419125092
+          },
+          {
+            "case": "17_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 5.804397974599573e-07
+          },
+          {
+            "case": "17_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.002400402597134777
+          },
+          {
+            "case": "17_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 2.041321989521567e-06
+          },
+          {
+            "case": "17_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.0002521531876301742
+          },
+          {
+            "case": "21_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.5151002685172641
+          },
+          {
+            "case": "21_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.22445808598582292
+          },
+          {
+            "case": "21_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.045519731549044484
+          },
+          {
+            "case": "21_B",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 1.907323731960348e-07
+          },
+          {
+            "case": "22_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.00015686763810064612
+          },
+          {
+            "case": "22_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 4.721346290293599e-06
+          },
+          {
+            "case": "22_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.0007890421666821554
+          },
+          {
+            "case": "22_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.00014462942856450063
+          },
+          {
+            "case": "23_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 1.5453019387683842e-08
+          },
+          {
+            "case": "23_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 1.9680424703638228e-08
+          },
+          {
+            "case": "23_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 3.0025198769909008e-05
+          },
+          {
+            "case": "23_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.00044833240435807064
+          },
+          {
+            "case": "24_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.15599162923751184
+          },
+          {
+            "case": "24_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.24228098709848145
+          },
+          {
+            "case": "24_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.08571291063594003
+          },
+          {
+            "case": "24_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.006923398294860002
+          },
+          {
+            "case": "25_A",
+            "run": 0,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.6141183384724193
+          },
+          {
+            "case": "25_A",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.4447851382257013
+          },
+          {
+            "case": "25_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.08994468276122171
+          },
+          {
+            "case": "25_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.1870942286969959
+          },
+          {
+            "case": "26_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.0068792401545035835
+          },
+          {
+            "case": "26_A",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.016423341113501178
+          },
+          {
+            "case": "26_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.49780674099944666
+          },
+          {
+            "case": "26_B",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.08067079282836066
+          },
+          {
+            "case": "27_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 9.02996849255859e-07
+          },
+          {
+            "case": "27_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 2.917272309119803e-08
+          },
+          {
+            "case": "27_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.2234218624829379
+          },
+          {
+            "case": "27_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 8.277153862504953e-05
+          },
+          {
+            "case": "28_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 1.2818463140793122e-07
+          },
+          {
+            "case": "28_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 5.175671008980526e-08
+          },
+          {
+            "case": "28_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 7.375251613430942e-07
+          },
+          {
+            "case": "28_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.0022017932486095193
+          },
+          {
+            "case": "29_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.0024304980788741283
+          },
+          {
+            "case": "29_A",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.5480145816826575
+          },
+          {
+            "case": "29_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 7.602923533752688e-08
+          },
+          {
+            "case": "29_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 1.2243246037714305e-06
+          },
+          {
+            "case": "30_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.06277063846887163
+          },
+          {
+            "case": "30_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.332422855130993
+          },
+          {
+            "case": "30_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 8.489726480737587e-05
+          },
+          {
+            "case": "30_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.0021136576361630555
+          },
+          {
+            "case": "31_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.0006874511164915427
+          },
+          {
+            "case": "31_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.007983393077032452
+          },
+          {
+            "case": "31_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 2.2930318779908117e-11
+          },
+          {
+            "case": "31_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 7.126577880388357e-11
+          },
+          {
+            "case": "32_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 3.0607135979121785e-06
+          },
+          {
+            "case": "32_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 4.716926498207911e-05
+          },
+          {
+            "case": "32_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 7.455694683676333e-05
+          },
+          {
+            "case": "32_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 4.139918739210404e-05
+          },
+          {
+            "case": "36_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.0029302079818231456
+          },
+          {
+            "case": "36_A",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 7.364381069486259e-05
+          },
+          {
+            "case": "36_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.028466502504859565
+          },
+          {
+            "case": "36_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.2947579038116357
+          },
+          {
+            "case": "37_A",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.7224915748343261
+          },
+          {
+            "case": "37_A",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.5793130916564798
+          },
+          {
+            "case": "37_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.0569141826828046
+          },
+          {
+            "case": "37_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.17752796218813444
+          },
+          {
+            "case": "39_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.03772494593551279
+          },
+          {
+            "case": "39_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.0674837951666799
+          },
+          {
+            "case": "39_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 3.1858742492903575e-12
+          },
+          {
+            "case": "39_B",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 7.1687549570247746e-12
+          },
+          {
+            "case": "42_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.00014890393261383746
+          },
+          {
+            "case": "42_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.14006722486293668
+          },
+          {
+            "case": "42_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 9.941596221283553e-05
+          },
+          {
+            "case": "42_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.006723490154078913
+          },
+          {
+            "case": "44_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.4383361748535427
+          },
+          {
+            "case": "44_A",
+            "run": 1,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.09802463899972363
+          },
+          {
+            "case": "44_B",
+            "run": 0,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.2890644196980471
+          },
+          {
+            "case": "44_B",
+            "run": 1,
+            "category": "TRUE_GEOMETRY_FAIL",
+            "is_catastrophic": true,
+            "predicted_proba": 0.9999999999999982
+          },
+          {
+            "case": "46_A",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.16777633599853284
+          },
+          {
+            "case": "46_A",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.10510082651426374
+          },
+          {
+            "case": "46_B",
+            "run": 0,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.034219095899317035
+          },
+          {
+            "case": "46_B",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.9911747830032769
+          },
+          {
+            "case": "47_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 5.9217177261739506e-05
+          },
+          {
+            "case": "47_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.001309981688039502
+          },
+          {
+            "case": "47_B",
+            "run": 0,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 5.219344837198008e-14
+          },
+          {
+            "case": "47_B",
+            "run": 1,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 5.2399169145756306e-11
+          },
+          {
+            "case": "48_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.0002318358492430498
+          },
+          {
+            "case": "48_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.00012058227185531339
+          },
+          {
+            "case": "48_B",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 6.0235740583342036e-06
+          },
+          {
+            "case": "48_B",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.48767190520140125
+          },
+          {
+            "case": "49_A",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.4818389657247363
+          },
+          {
+            "case": "49_A",
+            "run": 1,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.17463593612491368
+          },
+          {
+            "case": "49_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 2.5914846371631705e-06
+          },
+          {
+            "case": "49_B",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 2.37892702622348e-06
+          },
+          {
+            "case": "57_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.24665083050388995
+          },
+          {
+            "case": "57_A",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.35867531997754726
+          },
+          {
+            "case": "57_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 1.9559588736520716e-06
+          },
+          {
+            "case": "57_B",
+            "run": 1,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.0001025631296103656
+          },
+          {
+            "case": "58_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.9995987219678968
+          },
+          {
+            "case": "58_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.9984553037622286
+          },
+          {
+            "case": "58_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.0010004488574286376
+          },
+          {
+            "case": "58_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.015393140954680659
+          },
+          {
+            "case": "61_A",
+            "run": 0,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.028491099334137633
+          },
+          {
+            "case": "61_A",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 0.012360943763828892
+          },
+          {
+            "case": "61_B",
+            "run": 0,
+            "category": "MARGINAL",
+            "is_catastrophic": false,
+            "predicted_proba": 0.002557999479679397
+          },
+          {
+            "case": "61_B",
+            "run": 1,
+            "category": "GOOD",
+            "is_catastrophic": false,
+            "predicted_proba": 2.63922745077518e-05
+          },
+          {
+            "case": "62_A",
+            "run": 0,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.634748422396683
+          },
+          {
+            "case": "62_A",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.31797933857035393
+          },
+          {
+            "case": "62_B",
+            "run": 0,
+            "category": "CHIRALITY_FALSE_FLIP",
+            "is_catastrophic": true,
+            "predicted_proba": 0.6108274954498175
+          },
+          {
+            "case": "62_B",
+            "run": 1,
+            "category": "CHIRALITY_MISS",
+            "is_catastrophic": true,
+            "predicted_proba": 0.999661686900051
+          }
+        ]
+      }
+    }
+  }
+}

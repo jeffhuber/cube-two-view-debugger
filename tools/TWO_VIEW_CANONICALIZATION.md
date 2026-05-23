@@ -173,18 +173,41 @@ is mechanical:
    `model.axis_x_2d / axis_y_2d / axis_z_2d` per run alongside the
    existing per-run signals.
 2. **Add a post-processing pass** in `recompute_all()`: pair each
-   set's A and B runs, call
-   `canonicalized_two_view_consistency_deg(axes_A, axes_B)`, and
-   inject into both A's and B's matrix rows as
-   `two_view_orientation_consistency_deg`.
+   set's A and B runs, call `consistency_features(axes_A, axes_B)`
+   (NOT the bare scalar `canonicalized_two_view_consistency_deg`),
+   and inject all THREE returned fields into both A's and B's matrix
+   rows as separate features:
+     - `two_view_orientation_consistency_canonicalized_deg`
+     - `two_view_orientation_consistency_raw_deg`
+     - `two_view_orientation_consistency_canon_gap_deg`
+
+   **Why all three, not just the canonicalized scalar:** the
+   canonicalized value alone has the documented same-pose false
+   negative (low canon score on `axes_B == axes_A` because the
+   48-transform search incidentally finds R_FLIP — Codex P1 on
+   the prior canonicalization PR). The raw value detects this
+   exactly (180° when R_A = R_B). The trust ranker classifier
+   needs both to learn the joint "low canon + ~180° raw"
+   same-pose signature.
+
 3. **Re-run `tools/phase2b_recompute.py`** to regenerate
-   `tests/fixtures/phase2b_recomputed_signals.json` with the 7th
-   feature populated. Cost: ~30-60 min (rembg on 70 cases × 2 runs).
+   `tests/fixtures/phase2b_recomputed_signals.json` with all 3
+   new features populated per row. Cost: ~30-60 min (rembg on
+   70 photos × 2 runs).
 4. **Update `tools/phase4_trust_ranker.py`** `FEATURE_COLUMNS` to
-   include `two_view_orientation_consistency_deg`. Re-run the 4-model
-   bake-off. Target: 80% catastrophic recall at ≤10% GOOD FPR
-   (Phase 2 acceptance bar — v1.1 measured at 36% FPR with 6
-   features).
+   include all 3 new fields (NOT just `..._canonicalized_deg`).
+   Re-run the 4-model bake-off. Target: 80% catastrophic recall
+   at ≤10% GOOD FPR (Phase 2 acceptance bar — v1.1 measured at
+   36% FPR with 6 features).
+
+   **Empirical-gate before claiming ranker lift** (Codex's design
+   bias on the prior PR): before promoting any feature into the
+   shipped ranker, characterize per-ROW behavior on real
+   catastrophic pairs from the matrix — not just aggregate
+   AUC/recall. If the canonicalized value alone improves
+   aggregate FPR but fails the same-pose row check, the integration
+   ships the multi-feature dict and the classifier's feature
+   importance reports the same-pose mitigation working.
 
 The validation set for the integration is the existing
 phase2b_recomputed_signals fixture (which has the GOOD/catastrophic
@@ -194,8 +217,9 @@ own validation against `gcm_axis_ground_truth.json` (this PR).
 ## See also
 
 - `tools/two_view_canonicalization.py` — the helper implementation.
-- `tests/test_two_view_canonicalization.py` — 11 tests including
-  the empirical contract `GOOD-pair median ≤25°`.
+- `tests/test_two_view_canonicalization.py` — 20 tests including
+  the empirical contract `GOOD-pair median ≤25°` and the same-pose
+  Codex P1 documentation/mitigation.
 - `tools/two_view_consistency.py` (PR #245) — the math primitive
   this helper wraps.
 - `tools/TWO_VIEW_CONSISTENCY.md` (PR #245) — overall integration

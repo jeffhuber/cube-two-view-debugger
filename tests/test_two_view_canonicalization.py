@@ -1,13 +1,23 @@
 """Tests for `tools/two_view_canonicalization.py`.
 
 Coverage:
-- The 24-element CUBE_ROTATIONS tuple has expected properties
-  (all det=+1, no duplicates, includes the identity).
-- Round-trip: applying a cube rotation to perfectly consistent axes
-  still recovers ~0° residual under the min-over-24 search.
+- The 48-element ALL_AXIS_TRANSFORMS tuple has expected properties
+  (24 det=+1 cube rotations + 24 det=-1 reflections, no duplicates,
+  includes the identity). The det=+1 subset is exposed as
+  CUBE_ROTATIONS for diagnostic comparison.
+- Round-trip: applying any of the 48 signed axis permutations to
+  perfectly consistent axes still recovers ~0° residual under the
+  min-over-48 search.
+- Degenerate-input contract: both `canonicalized_two_view_consistency_deg`
+  and the diagnostic API raise ValueError on all-zero axes.
+- Same-pose limitation (Codex P1 on PR #246) is pinned: same-pose
+  pairs DO score low on canonicalized alone but the raw value is
+  exactly 180°, so the multi-feature `consistency_features` API is
+  the v2-integration-recommended path.
 - Empirical validation against the 35 human-labeled GOOD pairs in
   `tests/fixtures/gcm_axis_ground_truth.json` — the contract for
-  v2 integration is GOOD-pair median ≤25° (achieved: ~15°).
+  v2 integration is GOOD-pair median ≤25° AND max ≤25° (achieved
+  with all-48 search: median ~10.66°, max ~23.41°, 35/35 under 25°).
 """
 
 from __future__ import annotations
@@ -41,7 +51,11 @@ def _axes_from_label(rec):
 def _load_good_pairs():
     with open(GROUND_TRUTH_PATH) as f:
         data = json.load(f)
-    sets = sorted({k.split("_")[0] for k in data})
+    # rsplit("_", 1) so future keys with underscores in the set id
+    # (e.g. "set_47b_alt_A") still split correctly on the final "_<side>"
+    # suffix; split("_")[0] would silently truncate to "set" and
+    # collapse unrelated keys to the same bucket. (Codex P2 on PR #249.)
+    sets = sorted({k.rsplit("_", 1)[0] for k in data})
     pairs = []
     for s in sets:
         ka, kb = f"{s}_A", f"{s}_B"
@@ -172,6 +186,16 @@ def test_best_canonicalization_raises_on_zero_axes_B():
     good_axes = _project_axes(R)
     with pytest.raises(ValueError, match="degenerate"):
         tvcanon.best_canonicalization(good_axes, zero)
+
+
+def test_best_canonicalization_raises_on_zero_axes_A():
+    """Symmetric zero-axes_A coverage for the diagnostic API (Codex
+    P2 on PR #249 — match the canonicalized API's symmetric coverage)."""
+    zero = ((0.0, 0.0), (0.0, 0.0), (0.0, 0.0))
+    R = np.eye(3)
+    good_axes = _project_axes(R)
+    with pytest.raises(ValueError, match="degenerate"):
+        tvcanon.best_canonicalization(zero, good_axes)
 
 
 # ----- Empirical validation contract -----

@@ -404,9 +404,12 @@ def render_report(result: Dict[str, Any]) -> str:
     for pc, s in wrong_call_pcs.items():
         if s["seps"]:
             s["sep_median"] = round(statistics.median(s["seps"]), 1)
+            # Strict inequalities so an exact 0.0 sep value doesn't get
+            # classified as "all same sign — positive" via the >=/<=
+            # boundary (Greptile P2 on PR #250).
             s["sep_sign_all_same"] = (
-                all(v >= 0 for v in s["seps"])
-                or all(v <= 0 for v in s["seps"])
+                all(v > 0 for v in s["seps"])
+                or all(v < 0 for v in s["seps"])
             )
         if s["err_nears"]:
             s["err_near_median"] = round(statistics.median(s["err_nears"]), 1)

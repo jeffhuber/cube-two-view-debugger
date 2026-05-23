@@ -78,9 +78,12 @@ def test_classify_unexpected_phase_check_is_pipeline_bug():
 # ----- analyze() end-to-end on the real fixture -----
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def analysis():
-    """Run analyze() once per test session — small fixture, fast."""
+    """Run analyze() once per test module — small fixture, fast.
+    (Greptile P2 on PR #250: explicit `scope="module"` matches the
+    documented intent; default `scope="function"` would re-invoke
+    analyze() once per consuming test.)"""
     return analyze(DEFAULT_MATRIX)
 
 

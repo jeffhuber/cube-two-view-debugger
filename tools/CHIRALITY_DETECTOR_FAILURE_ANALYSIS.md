@@ -33,9 +33,9 @@ Total chirality-failure rows: 32
 
 | Category × phase_check | n | median sep | min | max |
 |---|---:|---:|---:|---:|
-| CHIRALITY_FALSE_FLIP | corrected_60deg_flip | 12 | 15.7 | 11.3 | 40.9 |
-| CHIRALITY_MISS | ambiguous_no_correction | 13 | -1.2 | -8.4 | 8.6 |
-| CHIRALITY_MISS | correct | 7 | -20.0 | -49.3 | -10.5 |
+| CHIRALITY_FALSE_FLIP \| corrected_60deg_flip | 12 | 15.7 | 11.3 | 40.9 |
+| CHIRALITY_MISS \| ambiguous_no_correction | 13 | -1.2 | -8.4 | 8.6 |
+| CHIRALITY_MISS \| correct | 7 | -20.0 | -49.3 | -10.5 |
 
 ## Key findings
 
@@ -53,6 +53,33 @@ Total chirality-failure rows: 32
 - **Look for a meta-signal that predicts polarity inversion.** The matrix already records other per-row signals (fit_residual_rms_px, vertex_ensemble_stddev_px, junction_score_at_ensemble, ensemble_shift_px, etc). Do any correlate with the `DETECTOR_WRONG_CALL` rows above? If yes, the detector could gate its polarity rule on the meta-signal.
 - **Visual inspection of the 19 wrong-call rows.** What is physically different about Sets 12, 25, 30, 40, 41, 44, 45, 46, 47, 49, 57, 62 that inverts the darkness polarity? Bezel reflectivity, lighting angle, sticker color saturation are the candidate variables.
 - **Strengthen the ambiguous-band discriminator.** Candidate signals: per-line darkness variance (not just mean), color-saturation along the lines, edge-gradient orientation, or multiple lines per corner (not just vertex→corner).
+
+## Meta-signal candidate for the wrong-call subset
+
+Live compare of per-row feature distributions between two groups in `tests/fixtures/phase2b_recomputed_signals.json`:
+
+- **RIGHT-call rows** (n=91): detector decided (`phase_check ∈ {correct, corrected_60deg_flip}`) AND the row outcome is GOOD or MARGINAL
+- **WRONG-call rows** (n=19): same `phase_check` values but the row is `CHIRALITY_MISS` or `CHIRALITY_FALSE_FLIP`
+
+| Feature | RIGHT median | RIGHT IQR | WRONG median | WRONG IQR | Verdict |
+|---|---:|---|---:|---|---|
+| `junction_score_at_ensemble` | 216.4 | [195.75, 230.75] | 124.2 | [81.1, 178.75] | **IQR-DISJOINT** |
+| `bezel_vs_fit_cube_center_offset_px` | 11.3 | [0.0, 61.15] | 28.3 | [0.0, 52.25] | IQR-overlap |
+| `hexagon_centroid_vs_bezel_vertex_offset_px` | 41.8 | [18.9, 88.85] | 53.0 | [15.85, 93.4] | IQR-overlap |
+| `phase_darkness_separation` | 17.3 | [-35.0, 37.45] | 13.6 | [-14.55, 17.5] | IQR-overlap |
+| `fit_residual_rms_px` | 68.27 | [30.63, 96.72] | 61.51 | [35.58, 98.03] | IQR-overlap |
+| `ensemble_shift_px` | 30.1 | [14.8, 62.85] | 28.4 | [17.3, 47.7] | IQR-overlap |
+| `pnp_rms_px` | 70.27 | [30.63, 107.33] | 72.4 | [35.58, 106.79] | IQR-overlap |
+| `ensemble_n_candidates` | 3.0 | [3.0, 3.0] | 3.0 | [3.0, 3.0] | IQR-overlap |
+
+**Interpretation (live):** `junction_score_at_ensemble` has IQR-disjoint separation between the right-call and wrong-call groups — RIGHT IQR [195.75, 230.75] lies entirely above WRONG IQR [81.1, 178.75]. **The full ranges also overlap** (RIGHT min/max 38.4/248.8; WRONG min/max 15.5/241.1), so the IQR-only separation does NOT cleanly partition the populations.
+
+**Candidate-threshold trade-off at `junction_score_at_ensemble < 187.2`** (midpoint of the two IQRs):
+
+- **16/19** WRONG-call rows would be gated to `ambiguous_no_correction` (benefit: those rows avoid the bad polarity decision).
+- **19/91** RIGHT-call rows would ALSO be gated (cost: those rows lose the correct polarity decision; some may flip back to `ambiguous` and remain correct anyway, others may regress).
+
+**Actionable hypothesis for next fix PR:** gate the polarity rule on `junction_score_at_ensemble`. The IQR-midpoint threshold `187.2` is the starting point; the actual operating point should be calibrated on a held-out split with the FP/FN trade-off above made explicit. Likely the right approach is a soft confidence rather than a hard binary gate — i.e., treat low-feature rows (the WRONG-call territory) as ambiguous.
 
 ## Per-row detail (chirality failures only)
 

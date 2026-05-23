@@ -90,6 +90,138 @@ def _classify_failure(row: Dict[str, Any]) -> Tuple[str, str]:
     return ("PIPELINE_BUG", f"unexpected phase_check={pc!r}")
 
 
+def _compute_meta_signal_stats(by_case: Dict[str, List[Dict[str, Any]]]) -> Dict[str, Any]:
+    """For each per-row matrix feature, compute IQR distributions of:
+      - RIGHT-call rows: phase_check ∈ {correct, corrected_60deg_flip}
+        AND category ∈ {GOOD, MARGINAL} (detector decided correctly)
+      - WRONG-call rows: same phase_check values but category ∈
+        {CHIRALITY_MISS, CHIRALITY_FALSE_FLIP} (detector decided wrong)
+
+    Returns:
+      {
+        "right_n": int, "wrong_n": int,
+        "features": {feat_name: {"right": stats, "wrong": stats,
+                                  "iqr_overlap": bool}}
+      }
+    """
+    decided_phase_checks = ("correct", "corrected_60deg_flip")
+    catastrophic_cats = ("CHIRALITY_MISS", "CHIRALITY_FALSE_FLIP")
+    right_rows: List[Dict[str, Any]] = []
+    wrong_rows: List[Dict[str, Any]] = []
+    for runs in by_case.values():
+        for r in runs:
+            pc = r.get("phase_check")
+            cat = r.get("category")
+            if pc not in decided_phase_checks:
+                continue
+            if cat in ("GOOD", "MARGINAL"):
+                right_rows.append(r)
+            elif cat in catastrophic_cats:
+                wrong_rows.append(r)
+
+    candidate_features = [
+        "fit_residual_rms_px",
+        "pnp_rms_px",
+        "hexagon_centroid_vs_bezel_vertex_offset_px",
+        "bezel_vs_fit_cube_center_offset_px",
+        "junction_score_at_ensemble",
+        "ensemble_shift_px",
+        "ensemble_n_candidates",
+        "phase_darkness_separation",
+    ]
+
+    def _quartiles(vals):
+        """Return (q1, q3) using a Python 3.6+ compatible implementation
+        (statistics.quantiles is 3.8+; Codex P1 on PR #250 round 5).
+        Uses linear interpolation across sorted positions — equivalent
+        to numpy.percentile([25, 75]) and pandas default."""
+        s = sorted(vals)
+        n = len(s)
+        def _pct(p):
+            if n == 1:
+                return s[0]
+            k = (n - 1) * (p / 100.0)
+            lo = int(k)
+            hi = min(lo + 1, n - 1)
+            frac = k - lo
+            return s[lo] + frac * (s[hi] - s[lo])
+        return _pct(25.0), _pct(75.0)
+
+    def _stat(rows, key):
+        vals = [r.get(key) for r in rows if r.get(key) is not None]
+        if len(vals) < 4:
+            return None
+        q1, q3 = _quartiles(vals)
+        return {
+            "n": len(vals),
+            "median": round(statistics.median(vals), 2),
+            "q1": round(q1, 2),
+            "q3": round(q3, 2),
+            "min": round(min(vals), 2),
+            "max": round(max(vals), 2),
+        }
+
+    def _vals(rows, key):
+        return [
+            float(r.get(key)) for r in rows if r.get(key) is not None
+        ]
+
+    feature_results = {}
+    for feat in candidate_features:
+        r = _stat(right_rows, feat)
+        w = _stat(wrong_rows, feat)
+        if r is None or w is None:
+            feature_results[feat] = {
+                "right": r, "wrong": w, "iqr_overlap": None,
+                "threshold_tradeoff": None,
+            }
+            continue
+        iqr_overlap = (max(r["q1"], w["q1"]) <= min(r["q3"], w["q3"]))
+        threshold_tradeoff = None
+        # For IQR-disjoint features, compute the actual count of rows
+        # above/below the IQR-midpoint threshold so the report can
+        # disclose the real FP/FN trade-off (Codex P2 round 3 — IQR
+        # disjoint does NOT mean full ranges are disjoint).
+        if not iqr_overlap:
+            right_vals = _vals(right_rows, feat)
+            wrong_vals = _vals(wrong_rows, feat)
+            if r["q1"] > w["q3"]:
+                # RIGHT above WRONG → gate "feat < threshold"
+                comparison = "<"
+                threshold = round((w["q3"] + r["q1"]) / 2.0, 1)
+                right_in_gate = sum(1 for v in right_vals if v < threshold)
+                wrong_in_gate = sum(1 for v in wrong_vals if v < threshold)
+            elif w["q1"] > r["q3"]:
+                comparison = ">"
+                threshold = round((r["q3"] + w["q1"]) / 2.0, 1)
+                right_in_gate = sum(1 for v in right_vals if v > threshold)
+                wrong_in_gate = sum(1 for v in wrong_vals if v > threshold)
+            else:
+                # Defensive: shouldn't happen given the iqr_overlap=False
+                # branch above. Skip threshold suggestion in that case.
+                comparison = "?"
+                threshold = None
+                right_in_gate = wrong_in_gate = 0
+            threshold_tradeoff = {
+                "threshold": threshold,
+                "comparison": comparison,
+                "right_in_gate": right_in_gate,
+                "wrong_in_gate": wrong_in_gate,
+            }
+        feature_results[feat] = {
+            "right": r,
+            "wrong": w,
+            "iqr_overlap": iqr_overlap,
+            "threshold_tradeoff": threshold_tradeoff,
+        }
+
+    return {
+        "right_n": len(right_rows),
+        "wrong_n": len(wrong_rows),
+        "features": feature_results,
+    }
+
+
 def analyze(matrix_path: Path) -> Dict[str, Any]:
     """Return a dict of analysis results. Keys:
         - total_rows, total_cases
@@ -97,6 +229,8 @@ def analyze(matrix_path: Path) -> Dict[str, Any]:
         - chirality_rows: list of per-row dicts
         - failure_mode_counts: Counter
         - sep_stats: distribution stats per (category, phase_check) pairing
+        - meta_signal_stats: live IQR-disjoint check on candidate
+          meta-signals for the wrong-call subset
     """
     data = json.loads(matrix_path.read_text())
     by_case = data.get("by_case", {})
@@ -150,6 +284,8 @@ def analyze(matrix_path: Path) -> Dict[str, Any]:
     except ValueError:
         matrix_path_for_report = str(matrix_path)
 
+    meta_signal_stats = _compute_meta_signal_stats(by_case)
+
     return {
         "matrix_path": matrix_path_for_report,
         "total_rows": total_rows,
@@ -158,6 +294,7 @@ def analyze(matrix_path: Path) -> Dict[str, Any]:
         "chirality_rows": chirality_rows,
         "failure_mode_counts": dict(failure_mode_counts),
         "sep_stats_by_category_and_phase_check": sep_stats,
+        "meta_signal_stats": meta_signal_stats,
     }
 
 
@@ -232,8 +369,12 @@ def render_report(result: Dict[str, Any]) -> str:
     for key, stats in sorted(
         result["sep_stats_by_category_and_phase_check"].items()
     ):
+        # Escape the pipe in the dict key (which is "category | phase_check")
+        # so the Markdown renderer doesn't interpret it as a column boundary
+        # (Codex P2 on PR #250 round 2).
+        safe_key = key.replace("|", r"\|")
         lines.append(
-            f"| {key} | {stats['n']} | {stats['median']} | "
+            f"| {safe_key} | {stats['n']} | {stats['median']} | "
             f"{stats['min']} | {stats['max']} |"
         )
     lines.append("")
@@ -382,6 +523,164 @@ def render_report(result: Dict[str, Any]) -> str:
     if chirality_total == 0:
         lines.append("- (No chirality failures in this matrix.)")
     lines.append("")
+
+    lines.append(
+        "## Meta-signal candidate for the wrong-call subset"
+    )
+    lines.append("")
+    meta = result.get("meta_signal_stats", {})
+    right_n = meta.get("right_n", 0)
+    wrong_n = meta.get("wrong_n", 0)
+    feat_results = meta.get("features", {})
+    if right_n == 0 or wrong_n == 0:
+        lines.append(
+            "(No `RIGHT-call` or `WRONG-call` rows in this matrix — meta-signal "
+            "analysis is not applicable.)"
+        )
+        lines.append("")
+    else:
+        lines.append(
+            f"Live compare of per-row feature distributions between two "
+            f"groups in `{result['matrix_path']}`:"
+        )
+        lines.append("")
+        lines.append(
+            f"- **RIGHT-call rows** (n={right_n}): detector decided "
+            f"(`phase_check ∈ {{correct, corrected_60deg_flip}}`) AND the row "
+            f"outcome is GOOD or MARGINAL"
+        )
+        lines.append(
+            f"- **WRONG-call rows** (n={wrong_n}): same `phase_check` values "
+            f"but the row is `CHIRALITY_MISS` or `CHIRALITY_FALSE_FLIP`"
+        )
+        lines.append("")
+        # Order features: IQR-disjoint first (strongest separation), then
+        # by median-ratio magnitude for the overlapping ones.
+        ordered = []
+        for feat, fr in feat_results.items():
+            r = fr.get("right")
+            w = fr.get("wrong")
+            if r is None or w is None:
+                continue
+            r_med, w_med = r["median"], w["median"]
+            ratio = abs((w_med - r_med) / max(abs(r_med), 1e-6))
+            ordered.append((
+                feat, r, w, fr.get("iqr_overlap", True), ratio
+            ))
+        ordered.sort(key=lambda t: (t[3], -t[4]))  # disjoint first, then by ratio desc
+        lines.append(
+            "| Feature | RIGHT median | RIGHT IQR | WRONG median | WRONG IQR | Verdict |"
+        )
+        lines.append(
+            "|---|---:|---|---:|---|---|"
+        )
+        for feat, r, w, overlap, ratio in ordered:
+            verdict = "IQR-overlap" if overlap else "**IQR-DISJOINT**"
+            lines.append(
+                f"| `{feat}` | {r['median']} | [{r['q1']}, {r['q3']}] | "
+                f"{w['median']} | [{w['q1']}, {w['q3']}] | {verdict} |"
+            )
+        lines.append("")
+        disjoint_features = [
+            (feat, r, w) for feat, r, w, overlap, _ in ordered if not overlap
+        ]
+        if disjoint_features:
+            # disjoint_features is a list of (feat, right_stat, wrong_stat)
+            # from the IQR-disjoint pass above. Use the helper-precomputed
+            # trade-off counts so the report stays matrix-agnostic.
+            f, r_stat, w_stat = disjoint_features[0]
+            tradeoff = feat_results[f].get("threshold_tradeoff") or {}
+            comparison_op = tradeoff.get("comparison", "?")
+            thr = tradeoff.get("threshold")
+            right_in_gate = tradeoff.get("right_in_gate", 0)
+            wrong_in_gate = tradeoff.get("wrong_in_gate", 0)
+            # Direction-of-separation labels for the prose.
+            if r_stat["q1"] > w_stat["q3"]:
+                higher_label, lower_label = "RIGHT", "WRONG"
+                higher_stat, lower_stat = r_stat, w_stat
+                gate_explanation = (
+                    "treat low-feature rows (the WRONG-call territory) "
+                    "as ambiguous"
+                )
+            else:
+                higher_label, lower_label = "WRONG", "RIGHT"
+                higher_stat, lower_stat = w_stat, r_stat
+                gate_explanation = (
+                    "treat high-feature rows (the WRONG-call territory) "
+                    "as ambiguous"
+                )
+
+            # Determine whether the full min/max ranges overlap so we
+            # don't hard-code an "overlap" conclusion when the next
+            # matrix produces a feature with clean range separation
+            # (Codex P3 on PR #250 round 4).
+            full_ranges_overlap = (
+                max(r_stat["min"], w_stat["min"])
+                <= min(r_stat["max"], w_stat["max"])
+            )
+            range_clause = (
+                f"**The full ranges also overlap** (RIGHT min/max "
+                f"{r_stat['min']}/{r_stat['max']}; WRONG min/max "
+                f"{w_stat['min']}/{w_stat['max']}), so the IQR-only "
+                f"separation does NOT cleanly partition the populations."
+                if full_ranges_overlap
+                else (
+                    f"**The full min/max ranges are also disjoint** "
+                    f"(RIGHT min/max {r_stat['min']}/{r_stat['max']}; "
+                    f"WRONG min/max {w_stat['min']}/{w_stat['max']}), "
+                    f"so a threshold within the gap would cleanly "
+                    f"partition this matrix's populations."
+                )
+            )
+            lines.append(
+                f"**Interpretation (live):** `{f}` has IQR-disjoint "
+                f"separation between the right-call and wrong-call "
+                f"groups — {higher_label} IQR "
+                f"[{higher_stat['q1']}, {higher_stat['q3']}] lies entirely "
+                f"above {lower_label} IQR "
+                f"[{lower_stat['q1']}, {lower_stat['q3']}]. "
+                f"{range_clause}"
+            )
+            lines.append("")
+            if thr is not None:
+                lines.append(
+                    f"**Candidate-threshold trade-off at `{f} "
+                    f"{comparison_op} {thr}`** (midpoint of the two IQRs):"
+                )
+                lines.append("")
+                lines.append(
+                    f"- **{wrong_in_gate}/{wrong_n}** WRONG-call rows "
+                    f"would be gated to `ambiguous_no_correction` "
+                    f"(benefit: those rows avoid the bad polarity "
+                    f"decision)."
+                )
+                lines.append(
+                    f"- **{right_in_gate}/{right_n}** RIGHT-call rows "
+                    f"would ALSO be gated (cost: those rows lose the "
+                    f"correct polarity decision; some may flip back to "
+                    f"`ambiguous` and remain correct anyway, others may "
+                    f"regress)."
+                )
+                lines.append("")
+                lines.append(
+                    f"**Actionable hypothesis for next fix PR:** gate "
+                    f"the polarity rule on `{f}`. The IQR-midpoint "
+                    f"threshold `{thr}` is the starting point; the "
+                    f"actual operating point should be calibrated on a "
+                    f"held-out split with the FP/FN trade-off above made "
+                    f"explicit. Likely the right approach is a soft "
+                    f"confidence rather than a hard binary gate — i.e., "
+                    f"{gate_explanation}."
+                )
+                lines.append("")
+        else:
+            lines.append(
+                "**No feature has IQR-disjoint separation on this matrix.** "
+                "No clean meta-signal candidate from the current per-row "
+                "features; would need a new measurement or per-image "
+                "inspection of the wrong-call subset to make progress."
+            )
+            lines.append("")
 
     lines.append("## Per-row detail (chirality failures only)")
     lines.append("")

@@ -93,6 +93,7 @@ def test_analyze_returns_expected_keys(analysis):
         "chirality_rows",
         "failure_mode_counts",
         "sep_stats_by_category_and_phase_check",
+        "meta_signal_stats",
     }
     assert set(analysis.keys()) == expected
 
@@ -155,6 +156,55 @@ def test_render_report_no_chirality_rows_returns_short_message():
         "chirality_rows": [],
         "failure_mode_counts": {},
         "sep_stats_by_category_and_phase_check": {},
+        "meta_signal_stats": {"right_n": 0, "wrong_n": 0, "features": {}},
     }
     report = render_report(empty_analysis)
+    # No chirality rows → render_report returns early before the
+    # meta-signal section, so the report should be short and just say
+    # "No chirality-failure rows in this matrix."
     assert "No chirality-failure rows" in report
+
+
+def test_analyze_meta_signal_stats_shape(analysis):
+    """The meta_signal_stats dict has expected shape + identifies at
+    least one feature analysis."""
+    meta = analysis["meta_signal_stats"]
+    assert set(meta.keys()) == {"right_n", "wrong_n", "features"}
+    assert meta["right_n"] > 0
+    assert meta["wrong_n"] > 0
+    assert "junction_score_at_ensemble" in meta["features"]
+    js = meta["features"]["junction_score_at_ensemble"]
+    assert "right" in js and "wrong" in js and "iqr_overlap" in js
+
+
+def test_render_report_sep_stats_table_escapes_pipes(analysis):
+    """Codex P2 round-2 regression: keys in
+    `sep_stats_by_category_and_phase_check` contain a literal `|`
+    (`category | phase_check`). Markdown renderer would interpret an
+    unescaped pipe as a column boundary, shifting column values.
+    Verify the rendered table escapes the pipe so the table is valid.
+
+    Scope: only inspect rows in the sep-stats table specifically (bounded
+    by the section header and the next `## ` header)."""
+    report = render_report(analysis)
+    in_section = False
+    found_any_row = False
+    for line in report.split("\n"):
+        if "Separation distribution" in line:
+            in_section = True
+            continue
+        if in_section and line.startswith("## "):
+            break  # left the sep-stats section
+        if not in_section:
+            continue
+        if line.startswith("| ") and not line.startswith("| Category"):
+            if "---" in line:
+                continue
+            # Effective pipes = total pipes minus escaped pipes.
+            n_pipes = line.count("|") - line.count(r"\|")
+            assert n_pipes == 6, (
+                f"sep-stats table row has unescaped pipe in key, "
+                f"got {n_pipes} effective pipes in {line!r}"
+            )
+            found_any_row = True
+    assert found_any_row, "expected at least one sep-stats table row"

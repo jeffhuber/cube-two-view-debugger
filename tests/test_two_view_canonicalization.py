@@ -251,12 +251,15 @@ def test_canonicalization_all_good_pairs_under_25():
     measured only 23/35 with the det=+1 restriction; v1 measures
     35/35 with all 48 transforms."""
     pairs = _load_good_pairs()
+    # Use `<=` to match the documented contract ("≤25°"); Codex flagged
+    # the prior `<` as inconsistent with `test_canonicalization_max_good_residual_bounded`
+    # (which uses `<=`) and with the doc.
     under_25 = sum(
         1 for _, ax_A, ax_B in pairs
-        if tvcanon.canonicalized_two_view_consistency_deg(ax_A, ax_B) < 25.0
+        if tvcanon.canonicalized_two_view_consistency_deg(ax_A, ax_B) <= 25.0
     )
     assert under_25 == len(pairs), (
-        f"expected ALL {len(pairs)} GOOD pairs under 25° (Codex P2 fix), "
+        f"expected ALL {len(pairs)} GOOD pairs ≤25° (Codex P2 fix), "
         f"got {under_25}/{len(pairs)}"
     )
 

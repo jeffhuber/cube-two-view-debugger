@@ -256,7 +256,7 @@ own validation against `gcm_axis_ground_truth.json` (this PR).
 ## See also
 
 - `tools/two_view_canonicalization.py` — the helper implementation.
-- `tests/test_two_view_canonicalization.py` — 20 tests including
+- `tests/test_two_view_canonicalization.py` — 22 tests including
   the empirical contract `GOOD-pair median ≤25°` and the same-pose
   Codex P1 documentation/mitigation.
 - `tools/two_view_consistency.py` (PR #245) — the math primitive

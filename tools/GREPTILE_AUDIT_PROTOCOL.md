@@ -6,9 +6,16 @@
 Three-way bake-off with Devin + Codex during the next ~20 PRs (Qwen
 was originally in the bake-off but is currently paused — see
 `tools/CODEX_AUDIT_PROTOCOL.md` for the empirical reasoning).
-Claude's standing in-thread merge delegation stays on
-`devin-audit-done` + CLEAN; Greptile's verdict is purely calibration
-data, no merge authority.
+
+**Informational only — strictly non-gating.** Claude's standing
+in-thread merge delegation accepts `codex-audit-done` OR
+`devin-audit-done` + CLEAN; Greptile's verdict never gates merge
+or approval. The labeler treats label-application failures (e.g.
+PAT permission gaps on `POST /repos/.../issues/N/labels`) as
+non-fatal: it logs the verdict + the error to stderr and exits 0
+so the workflow check stays green and the PR stays CLEAN. The
+verdict is also visible in Greptile's own inline review comments
+on the PR.
 
 Greptile is a SaaS GitHub App. Once the App is installed on the repo,
 Greptile auto-reviews every PR (~3 min latency) and posts findings as

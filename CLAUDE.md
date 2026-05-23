@@ -400,12 +400,17 @@ authorized.
 - Claude: merging any PR, unless the user explicitly delegated that
   merge in the current thread. The standing in-thread delegation is:
   **"Keep going" / "continue" / "proceed" / similar continuation
-  phrases authorize merge of any PR Claude owns that carries the
-  `devin-audit-done` label and a CLEAN merge state.** Do NOT extend
-  this to PRs owned by Codex or anyone else, to PRs missing the
-  Devin-clear label, or to anything that needs `--admin` to bypass
-  branch protection. If the user redirects elsewhere ("work on X
-  instead"), the merge auth doesn't carry over to that next thing.
+  phrases authorize merge of any PR Claude owns that carries EITHER
+  `codex-audit-done` OR `devin-audit-done` AND a CLEAN merge state.
+  Codex is preferred** (its findings have been higher-signal on
+  this codebase per the bake-off calibration — see
+  `tools/CODEX_AUDIT_PROTOCOL.md`). Greptile is informational only
+  and never required for merge. Do NOT extend this to PRs owned by
+  Codex-the-collaborator (different from `codex-audit-done`), to
+  PRs missing both audit-done labels, or to anything that needs
+  `--admin` to bypass branch protection. If the user redirects
+  elsewhere ("work on X instead"), the merge auth doesn't carry
+  over to that next thing.
 - Merging despite unresolved or ambiguous Devin comments, failing
   checks, merge conflicts, or anything requiring `--admin`
 - Sending external messages (emails, Slack DMs to non-collaborators)
@@ -532,12 +537,16 @@ identifier in prose does not. Verified by the self-audit failure on
 cube-snap#130 / ctvd#118 (caught during smoke verification, fixed in
 the same PRs).
 
-### Codex audit lane (calibration phase — informational only)
+### Codex audit lane (merge authority — preferred)
 
-Codex runs as a parallel reviewer alongside Devin. **No merge
-authority yet** — the standing in-thread merge delegation stays
-on `devin-audit-done` + CLEAN. Codex's verdict is calibration
-data; treat its labels as informational.
+Codex runs as a parallel reviewer alongside Devin. **Merge
+authority granted, and preferred over Devin** — the standing
+in-thread merge delegation accepts EITHER `codex-audit-done` OR
+`devin-audit-done` + CLEAN, and when both are available Codex's
+verdict is the leading signal. Calibration on PR #233 (Phase 2B
+v2 audit of commit `a2ddd70`) showed Codex catching 6 real bugs
+that Devin's first-pass PASS missed; on this codebase its
+findings are higher-signal.
 
 State machine (parallels Devin):
 
@@ -579,12 +588,18 @@ with cube-snap's).
 
 Full protocol: `tools/CODEX_AUDIT_PROTOCOL.md`.
 
-### Greptile audit lane (calibration phase — informational only)
+### Greptile audit lane (informational only — strictly non-gating)
 
 Greptile runs as the 3rd audit lane (SaaS GitHub App).
 **Live on cube-snap (free OSS tier); not installed on ctvd
 yet** — privacy tradeoff for the private repo is an explicit
-open decision. **No merge authority** — calibration data only.
+open decision. **Informational only — never gates merge or
+approval.** Greptile's verdict is visible in its own inline
+review comments on the PR; the labeler is best-effort. If
+label-application fails (e.g. PAT permission gap), the labeler
+logs the verdict to workflow output and exits 0 so the
+workflow check stays green and the PR stays CLEAN —
+explicitly designed so this lane can never block merge.
 
 State machine (parallels Devin/Codex):
 

@@ -412,6 +412,36 @@ def resolve_label_decision(
 # ----- CLI entry point (run inside the GitHub Action) -----
 
 
+def _apply_or_log(repo: str, decision: LabelDecision, *, token: str) -> None:
+    """Apply a label decision; treat failures as non-fatal.
+
+    The Greptile lane is INFORMATIONAL ONLY (per CLAUDE.md merge
+    policy). Label-application failures (e.g. PAT permission gap
+    on `POST /repos/.../issues/N/labels`) must not fail the
+    workflow check, otherwise PRs go UNSTABLE and the lane
+    becomes an accidental merge gate. Log the verdict + any
+    failure; the caller exits 0 regardless.
+    """
+    try:
+        apply_label_decision(repo, decision, token=token)
+        print(
+            f"applied: add {decision.add_label}; remove "
+            f"{', '.join(decision.remove_labels)} "
+            f"on {repo}#{decision.issue_number} ({decision.reason})"
+        )
+    except Exception as exc:
+        print(
+            f"verdict (label apply skipped — informational lane is "
+            f"non-blocking): add {decision.add_label}; remove "
+            f"{', '.join(decision.remove_labels)} "
+            f"on {repo}#{decision.issue_number} ({decision.reason})"
+        )
+        print(
+            f"warn: could not apply label: {exc}",
+            file=sys.stderr,
+        )
+
+
 def _fail_closed_requeue(
     *,
     repo: str,
@@ -428,6 +458,10 @@ def _fail_closed_requeue(
     Replicates the same author + opt-in gates that `resolve_label_decision`
     enforces, so a non-Greptile review or a non-opted-in PR can never
     mutate labels via the fail-closed path.
+
+    Goes through `_apply_or_log` so label POST failures stay
+    non-fatal (the informational-only contract applies here too —
+    Codex caught this on the audit-lane-merge-auth PR).
     """
     review_author = (review.get("user") or {}).get("login", "")
     if not is_greptile_review_author(review_author):
@@ -441,7 +475,7 @@ def _fail_closed_requeue(
         return 0
     issue_number = (event.get("pull_request") or {}).get("number")
     if issue_number:
-        apply_label_decision(
+        _apply_or_log(
             repo,
             LabelDecision(
                 issue_number=int(issue_number),
@@ -452,7 +486,6 @@ def _fail_closed_requeue(
             ),
             token=token or "",
         )
-        print(f"applied (fail-closed): add {NEEDS_LABEL} ({reason})")
     return 0
 
 
@@ -547,12 +580,13 @@ def main() -> int:
         print(json.dumps({"decision": decision.__dict__, "reason": reason}, sort_keys=True))
         return 0
 
-    apply_label_decision(repo, decision, token=token or "")
-    print(
-        f"applied: add {decision.add_label}; remove "
-        f"{', '.join(decision.remove_labels)} "
-        f"on {repo}#{decision.issue_number} ({decision.reason})"
-    )
+    # Greptile lane is INFORMATIONAL ONLY (per CLAUDE.md merge
+    # policy). Label-application failures (e.g. PAT permission gap
+    # on `POST /repos/.../issues/N/labels`) must not fail the
+    # workflow check, otherwise PRs go UNSTABLE and the lane
+    # becomes an accidental merge gate. `_apply_or_log` handles
+    # the try/except + verdict logging.
+    _apply_or_log(repo, decision, token=token or "")
     return 0
 
 

@@ -1,17 +1,23 @@
-# Codex audit protocol (calibration phase — informational only)
+# Codex audit protocol (merge authority — preferred)
 
 ## Status
 
-**Informational only.** Codex runs as a 3rd audit lane in parallel with
-Devin (cloud webhook) and Greptile (SaaS GitHub App). Qwen (local LM
-Studio) was the original 2nd lane but is currently **paused** — its
-calibration showed too many false positives to justify the LM Studio
-runtime cost; see `tools/QWEN_AUDIT_PROTOCOL.md` and the inert files
-under `tools/qwen_audit_*.py` if reviving it. Claude's standing
-in-thread merge delegation authorizes merge on `devin-audit-done` +
-CLEAN — it does NOT yet authorize merge on `codex-audit-done`. The
-user may extend the delegation after enough calibration data
-justifies it.
+**Merge authority granted, and preferred over Devin.** Codex runs as
+a 3rd audit lane in parallel with Devin (cloud webhook) and Greptile
+(SaaS GitHub App). Qwen (local LM Studio) was the original 2nd lane
+but is currently **paused** — its calibration showed too many false
+positives to justify the LM Studio runtime cost; see
+`tools/QWEN_AUDIT_PROTOCOL.md` and the inert files under
+`tools/qwen_audit_*.py` if reviving it.
+
+Claude's standing in-thread merge delegation now accepts EITHER
+`codex-audit-done` OR `devin-audit-done` + CLEAN, and **Codex is
+preferred** — when both are available the Codex verdict is the
+leading signal. Calibration on PR #233 (Phase 2B v2 audit of commit
+`a2ddd70`) showed Codex catching 6 real bugs Devin's first-pass
+PASSed; on this codebase Codex's findings are higher-signal.
+
+Greptile remains strictly informational — never required for merge.
 
 ## Why a 3rd lane (originally the 4th)
 
@@ -171,7 +177,7 @@ for the now-paused Qwen lane, kept on disk as a starting point.)
 | Code access | Diff text via webhook | Real git worktree at head SHA | Diff + repo context via Greptile's GitHub App |
 | Latency | 2–10 min typical | 5–10 min typical for `codex review` | 30s–2 min typical |
 | Review style | Final-state QA + checklist | Whole-repo code tracing | Inline comments with severity badges (P0/P1/P2/P3) |
-| Merge authority | YES (per CLAUDE.md) | NO (calibration phase) | NO (calibration phase) |
+| Merge authority | YES | **YES — preferred** (per CLAUDE.md) | NO (informational only, never gating) |
 | Mirror in both repos | Required (byte-identical) | Required (byte-identical) | Required (byte-identical) |
 | Audit at a SHA different from HEAD | No (always current) | Yes (worktree at any SHA) | No (current PR head only) |
 

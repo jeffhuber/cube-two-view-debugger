@@ -88,6 +88,40 @@ more fundamental axis-of-rotation error. Empirical evidence on the
 bias floor. Switching to the correct horizontal-axis flip drops the
 GOOD-pair bias to near zero while preserving discrimination.
 
+## Input precondition (LOAD-BEARING — read before integrating)
+
+`two_view_consistency_deg(axes_A, axes_B)` assumes its two inputs
+are expressed in the **same semantic cube-body axis frame** — i.e.,
+the body X axis in A means the same physical cube axis as the body
+X axis in B. The math fails silently otherwise: a systematic axis
+relabel between A and B produces a residual rotation that does NOT
+match R_FLIP, even on perfectly fit pairs.
+
+**This is not automatically true** for the raw axes the recognizer
+writes onto `GlobalCubeModel`. Empirically (Codex audit on PR #245):
+applying this function directly to 35 human-labeled A/B axis pairs
+from `tests/fixtures/gcm_axis_ground_truth.json` gives **median 173°
+residual and 0/35 pairs under 25°**. That is the signature of an
+A↔B axis-frame mismatch, not a math bug: every pair, including
+known-GOOD pairs, scores like a catastrophic mis-fit.
+
+In photo A (URF visible) the recognizer sees +U, +R, +F faces;
+in photo B (DLB visible) it sees +D, +L, +B faces. Whether the
+recognizer's `axis_x_2d / axis_y_2d / axis_z_2d` are tied to
+"visible-face vertices" (in which case A and B point opposite ways
+in the body frame) or to "canonical cube body axes" (in which case
+they are consistent) determines whether the raw vectors can be fed
+in directly. The empirical 173° median is strong evidence they are
+NOT consistent without canonicalization.
+
+**Scope of this module:** this is the low-level math primitive. The
+caller is responsible for the canonicalization step. See
+`tools/TWO_VIEW_CONSISTENCY.md` "Integration plan" → "Step 0" for
+the canonicalization investigation that must precede any v2 wiring.
+Do not pass raw per-image `model.axis_x_2d / model.axis_y_2d /
+model.axis_z_2d` directly into this function until that step is
+complete and validated against the ground-truth fixture.
+
 ## Limitations
 
 - Assumes weak-perspective projection. Real iPhone photos have mild
@@ -102,6 +136,9 @@ GOOD-pair bias to near zero while preserving discrimination.
   intended behavior (the resulting facelet string would also be
   wrong). Capture convention is documented in cube-snap's CLAUDE.md
   / capture flow docs.
+- Assumes its inputs are already in the same body-axis frame (see
+  Input precondition section above). Without that, the metric is
+  meaningless.
 """
 
 from __future__ import annotations
@@ -199,6 +236,15 @@ def two_view_consistency_deg(
     Inputs: per-view tuples of (ax_2d, ay_2d, az_2d). Each axis is a
     2D vector (in pixel coords) from the cube center to the head of
     that body axis under projection.
+
+    **PRECONDITION:** `axes_A` and `axes_B` MUST already be expressed
+    in the same semantic cube-body axis frame. Raw per-image axes
+    from `GlobalCubeModel.axis_x_2d / axis_y_2d / axis_z_2d` are NOT
+    guaranteed to satisfy this — see the "Input precondition" section
+    of this module's docstring for the empirical evidence (median
+    173° residual on 35 ground-truth labeled pairs without
+    canonicalization) and `tools/TWO_VIEW_CONSISTENCY.md` for the
+    integration-plan canonicalization step that must run first.
 
     Output: angle in degrees. 0 means A and B agree perfectly that
     the cube was flipped 180° around camera X between photos (the

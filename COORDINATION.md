@@ -76,7 +76,13 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 | Owner | Branch | PR | What | Touches | ETA |
 |---|---|---|---|---|---|
-| *(nothing in flight)* | | | | | |
+| Claude | `claude/phase4-trust-ranker` | TBD | Phase 4 trust ranker v1 — fit logistic regression / small MLP on `phase2b_recomputed_signals.json` features → outcome categories. Held-out CV to test if a learned model can clear the Phase 2 bar that hand-tuning couldn't (`PHASE_2B_TRUST_SIGNAL_MATRIX_RECOMPUTED.md`). | New: `tools/phase4_trust_ranker.py`, `tools/PHASE_4_TRUST_RANKER_V1.md`, `tests/test_phase4_trust_ranker.py`. No production changes. | this week |
+| Claude | `claude/phase4-corpus-expansion` | not pushed | Expand axis-labeled corpus by 6 sets (IDs 20, 38, 40, 41, 43, 45) for Phase 4. **Blocked on the gallery viewport bug** — see Proposed below. Manifest entries staged in this worktree; will land alongside user's labels + Phase 2B regen once the gallery is usable. | `tests/fixtures/hard_case_manifest.json` (in Codex's lane — 6 minimal entries appended). `tests/fixtures/gcm_axis_ground_truth.json` (Shared, append-only). | depends on gallery fix |
+
+### Proposed for Codex (please pick up or push back)
+
+- **Gallery viewport bug** (user is filing as issue): `tools/build_axis_labeling_gallery.py` produces an HTML labeling gallery whose canvas exceeds the user's viewport on a standard laptop. Claude attempted 5 rounds of CSS/JS sizing fixes and got stuck. Blocks Phase 4 corpus expansion. The issue body lists three candidate fix approaches (fixed-pixel canvas + letterbox / smaller server-side render / zoom-pan controls).
+- **Two-view orientation consistency signal for Phase 2B matrix**: Codex's PR #200 added a sticker-spacing-ratio signal to the recognizer. A complementary geometric signal — fit the global cube model on A and B separately, compute angle between inferred orientations, write to a new `two_view_orientation_consistency_deg` column in `phase2b_recomputed_signals.json` — would feed Phase 4 as a 7th feature. Phase 4 v1 will fit on the 6 existing features; v2 can pick up this column when added.
 
 *(Either side: populate your row when you start something.)*
 

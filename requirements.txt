@@ -12,3 +12,16 @@
 # different repair-step results even when imports succeed).
 pillow>=12.2.0,<13
 numpy>=2.3.5,<3
+# Phase 4 trust ranker (tools/phase4_trust_ranker.py) — diagnostics-
+# only learned classifier on the Phase 2B matrix. Optional for users
+# of the production recognizer; required to regenerate the committed
+# `phase4_trust_ranker_v1.json` snapshot or to extend with v2 features.
+#
+# Pinned to the exact minor that produced the committed snapshot.
+# Devin caught reproducibility drift on the v1 PR: with the wider
+# `>=1.4,<2` range, random-forest probabilities shifted ~0.017 between
+# sklearn 1.4 and 1.8 even though the rounded report stayed the same,
+# making the durable trained snapshot version-dependent. Narrow to
+# 1.8.x so the JSON snapshot is bit-reproducible by anyone running
+# the same minor.
+scikit-learn>=1.8.0,<1.9

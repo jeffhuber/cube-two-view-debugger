@@ -170,14 +170,19 @@ def _count_rate(summary: Mapping[str, Any], count_key: str, rate_key: str, denom
 
 
 def render_report(baseline: Mapping[str, Any]) -> str:
+    corpus_summary = baseline["groups"].get("corpus") or {}
+    hard_summary = baseline["groups"].get("hard") or {}
+    corpus_rows = corpus_summary.get("rowCount", "current")
+    hard_rows = hard_summary.get("rowCount", "current")
+    skipped_rows = baseline["overall"].get("skippedRowCount", 0)
     lines: List[str] = [
         "# Current-main solvable baseline",
         "",
         "## Purpose",
         "",
         "This is the production-recognizer solvable-rate baseline generated from",
-        "`tools/probe_corpus.py` on current `main`. It covers the 15-row",
-        "`corpus_manifest.json` and the 15-row `hard_case_manifest.json`, and",
+        "`tools/probe_corpus.py` on current `main`. It covers the current",
+        f"`corpus_manifest.json` ({corpus_rows} rows) and `hard_case_manifest.json` ({hard_rows} rows), and",
         "keeps the per-sticker metric comparable to the older #139 solvable-rate",
         "number.",
         "",
@@ -254,7 +259,7 @@ def render_report(baseline: Mapping[str, Any]) -> str:
             "## Notes",
             "",
             "- `perStickerAccuracy` excludes skipped rows because no recognizer score exists.",
-            "- The all-row denominator is included only to make the missing Set 25 hard-case row visible.",
+            f"- The all-row denominator is included to make skipped rows visible ({skipped_rows} in this snapshot).",
             "- `legalState` means the recognizer emitted a 54-sticker success state; manual-review successes still count as legal states.",
             "- `confidentSolve` includes `success_clean` and `success_repaired_high_confidence`; it excludes `needs_manual_review` and `reject_retake`.",
             "- `confidentWrong` is the Phase 3 guardrail target: a confident solve with hamming > 0.",

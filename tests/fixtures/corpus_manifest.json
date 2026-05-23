@@ -253,9 +253,10 @@
       "imageA_sha256_expected": "050de57efee8c44af8704d7fc14b07b6ae61aae13a63509ff6d2c0d7e0c8fd41",
       "imageB_sha256_expected": "a318038e14ebf4bee5dc8b46a5b60d994c3d34610c65ca3d16139ef638da881e",
       "groundTruth_sha256_expected": "be11bcb2fad4b9194a72d31e158a7fb9a5bb54da0de3b848c4c2fb084f02cb0b",
-      "expectedCategory": "not_yet_probed",
-      "currentScoreObserved": null,
-      "notes": "Added 2026-05-22 for Phase 4 trust-ranker corpus expansion. Photos + ground-truth captured offline; recognizer category/score calibration deferred (set to 'not_yet_probed' / null until tools/probe_corpus.py is run on these)."
+      "expectedCategory": "needs_manual_review",
+      "currentScoreObserved": 54,
+      "notes": "Calibrated 2026-05-23 with tools/probe_corpus.py after the Phase 4 corpus expansion. Current recognizer contract pins category=needs_manual_review, score=54/54 on the native ARM64 macOS policy.",
+      "expectedScoreFloor": 54
     },
     {
       "setId": "38",
@@ -265,9 +266,10 @@
       "imageA_sha256_expected": "a2128002be91f127d39dbece369973c8e3029dc8ef6fffbe242dd509c8729ec5",
       "imageB_sha256_expected": "c5623865525d8709113d801c6a1377b37ea872df7372f4c2894cd74b00007f4a",
       "groundTruth_sha256_expected": "7647f916c697e6ec44d3841bbc304621250de595e474e29c3c2a8ea92a9ee7f9",
-      "expectedCategory": "not_yet_probed",
-      "currentScoreObserved": null,
-      "notes": "Added 2026-05-22 for Phase 4 trust-ranker corpus expansion. Photos + ground-truth captured offline; recognizer category/score calibration deferred (set to 'not_yet_probed' / null until tools/probe_corpus.py is run on these)."
+      "expectedCategory": "needs_manual_review",
+      "currentScoreObserved": 48,
+      "notes": "Calibrated 2026-05-23 with tools/probe_corpus.py after the Phase 4 corpus expansion. Current recognizer contract pins category=needs_manual_review, score=48/54 on the native ARM64 macOS policy.",
+      "expectedScoreFloor": 48
     },
     {
       "setId": "40",
@@ -277,9 +279,10 @@
       "imageA_sha256_expected": "86dd66700f0970b886f97dab50fc75519fe1ae632f635514a79f2e5002a02833",
       "imageB_sha256_expected": "d330ef4fac32d336c6cae503f1c404ed4af48486599e287bac02ab63b9b0a8df",
       "groundTruth_sha256_expected": "324752a81665c84583968d064a6f17fc18e7e9068dc66be50f7c894bcbce16ea",
-      "expectedCategory": "not_yet_probed",
-      "currentScoreObserved": null,
-      "notes": "Added 2026-05-22 for Phase 4 trust-ranker corpus expansion. Photos + ground-truth captured offline; recognizer category/score calibration deferred (set to 'not_yet_probed' / null until tools/probe_corpus.py is run on these)."
+      "expectedCategory": "success_clean",
+      "currentScoreObserved": 54,
+      "notes": "Calibrated 2026-05-23 with tools/probe_corpus.py after the Phase 4 corpus expansion. Current recognizer contract pins category=success_clean, score=54/54 on the native ARM64 macOS policy.",
+      "expectedScoreFloor": 54
     },
     {
       "setId": "41",
@@ -289,9 +292,10 @@
       "imageA_sha256_expected": "e2874cd211c37946c0927a312022c7557f5c92f902468594861649fd6d439655",
       "imageB_sha256_expected": "2cb616966ee2c8e1f7b34c285f06559e2cd8537169863eabb7a133cb554967a7",
       "groundTruth_sha256_expected": "ee6bfb4d8570ebd3eea7658f29d63f3bdba63d470e63b8b67427ce00153c8b1f",
-      "expectedCategory": "not_yet_probed",
-      "currentScoreObserved": null,
-      "notes": "Added 2026-05-22 for Phase 4 trust-ranker corpus expansion. Photos + ground-truth captured offline; recognizer category/score calibration deferred (set to 'not_yet_probed' / null until tools/probe_corpus.py is run on these)."
+      "expectedCategory": "success_clean",
+      "currentScoreObserved": 54,
+      "notes": "Calibrated 2026-05-23 with tools/probe_corpus.py after the Phase 4 corpus expansion. Current recognizer contract pins category=success_clean, score=54/54 on the native ARM64 macOS policy.",
+      "expectedScoreFloor": 54
     },
     {
       "setId": "43",
@@ -301,9 +305,10 @@
       "imageA_sha256_expected": "f3f50b1203623ab3538917769652300bfac586f6cce79ccfffd04284374edde9",
       "imageB_sha256_expected": "836c0ab3de93a04b982b209abb68c6804ce76d31e5e0fc7cdb70b5e9361c2a32",
       "groundTruth_sha256_expected": "ae9a19ce0f4e16c7c50a95b976b944add8f4f4de7fcaee576baa701079ca6cbd",
-      "expectedCategory": "not_yet_probed",
-      "currentScoreObserved": null,
-      "notes": "Added 2026-05-22 for Phase 4 trust-ranker corpus expansion. Photos + ground-truth captured offline; recognizer category/score calibration deferred (set to 'not_yet_probed' / null until tools/probe_corpus.py is run on these)."
+      "expectedCategory": "success_clean",
+      "currentScoreObserved": 54,
+      "notes": "Calibrated 2026-05-23 with tools/probe_corpus.py after the Phase 4 corpus expansion. Current recognizer contract pins category=success_clean, score=54/54 on the native ARM64 macOS policy.",
+      "expectedScoreFloor": 54
     },
     {
       "setId": "45",
@@ -313,9 +318,85 @@
       "imageA_sha256_expected": "ca818729a9791275d350d5f6267642a2858cad71d92d0a6736fd68fcb55e8b72",
       "imageB_sha256_expected": "cec581df549280bc9ee97c475e488989fb8cbc644fb7670f1379983081aa8b82",
       "groundTruth_sha256_expected": "a4e4e8af91944afd7f8e84ea7d244b8d5d24eedf080fea4ab7b597e3e14f981f",
-      "expectedCategory": "not_yet_probed",
-      "currentScoreObserved": null,
-      "notes": "Added 2026-05-22 for Phase 4 trust-ranker corpus expansion. Photos + ground-truth captured offline; recognizer category/score calibration deferred (set to 'not_yet_probed' / null until tools/probe_corpus.py is run on these)."
+      "expectedCategory": "success_clean",
+      "currentScoreObserved": 54,
+      "notes": "Calibrated 2026-05-23 with tools/probe_corpus.py after the Phase 4 corpus expansion. Current recognizer contract pins category=success_clean, score=54/54 on the native ARM64 macOS policy.",
+      "expectedScoreFloor": 54
+    },
+    {
+      "setId": "63",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 63 - A - white-up IMG_7580.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 63 - B - white-up IMG_7581.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 63 - cube-ground-truth-1779515241665.json",
+      "imageA_sha256_expected": "66f45021d4515a6b618d87f9e9ae0ebe332f3a5635fb25aec531245e0b04e72f",
+      "imageB_sha256_expected": "484799afd6320e377ac1f09ce1a112bdc4e51aa76b6ad1b801e63fd68e39d0f7",
+      "groundTruth_sha256_expected": "b758fc3693de8b8b4a76e3116b338b15e8a5af624f88c53a3a879f2e5fe2ab89",
+      "expectedCategory": "needs_manual_review",
+      "currentScoreObserved": 54,
+      "notes": "Added and calibrated 2026-05-23 for corpus expansion from canonical /Users/jhuber/cube-corpus files. Category/score pinned from tools/probe_corpus.py on current recognizer: needs_manual_review, score 54/54.",
+      "expectedScoreFloor": 54
+    },
+    {
+      "setId": "64",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 64 - A - white-up IMG_7582.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 64 - B - white-up IMG_7583.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 64 - cube-ground-truth-1779516968420.json",
+      "imageA_sha256_expected": "b72ee43067c43ff01a28c4c4944103411c0e5e02dd6cf9c803ebf972759144dd",
+      "imageB_sha256_expected": "a7d46201104a2bb3dc2676f9dabd63c6ea238fc5d4642689c9b1f920769d18bb",
+      "groundTruth_sha256_expected": "35122a1f6fea7e3ef89bbaaaae802ffaf11016083ffbc54cd5937c0db792974d",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-23 for corpus expansion from canonical /Users/jhuber/cube-corpus files. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54."
+    },
+    {
+      "setId": "65",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 65 - A - white-up IMG_7584.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 65 - B - white-up IMG_7585.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 65 - cube-ground-truth-1779518127457.json",
+      "imageA_sha256_expected": "c637932532763d0294c4b963c525f61fd7f8e747afd1ee20a74d12317a659e7e",
+      "imageB_sha256_expected": "ba3ed7db2aede6a02785cc7fce3ad5a625a1c0654e5893d6f9692af93e3cae79",
+      "groundTruth_sha256_expected": "4bd5b5e05b5bc20c986ad9c4245f52dc5cd33e910c54fe260c73a5bdcfd7759c",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-23 for corpus expansion from canonical /Users/jhuber/cube-corpus files. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54."
+    },
+    {
+      "setId": "66",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 66 - A - white-up IMG_7586.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 66 - B - white-up IMG_7587.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 66 - cube-ground-truth-1779520313740.json",
+      "imageA_sha256_expected": "b4157896c4c09355a7ac811a326b2de8dd672e05d93a97ac22988a083a66b24a",
+      "imageB_sha256_expected": "b149fde3ff0ec09990ac7c684e1597e70683bcf29a8138e594e13ed76ddb29b7",
+      "groundTruth_sha256_expected": "150a72c460c6d77ecf71a97295eafe146b419a6fbf45c76cccaa56a529edb54d",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-23 for corpus expansion from canonical /Users/jhuber/cube-corpus files. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54."
+    },
+    {
+      "setId": "67",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 67 - A - white-up IMG_7588.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 67 - B - white-up IMG_7589.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 67 - cube-ground-truth-1779524279782.json",
+      "imageA_sha256_expected": "5aeaee7e40f9d5d4a9c36e105fc47faed1c275a836c90122c0ed07d0079ca807",
+      "imageB_sha256_expected": "4726a87fec3a844edb55f0ccb9ce0ba079cf327b702f0956b97d5fd391f2694b",
+      "groundTruth_sha256_expected": "1caf69db0754477df867ff33c7e8f6d3209f2e22278bc2778ba45137acc753e8",
+      "expectedCategory": "needs_manual_review",
+      "currentScoreObserved": 42,
+      "notes": "Added and calibrated 2026-05-23 for corpus expansion from canonical /Users/jhuber/cube-corpus files. Category/score pinned from tools/probe_corpus.py on current recognizer: needs_manual_review, score 42/54.",
+      "expectedScoreFloor": 42
+    },
+    {
+      "setId": "68",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 68 - A - white-up IMG_7590.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 68 - B - white-up IMG_7591.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 68 - cube-ground-truth-1779524386135.json",
+      "imageA_sha256_expected": "b01a16bbaad908f721c34126ce6f468c545b36ac61221f18acb81a4ca4819cc5",
+      "imageB_sha256_expected": "9127c17c3eb58310027233059171655752cdae77a34557eb63f355fafa2e480c",
+      "groundTruth_sha256_expected": "3b555ab360d3028e8c093d1ab5e93266a94467aa0925141f7f0954898b3e19b5",
+      "expectedCategory": "needs_manual_review",
+      "currentScoreObserved": 54,
+      "notes": "Added and calibrated 2026-05-23 for corpus expansion from canonical /Users/jhuber/cube-corpus files. Category/score pinned from tools/probe_corpus.py on current recognizer: needs_manual_review, score 54/54.",
+      "expectedScoreFloor": 54
     }
   ]
 }

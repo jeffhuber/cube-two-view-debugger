@@ -28,18 +28,20 @@ REAL_FIXTURE = REPO / "tests" / "fixtures" / "phase2b_recomputed_signals.json"
 
 def test_load_matrix_real_fixture():
     rows = p4.load_matrix(REAL_FIXTURE)
-    assert len(rows) == 116, "the committed fixture should have 116 rows"
-    assert len({r.case for r in rows}) == 58, "58 unique cases"
+    assert len(rows) == 140, "the committed fixture should have 140 rows"
+    assert len({r.case for r in rows}) == 70, "70 unique cases"
     # Each row has exactly 6 features in fixed order.
     for r in rows:
         assert r.features.shape == (6,)
-    # Category counts match the fixture summary.
+    # Category counts match the fixture summary (corpus-expansion v1.1:
+    # 6 new sets / 12 new cases / 13 more catastrophic samples added
+    # to the original 58 from PR #242).
     cats = {}
     for r in rows:
         cats[r.category] = cats.get(r.category, 0) + 1
     assert cats == {
-        "GOOD": 74, "MARGINAL": 22,
-        "CHIRALITY_MISS": 12, "CHIRALITY_FALSE_FLIP": 7,
+        "GOOD": 91, "MARGINAL": 16,
+        "CHIRALITY_MISS": 20, "CHIRALITY_FALSE_FLIP": 12,
         "TRUE_GEOMETRY_FAIL": 1,
     }
 
@@ -230,7 +232,7 @@ def test_end_to_end_smoke():
     assert "out_of_fold" in result
     assert "operating_points" in result["out_of_fold"]
     # The OOF predictions are one per row.
-    assert len(result["out_of_fold"]["predictions"]) == 116
+    assert len(result["out_of_fold"]["predictions"]) == 140
     # Probabilities are valid [0, 1].
     for pred in result["out_of_fold"]["predictions"]:
         assert 0.0 <= pred["predicted_proba"] <= 1.0

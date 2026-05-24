@@ -5,12 +5,13 @@ For each (row, hypothesis), measures how close the production fit's 3 axis vecto
 ## Source
 
 - Tool: `tools/measure_axis_correctness.py`
-- Commit: `bec408d8fefcbced7baefa5b21a2a7ece7efa9b1`
-- Generated: `2026-05-24T19:26:24.981781+00:00`
+- Commit: `ad352898dca2c042d21545bff5e7f3c8bb77783c`
+- Generated: `2026-05-24T23:40:31.954514+00:00`
 - Truth: `tests/fixtures/full_corner_ground_truth.json`
 - Manifest: `tests/fixtures/corpus_manifest.json`
 - Max image dim: `1600`
 - Run selection: single deterministic run per row/hypothesis
+- Mask path: rembg.remove(...).alpha channel, matching production baselines
 
 ## Per-row metrics
 

@@ -372,9 +372,8 @@ def evaluate_one_row(
     try:
         image, scale = _processing_image(image_path, max_image_dim)
         rgb_array = np.array(image)
-        mask_array = (
-            np.array(remove(image, session=sess, only_mask=True)) > 128
-        )
+        rgba = remove(image, session=sess)
+        mask_array = np.array(rgba.split()[-1], dtype=np.uint8) > 128
         detection = detect_interior_bezel_lines(rgb_array, mask_array)
         if detection.cube_center is None:
             record["status"] = "fit_failed"
@@ -437,7 +436,7 @@ def run_all(
     manifest_path: Path = DEFAULT_MANIFEST,
 ) -> Dict[str, Any]:
     from rembg import new_session  # noqa: E402
-    sess = new_session()
+    sess = new_session("u2net")
     # Normalize setId to str — JSON manifests in this repo sometimes
     # encode setId as a number; the truth-key parse on `key.rpartition`
     # always yields strings, so an unnormalized int-keyed index misses
@@ -496,6 +495,7 @@ def run_all(
             "manifest": _display_path(manifest_path),
             "max_image_dim": max_image_dim,
             "run_selection": "single deterministic run per row/hypothesis",
+            "mask_path": "rembg.remove(...).alpha channel, matching production baselines",
         },
         "per_row": records,
         "skipped": skipped,
@@ -553,6 +553,7 @@ def render_report(payload: Dict[str, Any]) -> str:
         lines.append(f"- Manifest: `{source.get('manifest', '-')}`")
         lines.append(f"- Max image dim: `{source.get('max_image_dim', '-')}`")
         lines.append(f"- Run selection: {source.get('run_selection', '-')}")
+        lines.append(f"- Mask path: {source.get('mask_path', '-')}")
     lines.append("")
     lines.append("## Per-row metrics")
     lines.append("")

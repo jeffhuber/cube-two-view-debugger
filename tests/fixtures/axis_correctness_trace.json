@@ -2,8 +2,8 @@
   "schema": "axis_correctness_v1",
   "source": {
     "tool": "tools/measure_axis_correctness.py",
-    "git_sha": "928a0a27743d975c74bba8175e55cc112fe60a25",
-    "generated_at_utc": "2026-05-24T18:42:23.137944+00:00",
+    "git_sha": "70f90ca1554fd8e492c8b9867f050946fb216a08",
+    "generated_at_utc": "2026-05-24T19:05:09.986619+00:00",
     "truth": "tests/fixtures/full_corner_ground_truth.json",
     "manifest": "tests/fixtures/corpus_manifest.json",
     "max_image_dim": 1600,
@@ -46,6 +46,11 @@
             410.8
           ],
           "gt_axis_lengths_px": [
+            547.0,
+            590.4,
+            502.2
+          ],
+          "gt_axis_lengths_px_raw_order": [
             502.2,
             590.4,
             547.0
@@ -79,6 +84,11 @@
             410.8
           ],
           "gt_axis_lengths_px": [
+            547.0,
+            590.4,
+            502.2
+          ],
+          "gt_axis_lengths_px_raw_order": [
             502.2,
             590.4,
             547.0
@@ -122,6 +132,11 @@
             419.0
           ],
           "gt_axis_lengths_px": [
+            591.8,
+            588.3,
+            504.3
+          ],
+          "gt_axis_lengths_px_raw_order": [
             504.3,
             588.3,
             591.8
@@ -155,6 +170,11 @@
             419.0
           ],
           "gt_axis_lengths_px": [
+            591.8,
+            588.3,
+            504.3
+          ],
+          "gt_axis_lengths_px_raw_order": [
             504.3,
             588.3,
             591.8
@@ -198,6 +218,11 @@
             399.9
           ],
           "gt_axis_lengths_px": [
+            491.4,
+            579.2,
+            475.0
+          ],
+          "gt_axis_lengths_px_raw_order": [
             579.2,
             475.0,
             491.4
@@ -231,6 +256,11 @@
             399.9
           ],
           "gt_axis_lengths_px": [
+            491.4,
+            579.2,
+            475.0
+          ],
+          "gt_axis_lengths_px_raw_order": [
             579.2,
             475.0,
             491.4
@@ -274,6 +304,11 @@
             368.0
           ],
           "gt_axis_lengths_px": [
+            454.9,
+            493.7,
+            423.4
+          ],
+          "gt_axis_lengths_px_raw_order": [
             423.4,
             493.7,
             454.9
@@ -307,6 +342,11 @@
             351.1
           ],
           "gt_axis_lengths_px": [
+            493.7,
+            454.9,
+            423.4
+          ],
+          "gt_axis_lengths_px_raw_order": [
             423.4,
             493.7,
             454.9
@@ -351,6 +391,11 @@
           ],
           "gt_axis_lengths_px": [
             515.7,
+            437.1,
+            577.6
+          ],
+          "gt_axis_lengths_px_raw_order": [
+            515.7,
             577.6,
             437.1
           ]
@@ -383,6 +428,11 @@
             471.8
           ],
           "gt_axis_lengths_px": [
+            515.7,
+            437.1,
+            577.6
+          ],
+          "gt_axis_lengths_px_raw_order": [
             515.7,
             577.6,
             437.1
@@ -426,6 +476,11 @@
             411.2
           ],
           "gt_axis_lengths_px": [
+            511.4,
+            605.9,
+            465.2
+          ],
+          "gt_axis_lengths_px_raw_order": [
             605.9,
             511.4,
             465.2
@@ -459,6 +514,11 @@
             411.2
           ],
           "gt_axis_lengths_px": [
+            511.4,
+            605.9,
+            465.2
+          ],
+          "gt_axis_lengths_px_raw_order": [
             605.9,
             511.4,
             465.2
@@ -503,6 +563,11 @@
           ],
           "gt_axis_lengths_px": [
             510.8,
+            434.3,
+            568.9
+          ],
+          "gt_axis_lengths_px_raw_order": [
+            510.8,
             568.9,
             434.3
           ]
@@ -535,6 +600,11 @@
             464.7
           ],
           "gt_axis_lengths_px": [
+            510.8,
+            434.3,
+            568.9
+          ],
+          "gt_axis_lengths_px_raw_order": [
             510.8,
             568.9,
             434.3
@@ -578,6 +648,11 @@
             395.2
           ],
           "gt_axis_lengths_px": [
+            479.2,
+            535.8,
+            453.4
+          ],
+          "gt_axis_lengths_px_raw_order": [
             535.8,
             453.4,
             479.2
@@ -611,6 +686,11 @@
             395.2
           ],
           "gt_axis_lengths_px": [
+            479.2,
+            535.8,
+            453.4
+          ],
+          "gt_axis_lengths_px_raw_order": [
             535.8,
             453.4,
             479.2
@@ -655,6 +735,11 @@
           ],
           "gt_axis_lengths_px": [
             490.1,
+            455.1,
+            523.9
+          ],
+          "gt_axis_lengths_px_raw_order": [
+            490.1,
             523.9,
             455.1
           ]
@@ -687,6 +772,11 @@
             522.5
           ],
           "gt_axis_lengths_px": [
+            455.1,
+            490.1,
+            523.9
+          ],
+          "gt_axis_lengths_px_raw_order": [
             490.1,
             523.9,
             455.1
@@ -730,6 +820,11 @@
             393.2
           ],
           "gt_axis_lengths_px": [
+            499.1,
+            458.0,
+            560.9
+          ],
+          "gt_axis_lengths_px_raw_order": [
             458.0,
             499.1,
             560.9
@@ -763,6 +858,11 @@
             393.2
           ],
           "gt_axis_lengths_px": [
+            499.1,
+            458.0,
+            560.9
+          ],
+          "gt_axis_lengths_px_raw_order": [
             458.0,
             499.1,
             560.9
@@ -807,6 +907,11 @@
           ],
           "gt_axis_lengths_px": [
             555.0,
+            536.9,
+            431.3
+          ],
+          "gt_axis_lengths_px_raw_order": [
+            555.0,
             431.3,
             536.9
           ]
@@ -839,6 +944,11 @@
             517.5
           ],
           "gt_axis_lengths_px": [
+            555.0,
+            431.3,
+            536.9
+          ],
+          "gt_axis_lengths_px_raw_order": [
             555.0,
             431.3,
             536.9
@@ -885,6 +995,11 @@
             431.3,
             580.1,
             612.1
+          ],
+          "gt_axis_lengths_px_raw_order": [
+            431.3,
+            580.1,
+            612.1
           ]
         }
       },
@@ -915,6 +1030,11 @@
             402.0
           ],
           "gt_axis_lengths_px": [
+            580.1,
+            431.3,
+            612.1
+          ],
+          "gt_axis_lengths_px_raw_order": [
             431.3,
             580.1,
             612.1

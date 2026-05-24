@@ -220,6 +220,21 @@ def _match_axes_to_ground_truth(
             best_total = total
             best_perm = perm
             best_errors = errors
+    # Reorder GT lengths to match the assignment so that the i-th
+    # `gt_axis_lengths_px` entry refers to the SAME matched axis as the
+    # i-th `predicted_axis_lengths_px` and `per_axis_angle_errors_deg`
+    # entry. Pre-fix, GT lengths were always in raw GT order, which is
+    # only correct when `best_perm` is identity. For the non-identity
+    # rows in the committed trace, the report's "compare predicted vs
+    # GT axis length" guidance lined up the wrong pairs (Codex P2 on
+    # PR #268 head 70f90ca).
+    if best_perm is not None:
+        gt_lengths_matched = [
+            round(_length(ground_truth[best_perm[i]]), 1)
+            for i in range(len(predicted))
+        ]
+    else:
+        gt_lengths_matched = [round(_length(v), 1) for v in ground_truth]
     return {
         "assignment": list(best_perm) if best_perm else None,
         "per_axis_angle_errors_deg": [
@@ -229,7 +244,10 @@ def _match_axes_to_ground_truth(
         "predicted_axis_lengths_px": [
             round(_length(v), 1) for v in predicted
         ],
-        "gt_axis_lengths_px": [
+        # In matched (predicted-axis) order — see comment above.
+        "gt_axis_lengths_px": gt_lengths_matched,
+        # Preserve the raw GT order too, for callers that want it.
+        "gt_axis_lengths_px_raw_order": [
             round(_length(v), 1) for v in ground_truth
         ],
     }

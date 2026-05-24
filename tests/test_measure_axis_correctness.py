@@ -82,6 +82,36 @@ def test_match_axes_finds_best_permutation_under_reordering():
     assert result["assignment"] == [2, 1, 0]
 
 
+def test_match_axes_returns_gt_lengths_in_matched_order():
+    """Codex P2 on PR #268 head 70f90ca: when the best assignment is
+    not identity, `gt_axis_lengths_px` must be reordered to align with
+    `predicted_axis_lengths_px` so the report's "compare predicted vs
+    GT axis length" guidance lines up the right pairs.
+
+    Setup: predicted axes deliberately ordered so the best assignment
+    is [2, 1, 0] (reverse). GT has DISTINCT lengths per axis so the
+    reorder is observable.
+    """
+    # GT in original order: lengths 10, 20, 30.
+    gt = [(10.0, 0.0), (0.0, 20.0), (-30.0, 0.0)]
+    # Predicted matches GT[2], GT[1], GT[0] in that order — same
+    # directions, so the best assignment must be [2, 1, 0].
+    predicted = [(-30.0, 0.0), (0.0, 20.0), (10.0, 0.0)]
+    result = m._match_axes_to_ground_truth(predicted, gt)
+    assert result["assignment"] == [2, 1, 0]
+    # Predicted lengths in predicted order: 30, 20, 10.
+    assert result["predicted_axis_lengths_px"] == [30.0, 20.0, 10.0]
+    # GT lengths MATCHED to predicted-axis order: also 30, 20, 10
+    # (because predicted[i] matches gt[assignment[i]]).
+    assert result["gt_axis_lengths_px"] == [30.0, 20.0, 10.0], (
+        "gt_axis_lengths_px must be reordered to align with the matched "
+        "predicted axes, not left in raw GT order."
+    )
+    # The raw-GT-order field preserves the original [10, 20, 30] for
+    # callers that need it.
+    assert result["gt_axis_lengths_px_raw_order"] == [10.0, 20.0, 30.0]
+
+
 def test_match_axes_chirality_flip_signature_around_180():
     """The 60° body-diagonal flip in the chirality detector produces
     axes that are systematically off by ~50-70° each. The TOTAL

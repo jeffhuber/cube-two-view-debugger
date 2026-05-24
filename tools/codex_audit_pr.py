@@ -94,7 +94,7 @@ class AuditConfig:
 
 @dataclass
 class CodexVerdict:
-    """Parsed verdict from `codex review` stdout."""
+    """Parsed verdict from `codex review` output (stdout, or stderr fallback)."""
     verdict: str  # "PASS" | "BLOCKED"
     prose: str    # the final review block (clean, ready to render as a comment)
     p0_count: int = 0

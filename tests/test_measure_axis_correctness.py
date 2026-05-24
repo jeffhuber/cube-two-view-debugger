@@ -320,31 +320,86 @@ def test_default_output_blocker_accepts_clean_traced_row_both_hypotheses():
     assert msg is None
 
 
-def test_default_output_blocker_rejects_subset_truth_with_default_outputs(
+def test_default_output_blocker_rejects_non_default_truth(
     tmp_path, monkeypatch,
 ):
-    """Codex P2 on PR #268 head bec408d: if `--truth` points at an
-    exploratory subset fixture and every subset row traces cleanly, the
-    pre-fix blocker returned None (no skipped, no errors, hypotheses
-    populated) → main wrote to the default committed paths and silently
-    shrank the canonical 12-row artifact to N-row. The fix: compare
-    truth path against canonical default; if non-default AND traced
-    count < canonical approved-row count, block.
-    """
-    # Pretend the canonical fixture has 12 approved rows.
-    canonical = tmp_path / "canonical_truth.json"
-    canonical.write_text(
+    """Codex P2 #1 on PR #268 head 988715b: a non-default `--truth`
+    fixture (subset, superset, or replacement) must block writes to
+    default committed outputs regardless of how successfully it traces
+    — the canonical artifact is tied to a SPECIFIC truth fixture, and
+    overwriting with any other source corrupts its provenance."""
+    canonical_truth = tmp_path / "canonical_truth.json"
+    canonical_truth.write_text(
         json.dumps({f"{i}_A": {"approved": True} for i in range(12)}),
         encoding="utf-8",
     )
-    subset = tmp_path / "subset_truth.json"
-    subset.write_text(
-        json.dumps({"20_A": {"approved": True}}),
+    canonical_manifest = tmp_path / "canonical_manifest.json"
+    canonical_manifest.write_text(json.dumps({"pairs": []}), encoding="utf-8")
+    monkeypatch.setattr(m, "DEFAULT_TRUTH", canonical_truth)
+    monkeypatch.setattr(m, "DEFAULT_MANIFEST", canonical_manifest)
+
+    other_truth = tmp_path / "other_truth.json"
+    other_truth.write_text(
+        # Even a SUPERSET (more rows than canonical) must be rejected,
+        # because the trace would still encode a different set of rows
+        # under the canonical schema label.
+        json.dumps({f"{i}_A": {"approved": True} for i in range(20)}),
         encoding="utf-8",
     )
-    monkeypatch.setattr(m, "DEFAULT_TRUTH", canonical)
+    happy_payload = {
+        "per_row": [
+            {
+                "key": f"{i}_A",
+                "status": "traced",
+                "corr_true": {"axis_match": {"total_misfit_deg": 12.3}},
+                "corr_false": {"axis_match": {"total_misfit_deg": 14.1}},
+            }
+            for i in range(20)
+        ],
+        "skipped": [],
+    }
 
-    payload = {
+    # Non-default truth with happy 20-row trace → still blocked.
+    msg = m._default_output_blocker(
+        happy_payload,
+        truth_path=other_truth,
+        manifest_path=canonical_manifest,
+    )
+    assert msg is not None
+    assert "non-default --truth" in msg
+
+    # Canonical truth + canonical manifest + happy trace → not blocked.
+    happy_payload_canonical = {
+        "per_row": happy_payload["per_row"][:12],
+        "skipped": [],
+    }
+    msg2 = m._default_output_blocker(
+        happy_payload_canonical,
+        truth_path=canonical_truth,
+        manifest_path=canonical_manifest,
+    )
+    assert msg2 is None
+
+
+def test_default_output_blocker_rejects_non_default_manifest(
+    tmp_path, monkeypatch,
+):
+    """Codex P2 #2 on PR #268 head 988715b: even with canonical truth,
+    a non-default `--manifest` (e.g. one pointing at /tmp images
+    instead of the canonical corpus) must block writes to default
+    committed outputs — the trace's images then come from a non-
+    canonical source even though the row count and IDs match."""
+    canonical_truth = tmp_path / "canonical_truth.json"
+    canonical_truth.write_text(json.dumps({}), encoding="utf-8")
+    canonical_manifest = tmp_path / "canonical_manifest.json"
+    canonical_manifest.write_text(json.dumps({"pairs": []}), encoding="utf-8")
+    monkeypatch.setattr(m, "DEFAULT_TRUTH", canonical_truth)
+    monkeypatch.setattr(m, "DEFAULT_MANIFEST", canonical_manifest)
+
+    other_manifest = tmp_path / "other_manifest.json"
+    other_manifest.write_text(json.dumps({"pairs": []}), encoding="utf-8")
+
+    happy_payload = {
         "per_row": [
             {
                 "key": "20_A",
@@ -355,18 +410,13 @@ def test_default_output_blocker_rejects_subset_truth_with_default_outputs(
         ],
         "skipped": [],
     }
-    # Passing the subset path: blocker must fire (1 traced row < 12 canonical).
-    msg = m._default_output_blocker(payload, truth_path=subset)
+    msg = m._default_output_blocker(
+        happy_payload,
+        truth_path=canonical_truth,
+        manifest_path=other_manifest,
+    )
     assert msg is not None
-    assert "1 row(s) traced" in msg
-    assert "12 approved rows" in msg
-    # Passing the canonical path with same single-row payload: still
-    # passes the count check (truth_path==canonical short-circuits) so
-    # blocker returns None (this case represents a happy-path single-row
-    # run against the canonical fixture, which would only ever happen
-    # in tests).
-    msg2 = m._default_output_blocker(payload, truth_path=canonical)
-    assert msg2 is None
+    assert "non-default --manifest" in msg
 
 
 def test_main_per_path_guard_protects_asymmetric_default(monkeypatch, tmp_path):

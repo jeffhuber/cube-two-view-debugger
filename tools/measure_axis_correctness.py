@@ -597,28 +597,36 @@ def _hypothesis_errors(rows: Sequence[Dict[str, Any]]) -> List[str]:
     return out
 
 
-def _canonical_truth_row_count(truth_path: Path) -> Optional[int]:
-    """Return the count of approved rows in the canonical truth fixture
-    (without loading the entire trace). Used by `_default_output_blocker`
-    to detect "user passed an exploratory subset truth fixture" — even
-    if every subset row traces cleanly, writing to the default
-    committed paths would silently shrink the canonical artifact.
-
-    Returns None if the canonical fixture can't be read (defensive — the
-    caller treats absent as "skip the canonical-count check").
-    """
-    try:
-        truth = json.loads(truth_path.read_text(encoding="utf-8"))
-    except Exception:  # noqa: BLE001
-        return None
-    return sum(1 for v in truth.values() if v.get("approved"))
-
-
 def _default_output_blocker(
     payload: Dict[str, Any],
     *,
     truth_path: Optional[Path] = None,
+    manifest_path: Optional[Path] = None,
 ) -> Optional[str]:
+    """Decide whether to refuse writes to default-committed output paths.
+
+    Returns a reason string if writes should be refused, None otherwise.
+    The committed canonical trace + report are tied to a SPECIFIC
+    (truth, manifest, code) tuple. Any deviation in inputs would
+    silently corrupt the canonical artifact — even a "successful"
+    deviation that traces every row of an exploratory dataset is
+    wrong, because the resulting JSON would have a different schema
+    semantics (different rows, different images) under the canonical
+    schema label.
+
+    The blocker fires if ANY of:
+    1. trace is empty / partial (zero traced, skipped, errored, or
+       hypothesis-level errors)
+    2. caller passed a non-default `--truth` (even if every row of
+       that truth traced cleanly — could be a superset, replacement,
+       or differently-curated set)
+    3. caller passed a non-default `--manifest` (same reasoning;
+       images come from a non-canonical source)
+
+    Codex P2 #1 + #2 on PR #268 head 988715b: a non-default truth
+    superset OR a non-default manifest containing all canonical set
+    IDs would each bypass the previous count-based check.
+    """
     rows = payload.get("per_row", [])
     skipped = payload.get("skipped", [])
     errored = [r for r in rows if r.get("status") != "traced"]
@@ -634,21 +642,24 @@ def _default_output_blocker(
         sample = ", ".join(hypo_errs[:3])
         suffix = f" (sample: {sample})" if hypo_errs else ""
         return f"{len(hypo_errs)} hypothesis fit(s) failed{suffix}"
-    # Canonical-count check: if the caller passed a non-default truth
-    # path (e.g. an exploratory subset), the row count won't match the
-    # canonical fixture's approved-row count. Writing to default outputs
-    # would silently shrink the committed artifact. Codex P2 on PR #268
-    # head bec408d.
-    if truth_path is not None:
-        if truth_path.resolve() != DEFAULT_TRUTH.resolve():
-            canonical_count = _canonical_truth_row_count(DEFAULT_TRUTH)
-            if canonical_count is not None and traced_count < canonical_count:
-                return (
-                    f"only {traced_count} row(s) traced — fewer than the "
-                    f"canonical {canonical_count} approved rows in "
-                    f"{_display_path(DEFAULT_TRUTH)} (probably an "
-                    f"exploratory subset truth fixture)"
-                )
+    # Canonical-input check: the committed artifacts are tied to
+    # DEFAULT_TRUTH + DEFAULT_MANIFEST. Any deviation in either input
+    # means the resulting trace doesn't represent the canonical 12-row
+    # corpus — refuse to write to default outputs regardless of how
+    # successfully the alternate inputs traced.
+    if truth_path is not None and truth_path.resolve() != DEFAULT_TRUTH.resolve():
+        return (
+            f"non-default --truth ({_display_path(truth_path)}); committed "
+            f"artifacts are tied to {_display_path(DEFAULT_TRUTH)}"
+        )
+    if (
+        manifest_path is not None
+        and manifest_path.resolve() != DEFAULT_MANIFEST.resolve()
+    ):
+        return (
+            f"non-default --manifest ({_display_path(manifest_path)}); "
+            f"committed artifacts are tied to {_display_path(DEFAULT_MANIFEST)}"
+        )
     return None
 
 
@@ -671,7 +682,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         truth_path=args.truth,
         manifest_path=args.manifest,
     )
-    blocker = _default_output_blocker(payload, truth_path=args.truth)
+    blocker = _default_output_blocker(
+        payload, truth_path=args.truth, manifest_path=args.manifest,
+    )
     blocked_paths: List[str] = []
     if blocker is not None:
         # Per-path: protect any output that resolves to a committed

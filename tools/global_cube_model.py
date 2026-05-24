@@ -1042,6 +1042,7 @@ def fit_global_cube_model(
     silhouette_mask: np.ndarray,
     *,
     optimize: bool = True,
+    apply_phase_correction: bool = True,
 ) -> Optional[GlobalCubeModel]:
     """Fit the cube model by aligning the 3D template to detected
     anchor points (1 cube_center + 6 hexagon outer vertices).
@@ -1053,6 +1054,10 @@ def fit_global_cube_model(
       silhouette_mask: rembg silhouette (provides 6 hexagon vertices)
       optimize: unused (kept for API compat) — the Procrustes fit is
         already optimal in the least-squares sense
+      apply_phase_correction: whether `_resolve_near_far_phase` may
+        apply the 60-degree near/far flip. Defaults True to preserve
+        production behavior; diagnostics can set False to score the
+        uncorrected phase hypothesis from a real pipeline run.
 
     Returns: best-fit GlobalCubeModel or None on failure.
     """
@@ -1163,7 +1168,8 @@ def fit_global_cube_model(
     # tools/NEAR_FAR_PHASE_REPORT.md for the geometric framing and
     # validation against the 58-case gallery.
     model, phase_debug = _resolve_near_far_phase(
-        model, detection, image_rgb, apply_correction=True
+        model, detection, image_rgb,
+        apply_correction=apply_phase_correction,
     )
     model.debug.update(phase_debug)
 

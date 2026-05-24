@@ -472,7 +472,11 @@ def _build_subprocess_env(venv_path: Optional[Path]) -> Dict[str, str]:
         return env
     venv_bin = str(venv_path / "bin")
     env["VIRTUAL_ENV"] = str(venv_path)
-    env["PATH"] = f"{venv_bin}{os.pathsep}{env.get('PATH', '')}"
+    existing_path = env.get("PATH", "")
+    env["PATH"] = (
+        f"{venv_bin}{os.pathsep}{existing_path}"
+        if existing_path else venv_bin
+    )
     env.pop("PYTHONHOME", None)
     return env
 

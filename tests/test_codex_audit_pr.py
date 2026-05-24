@@ -814,6 +814,24 @@ def test_build_subprocess_env_prepends_venv_bin_when_python_exists(
     assert "/sentinel/path" in env["PATH"]
 
 
+def test_build_subprocess_env_omits_trailing_separator_when_path_absent(
+    tmp_path, monkeypatch,
+):
+    """If PATH is absent, do not create a trailing path separator.
+
+    On POSIX, a trailing separator in PATH implies the current working
+    directory, which is not acceptable when auditing untrusted PR
+    worktrees.
+    """
+    monkeypatch.delenv("PATH", raising=False)
+    fake_venv = tmp_path / "venv"
+    (fake_venv / "bin").mkdir(parents=True)
+    (fake_venv / "bin" / "python").touch()
+    env = c._build_subprocess_env(fake_venv)
+    assert env["VIRTUAL_ENV"] == str(fake_venv)
+    assert env["PATH"] == str(fake_venv / "bin")
+
+
 def test_build_subprocess_env_clears_pythonhome_when_venv_set(
     tmp_path, monkeypatch,
 ):
@@ -957,4 +975,3 @@ def test_audit_pr_no_op_when_repo_has_no_venv(monkeypatch, tmp_path):
     )
     c.audit_pr(config, "jeffhuber/cube-snap", 17)
     assert captured["venv_path"] is None
-

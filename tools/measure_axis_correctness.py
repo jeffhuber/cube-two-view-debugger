@@ -40,9 +40,9 @@ For each oracle row:
 6. Cross-reference with vertex error + visual quality classification
    on the partial sample we already eyeballed.
 
-Output:
-  /tmp/axis_correctness_v1/index.json     trace (per-row + per-hypothesis)
-  tools/AXIS_CORRECTNESS_REPORT.md        markdown summary
+Default outputs:
+  tests/fixtures/axis_correctness_trace.json  trace (per-row + per-hypothesis)
+  tools/AXIS_CORRECTNESS_REPORT.md            markdown summary
 
 ## CLI
 
@@ -51,12 +51,12 @@ Output:
 from __future__ import annotations
 
 import argparse
+import itertools
 import json
 import math
 import statistics
 import sys
 import traceback
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
@@ -81,10 +81,18 @@ DEFAULT_OUT_MD = REPO_ROOT / "tools" / "AXIS_CORRECTNESS_REPORT.md"
 DEFAULT_MAX_IMAGE_DIM = 1600
 
 
-# Partial visual-quality classification from the 5 cases we eyeballed
-# (the rectification-quality dig that produced this tool follow-up dig). Used to test the predictor hypothesis. The
-# labels are subjective; the question is whether axis misfit is a
-# CLEANER predictor than vertex error.
+def _display_path(path: Path) -> str:
+    resolved = path.resolve()
+    try:
+        return str(resolved.relative_to(REPO_ROOT))
+    except ValueError:
+        return str(resolved)
+
+
+# Partial visual-quality classification from the rectification-quality
+# follow-up dig. These labels are subjective, partial visual evidence;
+# the question is whether axis misfit is a cleaner predictor than
+# vertex error.
 _VISUAL_QUALITY_SAMPLES: Dict[str, str] = {
     "41_A:corr_true:face_yz": "decent",
     "41_A:corr_true:face_xz": "decent",
@@ -130,19 +138,12 @@ def _match_axes_to_ground_truth(
     predicted: Sequence[Tuple[float, float]],
     ground_truth: Sequence[Tuple[float, float]],
 ) -> Dict[str, Any]:
-    """For each predicted axis, find the BEST-matching ground-truth
-    axis (min angle). Returns the best assignment (which predicted
-    axis maps to which GT axis), per-axis angle errors, and total
-    misfit.
+    """Find the best bijection from predicted axes to ground-truth axes.
 
-    NOTE: this matches greedily per-axis (each predicted axis picks
-    its best GT independently). For our 3-axis case this is identical
-    to optimal Hungarian-style assignment under most realistic noise
-    (validated by enumerating permutations on the actual data — see
-    the test). The greedy match also surfaces "two predicted axes
-    matched to the same GT" as a sign of geometric breakage.
+    Exhaustively enumerates all 3! assignments and chooses the minimum
+    total angle error. `total_misfit_deg` is therefore the sum of the
+    three matched per-axis angle errors, not a single-axis maximum.
     """
-    import itertools
     best_total = float("inf")
     best_perm = None
     best_errors = None
@@ -278,7 +279,12 @@ def evaluate_one_row(
 
 
 def run_all(
-    truth: Dict[str, Any], manifest: Dict[str, Any], max_image_dim: int,
+    truth: Dict[str, Any],
+    manifest: Dict[str, Any],
+    max_image_dim: int,
+    *,
+    truth_path: Path = DEFAULT_TRUTH,
+    manifest_path: Path = DEFAULT_MANIFEST,
 ) -> Dict[str, Any]:
     from rembg import new_session  # noqa: E402
     sess = new_session()
@@ -308,6 +314,13 @@ def run_all(
         records.append(record)
     return {
         "schema": "axis_correctness_v1",
+        "source": {
+            "tool": "tools/measure_axis_correctness.py",
+            "truth": _display_path(truth_path),
+            "manifest": _display_path(manifest_path),
+            "max_image_dim": max_image_dim,
+            "run_selection": "single deterministic run per row/hypothesis",
+        },
         "per_row": records,
         "skipped": skipped,
     }
@@ -319,8 +332,9 @@ def run_all(
 def _classify_face_for_row_visual(key: str, tag: str) -> str:
     """Aggregate per-face visual labels for a (key, hypothesis) into
     a single bucket: clean / marginal / broken / unknown.
-    Aggregation rule: 'broken' if any of 3 faces is broken, 'clean'
-    if all are clean/decent, 'marginal' otherwise."""
+    Aggregation rule: 'broken' if any labeled face is broken; 'unknown'
+    if the row has no labels or only a partial non-broken sample; 'clean'
+    if all three faces are clean/decent; 'marginal' otherwise."""
     face_keys = [f"{key}:{tag}:{f}" for f in ("face_yz", "face_xz", "face_xy")]
     labels = [
         _VISUAL_QUALITY_SAMPLES[k] for k in face_keys
@@ -330,6 +344,8 @@ def _classify_face_for_row_visual(key: str, tag: str) -> str:
         return "unknown"
     if any(l == "broken" for l in labels):
         return "broken"
+    if len(labels) < len(face_keys):
+        return "unknown"
     if all(l in ("clean", "decent") for l in labels):
         return "clean"
     return "marginal"
@@ -345,8 +361,18 @@ def render_report(payload: Dict[str, Any]) -> str:
         "fit's 3 axis vectors are to the oracle's ground-truth single-axis "
         "hex-corner directions (per `ONE_EDGE_CORNERS_BY_SIDE`). "
         "Cross-references with vertex error and partial visual quality "
-        "labels from the the rectification-quality dig that produced this tool follow-up dig."
+        "labels from the rectification-quality follow-up dig."
     )
+    source = payload.get("source", {})
+    if source:
+        lines.append("")
+        lines.append("## Source")
+        lines.append("")
+        lines.append(f"- Tool: `{source.get('tool', '-')}`")
+        lines.append(f"- Truth: `{source.get('truth', '-')}`")
+        lines.append(f"- Manifest: `{source.get('manifest', '-')}`")
+        lines.append(f"- Max image dim: `{source.get('max_image_dim', '-')}`")
+        lines.append(f"- Run selection: {source.get('run_selection', '-')}")
     lines.append("")
     lines.append("## Per-row metrics")
     lines.append("")
@@ -435,6 +461,10 @@ def render_report(payload: Dict[str, Any]) -> str:
         "error / non-Procrustes scale issues) not captured by angle."
     )
     lines.append(
+        "- Low angle misfit is necessary but not sufficient for clean "
+        "rectification; compare predicted vs GT axis lengths too."
+    )
+    lines.append(
         "- Compare to vertex error: which is the cleaner predictor?"
     )
     return "\n".join(lines)
@@ -455,7 +485,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     args = ap.parse_args(list(argv) if argv is not None else None)
     truth = json.loads(args.truth.read_text(encoding="utf-8"))
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
-    payload = run_all(truth, manifest, args.max_image_dim)
+    payload = run_all(
+        truth,
+        manifest,
+        args.max_image_dim,
+        truth_path=args.truth,
+        manifest_path=args.manifest,
+    )
     args.out_json.parent.mkdir(parents=True, exist_ok=True)
     args.out_json.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     args.out_md.parent.mkdir(parents=True, exist_ok=True)

@@ -1,5 +1,12 @@
 {
   "schema": "axis_correctness_v1",
+  "source": {
+    "tool": "tools/measure_axis_correctness.py",
+    "truth": "tests/fixtures/full_corner_ground_truth.json",
+    "manifest": "tests/fixtures/corpus_manifest.json",
+    "max_image_dim": 1600,
+    "run_selection": "single deterministic run per row/hypothesis"
+  },
   "per_row": [
     {
       "key": "20_A",

@@ -1,6 +1,14 @@
 # Axis-correctness diagnostic
 
-For each (row, hypothesis), measures how close the production fit's 3 axis vectors are to the oracle's ground-truth single-axis hex-corner directions (per `ONE_EDGE_CORNERS_BY_SIDE`). Cross-references with vertex error and partial visual quality labels from the PR #98 follow-up dig.
+For each (row, hypothesis), measures how close the production fit's 3 axis vectors are to the oracle's ground-truth single-axis hex-corner directions (per `ONE_EDGE_CORNERS_BY_SIDE`). Cross-references with vertex error and partial visual quality labels from the rectification-quality follow-up dig.
+
+## Source
+
+- Tool: `tools/measure_axis_correctness.py`
+- Truth: `tests/fixtures/full_corner_ground_truth.json`
+- Manifest: `tests/fixtures/corpus_manifest.json`
+- Max image dim: `1600`
+- Run selection: single deterministic run per row/hypothesis
 
 ## Per-row metrics
 
@@ -45,4 +53,5 @@ Only rows with a visual quality label are shown. Bucket counts: clean=1, margina
 
 - If `broken` rows have notably higher median axis misfit than `clean` rows (separation > say 20°), axis correctness is a useful predictor.
 - If `broken` rows have similar axis misfit to `clean` rows, rectification breakage has another cause (e.g. axis-length error / non-Procrustes scale issues) not captured by angle.
+- Low angle misfit is necessary but not sufficient for clean rectification; compare predicted vs GT axis lengths too.
 - Compare to vertex error: which is the cleaner predictor?

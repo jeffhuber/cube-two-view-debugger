@@ -192,6 +192,17 @@ def test_classify_face_for_row_returns_broken_if_any_face_broken():
     assert m._classify_face_for_row_visual("20_A", "corr_true") == "broken"
 
 
+def test_classify_face_for_row_returns_unknown_for_partial_non_broken_labels(monkeypatch):
+    """A single decent/clean visual label should not promote the whole
+    three-face row to clean."""
+    monkeypatch.setitem(
+        m._VISUAL_QUALITY_SAMPLES,
+        "99_A:corr_true:face_yz",
+        "decent",
+    )
+    assert m._classify_face_for_row_visual("99_A", "corr_true") == "unknown"
+
+
 def test_classify_face_for_row_returns_clean_when_all_clean_or_decent():
     """41_A corr_false has labels {decent, clean, clean} → clean."""
     assert m._classify_face_for_row_visual("41_A", "corr_false") == "clean"
@@ -210,6 +221,13 @@ def test_render_report_includes_per_row_table_and_cross_reference():
     """End-to-end render: feed a minimal payload with one traced row
     + one untraced row, verify the markdown structure."""
     payload = {
+        "source": {
+            "tool": "tools/measure_axis_correctness.py",
+            "truth": "tests/fixtures/full_corner_ground_truth.json",
+            "manifest": "tests/fixtures/corpus_manifest.json",
+            "max_image_dim": 1600,
+            "run_selection": "single deterministic run per row/hypothesis",
+        },
         "per_row": [
             {
                 "key": "20_A",
@@ -248,6 +266,8 @@ def test_render_report_includes_per_row_table_and_cross_reference():
     assert "# Axis-correctness diagnostic" in md
     assert "`20_A`" in md
     assert "corr_true" in md
+    assert "## Source" in md
+    assert "the the" not in md
     # Untraced row error message surfaces.
     assert "ERR" in md and "synthetic test error" in md
     # Cross-reference section exists and includes the broken bucket
@@ -274,6 +294,12 @@ def test_committed_trace_matches_expected_shape():
         )
     payload = json.loads(trace_path.read_text(encoding="utf-8"))
     assert payload.get("schema") == "axis_correctness_v1"
+    assert payload.get("source", {}).get("tool") == "tools/measure_axis_correctness.py"
+    assert (
+        payload.get("source", {}).get("truth")
+        == "tests/fixtures/full_corner_ground_truth.json"
+    )
+    assert payload.get("source", {}).get("max_image_dim") == 1600
     assert isinstance(payload.get("per_row"), list)
     assert len(payload["per_row"]) >= 10, (
         "Expected ~12 rows (all approved full-corner-ground-truth rows); "

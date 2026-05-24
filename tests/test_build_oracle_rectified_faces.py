@@ -491,3 +491,63 @@ def test_build_all_does_not_leave_stale_artifacts_from_prior_wider_run(
         "99_B/ from the wider run should have been wiped before the "
         "narrower rerun wrote 99_A."
     )
+
+
+def test_build_all_skips_rows_when_manifest_image_hash_mismatches(
+    tmp_path: Path,
+):
+    """If the manifest pins an expected image hash, the oracle tool must
+    not apply human corner labels to drifted/replaced pixels."""
+    truth_path, manifest_path = _make_synthetic_truth_and_image(tmp_path)
+    manifest = json.loads(manifest_path.read_text())
+    manifest["pairs"][0]["imageA_sha256_expected"] = "0" * 64
+    manifest_path.write_text(json.dumps(manifest))
+    out_dir = tmp_path / "out"
+    index = orf.build_all(
+        truth_path=truth_path,
+        manifest_path=manifest_path,
+        out_root=out_dir,
+        face_size=60,
+        patch_fraction=0.4,
+        yaw_overrides={},
+        save_patches=True,
+        rows_glob="99_A",
+    )
+    assert index["rows"] == []
+    assert len(index["skipped"]) == 1
+    assert index["skipped"][0]["key"] == "99_A"
+    assert "image hash mismatch" in index["skipped"][0]["reason"]
+    assert not (out_dir / "by_row" / "99_A").exists()
+    assert not (out_dir / "by_observation" / "99_A").exists()
+    assert not list((out_dir / "patch_png").glob("99_A_*.png"))
+
+
+def test_build_all_cleans_partial_artifacts_for_skipped_rows(tmp_path: Path):
+    """If a row errors after writing an earlier face, no current-run
+    filesystem artifacts for that skipped key should survive outside
+    index.json."""
+    truth_path, manifest_path = _make_synthetic_truth_and_image(tmp_path)
+    truth = json.loads(truth_path.read_text())
+    # A/upper can still write; A/right then needs corner_2 and fails.
+    del truth["99_A"]["corner_2"]
+    truth_path.write_text(json.dumps(truth))
+    out_dir = tmp_path / "out"
+    index = orf.build_all(
+        truth_path=truth_path,
+        manifest_path=manifest_path,
+        out_root=out_dir,
+        face_size=60,
+        patch_fraction=0.4,
+        yaw_overrides={},
+        save_patches=True,
+        rows_glob="99_A",
+    )
+    assert index["rows"] == []
+    assert len(index["skipped"]) == 1
+    assert index["skipped"][0]["key"] == "99_A"
+    assert not (out_dir / "by_row" / "99_A").exists()
+    assert not (out_dir / "by_observation" / "99_A").exists()
+    assert not list((out_dir / "patch_png").glob("99_A_*.png"))
+    by_facelet = out_dir / "by_facelet"
+    if by_facelet.exists():
+        assert not list(by_facelet.glob("*/99_A.png"))

@@ -62,7 +62,9 @@ from __future__ import annotations
 
 import argparse
 import fnmatch
+import hashlib
 import json
+import shutil
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -323,22 +325,57 @@ def _load_truth(path: Path) -> Dict[str, Dict[str, Any]]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def _load_manifest(path: Path) -> Dict[str, Dict[str, str]]:
-    """Return `{set_id: {"A": path, "B": path}}` from corpus_manifest."""
+@dataclass(frozen=True)
+class ManifestImage:
+    path: str
+    sha256_expected: Optional[str] = None
+
+
+def _load_manifest(path: Path) -> Dict[str, Dict[str, ManifestImage]]:
+    """Return image paths + expected SHA256s from corpus_manifest."""
     raw = json.loads(path.read_text(encoding="utf-8"))
-    by_set: Dict[str, Dict[str, str]] = {}
+    by_set: Dict[str, Dict[str, ManifestImage]] = {}
     for pair in raw.get("pairs", []):
         set_id = pair.get("setId")
         if not set_id:
             continue
-        entry: Dict[str, str] = {}
+        entry: Dict[str, ManifestImage] = {}
         if pair.get("imageAPath"):
-            entry["A"] = pair["imageAPath"]
+            entry["A"] = ManifestImage(
+                path=pair["imageAPath"],
+                sha256_expected=pair.get("imageA_sha256_expected"),
+            )
         if pair.get("imageBPath"):
-            entry["B"] = pair["imageBPath"]
+            entry["B"] = ManifestImage(
+                path=pair["imageBPath"],
+                sha256_expected=pair.get("imageB_sha256_expected"),
+            )
         if entry:
             by_set[set_id] = entry
     return by_set
+
+
+def _sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _image_hash_mismatch_reason(
+    path: Path,
+    sha256_expected: Optional[str],
+) -> Optional[str]:
+    if not sha256_expected:
+        return None
+    got = _sha256_file(path)
+    if got.lower() == sha256_expected.lower():
+        return None
+    return (
+        f"image hash mismatch for {path}: expected "
+        f"{sha256_expected.lower()}, got {got}"
+    )
 
 
 def _parse_yaw_overrides(spec: str) -> Dict[str, int]:
@@ -703,7 +740,6 @@ def clean_output_root(out_root: Path) -> None:
     default `/tmp/oracle_rectified_faces_v1/` is safely wiped without
     nuking sibling directories if the user pointed `--out` somewhere
     shared)."""
-    import shutil
     if not out_root.exists():
         return
     for subdir in _OWNED_SUBDIRS:
@@ -714,6 +750,35 @@ def clean_output_root(out_root: Path) -> None:
         candidate = out_root / top
         if candidate.is_file():
             candidate.unlink()
+
+
+def clean_row_outputs(out_root: Path, key: str) -> None:
+    """Remove current-run artifacts for one row after a row-level error.
+
+    `process_row` writes incrementally, so an exception on a later face can
+    otherwise leave files on disk that are absent from index.json. Keep the
+    cleanup narrowly scoped to this row's owned paths.
+    """
+    for subdir in ("by_row", "by_observation"):
+        candidate = out_root / subdir / key
+        if candidate.is_dir():
+            shutil.rmtree(candidate)
+    patch_dir = out_root / "patch_png"
+    if patch_dir.is_dir():
+        for candidate in patch_dir.glob(f"{key}_*.png"):
+            candidate.unlink()
+    by_facelet_dir = out_root / "by_facelet"
+    if by_facelet_dir.is_dir():
+        for facelet_dir in by_facelet_dir.iterdir():
+            if not facelet_dir.is_dir():
+                continue
+            candidate = facelet_dir / f"{key}.png"
+            if candidate.is_file():
+                candidate.unlink()
+            try:
+                facelet_dir.rmdir()
+            except OSError:
+                pass
 
 
 def build_all(
@@ -742,20 +807,26 @@ def build_all(
     for key in keys:
         row = truth[key]
         set_id, side = _row_key_set_side(key)
-        image_path_str = (manifest.get(set_id) or {}).get(side)
-        if not image_path_str:
+        manifest_image = (manifest.get(set_id) or {}).get(side)
+        if not manifest_image:
             skipped.append({
                 "key": key,
                 "reason": "no image path in corpus_manifest for "
                           f"set {set_id} side {side}",
             })
             continue
-        image_path = Path(image_path_str)
+        image_path = Path(manifest_image.path)
         if not image_path.exists():
             skipped.append({
                 "key": key,
                 "reason": f"image not found: {image_path}",
             })
+            continue
+        mismatch_reason = _image_hash_mismatch_reason(
+            image_path, manifest_image.sha256_expected
+        )
+        if mismatch_reason:
+            skipped.append({"key": key, "reason": mismatch_reason})
             continue
         yaw, assumed = _row_yaw(row, set_id, yaw_overrides)
         try:
@@ -770,6 +841,7 @@ def build_all(
                 out_root=out_root,
             )
         except Exception as exc:  # noqa: BLE001
+            clean_row_outputs(out_root, key)
             skipped.append({"key": key, "reason": f"error: {exc!r}"})
             continue
         row_records.append(record)

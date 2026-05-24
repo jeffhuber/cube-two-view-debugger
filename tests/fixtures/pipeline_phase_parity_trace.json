@@ -1,0 +1,609 @@
+{
+  "schema": "pipeline_phase_parity_trace_v1",
+  "source": {
+    "diagnostic": "tools/diagnose_pipeline_phase_parity.py",
+    "truth": "tests/fixtures/full_corner_ground_truth.json",
+    "max_image_dim": 1600
+  },
+  "summary": {
+    "n_total": 12,
+    "n_traced": 12,
+    "post_canonical_category_counts": {
+      "PHASE_SWAPPED": 7,
+      "GOOD": 4,
+      "GEOMETRY_FAIL": 1
+    },
+    "pre_canonical_category_counts": {
+      "GOOD": 8,
+      "PHASE_SWAPPED": 4
+    },
+    "phase_check_counts": {
+      "corrected_60deg_flip": 6,
+      "correct": 5,
+      "ambiguous_no_correction": 1
+    },
+    "score_delta_class_counts": {
+      "flip_hurt": 5,
+      "no_flip": 6,
+      "flip_helped": 1
+    }
+  },
+  "rows": [
+    {
+      "key": "20_A",
+      "side": "A",
+      "status": "traced",
+      "post_canonical_category": "PHASE_SWAPPED",
+      "pre_canonical_category": "GOOD",
+      "phase_check": "corrected_60deg_flip",
+      "flip_applied": true,
+      "score_delta_class": "flip_hurt",
+      "phase_debug": {
+        "phase_check": "corrected_60deg_flip",
+        "phase_darkness_separation": 70.6,
+        "phase_mean_near_darkness": 220.6,
+        "phase_mean_far_darkness": 150.0,
+        "phase_near_line_darkness": [
+          188.3,
+          247.2,
+          226.3
+        ],
+        "phase_far_line_darkness": [
+          112.1,
+          152.8,
+          185.1
+        ],
+        "phase_axis_angle_errors_before_deg": [
+          59.6,
+          62.1,
+          58.2
+        ],
+        "phase_axis_angle_errors_after_deg": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "post_score_summary": {
+        "vertex_error_px": 86.2,
+        "one_edge_mean_ang_deg": 59.1,
+        "far_mean_ang_deg": 59.26,
+        "swapped_mean_ang_deg": 2.09
+      },
+      "pre_score_summary": {
+        "vertex_error_px": 86.2,
+        "one_edge_mean_ang_deg": 1.94,
+        "far_mean_ang_deg": 2.8,
+        "swapped_mean_ang_deg": 59.16
+      }
+    },
+    {
+      "key": "20_B",
+      "side": "B",
+      "status": "traced",
+      "post_canonical_category": "PHASE_SWAPPED",
+      "pre_canonical_category": "PHASE_SWAPPED",
+      "phase_check": "correct",
+      "flip_applied": false,
+      "score_delta_class": "no_flip",
+      "phase_debug": {
+        "phase_check": "correct",
+        "phase_darkness_separation": -43.1,
+        "phase_mean_near_darkness": 177.8,
+        "phase_mean_far_darkness": 220.9,
+        "phase_near_line_darkness": [
+          182.0,
+          204.1,
+          147.4
+        ],
+        "phase_far_line_darkness": [
+          198.2,
+          224.8,
+          239.9
+        ],
+        "phase_axis_angle_errors_before_deg": [
+          0.0,
+          62.0,
+          0.0
+        ],
+        "phase_axis_angle_errors_after_deg": [
+          0.0,
+          60.1,
+          57.9
+        ]
+      },
+      "post_score_summary": {
+        "vertex_error_px": 181.5,
+        "one_edge_mean_ang_deg": 59.84,
+        "far_mean_ang_deg": 59.47,
+        "swapped_mean_ang_deg": 5.54
+      },
+      "pre_score_summary": {
+        "vertex_error_px": 181.5,
+        "one_edge_mean_ang_deg": 59.84,
+        "far_mean_ang_deg": 59.47,
+        "swapped_mean_ang_deg": 5.54
+      }
+    },
+    {
+      "key": "38_A",
+      "side": "A",
+      "status": "traced",
+      "post_canonical_category": "PHASE_SWAPPED",
+      "pre_canonical_category": "GOOD",
+      "phase_check": "corrected_60deg_flip",
+      "flip_applied": true,
+      "score_delta_class": "flip_hurt",
+      "phase_debug": {
+        "phase_check": "corrected_60deg_flip",
+        "phase_darkness_separation": 32.5,
+        "phase_mean_near_darkness": 182.5,
+        "phase_mean_far_darkness": 150.0,
+        "phase_near_line_darkness": [
+          243.9,
+          140.9,
+          162.8
+        ],
+        "phase_far_line_darkness": [
+          148.2,
+          155.6,
+          146.2
+        ],
+        "phase_axis_angle_errors_before_deg": [
+          52.9,
+          0.0,
+          62.6
+        ],
+        "phase_axis_angle_errors_after_deg": [
+          65.3,
+          105.3,
+          0.0
+        ]
+      },
+      "post_score_summary": {
+        "vertex_error_px": 147.7,
+        "one_edge_mean_ang_deg": 59.91,
+        "far_mean_ang_deg": 60.0,
+        "swapped_mean_ang_deg": 4.83
+      },
+      "pre_score_summary": {
+        "vertex_error_px": 147.7,
+        "one_edge_mean_ang_deg": 1.87,
+        "far_mean_ang_deg": 1.29,
+        "swapped_mean_ang_deg": 59.91
+      }
+    },
+    {
+      "key": "38_B",
+      "side": "B",
+      "status": "traced",
+      "post_canonical_category": "GOOD",
+      "pre_canonical_category": "GOOD",
+      "phase_check": "correct",
+      "flip_applied": false,
+      "score_delta_class": "no_flip",
+      "phase_debug": {
+        "phase_check": "correct",
+        "phase_darkness_separation": -18.0,
+        "phase_mean_near_darkness": 149.1,
+        "phase_mean_far_darkness": 167.1,
+        "phase_near_line_darkness": [
+          104.3,
+          111.5,
+          231.6
+        ],
+        "phase_far_line_darkness": [
+          153.4,
+          192.2,
+          155.7
+        ],
+        "phase_axis_angle_errors_before_deg": [
+          0.0,
+          0.0,
+          162.4
+        ],
+        "phase_axis_angle_errors_after_deg": [
+          0.0,
+          50.9,
+          68.6
+        ]
+      },
+      "post_score_summary": {
+        "vertex_error_px": 344.5,
+        "one_edge_mean_ang_deg": 2.81,
+        "far_mean_ang_deg": 6.2,
+        "swapped_mean_ang_deg": 59.84
+      },
+      "pre_score_summary": {
+        "vertex_error_px": 344.5,
+        "one_edge_mean_ang_deg": 2.81,
+        "far_mean_ang_deg": 6.2,
+        "swapped_mean_ang_deg": 59.84
+      }
+    },
+    {
+      "key": "40_A",
+      "side": "A",
+      "status": "traced",
+      "post_canonical_category": "GOOD",
+      "pre_canonical_category": "GOOD",
+      "phase_check": "ambiguous_no_correction",
+      "flip_applied": false,
+      "score_delta_class": "no_flip",
+      "phase_debug": {
+        "phase_check": "ambiguous_no_correction",
+        "phase_darkness_separation": -2.0,
+        "phase_mean_near_darkness": 170.9,
+        "phase_mean_far_darkness": 172.9,
+        "phase_near_line_darkness": [
+          185.4,
+          129.3,
+          198.0
+        ],
+        "phase_far_line_darkness": [
+          159.3,
+          163.5,
+          196.0
+        ],
+        "phase_axis_angle_errors_before_deg": [
+          34.5,
+          0.0,
+          56.6
+        ],
+        "phase_axis_angle_errors_after_deg": [
+          0.0,
+          0.0,
+          99.1
+        ]
+      },
+      "post_score_summary": {
+        "vertex_error_px": 111.9,
+        "one_edge_mean_ang_deg": 4.42,
+        "far_mean_ang_deg": 12.41,
+        "swapped_mean_ang_deg": 57.8
+      },
+      "pre_score_summary": {
+        "vertex_error_px": 111.9,
+        "one_edge_mean_ang_deg": 4.42,
+        "far_mean_ang_deg": 12.41,
+        "swapped_mean_ang_deg": 57.8
+      }
+    },
+    {
+      "key": "40_B",
+      "side": "B",
+      "status": "traced",
+      "post_canonical_category": "PHASE_SWAPPED",
+      "pre_canonical_category": "PHASE_SWAPPED",
+      "phase_check": "correct",
+      "flip_applied": false,
+      "score_delta_class": "no_flip",
+      "phase_debug": {
+        "phase_check": "correct",
+        "phase_darkness_separation": -11.4,
+        "phase_mean_near_darkness": 183.2,
+        "phase_mean_far_darkness": 194.6,
+        "phase_near_line_darkness": [
+          183.5,
+          166.6,
+          199.6
+        ],
+        "phase_far_line_darkness": [
+          200.0,
+          192.7,
+          191.1
+        ],
+        "phase_axis_angle_errors_before_deg": [
+          0.0,
+          0.0,
+          64.3
+        ],
+        "phase_axis_angle_errors_after_deg": [
+          54.9,
+          60.8,
+          0.0
+        ]
+      },
+      "post_score_summary": {
+        "vertex_error_px": 465.8,
+        "one_edge_mean_ang_deg": 59.3,
+        "far_mean_ang_deg": 58.81,
+        "swapped_mean_ang_deg": 10.18
+      },
+      "pre_score_summary": {
+        "vertex_error_px": 465.8,
+        "one_edge_mean_ang_deg": 59.3,
+        "far_mean_ang_deg": 58.81,
+        "swapped_mean_ang_deg": 10.18
+      }
+    },
+    {
+      "key": "41_A",
+      "side": "A",
+      "status": "traced",
+      "post_canonical_category": "GOOD",
+      "pre_canonical_category": "PHASE_SWAPPED",
+      "phase_check": "corrected_60deg_flip",
+      "flip_applied": true,
+      "score_delta_class": "flip_helped",
+      "phase_debug": {
+        "phase_check": "corrected_60deg_flip",
+        "phase_darkness_separation": 31.0,
+        "phase_mean_near_darkness": 191.9,
+        "phase_mean_far_darkness": 160.9,
+        "phase_near_line_darkness": [
+          208.2,
+          187.0,
+          180.4
+        ],
+        "phase_far_line_darkness": [
+          153.5,
+          204.6,
+          124.6
+        ],
+        "phase_axis_angle_errors_before_deg": [
+          60.0,
+          59.5,
+          0.0
+        ],
+        "phase_axis_angle_errors_after_deg": [
+          0.0,
+          60.5,
+          0.0
+        ]
+      },
+      "post_score_summary": {
+        "vertex_error_px": 224.4,
+        "one_edge_mean_ang_deg": 4.57,
+        "far_mean_ang_deg": 10.04,
+        "swapped_mean_ang_deg": 59.44
+      },
+      "pre_score_summary": {
+        "vertex_error_px": 224.4,
+        "one_edge_mean_ang_deg": 59.44,
+        "far_mean_ang_deg": 59.43,
+        "swapped_mean_ang_deg": 7.3
+      }
+    },
+    {
+      "key": "41_B",
+      "side": "B",
+      "status": "traced",
+      "post_canonical_category": "GEOMETRY_FAIL",
+      "pre_canonical_category": "GOOD",
+      "phase_check": "corrected_60deg_flip",
+      "flip_applied": true,
+      "score_delta_class": "flip_hurt",
+      "phase_debug": {
+        "phase_check": "corrected_60deg_flip",
+        "phase_darkness_separation": 11.4,
+        "phase_mean_near_darkness": 161.5,
+        "phase_mean_far_darkness": 150.1,
+        "phase_near_line_darkness": [
+          184.0,
+          137.2,
+          163.2
+        ],
+        "phase_far_line_darkness": [
+          171.0,
+          152.2,
+          127.0
+        ],
+        "phase_axis_angle_errors_before_deg": [
+          88.1,
+          0.0,
+          59.7
+        ],
+        "phase_axis_angle_errors_after_deg": [
+          38.3,
+          0.0,
+          0.0
+        ]
+      },
+      "post_score_summary": {
+        "vertex_error_px": 71.7,
+        "one_edge_mean_ang_deg": 57.85,
+        "far_mean_ang_deg": 47.81,
+        "swapped_mean_ang_deg": 25.52
+      },
+      "pre_score_summary": {
+        "vertex_error_px": 71.7,
+        "one_edge_mean_ang_deg": 5.07,
+        "far_mean_ang_deg": 13.19,
+        "swapped_mean_ang_deg": 58.7
+      }
+    },
+    {
+      "key": "43_A",
+      "side": "A",
+      "status": "traced",
+      "post_canonical_category": "PHASE_SWAPPED",
+      "pre_canonical_category": "PHASE_SWAPPED",
+      "phase_check": "correct",
+      "flip_applied": false,
+      "score_delta_class": "no_flip",
+      "phase_debug": {
+        "phase_check": "correct",
+        "phase_darkness_separation": -48.2,
+        "phase_mean_near_darkness": 166.6,
+        "phase_mean_far_darkness": 214.8,
+        "phase_near_line_darkness": [
+          127.4,
+          188.3,
+          184.2
+        ],
+        "phase_far_line_darkness": [
+          198.4,
+          219.5,
+          226.5
+        ],
+        "phase_axis_angle_errors_before_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "phase_axis_angle_errors_after_deg": [
+          61.9,
+          56.5,
+          61.6
+        ]
+      },
+      "post_score_summary": {
+        "vertex_error_px": 132.9,
+        "one_edge_mean_ang_deg": 58.56,
+        "far_mean_ang_deg": 58.15,
+        "swapped_mean_ang_deg": 5.49
+      },
+      "pre_score_summary": {
+        "vertex_error_px": 132.9,
+        "one_edge_mean_ang_deg": 58.56,
+        "far_mean_ang_deg": 58.15,
+        "swapped_mean_ang_deg": 5.49
+      }
+    },
+    {
+      "key": "43_B",
+      "side": "B",
+      "status": "traced",
+      "post_canonical_category": "PHASE_SWAPPED",
+      "pre_canonical_category": "GOOD",
+      "phase_check": "corrected_60deg_flip",
+      "flip_applied": true,
+      "score_delta_class": "flip_hurt",
+      "phase_debug": {
+        "phase_check": "corrected_60deg_flip",
+        "phase_darkness_separation": 18.7,
+        "phase_mean_near_darkness": 167.3,
+        "phase_mean_far_darkness": 148.6,
+        "phase_near_line_darkness": [
+          166.0,
+          107.8,
+          228.2
+        ],
+        "phase_far_line_darkness": [
+          145.6,
+          160.1,
+          140.2
+        ],
+        "phase_axis_angle_errors_before_deg": [
+          66.7,
+          0.0,
+          48.2
+        ],
+        "phase_axis_angle_errors_after_deg": [
+          0.0,
+          95.8,
+          66.0
+        ]
+      },
+      "post_score_summary": {
+        "vertex_error_px": 103.2,
+        "one_edge_mean_ang_deg": 59.83,
+        "far_mean_ang_deg": 59.82,
+        "swapped_mean_ang_deg": 10.99
+      },
+      "pre_score_summary": {
+        "vertex_error_px": 103.2,
+        "one_edge_mean_ang_deg": 1.69,
+        "far_mean_ang_deg": 4.0,
+        "swapped_mean_ang_deg": 59.91
+      }
+    },
+    {
+      "key": "45_A",
+      "side": "A",
+      "status": "traced",
+      "post_canonical_category": "PHASE_SWAPPED",
+      "pre_canonical_category": "GOOD",
+      "phase_check": "corrected_60deg_flip",
+      "flip_applied": true,
+      "score_delta_class": "flip_hurt",
+      "phase_debug": {
+        "phase_check": "corrected_60deg_flip",
+        "phase_darkness_separation": 15.0,
+        "phase_mean_near_darkness": 158.3,
+        "phase_mean_far_darkness": 143.2,
+        "phase_near_line_darkness": [
+          134.1,
+          209.0,
+          131.7
+        ],
+        "phase_far_line_darkness": [
+          152.2,
+          103.2,
+          174.3
+        ],
+        "phase_axis_angle_errors_before_deg": [
+          0.0,
+          177.9,
+          0.0
+        ],
+        "phase_axis_angle_errors_after_deg": [
+          43.6,
+          0.0,
+          44.8
+        ]
+      },
+      "post_score_summary": {
+        "vertex_error_px": 59.4,
+        "one_edge_mean_ang_deg": 59.93,
+        "far_mean_ang_deg": 56.6,
+        "swapped_mean_ang_deg": 10.79
+      },
+      "pre_score_summary": {
+        "vertex_error_px": 59.4,
+        "one_edge_mean_ang_deg": 0.25,
+        "far_mean_ang_deg": 6.67,
+        "swapped_mean_ang_deg": 59.77
+      }
+    },
+    {
+      "key": "45_B",
+      "side": "B",
+      "status": "traced",
+      "post_canonical_category": "GOOD",
+      "pre_canonical_category": "GOOD",
+      "phase_check": "correct",
+      "flip_applied": false,
+      "score_delta_class": "no_flip",
+      "phase_debug": {
+        "phase_check": "correct",
+        "phase_darkness_separation": -22.3,
+        "phase_mean_near_darkness": 127.2,
+        "phase_mean_far_darkness": 149.5,
+        "phase_near_line_darkness": [
+          90.8,
+          74.3,
+          216.6
+        ],
+        "phase_far_line_darkness": [
+          108.9,
+          179.7,
+          159.9
+        ],
+        "phase_axis_angle_errors_before_deg": [
+          0.0,
+          0.0,
+          176.0
+        ],
+        "phase_axis_angle_errors_after_deg": [
+          0.0,
+          44.7,
+          47.4
+        ]
+      },
+      "post_score_summary": {
+        "vertex_error_px": 229.4,
+        "one_edge_mean_ang_deg": 1.33,
+        "far_mean_ang_deg": 2.69,
+        "swapped_mean_ang_deg": 59.58
+      },
+      "pre_score_summary": {
+        "vertex_error_px": 229.4,
+        "one_edge_mean_ang_deg": 1.33,
+        "far_mean_ang_deg": 2.69,
+        "swapped_mean_ang_deg": 59.58
+      }
+    }
+  ]
+}

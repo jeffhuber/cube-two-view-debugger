@@ -131,30 +131,87 @@ of which this PR tries:
    coverage, axis-length sanity, junction strength). 6 PnP calls is
    cheap. Likely the most robust path.
 
+## V3: addressed Codex audit P2s on V2 — V3 is bit-identical to V1/V2
+
+After V2, Codex audit (head 0002c5e) flagged 3 P2s on the math and
+flow, plus a v1 perf P2:
+
+1. **mod-π wrap**: bezels from the Hough sweep are undirected lines
+   in `[0, π)`; my V2 used mod-2π which penalized an axis on the
+   opposite half of a perfectly-aligned bezel as 180° away. Fixed:
+   `_score_bezel_alignment` now wraps mod-π (max distance π/2 = 90°).
+2. **No-image fallback semantics changed**: V1/V2 set
+   `chosen_record = tied[0]` (lex-first within the 0.1% residual
+   window), but production pre-PR used bare `<` over residuals (strict
+   min). Fixed: initialize fallback from `min(candidate_records, key=
+   residual)`.
+3. **Darkness frame caching**: `_score_phase_separation` called
+   `_line_darkness_from_vertex` × 6 per perm × ~12 tied perms, each
+   re-meaning the full RGB frame. Fixed: new `_compute_darkness_frame`
+   helper precomputes once, threaded through both helpers via an
+   optional `darkness_frame` parameter.
+4. **(Deferred) Run scoring at post-vertex-ensemble layer**: the
+   line-darkness signal needs the corrected vertex, but the
+   tiebreaker runs on the bare-affine vertex. Addressing this needs
+   a structural change (keep top-K from `fit_cube_template_to_anchors`,
+   score post-PnP in `fit_global_cube_model`). Documented; not done
+   in V3.
+
+**V3 empirical result: bit-identical to V1 and V2 on all 12 rows.**
+Same 3 fixed / 1 regressed / 19 unchanged. Confirms the analytical
+prediction: GOOD-chirality inner direction at θ and MIRROR-chirality
+inner direction at θ+180° map to the SAME undirected line under
+mod-π, so undirected bezel-alignment fundamentally cannot separate
+them. Test
+`test_score_bezel_alignment_does_not_disambiguate_chirality_geometrically`
+pins this in unit-test form so a future "fix" that switches back to
+mod-2π (which would coincidentally separate the canonical case but
+mis-handles the directed-line bug) gets caught.
+
 ## Shipping recommendation
 
-**DRAFT, not for merge.** V2's bezel-alignment stage runs and is
-correctly wired (debug fields confirm) but produces zero behavior
-change vs V1 on the 12-row corpus, so the combined V1+V2 net is the
-same wash as V1 alone: 1 fully fixed (40_A), 1 partial (45_B), 1
-regressed (43_A corr_false), 9 no-op.
+**DRAFT, not for merge.** V3's three Codex-found correctness/perf
+fixes are real improvements regardless of empirical outcome. But the
+core thesis ("two-bit signal at the affine layer disambiguates the
+12-perm tied set") is empirically falsified for both bits:
 
-The implementation is honest and instrumented. Keeping the PR open
-preserves the building blocks; the next iteration should swap stage 2
-to per-corner darkness or move to top-K downstream re-ranking.
+- Phase-separation (1 bit, near/far phase): works as designed but
+  fixes 1/12 fully + 1/12 partial + regresses 1/12 = roughly a wash.
+- Bezel-alignment (intended 2nd bit, chirality): geometrically can't
+  work at the affine layer. Mod-π fixes the directed-line bug
+  Codex flagged but doesn't add disambiguation.
+
+Two paths forward (neither in this PR):
+
+1. **Move to post-ensemble layer (Codex P2 #2)**: keep top-K
+   candidates through PnP + mean-of-3 vertex ensemble, score each
+   final model via the existing `_resolve_near_far_phase`-style
+   darkness signal at the corrected vertex, pick the best. Likely
+   more robust because the corrected vertex makes the darkness
+   signal sharper.
+2. **Different signal entirely**: per-corner darkness (richer than
+   mean separation) or sticker-color coverage scoring on each tied
+   model's face_quads.
+
+If neither pans out, this PR closes as "informative dead end" — the
+diagnostic and reports remain useful for future work on the same
+problem.
 
 ## Test plan
 
-- [x] 10 new unit tests in `tests/test_procrustes_chirality_tiebreaker.py`:
+- [x] 15 new unit tests in `tests/test_procrustes_chirality_tiebreaker.py`:
   - `_score_phase_separation`: None without `derive_geometry`,
     polarity (negative on near-lighter, positive on near-darker)
+  - `_compute_darkness_frame`: returns float32 (255 - mean) frame
+  - `_line_darkness_from_vertex`: honors precomputed `darkness_frame`
   - `_score_bezel_alignment`: None for <3 bezels, zero on exact-match,
-    GOOD<MIRROR on a synthetic GOOD-vs-MIRROR comparison
+    opposite-half axis treated as same line (mod-π), 90° cap, 60°
+    mid-range, **explicit "cannot disambiguate chirality" pin**
   - `fit_cube_template_to_anchors`: no-image path preserves
     pre-tiebreaker behavior + records iteration_order; image path
     records the two-stage tiebreaker name + n_tied + chosen sep +
     all seps; invalid hexagon (<6 vertices) returns None
-- [x] `pytest tests/` — 932/932 pass (was 922; +10 new)
+- [x] `pytest tests/` — 937/937 pass (was 922; +15 new)
 - [x] 12-row corpus measurement reproduced via `measure_axis_correctness.py`
-  from PR #268 (V1 and V2 both run; numbers bit-identical, per-row
+  from PR #268 (V1, V2, V3 all run; numbers bit-identical, per-row
   probe shows why)

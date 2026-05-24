@@ -665,9 +665,17 @@ def fit_cube_template_to_anchors(
         derive_geometry(model)
         return model
 
-    # Default tiebreaker — first tied perm in iteration order (preserves
-    # pre-tiebreaker behavior when image_rgb is absent).
-    chosen_record = tied[0]
+    # Default tiebreaker for the no-image / scoring-failed paths:
+    # the STRICT residual minimum, NOT the lex-first inside the tied
+    # window. Pre-tiebreaker behavior used `if residual < best_residual`
+    # with bare `<`, which deterministically picks whichever iteration-
+    # order-first perm hits the minimum residual under strict ordering;
+    # widening to the tied window for fallback would silently change
+    # correspondence for callers without an image and pick a perm with
+    # a marginally-but-genuinely higher residual. Codex P2 on PR #271
+    # head 0002c5e.
+    min_residual_record = min(candidate_records, key=lambda r: r["residual"])
+    chosen_record = min_residual_record
     tiebreaker_debug: Dict[str, Any] = {
         "procrustes_n_tied": len(tied),
         "procrustes_tied_residual_threshold": round(tied_threshold, 6),
@@ -675,6 +683,12 @@ def fit_cube_template_to_anchors(
         "procrustes_tiebreaker": "iteration_order",
     }
     if image_rgb is not None and len(tied) > 1:
+        # Precompute the darkness frame once for this image, so the
+        # ~6×N _line_darkness_from_vertex calls per tiebreaker don't
+        # each repeat `image_rgb.mean(axis=2)` on the full frame.
+        # Codex P2 on PR #271 head 8633a6c (~72 redundant conversions
+        # per 12MP fit otherwise).
+        darkness_frame_cached = _compute_darkness_frame(image_rgb)
         # TWO-STAGE TIEBREAKER for the cube's full 6-fold residual-tied
         # symmetry equivalence class:
         #
@@ -700,7 +714,10 @@ def fit_cube_template_to_anchors(
         any_failed = False
         for rec in tied:
             candidate_model = _build_model_for_record(rec)
-            sep = _score_phase_separation(candidate_model, image_rgb)
+            sep = _score_phase_separation(
+                candidate_model, image_rgb,
+                darkness_frame=darkness_frame_cached,
+            )
             if sep is None:
                 any_failed = True
                 break
@@ -991,12 +1008,24 @@ def _refine_vertex_via_image_junction(
     return best_xy, debug
 
 
+def _compute_darkness_frame(image_rgb: np.ndarray) -> np.ndarray:
+    """Precompute the (255 - mean-RGB) darkness frame once per image so
+    callers that sample many lines (e.g. the Procrustes tiebreaker,
+    which scores up to 12 perms × 6 lines each) don't re-mean the full
+    frame on every call. Codex P2 on PR #271 head 8633a6c: the prior
+    `_line_darkness_from_vertex(image_rgb, ...)` did
+    `image_rgb.mean(axis=2)` per call → ~72 full-frame conversions per
+    fit on a 12MP image, adding seconds of unnecessary work."""
+    return 255.0 - image_rgb.mean(axis=2).astype(np.float32)
+
+
 def _line_darkness_from_vertex(
     image_rgb: np.ndarray,
     vertex: Point,
     target: Point,
     n_samples: int = 24,
     skip_endpoints_frac: float = 0.15,
+    darkness_frame: Optional[np.ndarray] = None,
 ) -> float:
     """Mean pixel darkness along the line from vertex toward target.
 
@@ -1009,19 +1038,23 @@ def _line_darkness_from_vertex(
     We skip the endpoints (where the vertex itself and the hexagon corner
     might both be on dark bezels) to focus on the line interior, which
     is where bezel-vs-sticker most cleanly differentiates.
+
+    `darkness_frame` may be supplied (precomputed via
+    `_compute_darkness_frame`) to avoid redundant full-frame meaning when
+    many lines are sampled against the same image.
     """
     h, w = image_rgb.shape[:2]
     if vertex[0] < 0 or vertex[1] < 0 or vertex[0] >= w or vertex[1] >= h:
         return 0.0
-    gray = image_rgb.mean(axis=2).astype(np.float32)
-    darkness = 255.0 - gray
+    if darkness_frame is None:
+        darkness_frame = _compute_darkness_frame(image_rgb)
     t_vals = np.linspace(skip_endpoints_frac, 1.0 - skip_endpoints_frac, n_samples)
     xs = (vertex[0] + (target[0] - vertex[0]) * t_vals).astype(np.int32)
     ys = (vertex[1] + (target[1] - vertex[1]) * t_vals).astype(np.int32)
     in_image = (xs >= 0) & (xs < w) & (ys >= 0) & (ys < h)
     if not in_image.any():
         return 0.0
-    return float(darkness[ys[in_image], xs[in_image]].mean())
+    return float(darkness_frame[ys[in_image], xs[in_image]].mean())
 
 
 def _signed_angle_diff_deg(a_rad: float, b_rad: float) -> float:
@@ -1037,6 +1070,7 @@ def _signed_angle_diff_deg(a_rad: float, b_rad: float) -> float:
 def _score_phase_separation(
     model: GlobalCubeModel,
     image_rgb: np.ndarray,
+    darkness_frame: Optional[np.ndarray] = None,
 ) -> Optional[float]:
     """Compute `mean_near - mean_far` darkness separation for `model`.
 
@@ -1060,11 +1094,15 @@ def _score_phase_separation(
         return None
     vertex = model.cube_center_screen
     near_darkness = [
-        _line_darkness_from_vertex(image_rgb, vertex, p)  # type: ignore[arg-type]
+        _line_darkness_from_vertex(
+            image_rgb, vertex, p, darkness_frame=darkness_frame,  # type: ignore[arg-type]
+        )
         for p in near_positions
     ]
     far_darkness = [
-        _line_darkness_from_vertex(image_rgb, vertex, p)  # type: ignore[arg-type]
+        _line_darkness_from_vertex(
+            image_rgb, vertex, p, darkness_frame=darkness_frame,  # type: ignore[arg-type]
+        )
         for p in far_positions
     ]
     return sum(near_darkness) / 3.0 - sum(far_darkness) / 3.0
@@ -1100,18 +1138,23 @@ def _score_bezel_alignment(
     inner_positions = [model.visible_corners.get(k) for k in inner_keys]
     if any(p is None for p in inner_positions):
         return None
+    # Bezel angles from `InteriorBezelDetection.boundary_angles` come
+    # from a Hough sweep in `[0, π)` and represent UNDIRECTED LINES:
+    # θ and θ + π describe the same bezel. So the distance between an
+    # axis direction and a bezel is computed modulo π (max distance
+    # π/2 = 90°), NOT modulo 2π (which would penalize an axis on the
+    # opposite half of a perfectly-aligned bezel as 180° away). Codex
+    # P2 on PR #271 head 0002c5e.
     total = 0.0
-    two_pi = 2.0 * math.pi
+    half_pi = 0.5 * math.pi
     for pos in inner_positions:
         ang = math.atan2(pos[1] - cy, pos[0] - cx)  # type: ignore[index]
-        best = math.pi
+        best = half_pi
         for b in bezel_angles_rad[:3]:
-            # Normalize (ang - b) into [-π, π] BEFORE taking abs, so
-            # the wrap is correct regardless of how the inputs are
-            # signed or wound (atan2 returns [-π, π]; bezel_angles may
-            # be in [0, 2π] or [-π, π]). Naive `min(d, 2π - d)` after
-            # a bare abs goes negative when |ang - b| > 2π.
-            diff = (ang - b + math.pi) % two_pi - math.pi
+            # Wrap (ang - b) into [-π/2, π/2] for an undirected-line
+            # distance. `(diff + π/2) % π - π/2` handles negative and
+            # large magnitudes consistently.
+            diff = (ang - b + half_pi) % math.pi - half_pi
             d = abs(diff)
             if d < best:
                 best = d

@@ -28,6 +28,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from tools.global_cube_model import (  # noqa: E402
     GlobalCubeModel,
+    _score_bezel_alignment,
     _score_phase_separation,
     derive_geometry,
     fit_cube_template_to_anchors,
@@ -106,6 +107,94 @@ def test_score_phase_separation_positive_on_swapped_image():
     assert sep > 0
 
 
+# ---------------- _score_bezel_alignment unit tests ----------------
+
+
+def test_score_bezel_alignment_returns_none_for_too_few_bezels():
+    """Defensive: caller may pass <3 detected bezels. Tiebreaker treats
+    None as "no signal, keep stage-1 pick", so the function must
+    return None rather than raise."""
+    m = GlobalCubeModel(
+        cube_center_screen=(100.0, 100.0),
+        axis_x_2d=(-50.0, -25.0),
+        axis_y_2d=(0.0, 50.0),
+        axis_z_2d=(50.0, -25.0),
+    )
+    derive_geometry(m)
+    assert _score_bezel_alignment(m, (100.0, 100.0), []) is None
+    assert _score_bezel_alignment(m, (100.0, 100.0), [0.0]) is None
+
+
+def test_score_bezel_alignment_zero_when_inner_directions_match_bezels():
+    """When the model's inner template directions (h_x, h_y, h_z
+    relative to cube_center) point exactly along the detected bezel
+    angles, the alignment score must be 0."""
+    m = GlobalCubeModel(
+        cube_center_screen=(100.0, 100.0),
+        # h_x, h_y, h_z directions at angles 150°, 270°, 30° (image-space)
+        axis_x_2d=(math.cos(math.radians(150.0)) * 50,
+                   math.sin(math.radians(150.0)) * 50),
+        axis_y_2d=(math.cos(math.radians(270.0)) * 50,
+                   math.sin(math.radians(270.0)) * 50),
+        axis_z_2d=(math.cos(math.radians(30.0)) * 50,
+                   math.sin(math.radians(30.0)) * 50),
+    )
+    derive_geometry(m)
+    # Pass bezel angles matching those 3 inner directions exactly.
+    bezels = [math.radians(150.0), math.radians(270.0), math.radians(30.0)]
+    score = _score_bezel_alignment(m, (100.0, 100.0), bezels)
+    assert score is not None
+    assert score < math.radians(1.0), (
+        f"Expected ~0 alignment score for exact match; got {score} rad "
+        f"({math.degrees(score):.2f}°)"
+    )
+
+
+def test_score_bezel_alignment_picks_lower_score_for_aligned_chirality():
+    """The headline use case: of two equally-phase-correct chirality
+    candidates, the one whose inner directions point ALONG bezels
+    scores lower than the one whose inner directions point BETWEEN
+    bezels (face diagonals)."""
+    # MIRROR chirality model: inner directions at 90°, 210°, 330° while
+    # bezels are at 30°, 150°, 270° → each inner direction is 60° off
+    # the nearest bezel.
+    mirror = GlobalCubeModel(
+        cube_center_screen=(100.0, 100.0),
+        axis_x_2d=(math.cos(math.radians(90.0)) * 50,
+                   math.sin(math.radians(90.0)) * 50),
+        axis_y_2d=(math.cos(math.radians(210.0)) * 50,
+                   math.sin(math.radians(210.0)) * 50),
+        axis_z_2d=(math.cos(math.radians(330.0)) * 50,
+                   math.sin(math.radians(330.0)) * 50),
+    )
+    derive_geometry(mirror)
+
+    # GOOD chirality model: inner directions at 30°, 150°, 270° matching
+    # bezels exactly.
+    good = GlobalCubeModel(
+        cube_center_screen=(100.0, 100.0),
+        axis_x_2d=(math.cos(math.radians(150.0)) * 50,
+                   math.sin(math.radians(150.0)) * 50),
+        axis_y_2d=(math.cos(math.radians(270.0)) * 50,
+                   math.sin(math.radians(270.0)) * 50),
+        axis_z_2d=(math.cos(math.radians(30.0)) * 50,
+                   math.sin(math.radians(30.0)) * 50),
+    )
+    derive_geometry(good)
+
+    bezels = [math.radians(30.0), math.radians(150.0), math.radians(270.0)]
+    s_good = _score_bezel_alignment(good, (100.0, 100.0), bezels)
+    s_mirror = _score_bezel_alignment(mirror, (100.0, 100.0), bezels)
+    assert s_good is not None and s_mirror is not None
+    assert s_good < s_mirror, (
+        f"GOOD chirality (inner||bezels) should score lower than MIRROR "
+        f"(inner at face diagonals); got good={math.degrees(s_good):.2f}° "
+        f"mirror={math.degrees(s_mirror):.2f}°"
+    )
+    # MIRROR should be ~60° off (face-diagonal spacing on a hexagon)
+    assert math.radians(50.0) < s_mirror < math.radians(70.0)
+
+
 # ---------------- fit_cube_template_to_anchors integration ----------------
 
 
@@ -147,7 +236,9 @@ def test_tiebreaker_records_debug_when_image_provided():
     """When image_rgb is provided and there are tied perms, the debug
     dict must record:
       - procrustes_n_tied: how many perms tied at the floor
-      - procrustes_tiebreaker: 'phase_separation' (not 'iteration_order')
+      - procrustes_tiebreaker: 'phase_separation' or
+        'phase_separation+bezel_alignment' depending on bezel
+        availability and intermediate-stage outcomes
       - procrustes_tiebreaker_chosen_separation: float
       - procrustes_tiebreaker_all_separations: list of all tied seps
 
@@ -169,7 +260,10 @@ def test_tiebreaker_records_debug_when_image_provided():
         "Clean iso hexagon must produce multiple tied perms via the "
         "cube's 3-fold body-diagonal symmetry"
     )
-    assert debug.get("procrustes_tiebreaker") == "phase_separation"
+    assert debug.get("procrustes_tiebreaker") in (
+        "phase_separation",
+        "phase_separation+bezel_alignment",
+    )
     assert isinstance(
         debug.get("procrustes_tiebreaker_chosen_separation"), float,
     )

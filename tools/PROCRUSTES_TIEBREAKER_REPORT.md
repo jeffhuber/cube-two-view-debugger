@@ -84,58 +84,77 @@ and 45_B that happens to land on a GOOD chirality perm. On 43_A
 `corr_false` it happens to land on a MIRROR chirality perm. On most
 rows it lands on the same perm production already chose.
 
-## What's needed next
+## V2: tried bezel-alignment as the second signal — did not help
 
-A SECOND signal to distinguish chirality among the 6 negative-sep
-perms. The function already receives `bezel_angles_rad` — the 3 angles
-where interior-bezel detection found a dark cube-edge line from
-`cube_center`. The GOOD chirality's 3 inner template vertices
-(h_x, h_y, h_z) project to directions that should align with these 3
-bezel angles. The MIRROR chirality projects them to angles between
-the bezels (along face diagonals, not edges).
+Added `_score_bezel_alignment` (mean angular distance from each inner
+template direction to the nearest detected bezel angle) and made the
+tiebreaker two-stage: stage 1 filters to negative-phase-separation
+(phase-correct) set, stage 2 picks min bezel alignment within them.
 
-Concrete next-step proposal:
+**Empirical result: V2 numbers are bit-identical to V1 on all 12
+rows.** Per-row probe reveals the cause: on every row, all 6 negative-
+sep perms have IDENTICAL alignment scores (~37° to ~47° depending on
+the row, but flat across the 6 perms). The GOOD and MIRROR chirality
+sets don't separate at all under this signal on real images.
 
-1. Among the residual-tied perms, filter to negative-phase-separation
-   set (preserves Mode A win).
-2. Score each remaining perm by **mean angular distance from each of
-   its 3 inner directions to the nearest detected bezel angle**.
-3. Pick the perm with the smallest mean angular distance.
+Why: on canonical iso geometry the 6 hexagon vertices sit at exact
+60° spacing and the 3 detected bezels point at the GOOD chirality's
+inner-vertex angles. GOOD would score ~0°, MIRROR ~60°. But on the
+oracle corpus the hexagons are NOT regular — perspective + yaw +
+non-zero camera roll distort vertex spacing enough that the affine
+fit's inner directions sit between bezels in BOTH chirality sets.
+Both score ~40° from the nearest bezel.
 
-This combines the phase-separation tiebreaker (this PR) with bezel-
-alignment as a chirality disambiguator. Bezel angles are already a
-required input to `fit_cube_template_to_anchors`, so no plumbing
-change is needed.
+Per-row evidence (each row's `procrustes_tiebreaker_all_alignments_deg`
+field is a list of 6 identical values):
+
+| Row | Alignment scores (6 perms, all GOOD-sign) |
+|---|---|
+| 20_A | [39.92, 39.92, 39.92, 39.92, 39.92, 39.92] |
+| 40_A | [46.68, 46.68, 46.68, 46.68, 46.68, 46.68] |
+| 45_B | [38.59, 38.59, 38.59, 38.59, 38.59, 38.59] |
+
+(12/12 rows showed this flat-across-6 pattern.)
+
+So bezel alignment is the wrong second signal for THIS corpus. Two
+alternative directions for the chirality-disambiguator slot, neither
+of which this PR tries:
+
+1. **Per-corner darkness (richer than phase-separation mean)**:
+   `_resolve_near_far_phase` already computes per-corner darkness for
+   all 6 hexagon vertices. The "true near" indices are the 3 LIGHTEST.
+   Match those against each perm's claimed-near indices; pick the
+   perm whose top-3-darkness pattern best aligns with its h_x/y/z
+   labeling.
+2. **Push disambiguation downstream**: keep top-K Procrustes
+   candidates, run PnP on each, score the final models (sticker color
+   coverage, axis-length sanity, junction strength). 6 PnP calls is
+   cheap. Likely the most robust path.
 
 ## Shipping recommendation
 
-**Land as DRAFT for review and as a stepping stone, NOT for merge.**
+**DRAFT, not for merge.** V2's bezel-alignment stage runs and is
+correctly wired (debug fields confirm) but produces zero behavior
+change vs V1 on the 12-row corpus, so the combined V1+V2 net is the
+same wash as V1 alone: 1 fully fixed (40_A), 1 partial (45_B), 1
+regressed (43_A corr_false), 9 no-op.
 
-Net effect on the 12-row corpus is roughly a wash (1 fix + 1 partial -
-1 regression). The implementation works as designed; the design itself
-is one bit short.
-
-If merged as-is, `corr_false`-style downstream consumers that happened
-to land on GOOD chirality by lex order would regress. The pre-fix
-behavior is at least stable (deterministic on the same input); this
-intermediate version is also deterministic but with a different and
-not-uniformly-better distribution.
-
-Best path forward: keep this PR open, add the bezel-alignment second
-signal in a follow-up commit, re-measure, then either land both
-together or revisit.
+The implementation is honest and instrumented. Keeping the PR open
+preserves the building blocks; the next iteration should swap stage 2
+to per-corner darkness or move to top-K downstream re-ranking.
 
 ## Test plan
 
-- [x] 7 new unit tests in `tests/test_procrustes_chirality_tiebreaker.py`:
-  - `_score_phase_separation` returns None without `derive_geometry`
-  - `_score_phase_separation` polarity (negative on near-lighter image,
-    positive on near-darker)
-  - No-image path preserves pre-tiebreaker behavior + records
-    `procrustes_tiebreaker = "iteration_order"`
-  - Image path records `procrustes_tiebreaker = "phase_separation"`
-    + tied perm count + chosen sep + all seps
-  - Invalid hexagon (<6 vertices) still returns None
-- [x] `pytest tests/` — 929/929 pass (was 922; +7 new)
+- [x] 10 new unit tests in `tests/test_procrustes_chirality_tiebreaker.py`:
+  - `_score_phase_separation`: None without `derive_geometry`,
+    polarity (negative on near-lighter, positive on near-darker)
+  - `_score_bezel_alignment`: None for <3 bezels, zero on exact-match,
+    GOOD<MIRROR on a synthetic GOOD-vs-MIRROR comparison
+  - `fit_cube_template_to_anchors`: no-image path preserves
+    pre-tiebreaker behavior + records iteration_order; image path
+    records the two-stage tiebreaker name + n_tied + chosen sep +
+    all seps; invalid hexagon (<6 vertices) returns None
+- [x] `pytest tests/` — 932/932 pass (was 922; +10 new)
 - [x] 12-row corpus measurement reproduced via `measure_axis_correctness.py`
-  from PR #268
+  from PR #268 (V1 and V2 both run; numbers bit-identical, per-row
+  probe shows why)

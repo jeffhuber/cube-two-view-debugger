@@ -675,13 +675,27 @@ def fit_cube_template_to_anchors(
         "procrustes_tiebreaker": "iteration_order",
     }
     if image_rgb is not None and len(tied) > 1:
-        # Phase-separation tiebreaker. For each tied perm, build the
-        # bare-affine model and score it via mean-near minus mean-far
-        # darkness (the same signal `_resolve_near_far_phase` uses post-
-        # PnP). NEGATIVE separation = GOOD; pick the smallest (most
-        # negative) so the GOOD chirality wins. Defensive: if any scoring
-        # call returns None (missing visible_corners), fall back to
-        # iteration order. Cost: ~6 image sampling calls, each <1 ms.
+        # TWO-STAGE TIEBREAKER for the cube's full 6-fold residual-tied
+        # symmetry equivalence class:
+        #
+        # Stage 1 — phase-separation: `mean_near - mean_far` image-
+        #   darkness signal. NEGATIVE = correct near/far phase. Filters
+        #   the 12 tied perms down to the 6 with phase-correct labeling
+        #   (matching what `_resolve_near_far_phase` does post-PnP,
+        #   but here pre-PnP). One bit of disambiguation: near/far phase.
+        #
+        # Stage 2 — bezel alignment: of the 6 phase-correct perms, 3 are
+        #   GOOD chirality (inner directions point along detected bezel
+        #   angles) and 3 are MIRROR chirality (inner directions point
+        #   between bezels along face diagonals). Score each by mean
+        #   angular distance from each inner direction (h_x/y/z relative
+        #   to cube_center) to its nearest detected bezel angle; pick
+        #   the smallest. Second bit: chirality.
+        #
+        # If bezel angles are unavailable (<3 detected) we fall back to
+        # the stage-1 pick (phase-only tiebreak), which is the v1
+        # behavior and is no worse than pre-tiebreaker. If darkness
+        # scoring fails on any perm we fall back to iteration order.
         scored: List[Tuple[float, Dict[str, Any]]] = []
         any_failed = False
         for rec in tied:
@@ -692,15 +706,49 @@ def fit_cube_template_to_anchors(
                 break
             scored.append((sep, rec))
         if not any_failed and scored:
+            # Stage 1: filter to negative-sep (phase-correct) set.
             scored.sort(key=lambda x: x[0])
-            chosen_record = scored[0][1]
+            negative = [(s, r) for s, r in scored if s < 0]
+            if not negative:
+                # All perms have non-negative separation — image evidence
+                # says we're already in the phase-swapped basin. Pick
+                # smallest-magnitude (least-confidently-swapped) to
+                # match the v1 fallback behavior.
+                negative = scored[:1]
+            # Default stage-1 winner (most-negative sep).
+            chosen_record = negative[0][1]
             tiebreaker_debug["procrustes_tiebreaker"] = "phase_separation"
             tiebreaker_debug["procrustes_tiebreaker_chosen_separation"] = round(
-                scored[0][0], 2,
+                negative[0][0], 2,
             )
             tiebreaker_debug["procrustes_tiebreaker_all_separations"] = [
                 round(s, 2) for s, _ in scored
             ]
+            # Stage 2: among the stage-1 winners, pick the one with the
+            # smallest mean-angle-to-nearest-bezel for its 3 inner
+            # template directions. Requires ≥3 detected bezels.
+            if len(bezel_angles_rad) >= 3 and len(negative) > 1:
+                aligned: List[Tuple[float, Dict[str, Any]]] = []
+                for s, rec in negative:
+                    candidate_model = _build_model_for_record(rec)
+                    align = _score_bezel_alignment(
+                        candidate_model, cube_center, bezel_angles_rad,
+                    )
+                    if align is None:
+                        continue
+                    aligned.append((align, rec))
+                if aligned:
+                    aligned.sort(key=lambda x: x[0])
+                    chosen_record = aligned[0][1]
+                    tiebreaker_debug["procrustes_tiebreaker"] = (
+                        "phase_separation+bezel_alignment"
+                    )
+                    tiebreaker_debug["procrustes_tiebreaker_chosen_alignment_deg"] = round(
+                        math.degrees(aligned[0][0]), 2,
+                    )
+                    tiebreaker_debug["procrustes_tiebreaker_all_alignments_deg"] = [
+                        round(math.degrees(a), 2) for a, _ in aligned
+                    ]
 
     best_model = _build_model_for_record(chosen_record)
     best_residual = chosen_record["residual"]
@@ -1020,6 +1068,55 @@ def _score_phase_separation(
         for p in far_positions
     ]
     return sum(near_darkness) / 3.0 - sum(far_darkness) / 3.0
+
+
+def _score_bezel_alignment(
+    model: GlobalCubeModel,
+    cube_center: Point,
+    bezel_angles_rad: Sequence[float],
+) -> Optional[float]:
+    """Mean angular distance (radians) from each inner template direction
+    (h_x, h_y, h_z relative to `cube_center`) to its nearest detected
+    bezel angle.
+
+    Used as a SECONDARY tiebreaker for chirality after
+    `_score_phase_separation` filters to the phase-correct (negative-
+    sep) set. The cube's 3-fold body-diagonal × 2-chirality structure
+    means the phase-correct set still contains both the GOOD chirality
+    and its MIRROR. In the GOOD chirality the 3 inner vertices project
+    along the 3 detected cube-edge bezels; in MIRROR they project along
+    face diagonals (between bezels). The bezel detector — which fires
+    on dark cube-edge pixels and is already in scope at this layer —
+    provides the second bit needed to break the chirality ambiguity.
+
+    Returns None if `bezel_angles_rad` has fewer than 3 angles or the
+    model lacks visible_corners (caller should fall back to phase-only
+    tiebreak in either case).
+    """
+    if len(bezel_angles_rad) < 3:
+        return None
+    cx, cy = cube_center
+    inner_keys = ("h_x", "h_y", "h_z")
+    inner_positions = [model.visible_corners.get(k) for k in inner_keys]
+    if any(p is None for p in inner_positions):
+        return None
+    total = 0.0
+    two_pi = 2.0 * math.pi
+    for pos in inner_positions:
+        ang = math.atan2(pos[1] - cy, pos[0] - cx)  # type: ignore[index]
+        best = math.pi
+        for b in bezel_angles_rad[:3]:
+            # Normalize (ang - b) into [-π, π] BEFORE taking abs, so
+            # the wrap is correct regardless of how the inputs are
+            # signed or wound (atan2 returns [-π, π]; bezel_angles may
+            # be in [0, 2π] or [-π, π]). Naive `min(d, 2π - d)` after
+            # a bare abs goes negative when |ang - b| > 2π.
+            diff = (ang - b + math.pi) % two_pi - math.pi
+            d = abs(diff)
+            if d < best:
+                best = d
+        total += best
+    return total / 3.0
 
 
 def _resolve_near_far_phase(

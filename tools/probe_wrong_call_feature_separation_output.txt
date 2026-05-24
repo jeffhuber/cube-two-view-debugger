@@ -1,0 +1,49 @@
+LEGACY-CATEGORY DISCLAIMER (PR #251): the RIGHT-call / WRONG-call populations below are derived from the legacy `gcm_axis_ground_truth.json` `near_*` semantics, which PR #251 showed actually map to FAR corners under the canonical full-corner convention (`tools/corner_conventions.py`). The matrix-feature distributions themselves are real recognizer outputs, but their mapping to right-call/wrong-call is PROVISIONAL until the categories are regenerated from `tests/fixtures/full_corner_ground_truth.json`. Do not drive production fixes from this output without revalidation.
+
+Right-call rows (detector decided, row is GOOD/MARGINAL): 91
+Wrong-call rows (detector decided, row is CHIRALITY_*):   19
+
+Feature                                         RIGHT median   WRONG median  separation hint
+----------------------------------------------------------------------------------------------------
+fit_residual_rms_px                                    68.27          61.51  -0.10× ratio, IQR-overlap
+pnp_rms_px                                             70.27           72.4  +0.03× ratio, IQR-overlap
+hexagon_centroid_vs_bezel_vertex_offset_px              41.8           53.0  +0.27× ratio, IQR-overlap
+bezel_vs_fit_cube_center_offset_px                      11.3           28.3  +1.50× ratio, IQR-overlap
+junction_score_at_ensemble                             216.4          124.2  -0.43× ratio, IQR-DISJOINT
+ensemble_shift_px                                       30.1           28.4  -0.06× ratio, IQR-overlap
+ensemble_n_candidates                                    3.0            3.0  +0.00× ratio, IQR-overlap
+phase_darkness_separation                               17.3           13.6  -0.21× ratio, IQR-overlap
+
+FULL distributions for the features with separation hints:
+
+  fit_residual_rms_px:
+    RIGHT (n=91): median 68.27, IQR [30.63, 96.72], min/max 22.07/143.87
+    WRONG (n=19): median 61.51, IQR [35.58, 98.03], min/max 25.39/153.08
+
+  pnp_rms_px:
+    RIGHT (n=91): median 70.27, IQR [30.63, 107.33], min/max 22.07/152.42
+    WRONG (n=19): median 72.4, IQR [35.58, 106.79], min/max 25.39/156.75
+
+  hexagon_centroid_vs_bezel_vertex_offset_px:
+    RIGHT (n=91): median 41.8, IQR [18.9, 88.85], min/max 1.8/226.1
+    WRONG (n=19): median 53.0, IQR [15.85, 93.4], min/max 3.4/179.1
+
+  bezel_vs_fit_cube_center_offset_px:
+    RIGHT (n=91): median 11.3, IQR [0.0, 61.15], min/max 0.0/348.7
+    WRONG (n=19): median 28.3, IQR [0.0, 52.25], min/max 0.0/256.1
+
+  junction_score_at_ensemble:
+    RIGHT (n=91): median 216.4, IQR [195.75, 230.75], min/max 38.4/248.8
+    WRONG (n=19): median 124.2, IQR [81.1, 178.75], min/max 15.5/241.1
+
+  ensemble_shift_px:
+    RIGHT (n=91): median 30.1, IQR [14.8, 62.85], min/max 0.6/236.3
+    WRONG (n=19): median 28.4, IQR [17.3, 47.7], min/max 4.4/197.3
+
+  ensemble_n_candidates:
+    RIGHT (n=91): median 3.0, IQR [3.0, 3.0], min/max 3.0/3.0
+    WRONG (n=19): median 3.0, IQR [3.0, 3.0], min/max 3.0/3.0
+
+  phase_darkness_separation:
+    RIGHT (n=91): median 17.3, IQR [-35.0, 37.45], min/max -64.9/94.2
+    WRONG (n=19): median 13.6, IQR [-14.55, 17.5], min/max -49.3/40.9

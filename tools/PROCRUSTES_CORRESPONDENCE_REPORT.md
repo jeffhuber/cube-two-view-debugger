@@ -2,7 +2,7 @@
 
 This diagnostic reruns the 720-way detected-hexagon-to-template correspondence search and scores every permutation against canonical full-corner truth. It asks whether canonical-good assignments are available but ranked below the minimum-residual assignment.
 
-Canonical categories are triplet-angle categories, not exact vertex/corner point-error categories. This keeps the diagnostic focused on correspondence assignment before PnP, phase correction, and vertex refinement.
+Canonical categories are triplet-angle categories, not exact vertex/corner point-error categories. This keeps the diagnostic focused on correspondence assignment before PnP, phase correction, and vertex refinement. The table also includes the one-edge total axis misfit, matching the axis-correctness diagnostic's sum of three matched axis-angle errors.
 
 ## Source
 
@@ -22,20 +22,20 @@ Canonical categories are triplet-angle categories, not exact vertex/corner point
 
 ## Per-row summary
 
-| Row | Selected category | Selected RMS px | Canonical rank | Canonical RMS gap px | Canonical aligned mean deg | Diagnosis |
-|---|---|---:|---:|---:|---:|---|
-| `20_A` | GOOD | 60.843 | 1 | 0.0 | 3.8 | residual_selects_canonical |
-| `20_B` | GOOD | 64.433 | 1 | 0.0 | 5.21 | residual_selects_canonical |
-| `38_A` | GOOD | 58.366 | 1 | 0.0 | 4.41 | residual_selects_canonical |
-| `38_B` | GOOD | 45.359 | 1 | 0.0 | 3.29 | residual_selects_canonical |
-| `40_A` | GOOD | 35.72 | 1 | 0.0 | 7.9 | residual_selects_canonical |
-| `40_B` | GOOD | 40.353 | 1 | 0.0 | 6.52 | residual_selects_canonical |
-| `41_A` | GOOD | 31.973 | 1 | 0.0 | 7.3 | residual_selects_canonical |
-| `41_B` | GOOD | 31.468 | 1 | 0.0 | 3.98 | residual_selects_canonical |
-| `43_A` | GOOD | 56.815 | 1 | 0.0 | 3.86 | residual_selects_canonical |
-| `43_B` | GOOD | 56.591 | 1 | 0.0 | 5.52 | residual_selects_canonical |
-| `45_A` | GOOD | 57.925 | 1 | 0.0 | 6.97 | residual_selects_canonical |
-| `45_B` | GOOD | 65.967 | 1 | 0.0 | 8.77 | residual_selects_canonical |
+| Row | Selected category | Selected RMS px | Selected axis misfit deg | Best-axis rank | Best-axis misfit deg | Best-axis RMS gap px | Diagnosis |
+|---|---|---:|---:|---:|---:|---:|---|
+| `20_A` | GOOD | 60.843 | 8.4 | 1 | 8.4 | 0.0 | residual_selects_canonical |
+| `20_B` | GOOD | 64.433 | 10.5 | 1 | 10.5 | 0.0 | residual_selects_canonical |
+| `38_A` | GOOD | 58.366 | 11.19 | 1 | 11.19 | 0.0 | residual_selects_canonical |
+| `38_B` | GOOD | 45.359 | 8.34 | 1 | 8.34 | 0.0 | residual_selects_canonical |
+| `40_A` | GOOD | 35.72 | 14.43 | 73 | 11.7 | 226.993 | residual_selects_canonical |
+| `40_B` | GOOD | 40.353 | 14.13 | 61 | 7.44 | 222.576 | residual_selects_canonical |
+| `41_A` | GOOD | 31.973 | 12.93 | 1 | 12.93 | 0.0 | residual_selects_canonical |
+| `41_B` | GOOD | 31.468 | 7.05 | 1 | 7.05 | 0.0 | residual_selects_canonical |
+| `43_A` | GOOD | 56.815 | 9.33 | 1 | 9.33 | 0.0 | residual_selects_canonical |
+| `43_B` | GOOD | 56.591 | 13.44 | 61 | 10.53 | 185.261 | residual_selects_canonical |
+| `45_A` | GOOD | 57.925 | 13.5 | 73 | 11.64 | 189.53 | residual_selects_canonical |
+| `45_B` | GOOD | 65.967 | 18.81 | 73 | 7.83 | 195.812 | residual_selects_canonical |
 
 ## Interpretation
 

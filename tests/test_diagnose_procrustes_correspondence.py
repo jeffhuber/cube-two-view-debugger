@@ -53,8 +53,10 @@ def test_diagnose_from_hexagon_ranks_perfect_canonical_assignment_first():
     assert summary["n_scored_permutations"] == 720
     assert summary["diagnosis"] == "residual_selects_canonical"
     assert summary["selected_by_residual"]["category"] == "GOOD"
+    assert summary["selected_by_residual"]["one_edge_total_axis_misfit_deg"] < 2.0
     assert summary["selected_by_residual"]["residual_rank"] == 1
     assert summary["best_canonical_by_residual"]["residual_rank"] == 1
+    assert summary["best_axis_by_misfit"]["residual_rank"] == 1
     assert len(record["permutations"]) == 720
 
 
@@ -67,6 +69,7 @@ def test_summarize_row_identifies_canonical_available_but_outranked():
             "residual_rms_px": 1.0,
             "residual_px2": 1.0,
             "category": "PHASE_SWAPPED",
+            "one_edge_total_axis_misfit_deg": 174.0,
             "aligned_mean_angle_deg": 58.0,
             "swapped_mean_angle_deg": 2.0,
             "one_edge_mean_angle_deg": 59.0,
@@ -80,6 +83,7 @@ def test_summarize_row_identifies_canonical_available_but_outranked():
             "residual_rms_px": 1.2,
             "residual_px2": 1.44,
             "category": "GOOD",
+            "one_edge_total_axis_misfit_deg": 9.0,
             "aligned_mean_angle_deg": 3.0,
             "swapped_mean_angle_deg": 55.0,
             "one_edge_mean_angle_deg": 2.0,
@@ -93,7 +97,9 @@ def test_summarize_row_identifies_canonical_available_but_outranked():
     assert summary["diagnosis"] == "canonical_available_but_outranked"
     assert summary["selected_by_residual"]["category"] == "PHASE_SWAPPED"
     assert summary["best_canonical_by_residual"]["category"] == "GOOD"
+    assert summary["best_axis_by_misfit"]["category"] == "GOOD"
     assert summary["canonical_residual_rms_gap_px"] == 0.2
+    assert summary["best_axis_residual_rms_gap_px"] == 0.2
 
 
 def test_render_report_includes_diagnosis_table():
@@ -123,11 +129,17 @@ def test_render_report_includes_diagnosis_table():
                     "selected_by_residual": {
                         "category": "PHASE_SWAPPED",
                         "residual_rms_px": 1.0,
+                        "one_edge_total_axis_misfit_deg": 174.0,
                     },
                     "best_canonical_by_residual": {
                         "residual_rank": 2,
                         "aligned_mean_angle_deg": 3.0,
                     },
+                    "best_axis_by_misfit": {
+                        "residual_rank": 2,
+                        "one_edge_total_axis_misfit_deg": 9.0,
+                    },
+                    "best_axis_residual_rms_gap_px": 0.2,
                 },
             }
         ],

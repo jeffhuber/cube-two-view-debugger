@@ -153,12 +153,17 @@ def _permutation_records(
         )
         score = score_case(key, truth_row, candidate)
         aligned_mean = _aligned_mean(score)
+        one_edge_total = round(
+            float(score["one_edge"]["mean_angle_error_deg"]) * 3.0,
+            2,
+        )
         records.append({
             "perm": list(perm),
             "status": "scored",
             "residual_px2": round(residual_px2, 4),
             "residual_rms_px": round(math.sqrt(residual_px2), 3),
             "category": score["category"],
+            "one_edge_total_axis_misfit_deg": one_edge_total,
             "aligned_mean_angle_deg": round(aligned_mean, 2),
             "swapped_mean_angle_deg": score["swapped_mean_angle_error_deg"],
             "one_edge_mean_angle_deg": score["one_edge"]["mean_angle_error_deg"],
@@ -203,6 +208,16 @@ def _best_by_canonical_error(records: Sequence[Dict[str, Any]]) -> Optional[Dict
     ))
 
 
+def _best_by_axis_misfit(records: Sequence[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    candidates = [r for r in records if r.get("status") == "scored"]
+    if not candidates:
+        return None
+    return min(candidates, key=lambda r: (
+        float(r["one_edge_total_axis_misfit_deg"]),
+        float(r["residual_px2"]),
+    ))
+
+
 def _compact_record(record: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
     if record is None:
         return None
@@ -211,6 +226,7 @@ def _compact_record(record: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]
         "residual_rank",
         "residual_rms_px",
         "category",
+        "one_edge_total_axis_misfit_deg",
         "aligned_mean_angle_deg",
         "swapped_mean_angle_deg",
         "one_edge_mean_angle_deg",
@@ -234,6 +250,7 @@ def summarize_row(records: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
         lambda r: r.get("category") == "PHASE_SWAPPED",
     )
     best_canonical_by_error = _best_by_canonical_error(scored)
+    best_axis_by_misfit = _best_by_axis_misfit(scored)
 
     if _is_canonical_usable(selected):
         diagnosis = "residual_selects_canonical"
@@ -249,6 +266,12 @@ def summarize_row(records: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
             float(best_canonical_by_residual["residual_rms_px"]) - selected_rms,
             3,
         )
+    axis_gap = None
+    if best_axis_by_misfit is not None:
+        axis_gap = round(
+            float(best_axis_by_misfit["residual_rms_px"]) - selected_rms,
+            3,
+        )
 
     return {
         "status": "scored",
@@ -258,7 +281,9 @@ def summarize_row(records: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
         "best_canonical_by_residual": _compact_record(best_canonical_by_residual),
         "best_phase_swapped_by_residual": _compact_record(best_swapped_by_residual),
         "best_canonical_by_error": _compact_record(best_canonical_by_error),
+        "best_axis_by_misfit": _compact_record(best_axis_by_misfit),
         "canonical_residual_rms_gap_px": canonical_gap,
+        "best_axis_residual_rms_gap_px": axis_gap,
         "category_counts": dict(Counter(str(r["category"]) for r in scored)),
         "top_by_residual": [_compact_record(r) for r in scored[:10]],
     }
@@ -413,7 +438,9 @@ def render_report(payload: Dict[str, Any]) -> str:
         "Canonical categories are triplet-angle categories, not exact "
         "vertex/corner point-error categories. This keeps the diagnostic "
         "focused on correspondence assignment before PnP, phase correction, "
-        "and vertex refinement.",
+        "and vertex refinement. The table also includes the one-edge total "
+        "axis misfit, matching the axis-correctness diagnostic's sum of "
+        "three matched axis-angle errors.",
         "",
         "## Source",
         "",
@@ -434,26 +461,27 @@ def render_report(payload: Dict[str, Any]) -> str:
         "",
         "## Per-row summary",
         "",
-        "| Row | Selected category | Selected RMS px | Canonical rank | Canonical RMS gap px | Canonical aligned mean deg | Diagnosis |",
-        "|---|---|---:|---:|---:|---:|---|",
+        "| Row | Selected category | Selected RMS px | Selected axis misfit deg | Best-axis rank | Best-axis misfit deg | Best-axis RMS gap px | Diagnosis |",
+        "|---|---|---:|---:|---:|---:|---:|---|",
     ]
     for row in payload.get("per_row", []):
         if row.get("status") != "traced":
             lines.append(
                 f"| `{row.get('key')}` | {row.get('status')} "
-                f"| - | - | - | - | {row.get('error', '')[:40]} |"
+                f"| - | - | - | - | - | {row.get('error', '')[:40]} |"
             )
             continue
         row_summary = row.get("summary", {})
         selected = row_summary.get("selected_by_residual") or {}
-        canonical = row_summary.get("best_canonical_by_residual") or {}
+        best_axis = row_summary.get("best_axis_by_misfit") or {}
         lines.append(
             f"| `{row.get('key')}` "
             f"| {selected.get('category', '-')} "
             f"| {selected.get('residual_rms_px', '-')} "
-            f"| {canonical.get('residual_rank', '-')} "
-            f"| {row_summary.get('canonical_residual_rms_gap_px', '-')} "
-            f"| {canonical.get('aligned_mean_angle_deg', '-')} "
+            f"| {selected.get('one_edge_total_axis_misfit_deg', '-')} "
+            f"| {best_axis.get('residual_rank', '-')} "
+            f"| {best_axis.get('one_edge_total_axis_misfit_deg', '-')} "
+            f"| {row_summary.get('best_axis_residual_rms_gap_px', '-')} "
             f"| {row_summary.get('diagnosis', '-')} |"
         )
 

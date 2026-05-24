@@ -141,7 +141,11 @@ DEFAULT_MAX_IMAGE_DIM = 1600
 # --- Pre-correction reconstruction ---------------------------------------
 
 
-def reconstruct_pre_correction_model(post_model: GlobalCubeModel) -> GlobalCubeModel:
+def reconstruct_pre_correction_model(
+    post_model: GlobalCubeModel,
+    *,
+    assert_flip_was_applied: bool = True,
+) -> GlobalCubeModel:
     """Mathematically reconstruct the pre-correction model from the
     post-correction model, assuming a 60° phase flip was applied.
 
@@ -156,9 +160,35 @@ def reconstruct_pre_correction_model(post_model: GlobalCubeModel) -> GlobalCubeM
         old_ay = ( new_ax - new_ay + new_az) / 2
         old_az = (-new_ax + new_ay + new_az) / 2
 
-    Only call this when `phase_check == 'corrected_60deg_flip'`.
-    Otherwise pre_model == post_model.
+    PRECONDITION (caller-asserted): only call this when the input is
+    actually a post-flip model — `phase_check == 'corrected_60deg_flip'`
+    in the debug. If no flip was applied, the post model IS the pre
+    model and calling this returns geometric nonsense (the inverse
+    transform produces an unrelated axis triple, not the original).
+
+    The `assert_flip_was_applied` kwarg encodes that contract: when True
+    (default) the caller is asserting "I have already checked that a
+    flip was applied." Passing False is only valid for round-trip tests
+    that construct a flipped state and immediately invert it. (Greptile
+    P2 + Codex round-2 on PR #255: add a guard against accidental
+    non-flip use.)
     """
+    if assert_flip_was_applied:
+        # If the post_model came from `fit_global_cube_model`, its
+        # debug dict has the phase decision. Use it as a runtime
+        # check — fail loudly on accidental non-flip use, which would
+        # produce geometric nonsense silently.
+        phase_check = (post_model.debug or {}).get("phase_check")
+        if phase_check is not None and phase_check != "corrected_60deg_flip":
+            raise ValueError(
+                f"reconstruct_pre_correction_model called on a model "
+                f"whose phase_check={phase_check!r} indicates no flip "
+                f"was applied. The post model IS the pre model in that "
+                f"case; inverting the flip math would produce an "
+                f"unrelated axis triple. Caller must check phase_check "
+                f"before invoking, or pass assert_flip_was_applied=False "
+                f"for synthetic round-trip tests."
+            )
     nx = post_model.axis_x_2d
     ny = post_model.axis_y_2d
     nz = post_model.axis_z_2d
@@ -244,17 +274,36 @@ def trace_one_row(
 ) -> Dict[str, Any]:
     """Run the pipeline on one image and trace its phase-parity behavior.
 
-    Returns a dict with:
-      - key, side
-      - status: 'traced' | 'error' | 'fit_failed'
-      - post_model: candidate dict (the production-pipeline output)
-      - pre_model:  candidate dict (reconstructed if a flip was applied)
-      - phase_check: from the global-model debug
-      - flip_applied: bool
-      - canonical_post_category: e.g. 'GOOD', 'PHASE_SWAPPED'
-      - canonical_pre_category:  ditto
-      - score_delta_class: 'flip_helped' | 'flip_hurt' | 'no_change' | 'no_flip'
-      - phase_debug: subset of relevant fields from model.debug
+    Returns a dict with these top-level fields (matching the committed
+    trace JSON's per-run record schema):
+
+      - key:                  str (e.g. '20_A')
+      - side:                 str ('A' or 'B')
+      - status:               'traced' | 'error' | 'fit_failed'
+      - error:                str (only when status != 'traced')
+      - traceback:            str (only when status == 'error')
+
+      When status == 'traced', additionally:
+
+      - post_canonical_category:        e.g. 'GOOD', 'PHASE_SWAPPED'
+      - phase_rewound_canonical_category: same enum (see module
+                                          docstring re phase_rewound
+                                          semantic caveat)
+      - phase_check:                    from the global-model debug
+                                        ('correct' | 'corrected_60deg_flip'
+                                         | 'ambiguous_no_correction' | ...)
+      - flip_applied:                   bool
+      - score_delta_class:              'no_flip' | 'flip_helped'
+                                        | 'flip_hurt' | 'flip_no_category_change'
+      - phase_debug:                    subset of the model.debug dict
+                                        (sep, line darkness, etc.)
+      - post_score_summary:             {vertex_error_px, one_edge_mean_ang_deg,
+                                         far_mean_ang_deg, swapped_mean_ang_deg}
+      - phase_rewound_score_summary:    same keys as post_score_summary
+
+    (Codex P2 round-3 on PR #255: docstring used to list post_model /
+    pre_model fields that don't match the actual JSON shape — updated
+    to match the committed schema exactly.)
     """
     from rembg import remove  # noqa: E402
 
@@ -351,10 +400,15 @@ def trace_one_row(
             score_delta_class = "flip_no_category_change"
         elif _is_better(post_cat, phase_rewound_cat):
             score_delta_class = "flip_helped"
-        elif _is_better(phase_rewound_cat, post_cat):
-            score_delta_class = "flip_hurt"
         else:
-            score_delta_class = "flip_lateral"
+            # Categories form a total order (`_CATEGORY_RANK` is a
+            # strict bijection over known categories, and unknown
+            # categories all share rank 99). So once we've established
+            # post != phase_rewound, exactly one of `_is_better(a, b)`
+            # and `_is_better(b, a)` returns True. The remaining
+            # branch (neither better) is unreachable — dropped a dead
+            # `flip_lateral` case after Codex P2 round-3 on PR #255.
+            score_delta_class = "flip_hurt"
 
         record.update({
             "post_canonical_category": post_cat,
@@ -739,7 +793,6 @@ def render_report(payload: Dict[str, Any]) -> str:
         "flip_no_category_change": "flip applied but category unchanged",
         "flip_helped": "flip moved category toward better",
         "flip_hurt": "flip moved category toward worse",
-        "flip_lateral": "flip applied; same rank but different categories",
     }
     for cls, n in sorted(
         summary.get("score_delta_class_modal_counts", {}).items(),
@@ -846,6 +899,9 @@ def render_report(payload: Dict[str, Any]) -> str:
     flip_hurt = summary.get("score_delta_class_modal_counts", {}).get(
         "flip_hurt", 0
     )
+    flip_no_category_change = summary.get(
+        "score_delta_class_modal_counts", {}
+    ).get("flip_no_category_change", 0)
     no_flip = summary.get("score_delta_class_modal_counts", {}).get(
         "no_flip", 0
     )
@@ -889,14 +945,18 @@ def render_report(payload: Dict[str, Any]) -> str:
         f"apply_phase_correction=False pipeline run. {stability_caveat}."
     )
     lines.append("")
-    if flip_helped or flip_hurt:
+    if flip_helped or flip_hurt or flip_no_category_change:
         lines.append(
             f"2. **Phase-correction's impact on canonical score (modal):** "
             f"helped {flip_helped} row(s), hurt {flip_hurt} row(s), "
+            f"no category change on {flip_no_category_change} row(s), "
             f"no flip applied on {no_flip} row(s). If `flip_hurt > "
             f"flip_helped`, the detector is on net actively creating "
             f"PHASE_SWAPPED outcomes that the initial correspondence "
-            f"got right. {stability_caveat}."
+            f"got right; `flip_no_category_change` rows are flips the "
+            f"detector applied that left the canonical category "
+            f"unchanged (neutral activity, but worth understanding). "
+            f"{stability_caveat}."
         )
         lines.append("")
     lines.append(
@@ -915,29 +975,31 @@ def render_report(payload: Dict[str, Any]) -> str:
     )
     lines.append("")
     lines.append(
-        "- **Rows where pre=PHASE_SWAPPED, post=PHASE_SWAPPED, "
+        "- **Rows where phase_rewound=PHASE_SWAPPED, post=PHASE_SWAPPED, "
         "phase_check=`correct` or `ambiguous_no_correction`**: "
         "the correspondence picked FAR and the detector did not catch "
-        "it. Fix surface: either (a) make correspondence pick ONE_EDGE "
-        "more reliably, or (b) strengthen the detector to catch this "
-        "subset. Look at `phase_darkness_separation` distribution for "
-        "this subset to scope (b)."
+        "it (subject to the phase_rewound caveat — the rewound state "
+        "is not strictly the pre-correction state). Fix surface: "
+        "either (a) make correspondence pick ONE_EDGE more reliably, "
+        "or (b) strengthen the detector to catch this subset. Look at "
+        "`phase_darkness_separation` distribution for this subset to "
+        "scope (b)."
     )
     lines.append(
-        "- **Rows where pre=PHASE_SWAPPED, post=GOOD/MARGINAL, "
-        "phase_check=`corrected_60deg_flip`**: the detector correctly "
-        "caught and corrected an upstream FAR pick. This is the "
-        "detector working as intended — preserve."
+        "- **Rows where phase_rewound=PHASE_SWAPPED, post=GOOD/MARGINAL, "
+        "phase_check=`corrected_60deg_flip`**: the detector caught and "
+        "corrected an upstream FAR pick (per the rewound-state proxy). "
+        "This is the detector working as intended — preserve."
     )
     lines.append(
-        "- **Rows where pre=GOOD/MARGINAL, post=PHASE_SWAPPED, "
+        "- **Rows where phase_rewound=GOOD/MARGINAL, post=PHASE_SWAPPED, "
         "phase_check=`corrected_60deg_flip`**: the detector flipped a "
-        "correct fit into a wrong one. This is the inverted-polarity "
-        "wrong-call mode from PR #250's diagnostic. Fix surface: gate "
-        "the detector's polarity rule on a meta-signal that predicts "
-        "when its assumption holds (PR #250 suggested "
-        "`junction_score_at_ensemble`, but its categorization was "
-        "provisional — re-evaluate under canonical truth here)."
+        "previously-correct fit into a wrong one. This is the "
+        "inverted-polarity wrong-call mode from PR #250's diagnostic. "
+        "Fix surface: gate the detector's polarity rule on a meta-"
+        "signal that predicts when its assumption holds (PR #250 "
+        "suggested `junction_score_at_ensemble`, but its categorization "
+        "was provisional — re-evaluate under canonical truth here)."
     )
     lines.append("")
     lines.append(

@@ -78,7 +78,7 @@ Each row contributes its MEDIAN `phase_darkness_separation` across runs. Grouped
 
 1. **Phase-rewound = PHASE_SWAPPED on 6/12 rows (modal).** After mathematically inverting any flip from the post-pipeline output, these rows still land in PHASE_SWAPPED. This is an approximate lower bound on "how many rows the upstream correspondence + vertex-refinement landed in the wrong parity" — but see the phase-rewound caveat above; the true upstream-correspondence error rate would require a clean apply_phase_correction=False pipeline run. (8/12 rows are post-category-stable across runs; 4 rows had run-to-run disagreement on the final outcome).
 
-2. **Phase-correction's impact on canonical score (modal):** helped 2 row(s), hurt 3 row(s), no flip applied on 7 row(s). If `flip_hurt > flip_helped`, the detector is on net actively creating PHASE_SWAPPED outcomes that the initial correspondence got right. (8/12 rows are post-category-stable across runs; 4 rows had run-to-run disagreement on the final outcome).
+2. **Phase-correction's impact on canonical score (modal):** helped 2 row(s), hurt 3 row(s), no category change on 0 row(s), no flip applied on 7 row(s). If `flip_hurt > flip_helped`, the detector is on net actively creating PHASE_SWAPPED outcomes that the initial correspondence got right; `flip_no_category_change` rows are flips the detector applied that left the canonical category unchanged (neutral activity, but worth understanding). (8/12 rows are post-category-stable across runs; 4 rows had run-to-run disagreement on the final outcome).
 
 3. **End-state PHASE_SWAPPED count (modal): 7/12.** Compare to phase-rewound count above — if they're similar, phase-correction isn't making net progress.
 
@@ -86,9 +86,9 @@ Each row contributes its MEDIAN `phase_darkness_separation` across runs. Grouped
 
 Based on the row-level evidence above, the fix surface is scoped per failure mode:
 
-- **Rows where pre=PHASE_SWAPPED, post=PHASE_SWAPPED, phase_check=`correct` or `ambiguous_no_correction`**: the correspondence picked FAR and the detector did not catch it. Fix surface: either (a) make correspondence pick ONE_EDGE more reliably, or (b) strengthen the detector to catch this subset. Look at `phase_darkness_separation` distribution for this subset to scope (b).
-- **Rows where pre=PHASE_SWAPPED, post=GOOD/MARGINAL, phase_check=`corrected_60deg_flip`**: the detector correctly caught and corrected an upstream FAR pick. This is the detector working as intended — preserve.
-- **Rows where pre=GOOD/MARGINAL, post=PHASE_SWAPPED, phase_check=`corrected_60deg_flip`**: the detector flipped a correct fit into a wrong one. This is the inverted-polarity wrong-call mode from PR #250's diagnostic. Fix surface: gate the detector's polarity rule on a meta-signal that predicts when its assumption holds (PR #250 suggested `junction_score_at_ensemble`, but its categorization was provisional — re-evaluate under canonical truth here).
+- **Rows where phase_rewound=PHASE_SWAPPED, post=PHASE_SWAPPED, phase_check=`correct` or `ambiguous_no_correction`**: the correspondence picked FAR and the detector did not catch it (subject to the phase_rewound caveat — the rewound state is not strictly the pre-correction state). Fix surface: either (a) make correspondence pick ONE_EDGE more reliably, or (b) strengthen the detector to catch this subset. Look at `phase_darkness_separation` distribution for this subset to scope (b).
+- **Rows where phase_rewound=PHASE_SWAPPED, post=GOOD/MARGINAL, phase_check=`corrected_60deg_flip`**: the detector caught and corrected an upstream FAR pick (per the rewound-state proxy). This is the detector working as intended — preserve.
+- **Rows where phase_rewound=GOOD/MARGINAL, post=PHASE_SWAPPED, phase_check=`corrected_60deg_flip`**: the detector flipped a previously-correct fit into a wrong one. This is the inverted-polarity wrong-call mode from PR #250's diagnostic. Fix surface: gate the detector's polarity rule on a meta-signal that predicts when its assumption holds (PR #250 suggested `junction_score_at_ensemble`, but its categorization was provisional — re-evaluate under canonical truth here).
 
 Candidate fix paths from Codex's #250 review (in priority order, with the color-anchor caveat: do not use sticker colors sampled from already-wrong geometry as hard truth):
 

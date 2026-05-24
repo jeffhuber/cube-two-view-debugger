@@ -8,11 +8,20 @@ verify the math.
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import pytest
 
-from tools.diagnose_pipeline_phase_parity import (
+# Add the repository root to sys.path BEFORE importing `tools.*` so this
+# test collects under the standard `pytest` entry point (not just the
+# PYTHONPATH=. invocation). Matches the pattern used by sibling test
+# modules. Codex P2 round-3 on PR #255.
+REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from tools.diagnose_pipeline_phase_parity import (  # noqa: E402
     _CATEGORY_RANK,
     _is_better,
     _set_id_from_key,
@@ -20,10 +29,8 @@ from tools.diagnose_pipeline_phase_parity import (
     reconstruct_pre_correction_model,
     render_report,
 )
-from tools.global_cube_model import GlobalCubeModel, derive_geometry
+from tools.global_cube_model import GlobalCubeModel, derive_geometry  # noqa: E402
 
-
-REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
 def _make_pre_model(

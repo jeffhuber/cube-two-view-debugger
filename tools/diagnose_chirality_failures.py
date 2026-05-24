@@ -706,14 +706,22 @@ def render_report(result: Dict[str, Any]) -> str:
                 )
                 lines.append("")
                 lines.append(
-                    f"**Actionable hypothesis for next fix PR:** gate "
-                    f"the polarity rule on `{f}`. The IQR-midpoint "
-                    f"threshold `{thr}` is the starting point; the "
-                    f"actual operating point should be calibrated on a "
-                    f"held-out split with the FP/FN trade-off above made "
-                    f"explicit. Likely the right approach is a soft "
+                    f"**Diagnostic hypothesis (revalidate after canonical "
+                    f"regeneration):** gating the polarity rule on `{f}` "
+                    f"is a candidate experiment to consider once these "
+                    f"categories are regenerated from "
+                    f"`tests/fixtures/full_corner_ground_truth.json` "
+                    f"under the canonical convention. The IQR-midpoint "
+                    f"threshold `{thr}` is a starting point; actual "
+                    f"operating-point selection should be calibrated on "
+                    f"a held-out split with the FP/FN trade-off above "
+                    f"made explicit. Likely the right shape is a soft "
                     f"confidence rather than a hard binary gate — i.e., "
-                    f"{gate_explanation}."
+                    f"{gate_explanation}. **Do NOT wire this as a "
+                    f"production fix based on the current (provisional) "
+                    f"categorization** — the right-call vs wrong-call "
+                    f"population labels here inherit the legacy "
+                    f"`near_*`-as-FAR mislabel from PR #251."
                 )
                 lines.append("")
         else:

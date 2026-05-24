@@ -81,7 +81,7 @@ Live compare of per-row feature distributions between two groups in `tests/fixtu
 - **16/19** WRONG-call rows would be gated to `ambiguous_no_correction` (benefit: those rows avoid the bad polarity decision).
 - **19/91** RIGHT-call rows would ALSO be gated (cost: those rows lose the correct polarity decision; some may flip back to `ambiguous` and remain correct anyway, others may regress).
 
-**Actionable hypothesis for next fix PR:** gate the polarity rule on `junction_score_at_ensemble`. The IQR-midpoint threshold `187.2` is the starting point; the actual operating point should be calibrated on a held-out split with the FP/FN trade-off above made explicit. Likely the right approach is a soft confidence rather than a hard binary gate — i.e., treat low-feature rows (the WRONG-call territory) as ambiguous.
+**Diagnostic hypothesis (revalidate after canonical regeneration):** gating the polarity rule on `junction_score_at_ensemble` is a candidate experiment to consider once these categories are regenerated from `tests/fixtures/full_corner_ground_truth.json` under the canonical convention. The IQR-midpoint threshold `187.2` is a starting point; actual operating-point selection should be calibrated on a held-out split with the FP/FN trade-off above made explicit. Likely the right shape is a soft confidence rather than a hard binary gate — i.e., treat low-feature rows (the WRONG-call territory) as ambiguous. **Do NOT wire this as a production fix based on the current (provisional) categorization** — the right-call vs wrong-call population labels here inherit the legacy `near_*`-as-FAR mislabel from PR #251.
 
 ## Per-row detail (chirality failures only)
 

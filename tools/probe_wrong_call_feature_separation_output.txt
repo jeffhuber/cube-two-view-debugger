@@ -1,3 +1,5 @@
+LEGACY-CATEGORY DISCLAIMER (PR #251): the RIGHT-call / WRONG-call populations below are derived from the legacy `gcm_axis_ground_truth.json` `near_*` semantics, which PR #251 showed actually map to FAR corners under the canonical full-corner convention (`tools/corner_conventions.py`). The matrix-feature distributions themselves are real recognizer outputs, but their mapping to right-call/wrong-call is PROVISIONAL until the categories are regenerated from `tests/fixtures/full_corner_ground_truth.json`. Do not drive production fixes from this output without revalidation.
+
 Right-call rows (detector decided, row is GOOD/MARGINAL): 91
 Wrong-call rows (detector decided, row is CHIRALITY_*):   19
 

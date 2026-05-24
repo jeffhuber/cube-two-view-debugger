@@ -2,23 +2,39 @@
 """Probe: does any existing matrix feature correlate with the DETECTOR_WRONG_CALL
 subset of chirality failures?
 
+LEGACY-CATEGORY DISCLAIMER (PR #251). This probe's RIGHT-call and
+WRONG-call populations are derived from `phase2b_recomputed_signals.json`
+categories (`GOOD`, `MARGINAL`, `CHIRALITY_MISS`, `CHIRALITY_FALSE_FLIP`),
+which themselves derive from `tests/fixtures/gcm_axis_ground_truth.json`
+whose `near_*` fields PR #251 confirmed actually map to FAR corners
+under the canonical full-corner convention (`tools/corner_conventions.py`).
+The populations and any meta-signal trade-offs inherit the same
+**provisional** status as the upstream categories. The matrix-feature
+distributions themselves are real recognizer outputs, but their mapping
+to "right-call vs wrong-call" must be regenerated from
+`tests/fixtures/full_corner_ground_truth.json` before being used to
+drive any production fix.
+
 Per the chirality diagnostic (PR #250), 19/32 chirality-failure rows have
 phase_check ∈ {correct, corrected_60deg_flip} but err_near is still ≥25°.
-The detector applies its polarity rule correctly but the rule's
-underlying assumption is INVERTED on this subset.
+Under the legacy categorization, the detector appears to apply its
+polarity rule correctly but the rule's underlying assumption is
+INVERTED on this subset. Under canonical truth this interpretation may
+itself invert — see the disclaimer above.
 
 If a per-row matrix feature correlates with the wrong-call vs the
-right-call rows, we could gate the polarity rule on it.
+right-call rows, that is a diagnostic hypothesis worth re-evaluating
+once the categories are regenerated against canonical truth.
 
 Approach: for each per-row feature, compare distributions between:
   - "Polarity-rule-rejected" rows: phase_check is 'correct' or
     'corrected_60deg_flip', and the row outcome is GOOD/MARGINAL
-    (the detector got it right)
+    (per legacy categorization)
   - "Polarity-rule-wrong" rows: same phase_check values but row is
-    CHIRALITY_MISS or CHIRALITY_FALSE_FLIP (the detector got it wrong)
+    CHIRALITY_MISS or CHIRALITY_FALSE_FLIP (per legacy categorization)
 
 If a feature has clearly different distributions, that's a candidate
-meta-signal.
+meta-signal to revalidate after canonical regeneration.
 """
 
 from __future__ import annotations
@@ -66,6 +82,22 @@ def main():
             elif cat in ("CHIRALITY_MISS", "CHIRALITY_FALSE_FLIP"):
                 wrong_rows.append(dict(r, _case=case_key))
 
+    # Legacy-category disclaimer banner — emitted at the top of the
+    # output so any consumer of the committed artifact sees the caveat
+    # before the data tables (Codex review on PR #250 round 7).
+    print(
+        "LEGACY-CATEGORY DISCLAIMER (PR #251): the RIGHT-call / "
+        "WRONG-call populations below are derived from the legacy "
+        "`gcm_axis_ground_truth.json` `near_*` semantics, which PR #251 "
+        "showed actually map to FAR corners under the canonical full-"
+        "corner convention (`tools/corner_conventions.py`). The "
+        "matrix-feature distributions themselves are real recognizer "
+        "outputs, but their mapping to right-call/wrong-call is "
+        "PROVISIONAL until the categories are regenerated from "
+        "`tests/fixtures/full_corner_ground_truth.json`. Do not drive "
+        "production fixes from this output without revalidation."
+    )
+    print()
     print(f"Right-call rows (detector decided, row is GOOD/MARGINAL): {len(right_rows)}")
     print(f"Wrong-call rows (detector decided, row is CHIRALITY_*):   {len(wrong_rows)}")
     print()

@@ -32,11 +32,17 @@ is constant while capture/yaw/geometry evidence varies.
 | Set | Seed provider | Seed category | Seed diff before Fixer | Recorded yaw | Canonicalization source | Current status | Current category | Score | Hamming |
 |---:|---|---|---:|---:|---|---|---|---:|---:|
 | 63 | cv-local | needs_manual_review | 0 | 2 | explicit-yaw | success | needs_manual_review | 54/54 | 0 |
-| 64 | gemini-3.1-pro | n/a | 31 | n/a | n/a | rejected | reject_retake | 0/54 | 54 |
+| 64 | gemini-3.1-pro | n/a | 31 | 0 (human-confirmed) | n/a | rejected | reject_retake | 0/54 | 54 |
 | 65 | claude-sonnet | n/a | 36 | 1 | center-inference | rejected | reject_retake | 0/54 | 54 |
 | 66 | claude-sonnet | n/a | 43 | 2 | center-inference | rejected | reject_retake | 0/54 | 54 |
 | 67 | cv-local | needs_manual_review | 12 | 3 | explicit-yaw | success | needs_manual_review | 42/54 | 12 |
-| 68 | cv-local | needs_manual_review | 0 | n/a | n/a | success | needs_manual_review | 54/54 | 0 |
+| 68 | cv-local | needs_manual_review | 0 | 0 (human-confirmed) | n/a | success | needs_manual_review | 54/54 | 0 |
+
+Manifest yaw contracts are intentionally limited to rows where the current
+recognizer emits `recognitionSignals.captureYaw`: Sets 63, 67, and 68 now carry
+`expectedYaw`; Sets 64-66 are rejected before that signal is available, so their
+yaw remains documented in prose/metadata rather than enforced as a probe
+contract.
 
 ## Expanded Baseline Impact
 

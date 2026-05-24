@@ -52,6 +52,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as _dt
+import hashlib
 import itertools
 import json
 import math
@@ -81,6 +82,18 @@ DEFAULT_OUT_JSON = (
 )
 DEFAULT_OUT_MD = REPO_ROOT / "tools" / "AXIS_CORRECTNESS_REPORT.md"
 DEFAULT_MAX_IMAGE_DIM = 1600
+
+
+def _file_sha256(path: Path) -> Optional[str]:
+    """SHA-256 hex digest of `path` contents, or None on read error."""
+    try:
+        h = hashlib.sha256()
+        with path.open("rb") as f:
+            for chunk in iter(lambda: f.read(1 << 20), b""):
+                h.update(chunk)
+        return h.hexdigest()
+    except Exception:  # noqa: BLE001
+        return None
 
 
 def _git_head_sha() -> Optional[str]:
@@ -397,6 +410,32 @@ def run_all(
                 "reason": f"image not found: {Path(str(image_path_str)).expanduser()}",
             })
             continue
+        # SHA verification: when the manifest carries an expected SHA-256
+        # for this image, refuse to trace if the resolved file's actual
+        # SHA differs (Codex P2 #2 on PR #268 head 7d90d30). The fuzzy
+        # path resolver _resolve_image_path can land on a same-named
+        # file from a different corpus root, and without this check the
+        # trace would be canonical-named but contain measurements from
+        # the wrong pixels.
+        expected_sha = pair.get(f"image{side}_sha256_expected")
+        if expected_sha:
+            actual_sha = _file_sha256(image_path)
+            if actual_sha is None:
+                skipped.append({
+                    "key": key,
+                    "reason": f"could not read {image_path} for SHA check",
+                })
+                continue
+            if actual_sha != expected_sha:
+                skipped.append({
+                    "key": key,
+                    "reason": (
+                        f"image SHA mismatch at {image_path}: "
+                        f"got {actual_sha[:12]}…, expected "
+                        f"{expected_sha[:12]}…"
+                    ),
+                })
+                continue
         record = evaluate_one_row(sess, key, image_path, row, max_image_dim)
         records.append(record)
     return {
@@ -602,6 +641,7 @@ def _default_output_blocker(
     *,
     truth_path: Optional[Path] = None,
     manifest_path: Optional[Path] = None,
+    max_image_dim: Optional[int] = None,
 ) -> Optional[str]:
     """Decide whether to refuse writes to default-committed output paths.
 
@@ -660,6 +700,18 @@ def _default_output_blocker(
             f"non-default --manifest ({_display_path(manifest_path)}); "
             f"committed artifacts are tied to {_display_path(DEFAULT_MANIFEST)}"
         )
+    # max_image_dim check: the trace's vertex/axis coords are in the
+    # processing coordinate system, which scales with `max_image_dim`.
+    # Any value other than DEFAULT_MAX_IMAGE_DIM would silently produce
+    # a coordinate-incompatible artifact under the canonical schema
+    # label. Codex P2 #1 on PR #268 head 7d90d30.
+    if max_image_dim is not None and max_image_dim != DEFAULT_MAX_IMAGE_DIM:
+        return (
+            f"non-default --max-image-dim ({max_image_dim}); committed "
+            f"artifacts are tied to {DEFAULT_MAX_IMAGE_DIM} (axis/vertex "
+            f"coords are in processing-resolution px and don't compare "
+            f"across dim settings)"
+        )
     return None
 
 
@@ -683,7 +735,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         manifest_path=args.manifest,
     )
     blocker = _default_output_blocker(
-        payload, truth_path=args.truth, manifest_path=args.manifest,
+        payload,
+        truth_path=args.truth,
+        manifest_path=args.manifest,
+        max_image_dim=args.max_image_dim,
     )
     blocked_paths: List[str] = []
     if blocker is not None:

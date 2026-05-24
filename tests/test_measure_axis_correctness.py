@@ -381,6 +381,75 @@ def test_default_output_blocker_rejects_non_default_truth(
     assert msg2 is None
 
 
+def test_default_output_blocker_rejects_non_default_max_image_dim(
+    tmp_path, monkeypatch,
+):
+    """Codex P2 #1 on PR #268 head 7d90d30: vertex/axis coordinates in
+    the trace are in processing-resolution pixels, which scale with
+    `--max-image-dim`. A trace at dim=800 has half-coordinates relative
+    to dim=1600, but the canonical schema is tied to dim=1600. The
+    guard must reject any non-default dim from default outputs."""
+    canonical_truth = tmp_path / "canonical_truth.json"
+    canonical_truth.write_text(json.dumps({}), encoding="utf-8")
+    canonical_manifest = tmp_path / "canonical_manifest.json"
+    canonical_manifest.write_text(json.dumps({"pairs": []}), encoding="utf-8")
+    monkeypatch.setattr(m, "DEFAULT_TRUTH", canonical_truth)
+    monkeypatch.setattr(m, "DEFAULT_MANIFEST", canonical_manifest)
+    monkeypatch.setattr(m, "DEFAULT_MAX_IMAGE_DIM", 1600)
+
+    happy_payload = {
+        "per_row": [
+            {
+                "key": "20_A",
+                "status": "traced",
+                "corr_true": {"axis_match": {"total_misfit_deg": 12.3}},
+                "corr_false": {"axis_match": {"total_misfit_deg": 14.1}},
+            },
+        ],
+        "skipped": [],
+    }
+    # Default dim → no block.
+    msg_ok = m._default_output_blocker(
+        happy_payload,
+        truth_path=canonical_truth,
+        manifest_path=canonical_manifest,
+        max_image_dim=1600,
+    )
+    assert msg_ok is None
+    # Non-default dim → block.
+    msg_block = m._default_output_blocker(
+        happy_payload,
+        truth_path=canonical_truth,
+        manifest_path=canonical_manifest,
+        max_image_dim=800,
+    )
+    assert msg_block is not None
+    assert "non-default --max-image-dim" in msg_block
+    assert "800" in msg_block
+
+
+def test_file_sha256_round_trips_on_known_content(tmp_path):
+    """`_file_sha256` must compute the same SHA-256 as `hashlib.sha256`
+    on the same bytes. Used by `run_all` to verify resolved image files
+    match the manifest's expected SHA before tracing (Codex P2 #2 on
+    PR #268 head 7d90d30 — without this check the fuzzy path resolver
+    could land on a same-named file from a different corpus and the
+    trace would contain measurements from the wrong pixels under the
+    canonical schema)."""
+    import hashlib
+    payload = b"the quick brown fox jumps over the lazy dog\n" * 100
+    p = tmp_path / "thing.bin"
+    p.write_bytes(payload)
+    expected = hashlib.sha256(payload).hexdigest()
+    assert m._file_sha256(p) == expected
+
+
+def test_file_sha256_returns_none_on_missing_file(tmp_path):
+    """Defensive: missing file → None (caller skips the row instead of
+    crashing the whole run)."""
+    assert m._file_sha256(tmp_path / "does-not-exist.bin") is None
+
+
 def test_default_output_blocker_rejects_non_default_manifest(
     tmp_path, monkeypatch,
 ):

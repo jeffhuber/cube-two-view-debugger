@@ -43,6 +43,7 @@ def _run_gh_api(args: Sequence[str], payload: dict[str, str], run: RunFn = subpr
         input=json.dumps(payload),
         check=True,
         text=True,
+        capture_output=True,
     )
 
 
@@ -74,12 +75,16 @@ def _parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     args = _parse_args(argv)
-    repo = args.repo or _repo_from_gh()
-    body = _read_body(body_file=args.body_file)
-    if args.edit_comment_id is not None:
-        edit_comment(repo, args.edit_comment_id, body)
-    else:
-        post_comment(repo, args.issue_or_pr, body)
+    try:
+        repo = args.repo or _repo_from_gh()
+        body = _read_body(body_file=args.body_file)
+        if args.edit_comment_id is not None:
+            edit_comment(repo, args.edit_comment_id, body)
+        else:
+            post_comment(repo, args.issue_or_pr, body)
+    except (OSError, subprocess.CalledProcessError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
     return 0
 
 

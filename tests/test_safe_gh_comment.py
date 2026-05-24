@@ -29,7 +29,12 @@ def test_post_comment_passes_markdown_as_json_stdin():
                 "--input",
                 "-",
             ],
-            {"input": json.dumps({"body": body}), "check": True, "text": True},
+            {
+                "input": json.dumps({"body": body}),
+                "check": True,
+                "text": True,
+                "capture_output": True,
+            },
         )
     ]
 
@@ -55,6 +60,7 @@ def test_edit_comment_passes_markdown_as_json_stdin():
     ]
     assert args[-2:] == ["--input", "-"]
     assert json.loads(kwargs["input"]) == {"body": body}
+    assert kwargs["capture_output"] is True
 
 
 def test_read_body_accepts_file(tmp_path: Path):
@@ -62,3 +68,20 @@ def test_read_body_accepts_file(tmp_path: Path):
     body_file.write_text("literal `backticks` stay literal\n", encoding="utf-8")
 
     assert safe_gh_comment._read_body(body_file=body_file) == "literal `backticks` stay literal\n"
+
+
+def test_main_reports_clean_error_for_missing_body_file(capsys):
+    status = safe_gh_comment.main(
+        [
+            "--repo",
+            "jeffhuber/cube-two-view-debugger",
+            "--issue",
+            "251",
+            "--body-file",
+            "/tmp/definitely-missing-comment.md",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert status == 1
+    assert captured.err.startswith("error: ")

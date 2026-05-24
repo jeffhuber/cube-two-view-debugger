@@ -23,6 +23,7 @@
 | [`STATE_OF_THE_WORLD.md`](STATE_OF_THE_WORLD.md) | Entry point. Current architecture map + phased roadmap. |
 | [`FIRST_PRINCIPLES_RECOGNIZER_DESIGN.md`](FIRST_PRINCIPLES_RECOGNIZER_DESIGN.md) | Target architecture + policy bar for first-principles work. |
 | [`POST_218_BASELINE_AND_TAXONOMY.md`](POST_218_BASELINE_AND_TAXONOMY.md) | Decision spine. Numbers, taxonomy, recommended next sequence. (Global-model side.) |
+| [`FULL_CORNER_GLOBAL_MODEL_BASELINE.md`](FULL_CORNER_GLOBAL_MODEL_BASELINE.md) | Canonical 12-row full-corner global-model baseline. Uses `Va/Vb + 0..5`; first non-legacy phase/parity snapshot. |
 | [`PHASE_1_CV_LOCAL_BASELINE.md`](PHASE_1_CV_LOCAL_BASELINE.md) | Companion baseline on cv-local side. Headline: cv-local face-quads are not geometrically consistent (90% structural fit-fail). |
 | [`MAIN_SOLVABLE_BASELINE.md`](MAIN_SOLVABLE_BASELINE.md) | Production recognizer solvable-rate snapshot over corpus + hard-case manifests. Tracks per-sticker, exact, legal, confident-solve, and confident-wrong rates. |
 | [`FAILURE_TAXONOMY.md`](FAILURE_TAXONOMY.md) | Single source of truth for failure-mode categories. |
@@ -93,10 +94,12 @@
 | Script | What it does |
 |---|---|
 | **`baseline_post_218.py`** | **Legacy global-model benchmark.** Runs global model on the axis-labeled gallery, categorizes, emits JSON + report. Supports `--diff` for row-level regression checks. **Provisional until regenerated from full-corner truth.** |
+| **`baseline_full_corner_global_model.py`** | **Canonical global-model geometry benchmark.** Runs the current global model on `tests/fixtures/full_corner_ground_truth.json`, scores one-edge/far triplets, and emits `FULL_CORNER_GLOBAL_MODEL_BASELINE.md`. |
 | **`baseline_cv_local.py`** | **Legacy cv-local geometry benchmark.** Same axis-labeled cases; derives (vertex, 3 legacy-near clusters, 3 far clusters) from cv-local's face-quads via union-find clustering. JSON schema uniform with `baseline_post_218.py` so `--diff` works across both sides. **Provisional until regenerated from full-corner truth.** |
 | **`main_solvable_baseline.py`** | **THE production solvable-rate benchmark.** Aggregates `tools/probe_corpus.py` JSON for corpus + hard-case manifests into per-sticker, exact, legal-state, confident-solve, and confident-wrong metrics. |
 | **`phase2b_trust_matrix.py`** | **Phase 2B trust-signal matrix.** Joins phase_sep + cv-local status per case/run; evaluates 17 candidate trust rules vs Phase 2 bar (≥80% recall, ≤10% GOOD FPR). Diagnostics-only. Headline: no rule over existing signals meets the bar; `--recompute-global-model` flag reserved for fit_residual / vertex disagreement / two-view extension. |
 | `evaluate_axis_ground_truth.py` | Per-axis bearing/length error against a candidate model output. |
+| `evaluate_full_corner_ground_truth.py` | Canonical full-corner scorer for exact `corner_0..5` candidates or model-style one-edge/far triplets. |
 | `evaluate_hybrid_pipeline.py` | End-to-end production-recognizer accuracy on hard-case corpus. |
 | `evaluate_color_classifier_modes.py` | Color classifier mode comparison. |
 | `evaluate_two_view_consistency.py` | A+B center consistency check. |

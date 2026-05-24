@@ -64,6 +64,7 @@ principles work.
 |---|---|---|
 | **Full-corner convention** | `tools/FULL_CORNER_LABELING.md` | Canonical `Va/Vb + 0..5` convention, A/B face outlines, flattened facelet mapping, and legacy-axis audit note. |
 | **Full-corner seed truth** | `tests/fixtures/full_corner_ground_truth.json` | First canonical 12-photo full-corner fixture, covering sets 20, 38, 40, 41, 43, and 45. |
+| **Canonical full-corner global baseline** | `tests/fixtures/full_corner_global_model_baseline.json` | First current-main global-model snapshot against full-corner truth. Seed result: 8/12 `PHASE_SWAPPED`, 3/12 `GOOD`, 1/12 `MARGINAL`. |
 | **Axis-labeled ground truth** | `tests/fixtures/gcm_axis_ground_truth.json` | Legacy vertex + `near_*` fixture. Treat as provisional until audited/migrated against full-corner labels; do not assume `near_*` means one-edge truth. |
 | **Post-#218 baseline snapshot** | `tests/fixtures/post_218_baseline.json` | Legacy current-main accuracy snapshot derived from `gcm_axis_ground_truth.json`. Regression-gate semantics are provisional until the fixture is migrated. |
 | **Benchmark harness** | `tools/baseline_post_218.py` | Runs the legacy eval, supports `--diff` mode for row-level deltas. Must be updated/regenerated from full-corner truth before being used as canonical phase/chirality evidence. |
@@ -75,7 +76,7 @@ principles work.
 | Phase | Status | What it produces | Success criterion |
 |---|---|---|---|
 | **0 — Consolidate** | ✅ Done (#222) | Docs: this file, FIRST_PRINCIPLES_RECOGNIZER_DESIGN, FAILURE_TAXONOMY, BENCHMARK_INDEX, tools/README, COORDINATION. | All 6 docs landed; no code changes. |
-| **1 — Re-baseline both sides** | ✅ Done (#220, #225) | Global model snapshot (`tests/fixtures/post_218_baseline.json`) + cv-local snapshot (`tests/fixtures/cv_local_baseline.json`). Documented gap (see `PHASE_1_CV_LOCAL_BASELINE.md`): cv-local face-quads aren't geometrically consistent on 90% of cases. | Two committed JSON snapshots, both runnable via `--diff`. ✅ |
+| **1 — Re-baseline both sides** | Legacy baseline done (#220, #225); canonical full-corner migration started. | Legacy global/cv-local snapshots remain historical. Canonical seed global-model snapshot now uses `tests/fixtures/full_corner_ground_truth.json` and shows 8/12 `PHASE_SWAPPED`, 3/12 `GOOD`, 1/12 `MARGINAL`. | Next: migrate cv-local / Phase 2B / Phase 4 diagnostics onto full-corner truth before mining new trust signals. |
 | **2 — Trust policy diagnostics** | **Done.** Sub-status: **2A** (#228 — solo phase_sep ceiling 45.8% recall / 9.2% FPR, below bar); **2B initial matrix** (#232 — 18 rules over phase_sep + cv-local; closest `phase_sep_alone_T20.0` at 66.7%/30.3%); **2B with recomputed signals** (current PR — 54 rules over 6 continuous signals: fit_residual, pnp_rms, hex_bezel, ensemble_shift, junction_score, phase_sep. `phaseANDcv_OR_ensemble_shift_T60.0` first to clear FPR bar at 8.1%/50% recall; `phase_sep_alone_T20.0` first to clear recall bar at 80%/31% FPR; **no rule clears both bars simultaneously under hand-tuning**). See `PHASE_2B_TRUST_SIGNAL_MATRIX_RECOMPUTED.md`. **Codex's conditional pivot triggered — Phase 4 or 5 next.** | Product-shaped: catches catastrophic / phase-wrong cases with low false-retake on GOOD cases on the 58-case eval. Concretely: ≥80% recall on the catastrophic band at ≤10% false-retake on GOOD. (Aggregate-correlation thresholds like "r > 0.6" are an internal sanity check, not the success bar.) |
 | **3 — Guardrail experiment** | Likely deferred or skipped — Phase 2B has produced evidence-backed pivot to Phase 4/5 (hand-tuned rules can't simultaneously clear both bars). | Production behavior change: low-trust cases route to retake/manual-fixer. First phase where production behavior changes. | Confident-wrong rate drops without abstention >15% (or agreed budget). Tracked in `--diff`. |
 | **4 — Learned geometry / ranker** | **Promoted to next-up** by Phase 2B finding. Train a logistic-regression or small-MLP retake classifier on the 6 continuous signals captured in `phase2b_trust_signal_matrix_recomputed.json` (already shaped as a labeled dataset: per-row features + outcome). | Trained vertex/axis/phase ranker on 58+ labels with held-out splits + calibrated abstention. | Held-out test accuracy + abstention curves match or beat the hand-tuned compounds in Phase 2B. Specifically: ≥80% catastrophic recall AND ≤10% GOOD FPR (the Phase 2 bar that Phase 2B couldn't clear with hand-tuned rules). |
@@ -86,15 +87,22 @@ principles work.
 Before opening a geometry-sensitive PR (anything that could affect
 `tools/global_cube_model.py` outputs, or the cv-local equivalent):
 
-1. Run the regression gate:
+1. Prefer the canonical seed gate when the touched behavior can be scored on
+   full-corner truth:
+   ```bash
+   .venv/bin/python tools/baseline_full_corner_global_model.py \
+     --out /tmp/full_corner_baseline_my_branch.json \
+     --report /tmp/full_corner_baseline_my_branch.md
+   ```
+2. For legacy 58-case comparisons, run the provisional gate:
    ```bash
    .venv/bin/python tools/baseline_post_218.py \
      --out /tmp/baseline_my_branch.json --report /dev/null
    .venv/bin/python tools/baseline_post_218.py \
      --diff tests/fixtures/post_218_baseline.json /tmp/baseline_my_branch.json
    ```
-2. Paste the diff summary into the PR body.
-3. Confirm no GOOD → catastrophic regressions without offsetting wins.
+3. Paste the diff summary into the PR body.
+4. Confirm no GOOD → catastrophic regressions without offsetting wins.
 
 See [`POST_218_BASELINE_AND_TAXONOMY.md`](POST_218_BASELINE_AND_TAXONOMY.md)
 "How to use this as a regression gate" for details.

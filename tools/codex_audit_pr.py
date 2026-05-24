@@ -66,7 +66,7 @@ import tempfile
 import time
 import urllib.error
 import urllib.request
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -90,6 +90,16 @@ class AuditConfig:
     base_ref: str = DEFAULT_BASE_REF
     timeout: int = DEFAULT_CODEX_TIMEOUT
     dry_run: bool = False
+    # Optional override for the Python venv whose `bin/` is prepended to
+    # PATH (and exported as VIRTUAL_ENV) when invoking `codex review`.
+    # If None, `audit_pr()` auto-discovers `<local_repo>/.venv/`.
+    # Without this, `codex review`'s subprocesses (pytest, build_oracle_*,
+    # etc.) inherit the audit machine's system PATH — on a typical
+    # macOS dev box that resolves to anaconda Python 3.7.6 with stale
+    # numpy/Pillow, instead of the canonical .venv (Python 3.12.13,
+    # numpy 2.3.5, Pillow 12.2.0 per corpus_manifest.json). The drift
+    # produced bogus per-pixel diffs on PR #262 round 3.
+    venv_path: Optional[Path] = None
 
 
 @dataclass
@@ -416,6 +426,57 @@ def _fetch_base_ref(local_repo: Path, base_ref: str) -> None:
 # ----- Codex CLI invocation -----
 
 
+def _discover_venv(local_repo: Path) -> Optional[Path]:
+    """Look for a venv at `<local_repo>/.venv/` and return its path if
+    it contains a working `bin/python`. Returns None otherwise.
+
+    Used by `audit_pr()` when `config.venv_path` is unset, so most
+    repos get the right Python without any explicit configuration.
+    Repos without a venv (e.g. cube-snap, which uses npm/vitest for
+    tests) get a no-op — the subprocess inherits the parent's PATH
+    as before.
+    """
+    candidate = local_repo / ".venv"
+    if (candidate / "bin" / "python").exists():
+        return candidate
+    return None
+
+
+def _build_subprocess_env(venv_path: Optional[Path]) -> Dict[str, str]:
+    """Return an env dict for the `codex review` subprocess.
+
+    When `venv_path` is a real path with `bin/python`, prepend
+    `<venv>/bin` to PATH and export VIRTUAL_ENV so any Python
+    invocations from `codex review` (pytest, diagnostic tools, etc.)
+    pick up the right interpreter. Also clear PYTHONHOME if set —
+    leaving it pointing at a different Python install breaks the
+    venv's site-packages resolution.
+
+    No-op (returns os.environ unchanged) when `venv_path` is None,
+    is the empty-Path sentinel (explicit "disable" from the CLI),
+    or doesn't point at a working `bin/python`. Codex P3 fix for
+    PR #262 (issue tracked as Task #97): without this, audits
+    inherit the system PATH which on a typical macOS dev box
+    resolves to anaconda Python 3.7.6 with numpy 1.18 / Pillow 9.5
+    — producing per-pixel drift relative to the canonical .venv
+    (3.12.13 / 2.3.5 / 12.2.0).
+    """
+    env = dict(os.environ)
+    if venv_path is None:
+        return env
+    # `Path("")` is the explicit-disable sentinel (empty string from
+    # the CLI / env var); skip silently. Same for a path whose
+    # `bin/python` doesn't exist — better to leave PATH alone than
+    # set a broken VIRTUAL_ENV.
+    if str(venv_path) == "" or not (venv_path / "bin" / "python").exists():
+        return env
+    venv_bin = str(venv_path / "bin")
+    env["VIRTUAL_ENV"] = str(venv_path)
+    env["PATH"] = f"{venv_bin}{os.pathsep}{env.get('PATH', '')}"
+    env.pop("PYTHONHOME", None)
+    return env
+
+
 def run_codex_review(
     config: AuditConfig,
     worktree_path: Path,
@@ -441,12 +502,14 @@ def run_codex_review(
             f"Install Codex (https://codex.dev) or override "
             f"CODEX_CLI_PATH."
         )
+    env = _build_subprocess_env(config.venv_path)
     result = subprocess.run(
         [config.codex_cli_path, "review", "--base", config.base_ref],
         cwd=str(worktree_path),
         capture_output=True,
         text=True,
         timeout=config.timeout,
+        env=env,
     )
     if result.returncode != 0:
         raise subprocess.CalledProcessError(
@@ -537,6 +600,23 @@ def audit_pr(config: AuditConfig, repo: str, pr_number: int) -> AuditResult:
 
     print(f"audit {repo}#{pr_number} head={head_sha_start[:8]} "
           f"(local: {local_repo})", file=sys.stderr, flush=True)
+
+    # Auto-discover a venv under the local repo and use it for the
+    # `codex review` subprocess unless the caller explicitly set one.
+    # Without this, audits inherit the system PATH which on a typical
+    # macOS dev box resolves to anaconda Python 3.7.6 instead of the
+    # canonical .venv (Task #97 / Codex P3 on PR #262). Mutating the
+    # config here is local to `audit_pr` (the caller's config dict
+    # isn't shared across audits via mutable state).
+    if config.venv_path is None:
+        discovered_venv = _discover_venv(local_repo)
+        if discovered_venv is not None:
+            print(
+                f"  using venv {discovered_venv} for subprocess Python "
+                "(set --venv-path to override or empty string to disable)",
+                file=sys.stderr, flush=True,
+            )
+            config = replace(config, venv_path=discovered_venv)
 
     # Ensure both the PR head AND the base ref are locally fetched
     # before running the review. Stale base = wrong diff = wrong review.
@@ -678,6 +758,19 @@ def _parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         default=bool(os.environ.get("CODEX_AUDIT_DRY_RUN")),
         help="Print the audit comment to stdout instead of posting it.",
     )
+    ap.add_argument(
+        "--venv-path",
+        default=os.environ.get("CODEX_AUDIT_VENV_PATH"),
+        help=(
+            "Python venv whose bin/ is prepended to PATH (and exported "
+            "as VIRTUAL_ENV) when running `codex review`. Default: "
+            "auto-discover `<local_repo>/.venv/`. Pass empty string to "
+            "disable. Without this, audits inherit the system PATH "
+            "which typically resolves to a stale system Python instead "
+            "of the canonical .venv (see corpus_manifest.json for the "
+            "pinned environment)."
+        ),
+    )
     return ap.parse_args(argv)
 
 
@@ -698,6 +791,16 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(f"error: {exc}", file=sys.stderr)
         return 1
 
+    # --venv-path semantics:
+    #   not set         (None)  -> auto-discover <local_repo>/.venv/
+    #   non-empty str           -> use that path
+    #   empty str       ("")    -> explicit disable (Path("") sentinel
+    #                              blocks the auto-discovery in audit_pr)
+    explicit_venv: Optional[Path]
+    if args.venv_path is None:
+        explicit_venv = None
+    else:
+        explicit_venv = Path(args.venv_path)  # Path("") for empty
     config = AuditConfig(
         github_token=token,
         repo_paths=repo_paths,
@@ -705,6 +808,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         base_ref=args.base_ref,
         timeout=args.timeout,
         dry_run=args.dry_run,
+        venv_path=explicit_venv,
     )
 
     try:

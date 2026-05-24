@@ -70,6 +70,26 @@ Add `--dry-run` to print the audit comment to stdout instead of posting.
 
 Exit codes: 0 (success), 1 (error), 2 (stale head — caller may requeue).
 
+### Python venv injection (Task #97 fix)
+
+The `codex review` subprocess inherits the parent's PATH, which on a
+typical macOS dev box resolves to a system anaconda Python instead of
+the canonical `.venv/`. This causes per-pixel drift in any audited tool
+whose output is sensitive to numpy/Pillow version
+(`tools/build_oracle_rectified_faces.py`,
+`tools/probe_center_color_phase_metric.py`, etc.), and surfaced as a
+real Codex P3 finding on PR #262.
+
+Auto-discovery: `audit_pr()` looks for `<local_repo>/.venv/bin/python`.
+If present, prepends `<local_repo>/.venv/bin` to PATH and exports
+`VIRTUAL_ENV` for the `codex review` subprocess. No-op for repos
+without a `.venv/` (e.g. cube-snap, which uses npm/vitest for tests).
+
+Explicit override (rarely needed):
+- `--venv-path /path/to/venv` to pin a specific venv
+- `--venv-path ""` to disable injection entirely
+- `CODEX_AUDIT_VENV_PATH=...` env var (same semantics)
+
 ### Severity policy (PASS / BLOCKED)
 
 Codex tags findings inline with `[P0]`, `[P1]`, `[P2]`, `[P3]` brackets:

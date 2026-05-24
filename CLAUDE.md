@@ -660,11 +660,14 @@ workflow is **removed** in both repos (ctvd #237 / cube-snap
   during PR creation. Write the markdown to a temp file, then call the
   GitHub CLI with `--body-file`, placing that flag immediately after
   the subcommand so the repo permission baseline can enforce the safe
-  path:
+  path. For PR/issue comments, prefer the safer wrapper
+  `tools/safe_gh_comment.py`, which serializes the body as JSON and
+  cannot shell-interpret backticks or `$()`:
 
   ```bash
   gh pr create --body-file /tmp/pr-body.md --repo jeffhuber/cube-two-view-debugger ...
-  gh issue comment --body-file /tmp/comment.md 31 --repo jeffhuber/cube-two-view-debugger
+  .venv/bin/python tools/safe_gh_comment.py --repo jeffhuber/cube-two-view-debugger --issue 31 --body-file /tmp/comment.md
+  .venv/bin/python tools/safe_gh_comment.py --repo jeffhuber/cube-two-view-debugger --edit-comment-id 123456 --body-file /tmp/comment.md
   ```
 
 - **Corpus probe runtime fingerprint**: the manifest pins the

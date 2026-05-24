@@ -51,10 +51,12 @@ Default outputs:
 from __future__ import annotations
 
 import argparse
+import datetime as _dt
 import itertools
 import json
 import math
 import statistics
+import subprocess
 import sys
 import traceback
 from pathlib import Path
@@ -79,6 +81,23 @@ DEFAULT_OUT_JSON = (
 )
 DEFAULT_OUT_MD = REPO_ROOT / "tools" / "AXIS_CORRECTNESS_REPORT.md"
 DEFAULT_MAX_IMAGE_DIM = 1600
+
+
+def _git_head_sha() -> Optional[str]:
+    """Best-effort current commit SHA. Returns None if not in a checkout."""
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            cwd=str(REPO_ROOT),
+            stderr=subprocess.DEVNULL,
+        ).decode("utf-8").strip()
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _now_utc_iso() -> str:
+    """UTC timestamp at trace generation time."""
+    return _dt.datetime.now(_dt.timezone.utc).isoformat()
 
 
 def _display_path(path: Path) -> str:
@@ -366,6 +385,8 @@ def run_all(
         "schema": "axis_correctness_v1",
         "source": {
             "tool": "tools/measure_axis_correctness.py",
+            "git_sha": _git_head_sha(),
+            "generated_at_utc": _now_utc_iso(),
             "truth": _display_path(truth_path),
             "manifest": _display_path(manifest_path),
             "max_image_dim": max_image_dim,
@@ -419,6 +440,10 @@ def render_report(payload: Dict[str, Any]) -> str:
         lines.append("## Source")
         lines.append("")
         lines.append(f"- Tool: `{source.get('tool', '-')}`")
+        if source.get("git_sha"):
+            lines.append(f"- Commit: `{source['git_sha']}`")
+        if source.get("generated_at_utc"):
+            lines.append(f"- Generated: `{source['generated_at_utc']}`")
         lines.append(f"- Truth: `{source.get('truth', '-')}`")
         lines.append(f"- Manifest: `{source.get('manifest', '-')}`")
         lines.append(f"- Max image dim: `{source.get('max_image_dim', '-')}`")

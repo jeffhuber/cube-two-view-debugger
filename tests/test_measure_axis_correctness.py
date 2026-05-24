@@ -378,3 +378,32 @@ def test_committed_trace_matches_expected_shape():
         "no row has both corr_true and corr_false populated — trace "
         "appears malformed"
     )
+
+
+# ---------------- provenance helpers ----------------
+
+
+def test_git_head_sha_returns_a_sha_in_a_checkout():
+    """When the tool runs in a git checkout, the source block should
+    record the current commit SHA so a future reader can locate the
+    exact code that produced the trace. Skips if `git rev-parse HEAD`
+    can't run for any reason (e.g. running outside any checkout)."""
+    sha = m._git_head_sha()
+    if sha is None:
+        pytest.skip("git rev-parse HEAD unavailable (no checkout?)")
+    # 40-char hex SHA — short SHAs would be at least 7. Pin shape so
+    # an accidental string substitution catches.
+    assert isinstance(sha, str) and len(sha) >= 7
+    assert all(c in "0123456789abcdef" for c in sha.lower())
+
+
+def test_now_utc_iso_returns_iso_8601_utc_string():
+    """The generated_at_utc field is an ISO-8601 timestamp anchored at
+    UTC. Pin the shape so consumers can rely on parsing it."""
+    ts = m._now_utc_iso()
+    import datetime as _dt
+    # round-trips via fromisoformat — proves it's valid ISO 8601 and
+    # confirms the timezone is UTC (not local).
+    parsed = _dt.datetime.fromisoformat(ts)
+    assert parsed.tzinfo is not None
+    assert parsed.utcoffset() == _dt.timedelta(0)

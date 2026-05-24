@@ -6,10 +6,9 @@
 # carry P0/P1/P2/P3 severity badges. The labeler reads those badges and
 # applies the appropriate `greptile-audit-*` label.
 #
-# This labeler is OPT-IN: it only flips labels on PRs that currently
-# carry `needs-greptile-audit`. Greptile auto-reviews every PR via the
-# GitHub App, but only opted-in PRs participate in the bake-off — keeps
-# UI / calibration data clean.
+# This labeler is OPT-IN. The root greptile.json restricts paid Greptile
+# reviews to PRs carrying `needs-greptile-audit`, and this workflow only
+# flips labels for opted-in reviews — keeps cost and calibration data clean.
 #
 # Bot identity: the labeler's `is_greptile_review_author()` reads the
 # `GREPTILE_BOT_AUTHORS` repo variable (comma-separated). Default
@@ -53,8 +52,8 @@ jobs:
           # so on the bootstrap PR that ADDS this workflow + labeler,
           # `tools/greptile_audit_labeler.py` does not exist on `main`
           # yet. Skip gracefully rather than failing the workflow run.
-          # Devin caught this on cube-snap #145: Greptile auto-fired a
-          # review on the bootstrap PR; the workflow tried to run the
+          # Devin caught this on cube-snap #145: Greptile reviewed the
+          # bootstrap PR; the workflow tried to run the
           # not-yet-present labeler and crashed.
           if [ ! -f tools/greptile_audit_labeler.py ]; then
             echo "tools/greptile_audit_labeler.py not present on default branch — bootstrap PR; skipping"

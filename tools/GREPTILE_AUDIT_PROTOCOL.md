@@ -1,11 +1,11 @@
-# Greptile audit protocol (parallel bake-off — informational only)
+# Greptile audit protocol (paid final check — informational only)
 
 ## Status
 
-**Live on cube-snap (free OSS tier); ctvd not yet installed.**
-Three-way bake-off with Devin + Codex during the next ~20 PRs (Qwen
-was originally in the bake-off but is currently paused — see
-`tools/CODEX_AUDIT_PROTOCOL.md` for the empirical reasoning).
+Greptile is a paid SaaS GitHub App. Use it as a final/confirmatory
+review lane, not as an automatic reviewer during normal Codex/Claude
+iteration. The root `greptile.json` limits reviews to PRs carrying
+`needs-greptile-audit`.
 
 **Informational only — strictly non-gating.** Claude's standing
 in-thread merge delegation accepts `codex-audit-done` OR
@@ -17,11 +17,10 @@ so the workflow check stays green and the PR stays CLEAN. The
 verdict is also visible in Greptile's own inline review comments
 on the PR.
 
-Greptile is a SaaS GitHub App. Once the App is installed on the repo,
-Greptile auto-reviews every PR (~3 min latency) and posts findings as
-inline review comments. This labeler reads those reviews and applies
-`greptile-audit-{done,blocked,needs}` labels. Until the App is
-installed, the labeler workflow doesn't fire (no events to react to).
+Greptile posts findings as inline review comments. This labeler reads
+those reviews and applies `greptile-audit-{done,blocked,needs}` labels.
+Until Greptile reviews a PR, the labeler workflow doesn't fire (no
+events to react to).
 
 ## Why
 
@@ -29,7 +28,7 @@ Cost vs. quality trade-off:
 
 | | Devin | Codex (local) | Qwen (paused) | Greptile |
 |---|---|---|---|---|
-| Cost | ~$500/mo serious use | paid per OpenAI pricing | free | $30/seat/mo (50 reviews) OR free for OSS w/ MIT |
+| Cost | paid hosted agent | paid per OpenAI pricing | free | paid per review/tier |
 | Where it runs | cloud | user's machine (Codex CLI subprocess) | user's machine (LM Studio) | cloud |
 | Codebase context | what bridge sends | real git worktree at head SHA | what CLI sends (full files, post-v2) | **graph-indexed whole repo** |
 | Convention learning | re-prompt each PR | re-prompt each PR | re-prompt each PR | claims to learn from review-comment history |
@@ -42,8 +41,20 @@ from our existing ~200 Devin audit comments.
 
 ## Integration mechanics (confirmed)
 
-Greptile is a GitHub App. Once installed, it auto-fires on every PR open
-and push (no label trigger, no per-PR enable; ~3 min latency).
+Greptile is a GitHub App. The root `greptile.json` config uses:
+
+```json
+{
+  "labels": ["needs-greptile-audit"],
+  "triggerOnUpdates": false
+}
+```
+
+Per Greptile's config docs, `labels` means only PRs with those labels
+are reviewed, and `triggerOnUpdates: false` avoids re-reviewing every
+new commit. Adding `needs-greptile-audit` is therefore the paid-review
+trigger. Use `@greptileai` only when explicitly requested; it can also
+start a review.
 
 Greptile posts findings as a single **GitHub PR review** by
 `greptile-apps[bot]` with `state: COMMENTED` (empty review body). The
@@ -77,11 +88,9 @@ defensive because Greptile is a third-party surface and we don't want
 silent false-PASS on format drift or stale reviews:
 
 1. **Opt-in gate.** Only flip labels on PRs that currently carry the
-   `needs-greptile-audit` label. Greptile will still auto-review every
-   PR (we can't stop that without uninstalling the app), but the
-   labeler ignores reviews on PRs we haven't asked to be audited.
-   This keeps the bake-off scope controlled and avoids accidentally
-   treating every random PR as part of the audit protocol.
+   `needs-greptile-audit` label. The repo config should also prevent
+   Greptile from reviewing PRs without that label, so this gate is both
+   cost control and labeler defense.
 
 2. **Stale-HEAD gate.** Compare `review.commit_id` to the PR's current
    head SHA. If they differ, the review is stale (head changed after
@@ -184,9 +193,7 @@ The privacy decisions to make explicit before installing:
 
 Done:
 
-1. ✅ **Greptile GitHub App installed on cube-snap** (free OSS tier —
-   cube-snap is MIT-licensed, qualifies per "free for qualified
-   non-commercial projects with MIT, Apache, or GPL licenses").
+1. ✅ **Greptile GitHub App installed where review is desired.**
 2. ✅ **Labels created** on cube-snap (`needs-greptile-audit` yellow,
    `greptile-audit-done` green, `greptile-audit-blocked` red — colors
    matching Devin / Codex for UI consistency). Also created on ctvd
@@ -196,7 +203,10 @@ Done:
    stale-HEAD, severity-parse fail-closed, verdict). PR #145 + #145's
    bootstrap-guard follow-up + the `review.id`-missing fail-closed fix
    that Devin caught on the bootstrap PR.
-4. ✅ **Test fixtures captured** in
+4. ✅ **Root `greptile.json` config added** so Greptile reviews only PRs
+   carrying `needs-greptile-audit`; this turns Greptile into a final
+   paid-review gate rather than a micro-review default.
+5. ✅ **Test fixtures captured** in
    `tests/test_greptile_audit_labeler.py` — a real P1 finding body
    from `ssvlabs/ssv` PR #2835 plus synthetic variants for P0/P2/P3,
    no-marker, and pagination cases. The "fixture-driven dev" plan
@@ -204,12 +214,7 @@ Done:
 
 Remaining:
 
-1. **Decide ctvd** (see "Privacy / security tradeoff" above). Options:
-   - Skip ctvd, run bake-off on cube-snap only (current default)
-   - Pay $30/mo for the Pro seat (accept the cloud-storage tradeoff)
-   - Apply for the early-stage startup 50% discount ($15/mo)
-
-2. **Add `.greptile/rules.md`** with our review protocol (per Codex's
+1. **Add `.greptile/rules.md`** with our review protocol (per Codex's
    original recommendation; not strictly required to use the lane,
    but improves signal):
    - focus on correctness, stale fixtures, generated-report
@@ -221,32 +226,28 @@ Remaining:
    - for production recognizer changes, flag any confident-wrong risk
    - same lane-discipline rules the Codex prompt enforces
 
-3. **Update Claude's PR-creation routine** to apply
-   `needs-greptile-audit` alongside `needs-devin-audit` and
-   `needs-codex-audit` during the bake-off, so the agreement matrix
-   has 3 rows per PR. **Reminder:** the labeler only flips labels
-   when `needs-greptile-audit` is present (opt-in gate), so this
-   step is what actually puts a PR into the bake-off.
+2. **Update Claude/Codex PR routines** to avoid paid labels during
+   iteration. Apply `needs-greptile-audit` only after local validation
+   and Codex/Claude cross-review, when the PR is stable and worth a
+   final paid check.
 
-4. **Build the comparison report** (`tools/audit_bakeoff_compare.py`)
-   after 10–20 opted-in PRs have accumulated data.
+3. **Build the comparison report** (`tools/audit_bakeoff_compare.py`)
+   after enough final-review PRs have accumulated data.
 
-## Bake-off decision criteria (after ~20 PRs)
+## Paid-review decision criteria
 
-Calibration plan (3 reviewers: Devin + Codex + Greptile):
-
-Greptile graduates to merge-authority eligibility when:
+Use Greptile when its marginal value justifies the per-review cost.
+Greptile graduates to merge-authority eligibility only if:
 
 - Agrees with Devin on every Devin-blocker (zero misses on real bugs)
 - False-positive rate (Greptile blocks, Devin clears) is below ~20%
 - Distinct value-add: catches at least one real bug that neither Devin
   nor Codex caught (otherwise it's redundant cost)
 
-If Greptile graduates, the merge-delegation contract becomes
-`devin-audit-done` OR `greptile-audit-done` (per-PR — whichever fires
-first AND agrees with the Codex run).
+If Greptile graduates, the merge-delegation contract can become
+`codex-audit-done` OR `greptile-audit-done` for selected high-risk PRs.
 
-If Codex ALSO graduates: Devin can be retired entirely.
+Until then, Greptile remains final/confirmatory and non-gating.
 
 ## Open questions (resolve during fixture-capture phase)
 
@@ -258,13 +259,10 @@ If Codex ALSO graduates: Devin can be retired entirely.
    `alt="P[N]"` + URL-pattern severity parse (with fail-closed
    fallback) is what we ship.
 
-2. **Per-PR disable for sensitive PRs.** Per Codex's "opt-in only"
-   gate, the labeler ignores PRs without `needs-greptile-audit`, so
-   the bake-off scope is fully controlled. Open question:
-   self-audit gotcha — when this very PR (or future Greptile-related
-   PRs) gets reviewed by Greptile, will Greptile try to flag the
-   `needs-greptile-audit`-detection prose in our own code as the
-   thing it's looking for? Same shape as the Devin self-audit
+2. **Self-audit gotcha.** When this very PR (or future
+   Greptile-related PRs) gets reviewed by Greptile, will Greptile try
+   to flag the `needs-greptile-audit`-detection prose in our own code
+   as the thing it's looking for? Same shape as the Devin self-audit
    regression caught on cube-snap#130 / ctvd#118.
 
 3. **Required-status-check behavior.** Need to confirm Greptile doesn't
@@ -289,10 +287,10 @@ know yet" state) on any format drift — never into silent PASS.
 
 **Operational risk: medium.** Greptile is a third-party SaaS we don't
 control. Format changes, billing surprises, security incidents, and
-service outages are all real. The opt-in gate limits blast radius:
-worst case, the labeler stops working on PRs that have
-`needs-greptile-audit`, which leaves the PR's `needs-devin-audit` /
-`needs-codex-audit` lanes intact.
+service outages are all real. The label-triggered config limits blast
+radius: worst case, a labeled PR still spends one review or the labeler
+stops working on PRs that have `needs-greptile-audit`, which leaves the
+PR's `needs-devin-audit` / `needs-codex-audit` lanes intact.
 
 **Privacy risk: medium for cube-snap (public anyway), real for ctvd
 (private).** See "Privacy / security tradeoff" above. Listed as an

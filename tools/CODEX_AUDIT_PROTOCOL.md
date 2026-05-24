@@ -192,8 +192,8 @@ for the now-paused Qwen lane, kept on disk as a starting point.)
 
 | Aspect | Devin | Codex | Greptile |
 |---|---|---|---|
-| Trigger | GitHub webhook (cloud) | Manual CLI invocation (local subprocess) | GitHub App auto-fires on every PR |
-| Model | Devin's hosted (paid) | OpenAI Codex (paid per OpenAI pricing; uses user's `~/.codex/auth.json`) | Greptile's hosted (free OSS tier) |
+| Trigger | GitHub webhook when `needs-devin-audit` / `@devin audit` is used | Manual CLI invocation (local subprocess) | GitHub App review when `needs-greptile-audit` is used |
+| Model | Devin's hosted (paid) | OpenAI Codex (paid per OpenAI pricing; uses user's `~/.codex/auth.json`) | Greptile's hosted (paid per review/tier) |
 | Code access | Diff text via webhook | Real git worktree at head SHA | Diff + repo context via Greptile's GitHub App |
 | Latency | 2–10 min typical | 5–10 min typical for `codex review` | 30s–2 min typical |
 | Review style | Final-state QA + checklist | Whole-repo code tracing | Inline comments with severity badges (P0/P1/P2/P3) |

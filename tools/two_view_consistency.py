@@ -27,11 +27,10 @@ sides. There is no additional rotation. The effect of this single
 flip is to expose the previously-hidden faces (D, L, B) to the
 camera, replacing the previously-visible faces (U, R, F).
 
-(The cube-snap CameraCapture.tsx UI text currently says "Turn it
-upside down, then rotate 90° clockwise from above" — that "then 90°
-clockwise" portion is incorrect with respect to the project's actual
-capture convention and should be fixed in cube-snap. The 54-char
-URFDLB-ordering logic in the recognizer assumes only the 180° flip.)
+(Historical note: cube-snap previously described this as "turn it
+upside down, then rotate 90° clockwise from above"; that extra yaw was
+incorrect. The 54-char URFDLB-ordering logic in the recognizer assumes
+only the 180° flip.)
 
 ## The metric
 

@@ -121,9 +121,9 @@ def main() -> int:
         set_id, side = key.rsplit("_", 1)
         if side not in ("A", "B"):
             continue
-        face_def = FACE_DEFS_BY_SIDE[side]["right"]  # vertex + 3 outer corners
         truth_row = truth[key]
         try:
+            face_def = FACE_DEFS_BY_SIDE[side]["right"]  # vertex + 3 outer corners
             quad = [truth_row[name] for name in face_def]
         except KeyError as exc:
             rows.append({"key": key, "error": f"missing key {exc}"})
@@ -160,12 +160,12 @@ def main() -> int:
     lines = [
         "# Yaw probe — proposed values for full_corner_ground_truth.json",
         "",
-        "Sampled the right-slot face center sticker in each of the 12 ",
-        "full-corner-truth rows and mapped its color → WCA face → yaw via ",
+        "Sampled the right-slot face center sticker in each of the 12",
+        "full-corner-truth rows and mapped its color → WCA face → yaw via",
         "`tools/corner_conventions.wca_face_by_slot`.",
         "",
-        "**For user confirmation before committing.** Spot-check rows where ",
-        "the classified color seems off (lighting / sticker glare can ",
+        "**For user confirmation before committing.** Spot-check rows where",
+        "the classified color seems off (lighting / sticker glare can",
         "confuse the classifier).",
         "",
         "| Key | Image | Sampled RGB | Classified | Proposed yaw | Center px |",

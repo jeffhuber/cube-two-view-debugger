@@ -1,11 +1,11 @@
 # Yaw probe — proposed values for full_corner_ground_truth.json
 
-Sampled the right-slot face center sticker in each of the 12 
-full-corner-truth rows and mapped its color → WCA face → yaw via 
+Sampled the right-slot face center sticker in each of the 12
+full-corner-truth rows and mapped its color → WCA face → yaw via
 `tools/corner_conventions.wca_face_by_slot`.
 
-**For user confirmation before committing.** Spot-check rows where 
-the classified color seems off (lighting / sticker glare can 
+**For user confirmation before committing.** Spot-check rows where
+the classified color seems off (lighting / sticker glare can
 confuse the classifier).
 
 | Key | Image | Sampled RGB | Classified | Proposed yaw | Center px |

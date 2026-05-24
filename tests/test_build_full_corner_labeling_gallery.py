@@ -230,23 +230,24 @@ def test_yaw_is_consistent_per_set_across_A_and_B():
     for key, row in data.items():
         if "yaw_quarter_turns" not in row:
             continue
-        set_id, _ = key.rsplit("_", 1)
+        set_id, side = key.rsplit("_", 1)
         yaw = row["yaw_quarter_turns"]
         if set_id in set_yaws:
-            assert set_yaws[set_id] == yaw, (
+            first_side, first_yaw = set_yaws[set_id]
+            assert first_yaw == yaw, (
                 f"Set {set_id}: yaw mismatch — A and B captures should "
-                f"share the same yaw. Got A/B = "
-                f"{set_yaws[set_id]} / {yaw}."
+                f"share the same yaw. Got {first_side}/{side} = "
+                f"{first_yaw} / {yaw}."
             )
         else:
-            set_yaws[set_id] = yaw
+            set_yaws[set_id] = (side, yaw)
 
 
 def test_currently_labeled_full_corner_rows_all_have_yaw():
     """Pin: every row currently in `full_corner_ground_truth.json` has a
     yaw_quarter_turns value (added in this PR after visual probe). New
     rows added later via the labeling gallery may temporarily lack yaw
-    until the gallery is updated to emit it; this test guards against
+    until a human or probe assigns it; this test guards against
     REGRESSING the 12 currently-labeled rows."""
     data = json.loads(FULL_CORNER_FIXTURE.read_text(encoding="utf-8"))
     expected_keys = {

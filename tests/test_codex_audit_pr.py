@@ -94,6 +94,41 @@ def test_parse_no_codex_marker_returns_unknown():
     assert "no codex final-verdict block" in parsed.prose.lower()
 
 
+def test_parse_falls_back_to_single_stderr_marker():
+    """Task #85: occasionally the Codex CLI routes the final verdict
+    marker to stderr. If stdout has no marker and stderr has exactly one
+    column-0 marker, parse stderr as a narrow fallback."""
+    parsed = c.parse_codex_output(
+        stdout="exec progress without final marker",
+        stderr="progress chatter\ncodex\nAll clear from stderr.\n",
+    )
+    assert parsed.verdict == "PASS"
+    assert "All clear from stderr" in parsed.prose
+
+
+def test_parse_prefers_stdout_marker_over_stderr_noise():
+    """Round-6 contamination guard: stderr can contain noisy P-tags; once
+    stdout has a real verdict marker, stderr must not influence parsing."""
+    parsed = c.parse_codex_output(
+        stdout="codex\nAll clear.\n",
+        stderr="progress\ncodex\n- [P2] stderr noise — not a finding\n",
+    )
+    assert parsed.verdict == "PASS"
+    assert parsed.p2_count == 0
+    assert "stderr noise" not in parsed.prose
+
+
+def test_parse_multiple_stderr_markers_remains_unknown():
+    """If stdout has no marker and stderr has multiple possible markers,
+    fail closed rather than risk anchoring on progress chatter."""
+    parsed = c.parse_codex_output(
+        stdout="exec progress without final marker",
+        stderr="codex\nquoted command\ncodex\nmaybe verdict\n",
+    )
+    assert parsed.verdict == "UNKNOWN"
+    assert "multiple possible codex markers" in parsed.prose
+
+
 def test_audit_pr_unknown_verdict_requeues_with_stale_trailer(monkeypatch):
     """Codex round 3 of #234 — P2 follow-on: when parser returns UNKNOWN,
     audit_pr must format a requeue comment (STALE_TRAILER) and report
@@ -378,6 +413,7 @@ def _install_audit_mocks(
     *,
     pr_meta: Dict[str, Any],
     codex_stdout: str,
+    codex_stderr: str = "",
     pr_meta_after: Dict[str, Any] = None,
     posted_records: List[Dict[str, Any]] = None,
 ) -> None:
@@ -403,7 +439,9 @@ def _install_audit_mocks(
     monkeypatch.setattr(c, "_create_temp_worktree",
                         lambda *a, **k: Path("/tmp/fake-wt-test"))
     monkeypatch.setattr(c, "_remove_worktree", lambda *a, **k: None)
-    monkeypatch.setattr(c, "run_codex_review", lambda *a, **k: (codex_stdout, ""))
+    monkeypatch.setattr(
+        c, "run_codex_review", lambda *a, **k: (codex_stdout, codex_stderr)
+    )
 
 
 def test_audit_pr_pass_path(monkeypatch):
@@ -456,6 +494,35 @@ def test_audit_pr_blocked_path(monkeypatch):
     assert result.parsed.p2_count == 1
     assert result.parsed.p3_count == 1
     assert "Codex Audit: BLOCKED" in posted[0]["body"]
+
+
+def test_audit_pr_parses_stderr_fallback(monkeypatch):
+    """End-to-end guard for task #85: audit_pr must pass stderr into the
+    parser so a single-marker stderr verdict can become PASS/BLOCKED
+    instead of UNKNOWN/requeue."""
+    pr_meta = _fake_pr(head_sha="dddd44445555")
+    posted: List[Dict[str, Any]] = []
+    _install_audit_mocks(
+        monkeypatch,
+        pr_meta=pr_meta,
+        codex_stdout="exec progress without final marker",
+        codex_stderr=REAL_PASS_OUTPUT,
+        posted_records=posted,
+    )
+    config = c.AuditConfig(
+        github_token="test",
+        repo_paths={"jeffhuber/cube-two-view-debugger": Path("/tmp/fake-repo")},
+    )
+    Path("/tmp/fake-repo").mkdir(exist_ok=True)
+    try:
+        result = c.audit_pr(config, "jeffhuber/cube-two-view-debugger", 17)
+    finally:
+        Path("/tmp/fake-repo").rmdir()
+    assert result.verdict == "PASS"
+    assert result.trailer == c.DONE_TRAILER
+    assert result.parsed is not None
+    assert result.parsed.prose.startswith("The changes add")
+    assert "Codex Audit: PASS" in posted[0]["body"]
 
 
 def test_audit_pr_stale_head(monkeypatch):

@@ -94,7 +94,7 @@ class AuditConfig:
 
 @dataclass
 class CodexVerdict:
-    """Parsed verdict from `codex review` stdout."""
+    """Parsed verdict from `codex review` output (stdout, or stderr fallback)."""
     verdict: str  # "PASS" | "BLOCKED"
     prose: str    # the final review block (clean, ready to render as a comment)
     p0_count: int = 0
@@ -203,8 +203,13 @@ def post_pr_comment(repo: str, pr_number: int, body: str, *, token: str) -> Dict
 _P_TAG_RE = re.compile(r"^\s*[-*]\s*\[P([0-3])\]")
 
 
-def parse_codex_output(stdout: str) -> CodexVerdict:
-    """Extract the verdict block from `codex review` stdout.
+def _codex_marker_indices(lines: List[str]) -> List[int]:
+    """Return indices of column-0 `codex` verdict markers."""
+    return [i for i, line in enumerate(lines) if line.rstrip() == "codex"]
+
+
+def parse_codex_output(stdout: str, stderr: str = "") -> CodexVerdict:
+    """Extract the verdict block from `codex review` output.
 
     Codex's CLI emits a streaming log: interspersed `exec` blocks (commands
     it ran) and intermediate prose, ending with a final review section
@@ -237,7 +242,7 @@ def parse_codex_output(stdout: str) -> CodexVerdict:
     the first occurrence.
     """
     # Split by lines that are exactly "codex" (the final-verdict marker).
-    # The verdict block is everything from the LAST such line onward.
+    # The verdict block is everything from the LAST stdout marker onward.
     #
     # Codex round 7 of #234 — P2: the original code used `line.strip() ==
     # "codex"` which would match indented `  codex  ` lines INSIDE the
@@ -247,23 +252,43 @@ def parse_codex_output(stdout: str) -> CodexVerdict:
     # Codex's actual transcript markers are at column 0 with no
     # indentation. Match exactly, allowing only trailing whitespace.
     lines = stdout.splitlines()
-    last_codex_idx = -1
-    for i, line in enumerate(lines):
-        if line.rstrip() == "codex":  # no .lstrip — column-0 only
-            last_codex_idx = i
-    if last_codex_idx == -1:
-        # No final `codex` marker found. Codex round 3 of #234 — P2: the
-        # original code returned a PASS-shaped verdict here, which would
-        # silently mark unaudited PRs as `codex-audit-done` on format
-        # drift or empty/partial successful output. The safe behavior is
-        # to surface this as UNKNOWN so the orchestrator emits the
-        # `needs-codex-audit` (requeue) trailer instead of auto-PASS.
-        return CodexVerdict(
-            verdict="UNKNOWN",
-            prose="(no codex final-verdict block found in output — "
-                  "the codex CLI may have produced no review or its "
-                  "output format may have drifted; requeue and retry)",
-        )
+    marker_indices = _codex_marker_indices(lines)
+
+    if marker_indices:
+        last_codex_idx = marker_indices[-1]
+    else:
+        # Task #85 / PR #255: the Codex CLI can occasionally route the
+        # final verdict marker to stderr even though the normal review
+        # channel is stdout. Keep the round-6 contamination guard by
+        # falling back to stderr ONLY when stdout has no markers and stderr
+        # has exactly one column-0 marker. Multiple stderr markers are more
+        # likely progress chatter / quoted commands than a trustworthy final
+        # verdict anchor.
+        stderr_lines = stderr.splitlines()
+        stderr_marker_indices = _codex_marker_indices(stderr_lines)
+        if len(stderr_marker_indices) == 1:
+            lines = stderr_lines
+            last_codex_idx = stderr_marker_indices[0]
+        else:
+            reason = "no codex final-verdict block found in output"
+            if len(stderr_marker_indices) > 1:
+                reason = (
+                    "no stdout final-verdict marker found, and stderr had "
+                    "multiple possible codex markers"
+                )
+            # No final `codex` marker found. Codex round 3 of #234 — P2:
+            # the original code returned a PASS-shaped verdict here,
+            # which would silently mark unaudited PRs as
+            # `codex-audit-done` on format drift or empty/partial
+            # successful output. The safe behavior is to surface this as
+            # UNKNOWN so the orchestrator emits the `needs-codex-audit`
+            # (requeue) trailer instead of auto-PASS.
+            return CodexVerdict(
+                verdict="UNKNOWN",
+                prose=f"({reason} — the codex CLI may have produced no "
+                      "review or its output format may have drifted; "
+                      "requeue and retry)",
+            )
 
     verdict_block = "\n".join(lines[last_codex_idx + 1 :]).strip()
 
@@ -564,7 +589,7 @@ def audit_pr(config: AuditConfig, repo: str, pr_number: int) -> AuditResult:
         _remove_worktree(local_repo, worktree_path)
 
     # Parse Codex's verdict.
-    parsed = parse_codex_output(codex_stdout)
+    parsed = parse_codex_output(codex_stdout, codex_stderr)
 
     # Stale-head check: refetch PR head and compare. If it changed mid-review,
     # the verdict applies to a no-longer-current SHA — requeue.

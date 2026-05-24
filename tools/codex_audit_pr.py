@@ -66,6 +66,7 @@ import tempfile
 import time
 import urllib.error
 import urllib.request
+import warnings
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -498,6 +499,12 @@ def _build_subprocess_env(venv_path: Optional[Path]) -> Dict[str, str]:
         return env
     abs_venv = venv_path.resolve()
     if not (abs_venv / "bin" / "python").exists():
+        warnings.warn(
+            f"venv path {abs_venv} has no bin/python; "
+            "leaving subprocess environment unchanged",
+            RuntimeWarning,
+            stacklevel=2,
+        )
         return env
     venv_bin = str(abs_venv / "bin")
     env["VIRTUAL_ENV"] = str(abs_venv)

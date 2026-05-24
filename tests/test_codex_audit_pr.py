@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import os
 import subprocess
+import warnings
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -789,9 +790,30 @@ def test_build_subprocess_env_noop_when_venv_missing_bin_python(
     monkeypatch.delenv("VIRTUAL_ENV", raising=False)
     fake_venv = tmp_path / "not-a-venv"
     fake_venv.mkdir()  # exists but has no bin/python
-    env = c._build_subprocess_env(fake_venv)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        env = c._build_subprocess_env(fake_venv)
     assert env["PATH"] == "/sentinel/path"
     assert "VIRTUAL_ENV" not in env
+
+
+def test_build_subprocess_env_warns_when_venv_path_is_invalid(
+    tmp_path, monkeypatch,
+):
+    """An explicit invalid venv path should not silently fall back to
+    ambient Python, since that is the failure mode this feature fixes."""
+    monkeypatch.setenv("PATH", "/sentinel/path")
+    fake_venv = tmp_path / "not-a-venv"
+    fake_venv.mkdir()
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        env = c._build_subprocess_env(fake_venv)
+    assert env["PATH"] == "/sentinel/path"
+    assert "VIRTUAL_ENV" not in env
+    assert len(caught) == 1
+    assert issubclass(caught[0].category, RuntimeWarning)
+    assert str(fake_venv.resolve()) in str(caught[0].message)
+    assert "bin/python" in str(caught[0].message)
 
 
 def test_build_subprocess_env_prepends_venv_bin_when_python_exists(

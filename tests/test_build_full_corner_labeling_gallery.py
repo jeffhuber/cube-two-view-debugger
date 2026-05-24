@@ -209,10 +209,10 @@ def test_full_corner_truth_fixture_is_schema_clean():
             assert name in row
             assert len(row[name]) == 2
             assert all(isinstance(value, (int, float)) for value in row[name])
-        # Per-row yaw_quarter_turns is OPTIONAL in the schema (the
-        # labeling gallery does not yet emit it; regeneration would
-        # produce rows without yaw — see Codex P2 on the yaw-fixture
-        # PR). When present it must be a valid quarter-turn value.
+        # Per-row yaw_quarter_turns is OPTIONAL in the schema. The
+        # labeling gallery round-trips it when present, but future rows
+        # may be saved before yaw has been assigned. When present it
+        # must be a valid quarter-turn value.
         if "yaw_quarter_turns" in row:
             assert isinstance(row["yaw_quarter_turns"], int)
             assert row["yaw_quarter_turns"] in (0, 1, 2, 3)

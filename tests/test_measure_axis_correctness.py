@@ -356,6 +356,74 @@ def test_resolve_image_path_walks_all_same_pattern_matches_in_one_root(tmp_path)
     )
 
 
+def test_run_all_indexes_numeric_set_ids_as_str(tmp_path, monkeypatch):
+    """Codex P2 on PR #268 head 03b6816: manifests in this repo may
+    encode `setId` as a JSON number; the truth-key parse always
+    produces a string. Without normalization, `set_index.get(set_id)`
+    misses the pair and the row gets reported as
+    "set N not in manifest" even though it's present.
+
+    Verify the fix end-to-end by running `run_all` with a numeric-id
+    manifest + a truth file with the corresponding string key, and
+    checking the row gets traced (not skipped as missing-set).
+    """
+    truth = tmp_path / "truth.json"
+    truth.write_text(
+        json.dumps({"20_A": {"approved": True, "yaw_quarter_turns": 0}}),
+        encoding="utf-8",
+    )
+    # Pair with numeric setId. imageAPath points at a tiny synthetic
+    # file that doesn't need to be a real cube image — we'll monkey-
+    # patch evaluate_one_row to just record the call so the test
+    # doesn't depend on rembg / heavy compute.
+    img = tmp_path / "fake_image_A.JPG"
+    img.write_bytes(b"\xff\xd8\xff\xe0")
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps({
+            "pairs": [
+                {"setId": 20, "imageAPath": str(img), "imageBPath": ""},
+            ],
+        }),
+        encoding="utf-8",
+    )
+
+    seen: list = []
+
+    def fake_evaluate_one_row(sess, key, image_path, row, max_image_dim):
+        seen.append(key)
+        return {
+            "key": key,
+            "status": "traced",
+            "corr_true": {"axis_match": {"total_misfit_deg": 12.3}},
+            "corr_false": {"axis_match": {"total_misfit_deg": 14.1}},
+        }
+
+    monkeypatch.setattr(m, "evaluate_one_row", fake_evaluate_one_row)
+
+    # Skip the rembg session setup by stubbing new_session.
+    class _FakeSess:
+        pass
+
+    fake_module = type("X", (), {"new_session": lambda *a, **kw: _FakeSess()})()
+    monkeypatch.setitem(sys.modules, "rembg", fake_module)
+
+    payload = m.run_all(
+        json.loads(truth.read_text()),
+        json.loads(manifest.read_text()),
+        max_image_dim=1600,
+        truth_path=truth,
+        manifest_path=manifest,
+    )
+    # Row was traced (not skipped as missing-set).
+    assert seen == ["20_A"], (
+        f"Expected the numeric-setId pair to be matched against the "
+        f"string set_id '20'; got seen={seen}, skipped="
+        f"{payload.get('skipped')}"
+    )
+    assert payload["per_row"][0]["status"] == "traced"
+
+
 def test_resolve_image_path_returns_none_when_no_sha_match(tmp_path):
     """If no candidate matches the expected SHA, resolver returns None
     (caller skips the row instead of tracing wrong pixels)."""

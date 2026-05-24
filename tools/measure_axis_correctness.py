@@ -438,8 +438,15 @@ def run_all(
 ) -> Dict[str, Any]:
     from rembg import new_session  # noqa: E402
     sess = new_session()
+    # Normalize setId to str — JSON manifests in this repo sometimes
+    # encode setId as a number; the truth-key parse on `key.rpartition`
+    # always yields strings, so an unnormalized int-keyed index misses
+    # those pairs and the row gets reported as "set N not in manifest"
+    # even though the pair is present (Codex P2 on PR #268 head
+    # 03b6816). Other repo manifest handling follows this same
+    # normalization.
     set_index = {
-        pair["setId"]: pair for pair in manifest.get("pairs", [])
+        str(pair["setId"]): pair for pair in manifest.get("pairs", [])
     }
     image_roots = _candidate_image_roots(manifest)
     records: List[Dict[str, Any]] = []

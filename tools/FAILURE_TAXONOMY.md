@@ -21,10 +21,16 @@
 
 Used in `tools/baseline_post_218.py` and the post-#218 baseline:
 
+> **Current caution:** these sub-categories were computed against the legacy
+> `near_x/near_y/near_z` fixture. A 12-row seed audit shows those labels match
+> the far/double-axis triplet, not canonical one-edge labels. Treat row-level
+> `CHIRALITY_*` evidence as provisional until the baseline is regenerated from
+> `Va/Vb + 0..5` labels.
+
 | Sub-category | Meaning |
 |---|---|
-| `CHIRALITY_MISS` | Model.far matches user.near; detector said `correct` or `ambiguous` — flip needed but missed. |
-| `CHIRALITY_FALSE_FLIP` | Model.far matches user.near; detector said `corrected_60deg_flip` — wrongly flipped a previously-correct model. |
+| `CHIRALITY_MISS` | Legacy meaning: model.far matches user.near; detector said `correct` or `ambiguous` — flip needed but missed. |
+| `CHIRALITY_FALSE_FLIP` | Legacy meaning: model.far matches user.near; detector said `corrected_60deg_flip` — wrongly flipped a previously-correct model. |
 
 (Names retained for backward compatibility with the baseline JSON
 field even after the chirality → near_far_phase rename. Future

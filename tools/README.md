@@ -35,6 +35,7 @@
 |---|---|
 | [`GLOBAL_CUBE_MODEL.md`](GLOBAL_CUBE_MODEL.md) | Global cube model implementation spec. |
 | [`NEAR_FAR_PHASE_REPORT.md`](NEAR_FAR_PHASE_REPORT.md) | Near/far phase ambiguity framing + current detector. (formerly CHIRALITY_DETECTION_REPORT.md) |
+| [`FULL_CORNER_LABELING.md`](FULL_CORNER_LABELING.md) | Explicit `Va/Vb + 0..5` human labeling convention, including A/B face outlines and flattened facelet mapping. Source of truth for `tests/fixtures/full_corner_ground_truth.json` and for disambiguating older `near_*` / model-axis labels. |
 | [`INTERIOR_BEZEL_DETECTION.md`](INTERIOR_BEZEL_DETECTION.md) | Interior bezel detector (initializer for global model). |
 | [`RECTIFY_FACES.md`](RECTIFY_FACES.md) | Per-face rectification — when it's safe to use. |
 | [`AUTO_GEOMETRY_PIPELINE.md`](AUTO_GEOMETRY_PIPELINE.md) | Auto-geometry mask-path overview. |
@@ -91,8 +92,8 @@
 
 | Script | What it does |
 |---|---|
-| **`baseline_post_218.py`** | **THE global-model benchmark.** Runs global model on 58-case labeled gallery, categorizes, emits JSON + report. Supports `--diff` for row-level regression checks. |
-| **`baseline_cv_local.py`** | **THE cv-local benchmark.** Same 58 cases; derives (vertex, 3 near, 3 far) from cv-local's face-quads via union-find clustering. JSON schema uniform with `baseline_post_218.py` so `--diff` works across both sides. Headline: 90% structural fit-fail. |
+| **`baseline_post_218.py`** | **Legacy global-model benchmark.** Runs global model on the axis-labeled gallery, categorizes, emits JSON + report. Supports `--diff` for row-level regression checks. **Provisional until regenerated from full-corner truth.** |
+| **`baseline_cv_local.py`** | **Legacy cv-local geometry benchmark.** Same axis-labeled cases; derives (vertex, 3 legacy-near clusters, 3 far clusters) from cv-local's face-quads via union-find clustering. JSON schema uniform with `baseline_post_218.py` so `--diff` works across both sides. **Provisional until regenerated from full-corner truth.** |
 | **`main_solvable_baseline.py`** | **THE production solvable-rate benchmark.** Aggregates `tools/probe_corpus.py` JSON for corpus + hard-case manifests into per-sticker, exact, legal-state, confident-solve, and confident-wrong metrics. |
 | **`phase2b_trust_matrix.py`** | **Phase 2B trust-signal matrix.** Joins phase_sep + cv-local status per case/run; evaluates 17 candidate trust rules vs Phase 2 bar (≥80% recall, ≤10% GOOD FPR). Diagnostics-only. Headline: no rule over existing signals meets the bar; `--recompute-global-model` flag reserved for fit_residual / vertex disagreement / two-view extension. |
 | `evaluate_axis_ground_truth.py` | Per-axis bearing/length error against a candidate model output. |
@@ -114,7 +115,8 @@
 
 | Script | What it does |
 |---|---|
-| `build_axis_labeling_gallery.py` | Generate the gallery HTML for user vertex+axis labeling. |
+| `build_full_corner_labeling_gallery.py` | Generate the explicit `Va/Vb + 0..5` file-based gallery. Convention reset for full visible-corner truth; avoids `near_*` / model-axis ambiguity. |
+| `build_axis_labeling_gallery.py` | Legacy vertex+axis gallery. Do not use for new geometry truth unless its `near_*` fields are explicitly migrated from full-corner labels. |
 | `active_vertex_axis_label_queue_v0.py` | Active-learning queue for picking next photos to label. |
 | `vertex_axis_label_server.py` | Server for the labeling UI. |
 | `vertex_axis_feedback.py` | Per-label feedback collection. |

@@ -1,5 +1,10 @@
 # Phase 2a: phase-confidence trust-signal calibration
 
+> **Legacy-data caution (2026-05-23):** this report depends on
+> `post_218_baseline.json`, which depends on the legacy `near_*` axis
+> fixture. Treat its row-level phase/chirality conclusions as provisional
+> until regenerated from `Va/Vb + 0..5` full-corner truth.
+
 ## Question
 
 Can `|phase_darkness_separation|` from the global cube model serve

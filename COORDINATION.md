@@ -57,8 +57,9 @@ not a replacement for it. The role split reflects that:
 - `tools/FAILURE_TAXONOMY.md` — failure-mode reference.
 - `tools/BENCHMARK_INDEX.md` — fixture/report/script lookup.
 - `tools/POST_218_BASELINE_AND_TAXONOMY.md` — the decision spine. Updates happen only via committed re-baseline runs of `baseline_post_218.py`.
-- `tests/fixtures/gcm_axis_ground_truth.json` — user-labeled axis ground truth. Treat as append-only (extend, don't rewrite).
-- `tests/fixtures/post_218_baseline.json` — committed accuracy snapshot. Regenerate via `baseline_post_218.py`.
+- `tools/FULL_CORNER_LABELING.md` / `tools/corner_conventions.py` / `tests/fixtures/full_corner_ground_truth.json` — canonical `Va/Vb + 0..5` corner convention, A/B face outlines, flattened facelet mapping, and seed full-corner truth. Update these before touching any downstream geometry convention.
+- `tests/fixtures/gcm_axis_ground_truth.json` — legacy user-labeled axis fixture. Treat as provisional until audited/migrated against full-corner labels; do not assume `near_x/near_y/near_z` are one-edge truth.
+- `tests/fixtures/post_218_baseline.json` — legacy accuracy snapshot derived from `gcm_axis_ground_truth.json`. Regenerate only after the fixture semantics are made explicit.
 - `tools/extract_color_samples.py` — Claude's, but Codex added the `white[- ]up` regex fix in #135. **Coordinate before editing.**
 - `tests/test_auto_geometry_metrics.py` — Claude's, but a growing surface. **Coordinate before adding tests that interact with discovery/geometry.**
 

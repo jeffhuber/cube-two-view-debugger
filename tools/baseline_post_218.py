@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
-"""Post-#218 baseline + failure taxonomy on the 58-case axis-labeled
+"""Legacy post-#218 baseline + failure taxonomy on the axis-labeled
 gallery.
 
-Runs the global cube model on every photo whose vertex + 3 near
+Runs the global cube model on every photo whose vertex + 3 legacy-`near`
 corners are recorded in the user-labeled ground truth, then
 categorizes each case into one of:
+
+IMPORTANT: the `near_*` fixture semantics are legacy after the
+2026-05-23 full-corner convention reset. A 12-row seed audit shows those
+fields match the far/double-axis triplet, not canonical one-edge labels.
+Treat this baseline and its `CHIRALITY_*` row-level evidence as provisional
+until regenerated from explicit `Va/Vb + 0..5` labels.
 
   GOOD                  mean per-axis bearing error < 10°
   MARGINAL              10° ≤ err < 25°
@@ -284,8 +290,10 @@ def _render_markdown(summary: Dict[str, Any], by_case: Dict[str, List[Dict[str, 
                  f"{n // summary['n_cases'] if summary['n_cases'] else 0} runs each "
                  f"= {n} total runs.")
     lines.append("")
-    lines.append("Ground truth: user-labeled vertex + 3 near corners per photo")
-    lines.append("(`tests/fixtures/gcm_axis_ground_truth.json`). The eval compares")
+    lines.append("Ground truth: legacy user-labeled vertex + 3 `near_*` corners")
+    lines.append("per photo (`tests/fixtures/gcm_axis_ground_truth.json`).")
+    lines.append("These labels are provisional until regenerated from full-corner")
+    lines.append("truth (`Va/Vb + 0..5`). The eval compares")
     lines.append("model bearings (in gallery coords) to user bearings (in original")
     lines.append("coords); bearings are exactly invariant under the gallery's")
     lines.append("uniform-scale-and-translation crop, so no crop reconstruction is")

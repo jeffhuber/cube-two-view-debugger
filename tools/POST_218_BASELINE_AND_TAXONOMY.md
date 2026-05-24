@@ -2,7 +2,7 @@
 
 ## Role of this document
 
-This is the **decision spine** for first-principles geometry
+This is the **legacy decision spine** for first-principles geometry
 work as of 2026-05-22, per the Codex+Devin strategic synthesis:
 
 > A plausible cube model is cheap. A trustworthy cube model is
@@ -23,7 +23,17 @@ The global cube model is **NOT** on a near-term path to replace
   emit row-level before/after deltas against this baseline, not
   just aggregate pass rates (see `--diff` mode below).
 
-Use this report as the regression gate.
+**2026-05-23 convention caution:** this report was computed against
+`tests/fixtures/gcm_axis_ground_truth.json`, whose `near_x/near_y/near_z`
+semantics are legacy. Initial audit against the 12-row full-corner seed
+fixture shows those fields match the far/double-axis triplet (`A -> 0,2,4`,
+`B -> 1,3,5`), not canonical one-edge labels. The canonical corner convention is
+[`FULL_CORNER_LABELING.md`](FULL_CORNER_LABELING.md):
+`A slots: upper=Va+1,0,5; right=Va+3,2,1; front=Va+5,4,3` and
+`B slots: upper=Vb+2,3,4; right=Vb+0,1,2; front=Vb+4,5,0`. Canonical WCA
+face names for side slots depend on capture yaw. Use this report for
+historical context, but do not treat row-level `CHIRALITY_*` evidence as
+canonical until the baseline is regenerated from full-corner truth.
 
 ## What the "chirality" concept actually is
 
@@ -80,12 +90,13 @@ check) landed.
 
 **Eval set**: 58 cases × 2 runs each = 116 total runs.
 
-Ground truth: user-labeled vertex + 3 near corners per photo
+Ground truth: legacy user-labeled vertex + 3 `near_*` corners per photo
 (`tests/fixtures/gcm_axis_ground_truth.json`). The eval compares
 model bearings (in gallery coords) to user bearings (in original
 coords); bearings are exactly invariant under the gallery's
 uniform-scale-and-translation crop, so no crop reconstruction is
-needed.
+needed. The `near_*` target semantics are provisional pending the
+full-corner migration.
 
 ## Headline accuracy
 

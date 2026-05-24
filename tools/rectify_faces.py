@@ -272,10 +272,11 @@ def build_net_grid(rectified_panels: Dict[str, Image.Image], face_size: int) -> 
             U
           F R B  (using F-R-B order from view A, plus D below)
             D
-    For our 3-face views (URF visible in A, DLB in B), we use:
+    For yaw=0 3-face views (URF visible in A, DLB in B), we use:
             U R       D L
             F .       B .
-    rendered side-by-side to compare A and B."""
+    rendered side-by-side to compare A and B. Non-zero capture yaw changes
+    which side faces occupy these slots."""
     pad = 10
     # 2 sides × 2 rows × 2 cols = 4×2 grid of slots, but only fill 3 per side
     cols = 6  # U R | _ D L | _
@@ -291,7 +292,7 @@ def build_net_grid(rectified_panels: Dict[str, Image.Image], face_size: int) -> 
         y = pad + row * (face_size + pad)
         canvas.paste(rectified_panels[face], (x, y))
 
-    # Side A: U R F arranged top-row U/R, bottom-row F (mimics partial net)
+    # Side A yaw=0: U R F arranged top-row U/R, bottom-row F (mimics partial net)
     paste_face("U", 0, 0)
     paste_face("R", 1, 0)
     paste_face("F", 0, 1)

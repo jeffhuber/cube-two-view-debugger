@@ -27,6 +27,33 @@ There is ONE genuinely-chirality concern still in
 `fit_cube_template_to_anchors` (the CCW vs CW hexagon ordering),
 and the comment there is explicit about distinguishing the two.
 
+## Corner convention update (2026-05-23)
+
+The canonical human convention for geometry labels is now
+[`FULL_CORNER_LABELING.md`](FULL_CORNER_LABELING.md), backed by
+`tools/corner_conventions.py`:
+
+```text
+Image A slots: upper=Va+1,0,5; right=Va+3,2,1; front=Va+5,4,3
+Image B slots: upper=Vb+2,3,4; right=Vb+0,1,2; front=Vb+4,5,0
+```
+
+Canonical WCA face names for the side slots depend on capture yaw; the
+corner numbering itself does not.
+
+The one-edge triplet is side-specific:
+
+```text
+A one-edge = 1,3,5; A far = 0,2,4
+B one-edge = 0,2,4; B far = 1,3,5
+```
+
+Initial audit against `tests/fixtures/full_corner_ground_truth.json` shows
+the legacy `near_x/near_y/near_z` labels match the far/double-axis triplet on
+the 12 seed photos (`A -> 0,2,4`, `B -> 1,3,5`). Treat row-level
+`CHIRALITY_MISS` / `CHIRALITY_FALSE_FLIP` evidence as provisional until the
+legacy baseline is regenerated from full-corner labels.
+
 ## Bug
 
 The Procrustes brute-force fit in `fit_cube_template_to_anchors` searches

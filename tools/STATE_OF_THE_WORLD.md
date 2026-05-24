@@ -1,4 +1,4 @@
-# State of the world (2026-05-22)
+# State of the world (2026-05-23)
 
 > One-page map of the project. Start here.
 
@@ -53,6 +53,7 @@ principles work.
 | **The categorization of failure modes** | [`FAILURE_TAXONOMY.md`](FAILURE_TAXONOMY.md) |
 | **Which fixture/report answers which question** | [`BENCHMARK_INDEX.md`](BENCHMARK_INDEX.md) |
 | **The "chirality" / near-far phase issue** | [`NEAR_FAR_PHASE_REPORT.md`](NEAR_FAR_PHASE_REPORT.md) |
+| **The explicit corner/facelet convention** | [`FULL_CORNER_LABELING.md`](FULL_CORNER_LABELING.md) |
 | **The global cube model implementation** | [`GLOBAL_CUBE_MODEL.md`](GLOBAL_CUBE_MODEL.md) |
 | **Coordination between Claude and Codex** | `../COORDINATION.md` |
 | **Status of each script under `tools/`** | [`README.md`](README.md) |
@@ -61,9 +62,11 @@ principles work.
 
 | Asset | Path | What it is |
 |---|---|---|
-| **Axis-labeled ground truth** | `tests/fixtures/gcm_axis_ground_truth.json` | 58 user-labeled photos: vertex + 3 near corners per photo. THE eval set + future training data. |
-| **Post-#218 baseline snapshot** | `tests/fixtures/post_218_baseline.json` | Current-main accuracy snapshot. Regression gate for geometry-sensitive PRs. |
-| **Benchmark harness** | `tools/baseline_post_218.py` | Runs the eval, supports `--diff` mode for row-level deltas. |
+| **Full-corner convention** | `tools/FULL_CORNER_LABELING.md` | Canonical `Va/Vb + 0..5` convention, A/B face outlines, flattened facelet mapping, and legacy-axis audit note. |
+| **Full-corner seed truth** | `tests/fixtures/full_corner_ground_truth.json` | First canonical 12-photo full-corner fixture, covering sets 20, 38, 40, 41, 43, and 45. |
+| **Axis-labeled ground truth** | `tests/fixtures/gcm_axis_ground_truth.json` | Legacy vertex + `near_*` fixture. Treat as provisional until audited/migrated against full-corner labels; do not assume `near_*` means one-edge truth. |
+| **Post-#218 baseline snapshot** | `tests/fixtures/post_218_baseline.json` | Legacy current-main accuracy snapshot derived from `gcm_axis_ground_truth.json`. Regression-gate semantics are provisional until the fixture is migrated. |
+| **Benchmark harness** | `tools/baseline_post_218.py` | Runs the legacy eval, supports `--diff` mode for row-level deltas. Must be updated/regenerated from full-corner truth before being used as canonical phase/chirality evidence. |
 | **Production recognizer (cv-local)** | `cube-snap` repo, `rubik_recognizer/*` | The primary system. |
 | **Global cube model (research)** | `tools/global_cube_model.py` | Scaffolding around cv-local. NOT a replacement. |
 

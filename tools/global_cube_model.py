@@ -509,6 +509,8 @@ def fit_cube_template_to_anchors(
     hexagon_vertices_ccw: Sequence[Point],
     bezel_angles_rad: Sequence[float],
     image_size: Optional[Tuple[int, int]] = None,
+    image_rgb: Optional[np.ndarray] = None,
+    tied_residual_rel_epsilon: float = 1e-3,
 ) -> Optional[GlobalCubeModel]:
     """Fit the 3D cube template to 1 cube_center + 6 ordered hexagon
     vertices, using the 3 detected bezel angles to classify which
@@ -610,6 +612,17 @@ def fit_cube_template_to_anchors(
     # All 6 detected vertices in some fixed order
     all_detected = np.array(hexagon_vertices_ccw, dtype=np.float64)
 
+    # Track every perm's (residual, perm, A, b, detected_permuted). The cube's
+    # 3-fold body-diagonal symmetry means up to 6 perms tie at the residual
+    # floor: 3 GOOD chirality and 3 PHASE_SWAPPED (off by a 60° body-diagonal
+    # rotation that swaps near/far corners). Pre-tiebreaker, the iteration
+    # order + bare `<` comparison picked the first tied perm seen, which on
+    # ~25% of the corpus (20_A/41_A/43_A in the 12-row full-corner trace) is
+    # the PHASE_SWAPPED one — producing ~178° final axis misfit even though
+    # a GOOD perm sat at the same residual. See PR #268 + #270 for the
+    # discovery, and the diagnostic table in
+    # `tools/AXIS_CORRECTNESS_REPORT.md`.
+    candidate_records: List[Dict[str, Any]] = []
     for perm in permutations(range(6)):
         detected_permuted = all_detected[list(perm)]
         try:
@@ -617,26 +630,85 @@ def fit_cube_template_to_anchors(
         except Exception:
             continue
         residual = _affine_residual(template_positions, detected_permuted, A, b)
-        if residual < best_residual:
-            best_residual = residual
-            best_correspondence = (perm, template_keys, [tuple(v) for v in detected_permuted])
-            # cube_center is template (0, 0) under the affine = just b
-            cube_center_fitted = (float(b[0]), float(b[1]))
-            # h_x, h_y, h_z = template positions through affine
-            hx_img = A @ np.array(_TEMPLATE_HEXAGON_2D_ISO["h_x"]) + b
-            hy_img = A @ np.array(_TEMPLATE_HEXAGON_2D_ISO["h_y"]) + b
-            hz_img = A @ np.array(_TEMPLATE_HEXAGON_2D_ISO["h_z"]) + b
-            model = GlobalCubeModel(
-                cube_center_screen=cube_center_fitted,
-                axis_x_2d=(float(hx_img[0] - b[0]), float(hx_img[1] - b[1])),
-                axis_y_2d=(float(hy_img[0] - b[0]), float(hy_img[1] - b[1])),
-                axis_z_2d=(float(hz_img[0] - b[0]), float(hz_img[1] - b[1])),
-            )
-            derive_geometry(model)
-            best_model = model
+        candidate_records.append({
+            "perm": perm,
+            "A": A,
+            "b": b,
+            "residual": residual,
+            "detected_permuted": detected_permuted,
+        })
 
-    if best_model is None:
+    if not candidate_records:
         return None
+
+    min_residual = min(r["residual"] for r in candidate_records)
+    # Tied = within rel_epsilon of the floor. Default rel_epsilon=1e-3 picks
+    # up the float-noise ties (residuals that should be mathematically equal
+    # but differ by ~1e-9 due to lstsq numerics) without sweeping in
+    # genuinely-worse perms. On the 12-row corpus this consistently gathers
+    # exactly the 6-perm symmetry equivalent class.
+    tied_threshold = max(min_residual * (1.0 + tied_residual_rel_epsilon), 1e-6)
+    tied = [r for r in candidate_records if r["residual"] <= tied_threshold]
+
+    def _build_model_for_record(rec: Dict[str, Any]) -> GlobalCubeModel:
+        A_rec, b_rec = rec["A"], rec["b"]
+        cube_center_fitted = (float(b_rec[0]), float(b_rec[1]))
+        hx_img = A_rec @ np.array(_TEMPLATE_HEXAGON_2D_ISO["h_x"]) + b_rec
+        hy_img = A_rec @ np.array(_TEMPLATE_HEXAGON_2D_ISO["h_y"]) + b_rec
+        hz_img = A_rec @ np.array(_TEMPLATE_HEXAGON_2D_ISO["h_z"]) + b_rec
+        model = GlobalCubeModel(
+            cube_center_screen=cube_center_fitted,
+            axis_x_2d=(float(hx_img[0] - b_rec[0]), float(hx_img[1] - b_rec[1])),
+            axis_y_2d=(float(hy_img[0] - b_rec[0]), float(hy_img[1] - b_rec[1])),
+            axis_z_2d=(float(hz_img[0] - b_rec[0]), float(hz_img[1] - b_rec[1])),
+        )
+        derive_geometry(model)
+        return model
+
+    # Default tiebreaker — first tied perm in iteration order (preserves
+    # pre-tiebreaker behavior when image_rgb is absent).
+    chosen_record = tied[0]
+    tiebreaker_debug: Dict[str, Any] = {
+        "procrustes_n_tied": len(tied),
+        "procrustes_tied_residual_threshold": round(tied_threshold, 6),
+        "procrustes_min_residual": round(min_residual, 6),
+        "procrustes_tiebreaker": "iteration_order",
+    }
+    if image_rgb is not None and len(tied) > 1:
+        # Phase-separation tiebreaker. For each tied perm, build the
+        # bare-affine model and score it via mean-near minus mean-far
+        # darkness (the same signal `_resolve_near_far_phase` uses post-
+        # PnP). NEGATIVE separation = GOOD; pick the smallest (most
+        # negative) so the GOOD chirality wins. Defensive: if any scoring
+        # call returns None (missing visible_corners), fall back to
+        # iteration order. Cost: ~6 image sampling calls, each <1 ms.
+        scored: List[Tuple[float, Dict[str, Any]]] = []
+        any_failed = False
+        for rec in tied:
+            candidate_model = _build_model_for_record(rec)
+            sep = _score_phase_separation(candidate_model, image_rgb)
+            if sep is None:
+                any_failed = True
+                break
+            scored.append((sep, rec))
+        if not any_failed and scored:
+            scored.sort(key=lambda x: x[0])
+            chosen_record = scored[0][1]
+            tiebreaker_debug["procrustes_tiebreaker"] = "phase_separation"
+            tiebreaker_debug["procrustes_tiebreaker_chosen_separation"] = round(
+                scored[0][0], 2,
+            )
+            tiebreaker_debug["procrustes_tiebreaker_all_separations"] = [
+                round(s, 2) for s, _ in scored
+            ]
+
+    best_model = _build_model_for_record(chosen_record)
+    best_residual = chosen_record["residual"]
+    best_correspondence = (
+        chosen_record["perm"],
+        template_keys,
+        [tuple(v) for v in chosen_record["detected_permuted"]],
+    )
 
     # ---- Perspective-PnP refinement ----
     # The 2D-affine fit above gives us a rough alignment AND the
@@ -771,6 +843,7 @@ def fit_cube_template_to_anchors(
         "bezel_vs_fit_cube_center_offset_px": round(bezel_cc_offset, 1),
         "camera_fx_px": round(fx, 1),
         "camera_principal_point_px": [round(cx_img, 1), round(cy_img, 1)],
+        **tiebreaker_debug,
     }
     best_model.fit_loss = final_rms ** 2
     rms = final_rms
@@ -911,6 +984,42 @@ def _signed_angle_diff_deg(a_rad: float, b_rad: float) -> float:
     while diff <= -180.0:
         diff += 360.0
     return abs(diff)
+
+
+def _score_phase_separation(
+    model: GlobalCubeModel,
+    image_rgb: np.ndarray,
+) -> Optional[float]:
+    """Compute `mean_near - mean_far` darkness separation for `model`.
+
+    Used as a tiebreaker among Procrustes perms that tie at the residual
+    floor due to the cube's 3-fold body-diagonal symmetry. Empirical
+    polarity (validated against the 58-case axis-labeled gallery, see
+    `tools/NEAR_FAR_PHASE_REPORT.md`): NEGATIVE separation = GOOD phase,
+    POSITIVE = phase-swapped. So picking the perm with the most-negative
+    separation among tied perms selects the GOOD chirality at the
+    Procrustes layer, before downstream PnP / phase correction.
+
+    Returns None if the model lacks the required visible_corners (e.g.
+    `derive_geometry` was not called) — caller should treat as "no
+    signal, keep default tiebreak".
+    """
+    near_keys = ["h_x", "h_y", "h_z"]
+    far_keys = ["h_xy", "h_xz", "h_yz"]
+    near_positions = [model.visible_corners.get(k) for k in near_keys]
+    far_positions = [model.visible_corners.get(k) for k in far_keys]
+    if any(p is None for p in near_positions) or any(p is None for p in far_positions):
+        return None
+    vertex = model.cube_center_screen
+    near_darkness = [
+        _line_darkness_from_vertex(image_rgb, vertex, p)  # type: ignore[arg-type]
+        for p in near_positions
+    ]
+    far_darkness = [
+        _line_darkness_from_vertex(image_rgb, vertex, p)  # type: ignore[arg-type]
+        for p in far_positions
+    ]
+    return sum(near_darkness) / 3.0 - sum(far_darkness) / 3.0
 
 
 def _resolve_near_far_phase(
@@ -1155,6 +1264,13 @@ def fit_global_cube_model(
         cube_center, hexagon,
         detection.boundary_angles[:3] if detection is not None else (0, 0, 0),
         image_size=silhouette_mask.shape,
+        # Pass the image so the Procrustes search can break residual ties
+        # via phase-darkness separation. Without this, on the ~25% of rows
+        # where the 6-perm symmetry equivalent class ties at the residual
+        # floor, the iteration-order-first perm is chosen — which is
+        # PHASE_SWAPPED on rows like 20_A / 41_A / 43_A. See PR notes for
+        # the 12-row before/after.
+        image_rgb=image_rgb,
     )
     if model is None:
         return None

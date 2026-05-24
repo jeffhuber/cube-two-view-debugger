@@ -333,7 +333,12 @@
       "groundTruth_sha256_expected": "b758fc3693de8b8b4a76e3116b338b15e8a5af624f88c53a3a879f2e5fe2ab89",
       "expectedCategory": "needs_manual_review",
       "currentScoreObserved": 54,
-      "notes": "Added and calibrated 2026-05-23 for corpus expansion from canonical /Users/jhuber/cube-corpus files. Category/score pinned from tools/probe_corpus.py on current recognizer: needs_manual_review, score 54/54.",
+      "expectedYaw": {
+        "status": "nonstandard",
+        "quarterTurns": 2,
+        "normalizationApplied": true
+      },
+      "notes": "Added and calibrated 2026-05-23 for corpus expansion from canonical /Users/jhuber/cube-corpus files. Category/score pinned from tools/probe_corpus.py on current recognizer: needs_manual_review, score 54/54. Expected yaw=2 is executable because current recognizer emits matching captureYaw.",
       "expectedScoreFloor": 54
     },
     {
@@ -346,7 +351,7 @@
       "groundTruth_sha256_expected": "35122a1f6fea7e3ef89bbaaaae802ffaf11016083ffbc54cd5937c0db792974d",
       "expectedCategory": "reject_retake",
       "currentScoreObserved": 0,
-      "notes": "Added and calibrated 2026-05-23 for corpus expansion from canonical /Users/jhuber/cube-corpus files. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54."
+      "notes": "Added and calibrated 2026-05-23 for corpus expansion from canonical /Users/jhuber/cube-corpus files. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54. Human-confirmed capture yaw=0 (R center red, F center green); not encoded as expectedYaw because the current reject path emits no captureYaw signal."
     },
     {
       "setId": "65",
@@ -382,7 +387,12 @@
       "groundTruth_sha256_expected": "1caf69db0754477df867ff33c7e8f6d3209f2e22278bc2778ba45137acc753e8",
       "expectedCategory": "needs_manual_review",
       "currentScoreObserved": 42,
-      "notes": "Added and calibrated 2026-05-23 for corpus expansion from canonical /Users/jhuber/cube-corpus files. Category/score pinned from tools/probe_corpus.py on current recognizer: needs_manual_review, score 42/54.",
+      "expectedYaw": {
+        "status": "nonstandard",
+        "quarterTurns": 3,
+        "normalizationApplied": true
+      },
+      "notes": "Added and calibrated 2026-05-23 for corpus expansion from canonical /Users/jhuber/cube-corpus files. Category/score pinned from tools/probe_corpus.py on current recognizer: needs_manual_review, score 42/54. Expected yaw=3 is executable because current recognizer emits matching captureYaw.",
       "expectedScoreFloor": 42
     },
     {
@@ -395,7 +405,12 @@
       "groundTruth_sha256_expected": "3b555ab360d3028e8c093d1ab5e93266a94467aa0925141f7f0954898b3e19b5",
       "expectedCategory": "needs_manual_review",
       "currentScoreObserved": 54,
-      "notes": "Added and calibrated 2026-05-23 for corpus expansion from canonical /Users/jhuber/cube-corpus files. Category/score pinned from tools/probe_corpus.py on current recognizer: needs_manual_review, score 54/54.",
+      "expectedYaw": {
+        "status": "standard",
+        "quarterTurns": 0,
+        "normalizationApplied": false
+      },
+      "notes": "Added and calibrated 2026-05-23 for corpus expansion from canonical /Users/jhuber/cube-corpus files. Category/score pinned from tools/probe_corpus.py on current recognizer: needs_manual_review, score 54/54. Human-confirmed capture yaw=0 (R center red, F center green); expectedYaw is executable because current recognizer emits matching standard captureYaw.",
       "expectedScoreFloor": 54
     }
   ]

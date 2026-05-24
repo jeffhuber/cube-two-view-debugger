@@ -833,3 +833,31 @@ def test_probe_manifest_records_expected_yaw_for_post_pr20_pairs():
         assert "expectedYaw" in rows[set_id], f"Set {set_id} missing expectedYaw"
         assert rows[set_id]["expectedYaw"]["status"] == "nonstandard"
         assert rows[set_id]["expectedYaw"]["normalizationApplied"] is True
+
+
+def test_probe_manifest_records_executable_yaw_for_63_68_cohort():
+    """Sets 63-68 are a repeated-capture/yaw cohort. Only rows where
+    the current recognizer emits `captureYaw` should carry executable
+    `expectedYaw`; rejected rows keep yaw documentation in notes."""
+    manifest = load_manifest(Path(__file__).parent / "fixtures" / "corpus_manifest.json")
+    rows = {row["setId"]: row for row in manifest}
+
+    assert rows["63"]["expectedYaw"] == {
+        "status": "nonstandard",
+        "quarterTurns": 2,
+        "normalizationApplied": True,
+    }
+    assert rows["67"]["expectedYaw"] == {
+        "status": "nonstandard",
+        "quarterTurns": 3,
+        "normalizationApplied": True,
+    }
+    assert rows["68"]["expectedYaw"] == {
+        "status": "standard",
+        "quarterTurns": 0,
+        "normalizationApplied": False,
+    }
+    assert "expectedYaw" not in rows["64"]
+    assert "Human-confirmed capture yaw=0" in rows["64"]["notes"]
+    assert "expectedYaw" not in rows["65"]
+    assert "expectedYaw" not in rows["66"]

@@ -5,6 +5,15 @@
 **Math primitive shipped; matrix integration is a follow-up that must
 solve A/B axis canonicalization first.**
 
+The A/B capture convention is now pinned by
+[`FULL_CORNER_LABELING.md`](FULL_CORNER_LABELING.md): image A uses `Va`
+with `upper=Va+1,0,5; right=Va+3,2,1; front=Va+5,4,3`; image B uses `Vb`
+after the single 180-degree camera-X flip with `upper=Vb+2,3,4;
+right=Vb+0,1,2; front=Vb+4,5,0`. Canonical WCA face names for the side
+slots depend on capture yaw. Any axis canonicalization proof must derive
+its semantic tuples from that full-corner convention plus yaw, not from
+legacy `near_*` names.
+
 This PR ships `tools/two_view_consistency.py` — a standalone math
 primitive for computing how much A and B view fits *disagree* about a
 cube's 3D orientation under the documented capture rotation.
@@ -38,12 +47,13 @@ B), different geometric quantity (rotation matrix vs spacing).
 
 ## The capture convention
 
-Between photo A (white-up, URF visible) and photo B (yellow-up, DLB
-visible), the user flips the cube end-over-end by gripping the R
-and L sides and rotating **180° around the image-horizontal axis
-(camera X)**. There is no additional rotation. The 54-char URFDLB
-ordering in `rubik_recognizer/recognizer.py` assumes only this
-single flip.
+Between photo A (white-up) and photo B (yellow-up), the user flips the
+cube end-over-end by rotating **180° around the image-horizontal axis
+(camera X)**. There is no additional rotation. At yaw=0 the visible WCA
+faces are URF in A and DLB in B; at non-zero capture yaw the same view
+slots contain different side faces. The 54-char URFDLB ordering in
+`rubik_recognizer/recognizer.py` assumes this single flip plus an explicit
+capture-yaw normalization step.
 
 ## The math (summary)
 
@@ -86,13 +96,14 @@ A/B axis pairs gave **median 173° residual and 0/35 pairs under
 math bug: every pair, including known-GOOD pairs, scores like a
 catastrophic mis-fit.
 
-In photo A (URF visible) the recognizer sees +U, +R, +F faces; in
-photo B (DLB visible) it sees −U (i.e., +D), −R (i.e., +L), −F
-(i.e., +B) faces. Whether the recognizer's `axis_x_2d / axis_y_2d /
-axis_z_2d` are tied to "visible-face vertices" (in which case A and
-B point opposite ways in the body frame) or to "canonical cube
-body axes" (in which case they are consistent) determines whether
-the raw vectors can be fed in directly.
+In photo A's view slots the recognizer sees the upper face plus two side
+faces; in photo B it sees the opposite upper face plus the opposite two
+side slots after the camera-X flip. At yaw=0 that shorthand is +U/+R/+F
+versus +D/+L/+B; at yaw=1, for example, A's right slot is canonical B.
+Whether the recognizer's `axis_x_2d / axis_y_2d / axis_z_2d` are tied to
+"visible-face vertices" (in which case A and B point opposite ways in the
+body frame) or to "canonical cube body axes" (in which case they are
+consistent) determines whether the raw vectors can be fed in directly.
 
 The empirical 173° median is strong evidence that they are **not**
 consistent without a canonicalization step.

@@ -1,6 +1,6 @@
 # First-Principles Cube Recognizer Design
 
-> **Status (2026-05-22 rewrite)**: The original version of this doc
+> **Status (2026-05-23 update)**: The original version of this doc
 > framed first-principles geometry as a near-term *replacement* for the
 > production `cv-local` recognizer. Per the Codex+Devin strategic
 > synthesis ([`POST_218_BASELINE_AND_TAXONOMY.md`](POST_218_BASELINE_AND_TAXONOMY.md)),
@@ -46,12 +46,15 @@ or downstream — must satisfy at least one of:
 1. **Improve guardrails around `cv-local`** (e.g., supply a trust
    signal that catches confident-wrong solves at acceptable
    abstention).
-2. **Produce labeled training data** for a future learned ranker
-   (extending or refining `tests/fixtures/gcm_axis_ground_truth.json`).
-3. **Demonstrate safe held-out improvement** on the 58-case axis-
-   labeled gallery — measured by `tools/baseline_post_218.py --diff`
-   against the committed snapshot, with row-level deltas pasted into
-   the PR body. Aggregate-metric-only A/B is insufficient.
+2. **Produce labeled training data** for a future learned ranker. New
+   geometry labels should use the explicit full-corner convention in
+   [`FULL_CORNER_LABELING.md`](FULL_CORNER_LABELING.md), not new
+   ambiguous `near_*` fields.
+3. **Demonstrate safe held-out improvement** on the labeled gallery.
+   The legacy `tools/baseline_post_218.py --diff` gate is provisional
+   until `tests/fixtures/gcm_axis_ground_truth.json` is audited and
+   regenerated from full-corner truth. Aggregate-metric-only A/B is
+   insufficient.
 
 If a proposed change doesn't fit one of those three, it's almost
 certainly the wrong next move and should be reconsidered.
@@ -74,10 +77,19 @@ Per the same synthesis:
 1. **Guided capture**
 
    Two convention-driven photos:
-   - Image A: white-up view.
-   - Image B: yellow-up / flipped complementary view.
+   - Image A: white-up view, with `Va` at the upper/right/front
+     view-slot corner.
+   - Image B: yellow-up / flipped complementary view, `Vb` at the
+     upper/right/front view-slot corner after the single 180-degree
+     camera-X flip.
    - Each shows exactly three cube faces.
    - Across A+B, all six centers are observed.
+
+   The project convention is pinned in
+   [`FULL_CORNER_LABELING.md`](FULL_CORNER_LABELING.md):
+   `A slots: upper=Va+1,0,5; right=Va+3,2,1; front=Va+5,4,3` and
+   `B slots: upper=Vb+2,3,4; right=Vb+0,1,2; front=Vb+4,5,0`.
+   Canonical WCA face names for side slots depend on capture yaw.
 
    If a photo is blurry, cropped, too oblique, glare-heavy, missing a
    center, or inconsistent with the capture convention, prefer retake
@@ -203,12 +215,18 @@ What we learned during the first-principles geometry sprint:
   the safe-coverage bar. The candidate-oracle is often strong;
   ranking/confidence calibration is the unsolved problem.
 - **Labels are the most valuable artifact produced by the sprint.**
-  58 user-labeled cases (vertex + 3 near corners per photo) make
-  failures measurable instead of anecdotal. Treat them as both:
+  The legacy axis labels made failures measurable, but the full-corner
+  convention reset is the new source of geometry truth. Treat labels as both:
   - the *training set* for a future learned vertex/axis/phase ranker
     (extend via active-label queues, not opportunistically), and
   - the *regression gate* for every geometry-sensitive PR
-    (`tools/baseline_post_218.py --diff`).
+    (`tools/baseline_post_218.py --diff`, once regenerated from
+    full-corner truth).
+
+  The old `near_x/near_y/near_z` fixture is legacy. A 12-row seed audit shows
+  it matches the far/double-axis triplet, not canonical one-edge labels. It
+  must not be extended as canonical truth without deriving targets from
+  `Va/Vb + 0..5`.
 - **Rectification helps color only when geometry is trusted.** The
   hybrid-pipeline experiment (PR #152) confirmed that rectifying
   arbitrary local quads produces bimodal accuracy distributions —
@@ -236,16 +254,16 @@ detect cube object  (cv-local + global model agree?)
 ```
 
 The roadmap from here is [`STATE_OF_THE_WORLD.md`](STATE_OF_THE_WORLD.md)
-Phase 0 → Phase 5. The short version: consolidate now (Phase 0), then
-re-baseline both sides (cv-local + global model) on the same 58 cases
-(Phase 1), add diagnostics-only trust signals (Phase 2), wire them to
-production via guardrails (Phase 3), train the learned ranker
-(Phase 4), and improve capture/UX with the resulting signals
-(Phase 5).
+Phase 0 → Phase 5. The immediate convention-reset step is to migrate
+legacy axis labels to explicit full-corner truth, then re-baseline both
+sides (cv-local + global model), add diagnostics-only trust signals,
+wire proven signals to production guardrails, train the learned ranker,
+and improve capture/UX with the resulting signals.
 
 ## See also
 
 - [`STATE_OF_THE_WORLD.md`](STATE_OF_THE_WORLD.md) — current architecture map + phased roadmap.
+- [`FULL_CORNER_LABELING.md`](FULL_CORNER_LABELING.md) — canonical `Va/Vb + 0..5` corner and facelet convention.
 - [`POST_218_BASELINE_AND_TAXONOMY.md`](POST_218_BASELINE_AND_TAXONOMY.md) — the decision spine.
 - [`FAILURE_TAXONOMY.md`](FAILURE_TAXONOMY.md) — single source of truth for failure-mode categories.
 - [`BENCHMARK_INDEX.md`](BENCHMARK_INDEX.md) — which fixture/report answers which question.

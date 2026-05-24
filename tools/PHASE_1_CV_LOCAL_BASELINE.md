@@ -9,12 +9,12 @@ same categorization. The difference: this measures the
 cube model.
 
 cv-local's `analyze_image` outputs face-quads, not vertex+
-near-corners directly. This baseline derives the comparable
-(vertex, [3 near corners]) signal by clustering the 12 corner
+legacy-`near` fields directly. This baseline derives the comparable
+historical (vertex, [3 legacy-near clusters]) signal by clustering the 12 corner
 instances (4 per face-quad × 3 face-quads) across faces:
 
 - 1 cluster of 3 points (one per face) → trihedral vertex
-- 3 clusters of 2 points (each shared by 2 adjacent faces) → 3 near corners
+- 3 clusters of 2 points (each shared by 2 adjacent faces) → 3 legacy-near clusters
 - 3 clusters of 1 point (one per face) → 3 far corners
 
 Algorithm: union-find on cross-face edges in ascending
@@ -123,7 +123,7 @@ local's face-quad output that this script measures honestly.
 `cv-local` produces face-quads by **independently extrapolating**
 a 4-corner quad from each detected 3×3 sticker grid. There's
 no constraint enforcing that the 3 face-quads share a
-trihedral vertex or pairwise-share near corners. Each face
+trihedral vertex or pairwise-shared corner clusters. Each face
 sees only its own stickers; it doesn't know about the others.
 
 So on most cases, the 3 cv-local face-quads taken together

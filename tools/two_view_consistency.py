@@ -16,8 +16,10 @@ follow-up that triggers the slow rembg re-run; see
 
 ## The capture convention
 
-Between photo A (white-up, URF visible) and photo B (yellow-up, DLB
-visible), the user flips the cube end-over-end. **The flip is a
+Between photo A (white-up) and photo B (yellow-up), the user flips
+the cube end-over-end. At yaw=0 the visible WCA faces are URF in A
+and DLB in B; at non-zero yaw the same view slots contain different
+side faces. **The flip is a
 single 180° rotation around the image-horizontal axis (camera X)** —
 the natural physical motion of gripping the cube by its R and L
 sides and rotating it through the horizontal axis between those
@@ -105,8 +107,10 @@ residual and 0/35 pairs under 25°**. That is the signature of an
 A↔B axis-frame mismatch, not a math bug: every pair, including
 known-GOOD pairs, scores like a catastrophic mis-fit.
 
-In photo A (URF visible) the recognizer sees +U, +R, +F faces;
-in photo B (DLB visible) it sees +D, +L, +B faces. Whether the
+In photo A's view slots the recognizer sees the upper face plus two
+side faces; in photo B it sees the opposite upper face plus the
+opposite two side slots after the camera-X flip. The canonical WCA side
+face names depend on capture yaw. Whether the
 recognizer's `axis_x_2d / axis_y_2d / axis_z_2d` are tied to
 "visible-face vertices" (in which case A and B point opposite ways
 in the body frame) or to "canonical cube body axes" (in which case

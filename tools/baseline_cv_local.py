@@ -2,16 +2,16 @@
 """Phase 1 of the post-#222 roadmap: cv-local baseline on the 58-case
 axis-labeled gallery, comparable to `tools/baseline_post_218.py`.
 
-cv-local's `analyze_image` produces face-quads, not vertex+near-corners
-directly. This script derives the comparable signal by clustering the
-12 corner instances (4 per face-quad × 3 face-quads) by spatial
+cv-local's `analyze_image` produces face-quads, not vertex+legacy-`near`
+fields directly. This script derives the comparable historical signal by
+clustering the 12 corner instances (4 per face-quad × 3 face-quads) by spatial
 proximity:
 
   * 1 cluster of 3 points → the trihedral vertex (shared by all 3 faces)
-  * 3 clusters of 2 points → the 3 near corners (each shared by 2 faces)
+  * 3 clusters of 2 points → the 3 legacy-`near` clusters (each shared by 2 faces)
   * 3 clusters of 1 point  → the 3 far corners (one per face)
 
-The vertex/near outputs are then scored against the user-labeled
+The vertex/legacy-`near` outputs are then scored against the user-labeled
 ground truth (`tests/fixtures/gcm_axis_ground_truth.json`) using the
 SAME bearings-based metric as `baseline_post_218.py`, producing a
 comparable JSON snapshot. Run `tools/baseline_post_218.py --diff
@@ -21,6 +21,12 @@ between the two sides.
 The point isn't "which side is better" — it's that we now have a
 documented gap on the same eval set, which is what Phase 2 trust-
 policy diagnostics need as their training/eval surface.
+
+IMPORTANT: the `near_*` fixture semantics are legacy after the
+2026-05-23 full-corner convention reset. A 12-row seed audit shows those
+fields match the far/double-axis triplet, not canonical one-edge labels.
+Treat this snapshot as a legacy comparison until regenerated from explicit
+`Va/Vb + 0..5` labels.
 
 Usage:
     .venv/bin/python tools/baseline_cv_local.py \\
@@ -109,7 +115,7 @@ def _derive_vertex_and_near(
         return None
 
     # Union-find: target exactly 7 clusters (the structurally expected
-    # output: 1 vertex + 3 near corners + 3 far corners). Process
+    # output: 1 vertex + 3 legacy-`near` clusters + 3 far corners). Process
     # cross-face edges in ascending distance order, merging only when
     # the merge doesn't combine two corners of the SAME face-quad (a
     # geometric impossibility) and stops when 7 clusters remain.
@@ -155,7 +161,7 @@ def _derive_vertex_and_near(
     # Process edges in ascending distance order. The FIRST 3-face
     # cluster that forms is the trihedral vertex. After that, no
     # other cluster can grow to 3 members (only the vertex has 3
-    # face members; near corners have 2, far corners 1).
+    # face members; pairwise-shared clusters have 2, far clusters 1).
     n_clusters = 12
     vertex_found = False
     for d, i, j in edges:
@@ -346,12 +352,13 @@ def _render_markdown(summary: Dict[str, Any], by_case: Dict[str, Dict[str, Any]]
     lines.append("cube model.")
     lines.append("")
     lines.append("cv-local's `analyze_image` outputs face-quads, not vertex+")
-    lines.append("near-corners directly. This baseline derives the comparable")
-    lines.append("(vertex, [3 near corners]) signal by clustering the 12 corner")
+    lines.append("legacy-`near` fields directly. This baseline derives the")
+    lines.append("comparable historical (vertex, [3 legacy-near clusters])")
+    lines.append("signal by clustering the 12 corner")
     lines.append("instances (4 per face-quad × 3 face-quads) across faces:")
     lines.append("")
     lines.append("- 1 cluster of 3 points (one per face) → trihedral vertex")
-    lines.append("- 3 clusters of 2 points (each shared by 2 adjacent faces) → 3 near corners")
+    lines.append("- 3 clusters of 2 points (each shared by 2 adjacent faces) → 3 legacy-near clusters")
     lines.append("- 3 clusters of 1 point (one per face) → 3 far corners")
     lines.append("")
     lines.append("Algorithm: union-find on cross-face edges in ascending")
@@ -422,7 +429,7 @@ def _render_markdown(summary: Dict[str, Any], by_case: Dict[str, Dict[str, Any]]
     lines.append("`cv-local` produces face-quads by **independently extrapolating**")
     lines.append("a 4-corner quad from each detected 3×3 sticker grid. There's")
     lines.append("no constraint enforcing that the 3 face-quads share a")
-    lines.append("trihedral vertex or pairwise-share near corners. Each face")
+    lines.append("trihedral vertex or pairwise-shared corner clusters. Each face")
     lines.append("sees only its own stickers; it doesn't know about the others.")
     lines.append("")
     lines.append("So on most cases, the 3 cv-local face-quads taken together")

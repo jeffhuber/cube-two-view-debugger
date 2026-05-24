@@ -1,9 +1,15 @@
 #!/usr/bin/env python
-"""Score a candidate cube model output against axis ground truth.
+"""Score a candidate cube model output against legacy axis ground truth.
 
 Consumes the JSON produced by tools/build_axis_labeling_gallery.py +
-user labeling (one entry per approved photo: vertex + 3 near corners
+user labeling (one entry per approved photo: vertex + 3 legacy `near_*` corners
 in original-image coordinates).
+
+The `near_*` fixture semantics are legacy after the 2026-05-23 full-corner
+convention reset. A 12-row seed audit shows those fields match the
+far/double-axis triplet, not canonical one-edge labels. Treat this evaluator
+as historical until targets are regenerated from explicit `Va/Vb + 0..5`
+labels.
 
 For each labeled photo, given a candidate model output (vertex + 3 axes
 in screen space), reports:

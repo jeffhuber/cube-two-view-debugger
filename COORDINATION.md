@@ -57,8 +57,9 @@ not a replacement for it. The role split reflects that:
 - `tools/FAILURE_TAXONOMY.md` — failure-mode reference.
 - `tools/BENCHMARK_INDEX.md` — fixture/report/script lookup.
 - `tools/POST_218_BASELINE_AND_TAXONOMY.md` — the decision spine. Updates happen only via committed re-baseline runs of `baseline_post_218.py`.
-- `tests/fixtures/gcm_axis_ground_truth.json` — user-labeled axis ground truth. Treat as append-only (extend, don't rewrite).
-- `tests/fixtures/post_218_baseline.json` — committed accuracy snapshot. Regenerate via `baseline_post_218.py`.
+- `tools/FULL_CORNER_LABELING.md` / `tools/corner_conventions.py` / `tests/fixtures/full_corner_ground_truth.json` — canonical `Va/Vb + 0..5` corner convention, A/B face outlines, flattened facelet mapping, and seed full-corner truth. Update these before touching any downstream geometry convention.
+- `tests/fixtures/gcm_axis_ground_truth.json` — legacy user-labeled axis fixture. Treat as provisional until audited/migrated against full-corner labels; do not assume `near_x/near_y/near_z` are one-edge truth.
+- `tests/fixtures/post_218_baseline.json` — legacy accuracy snapshot derived from `gcm_axis_ground_truth.json`. Regenerate only after the fixture semantics are made explicit.
 - `tools/extract_color_samples.py` — Claude's, but Codex added the `white[- ]up` regex fix in #135. **Coordinate before editing.**
 - `tests/test_auto_geometry_metrics.py` — Claude's, but a growing surface. **Coordinate before adding tests that interact with discovery/geometry.**
 
@@ -80,7 +81,7 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 ### Proposed for Codex (please pick up or push back)
 
-- **Phase 4 v2: wire two-view consistency as the 7th feature.** Math primitive shipped in #243 (R_Y(180°)); axis-of-rotation fix shipped in #245 (single 180° around camera X, the correct convention). Integration is **NOT** straightforward direct-feeding — Codex's audit of #245 confirmed that raw per-image `model.axis_x_2d/y/z` fed into the metric produces median 173° residual on 35 human-labeled GOOD pairs (signature of an A↔B axis-frame mismatch). The follow-up PR must therefore land an A/B axis canonicalization step FIRST, validate it against `tests/fixtures/gcm_axis_ground_truth.json` (target: GOOD-pair median ≤25°), then capture/inject the metric. See `tools/TWO_VIEW_CONSISTENCY.md` "Integration plan" → "Step 0" for the canonicalization investigation. (Could also be Claude's lane — flag here for visibility; whoever picks it up first.)
+- **Phase 4 v2: wire two-view consistency as the 7th feature.** Math primitive shipped in #243; axis-of-rotation fix shipped in #245 (single 180° around camera X, the correct A↔B capture convention). Integration is **NOT** straightforward direct-feeding — Codex's audit of #245 confirmed that raw per-image `model.axis_x_2d/y/z` fed into the metric produces median 173° residual on legacy-labeled GOOD pairs (signature of an A↔B axis-frame mismatch). PR #249 lands the A/B canonicalization proof primitive, but its validation uses `tests/fixtures/gcm_axis_ground_truth.json`, whose `near_*` semantics are now explicitly legacy/provisional after the full-corner reset. Any production/trust-ranker wiring must therefore carry `canonicalized_deg`, `raw_deg`, and `canon_gap_deg`, and should be revalidated against `tests/fixtures/full_corner_ground_truth.json` before treating the signal as canonical phase/chirality evidence. (Could also be Claude's lane — flag here for visibility; whoever picks it up first.)
 
 *(Either side: populate your row when you start something.)*
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Build a self-contained interactive HTML gallery for labeling cube vertex
+"""Build a legacy interactive HTML gallery for labeling cube vertex
 + 3 outgoing axis endpoints across the labeled corpus.
 
 The 4-points-per-photo schema (vertex + 3 "near" hexagon corners) is enough
@@ -7,6 +7,11 @@ to fully determine the projected cube model (8 DOF in 2D). Vertex alone
 only gave us 2 DOF and missed axis orientation — which the 2026-05 vertex
 correlation experiments showed matters more than vertex precision for
 downstream sticker sampling.
+
+This tool is retained for historical reproducibility. New canonical geometry
+labels should use `tools/build_full_corner_labeling_gallery.py`, which records
+`Va/Vb + 0..5` and derives one-edge vs far triplets side-specifically. Do not
+create new canonical `near_*` labels with this tool.
 
 Workflow:
 1. Run this tool to produce a static HTML + per-photo full-image PNGs in --out.
@@ -114,8 +119,11 @@ def _global_model_prefill(
     rgb: np.ndarray,
     mask: np.ndarray,
 ) -> Optional[Dict[str, Any]]:
-    """Run the on-main global cube model and extract (vertex, 3 near corners)
-    in original-image coordinates. Returns None on failure."""
+    """Run the legacy global model prefill in original-image coordinates.
+
+    The returned fields are the historical vertex + 3 `near_*` schema. Those
+    labels are not canonical human one-edge labels; see FULL_CORNER_LABELING.
+    """
     try:
         from tools.global_cube_model import fit_global_cube_model
         from tools.interior_bezel_detection import detect_interior_bezel_lines

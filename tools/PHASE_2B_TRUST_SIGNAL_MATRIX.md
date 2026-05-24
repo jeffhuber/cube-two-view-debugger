@@ -5,6 +5,11 @@
 - catastrophic recall ≥ **80%**
 - GOOD false-retake ≤ **10%**
 
+> **Legacy-data caution (2026-05-23):** this report joins fixtures derived
+> from the legacy `near_*` axis labels. Treat row-level phase/chirality
+> categories as provisional until regenerated from `Va/Vb + 0..5`
+> full-corner truth.
+
 ## Dataset
 
 - 116 per-case-per-run rows across 58 cases

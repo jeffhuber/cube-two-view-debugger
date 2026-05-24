@@ -20,8 +20,9 @@ work (PR #182 and follow-up experiments, 2026-05-21):
 
 ## Common terminology
 
-- **Photo pair**: two photos of one cube (A = white-up showing URF;
-  B = yellow-up after 180° flip showing DLB).
+- **Photo pair**: two photos of one cube (A = white-up; B = yellow-up
+  after the single 180° camera-X flip). At yaw=0 the visible WCA faces
+  are URF/DLB; non-zero capture yaw rotates the side-face identities.
 - **Sticker**: one of 54 colored squares on the cube. Each photo shows 27.
 - **Face grid**: the 3×3 arrangement of 9 stickers per visible face.
 - **Cell**: one of 9 positions within a face grid; we sample color from it.

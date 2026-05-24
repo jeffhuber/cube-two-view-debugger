@@ -6,6 +6,11 @@ Phase 2 bar after Phase 2B's hand-tuning hit its ceiling (see
 evaluated on the 70-case eval via leave-one-case-out CV.
 No production behavior change.
 
+> **Legacy-data caution (2026-05-23):** this ranker was trained/evaluated
+> on outcomes derived from legacy `near_*` axis labels. Treat it as a
+> historical experiment until the labels and baselines are regenerated from
+> `Va/Vb + 0..5` full-corner truth.
+
 ## Headline
 
 **No learned model clears the Phase 2 bar on out-of-fold CV (≥80% catastrophic recall AND ≤10% GOOD FPR).** Best-in-class is `mlp_16_8` at 82% recall / 27% FPR — meaningfully better than Phase 2B's hand-tuned ceiling of 80% / 31% at the same recall, but still above the 10% FPR target. The learned model captures multi-feature structure (non-axis-aligned cuts) that hand-tuning missed; what's still missing is data and/or a stronger feature.

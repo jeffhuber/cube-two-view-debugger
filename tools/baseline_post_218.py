@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
-"""Post-#218 baseline + failure taxonomy on the 58-case axis-labeled
+"""Legacy post-#218 baseline + failure taxonomy on the axis-labeled
 gallery.
 
-Runs the global cube model on every photo whose vertex + 3 near
+Runs the global cube model on every photo whose vertex + 3 legacy-`near`
 corners are recorded in the user-labeled ground truth, then
 categorizes each case into one of:
+
+IMPORTANT: the `near_*` fixture semantics are legacy after the
+2026-05-23 full-corner convention reset. A 12-row seed audit shows those
+fields match the far/double-axis triplet, not canonical one-edge labels.
+Treat this baseline and its `CHIRALITY_*` row-level evidence as provisional
+until regenerated from explicit `Va/Vb + 0..5` labels.
 
   GOOD                  mean per-axis bearing error < 10°
   MARGINAL              10° ≤ err < 25°
@@ -204,7 +210,7 @@ def _render_markdown(summary: Dict[str, Any], by_case: Dict[str, List[Dict[str, 
     lines.append("")
     lines.append("## Role of this document")
     lines.append("")
-    lines.append("This is the **decision spine** for first-principles geometry")
+    lines.append("This is the **legacy decision spine** for first-principles geometry")
     lines.append("work as of 2026-05-22, per the Codex+Devin strategic synthesis:")
     lines.append("")
     lines.append("> A plausible cube model is cheap. A trustworthy cube model is")
@@ -225,7 +231,17 @@ def _render_markdown(summary: Dict[str, Any], by_case: Dict[str, List[Dict[str, 
     lines.append("  emit row-level before/after deltas against this baseline, not")
     lines.append("  just aggregate pass rates (see `--diff` mode below).")
     lines.append("")
-    lines.append("Use this report as the regression gate.")
+    lines.append("**2026-05-23 convention caution:** this report was computed against")
+    lines.append("`tests/fixtures/gcm_axis_ground_truth.json`, whose `near_x/near_y/near_z`")
+    lines.append("semantics are legacy. Initial audit against the 12-row full-corner seed")
+    lines.append("fixture shows those fields match the far/double-axis triplet (`A -> 0,2,4`,")
+    lines.append("`B -> 1,3,5`), not canonical one-edge labels. The canonical corner convention is")
+    lines.append("[`FULL_CORNER_LABELING.md`](FULL_CORNER_LABELING.md):")
+    lines.append("`A slots: upper=Va+1,0,5; right=Va+3,2,1; front=Va+5,4,3` and")
+    lines.append("`B slots: upper=Vb+2,3,4; right=Vb+0,1,2; front=Vb+4,5,0`. Canonical WCA")
+    lines.append("face names for side slots depend on capture yaw. Use this report for")
+    lines.append("historical context, but do not treat row-level `CHIRALITY_*` evidence as")
+    lines.append("canonical until the baseline is regenerated from full-corner truth.")
     lines.append("")
     lines.append("## What the \"chirality\" concept actually is")
     lines.append("")
@@ -284,12 +300,13 @@ def _render_markdown(summary: Dict[str, Any], by_case: Dict[str, List[Dict[str, 
                  f"{n // summary['n_cases'] if summary['n_cases'] else 0} runs each "
                  f"= {n} total runs.")
     lines.append("")
-    lines.append("Ground truth: user-labeled vertex + 3 near corners per photo")
+    lines.append("Ground truth: legacy user-labeled vertex + 3 `near_*` corners per photo")
     lines.append("(`tests/fixtures/gcm_axis_ground_truth.json`). The eval compares")
     lines.append("model bearings (in gallery coords) to user bearings (in original")
     lines.append("coords); bearings are exactly invariant under the gallery's")
     lines.append("uniform-scale-and-translation crop, so no crop reconstruction is")
-    lines.append("needed.")
+    lines.append("needed. The `near_*` target semantics are provisional pending the")
+    lines.append("full-corner migration.")
     lines.append("")
     lines.append("## Headline accuracy")
     lines.append("")

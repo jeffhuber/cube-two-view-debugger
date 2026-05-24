@@ -7,7 +7,9 @@ monkeypatching the GitHub helpers and the subprocess call.
 
 from __future__ import annotations
 
+import os
 import subprocess
+import warnings
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -760,3 +762,359 @@ def test_audit_pr_fetches_both_pr_head_and_base_ref(monkeypatch):
     # Both fetches happened before the review.
     assert "pr_head(17)" in fetch_calls
     assert "base_ref(origin/main)" in fetch_calls
+
+
+# ---------------- Task #97: subprocess venv injection ----------------
+
+
+def test_build_subprocess_env_noop_when_venv_path_is_none(monkeypatch):
+    """When `venv_path` is None, the subprocess env mirrors os.environ
+    exactly — no PATH mutation, no VIRTUAL_ENV injection. Required so
+    repos without a venv (e.g. cube-snap) behave identically to the
+    pre-patch behavior."""
+    monkeypatch.setenv("PATH", "/sentinel/path")
+    monkeypatch.delenv("VIRTUAL_ENV", raising=False)
+    env = c._build_subprocess_env(None)
+    assert env["PATH"] == "/sentinel/path"
+    assert "VIRTUAL_ENV" not in env
+
+
+def test_build_subprocess_env_noop_when_venv_missing_bin_python(
+    tmp_path, monkeypatch,
+):
+    """If the venv path doesn't have a working `bin/python`, leave PATH
+    alone rather than set a broken VIRTUAL_ENV. Defensive: a
+    misconfigured venv path shouldn't silently produce more confusing
+    failures than the original no-venv state."""
+    monkeypatch.setenv("PATH", "/sentinel/path")
+    monkeypatch.delenv("VIRTUAL_ENV", raising=False)
+    fake_venv = tmp_path / "not-a-venv"
+    fake_venv.mkdir()  # exists but has no bin/python
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        env = c._build_subprocess_env(fake_venv)
+    assert env["PATH"] == "/sentinel/path"
+    assert "VIRTUAL_ENV" not in env
+
+
+def test_build_subprocess_env_warns_when_venv_path_is_invalid(
+    tmp_path, monkeypatch,
+):
+    """An explicit invalid venv path should not silently fall back to
+    ambient Python, since that is the failure mode this feature fixes."""
+    monkeypatch.setenv("PATH", "/sentinel/path")
+    fake_venv = tmp_path / "not-a-venv"
+    fake_venv.mkdir()
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        env = c._build_subprocess_env(fake_venv)
+    assert env["PATH"] == "/sentinel/path"
+    assert "VIRTUAL_ENV" not in env
+    assert len(caught) == 1
+    assert issubclass(caught[0].category, RuntimeWarning)
+    assert str(fake_venv.resolve()) in str(caught[0].message)
+    assert "bin/python" in str(caught[0].message)
+
+
+def test_build_subprocess_env_prepends_venv_bin_when_python_exists(
+    tmp_path, monkeypatch,
+):
+    """The positive path: a real venv with bin/python gets its bin/
+    prepended to PATH and exported as VIRTUAL_ENV."""
+    monkeypatch.setenv("PATH", "/sentinel/path")
+    monkeypatch.delenv("VIRTUAL_ENV", raising=False)
+    fake_venv = tmp_path / "venv"
+    (fake_venv / "bin").mkdir(parents=True)
+    (fake_venv / "bin" / "python").touch()
+    env = c._build_subprocess_env(fake_venv)
+    assert env["VIRTUAL_ENV"] == str(fake_venv)
+    expected_prefix = f"{fake_venv / 'bin'}{os.pathsep}"
+    assert env["PATH"].startswith(expected_prefix), (
+        f"venv bin/ must be prepended to PATH; got {env['PATH']!r}"
+    )
+    # The original PATH must still be reachable after the prepended bin/.
+    assert "/sentinel/path" in env["PATH"]
+
+
+def test_build_subprocess_env_omits_trailing_separator_when_path_absent(
+    tmp_path, monkeypatch,
+):
+    """If PATH is absent, do not create a trailing path separator.
+
+    On POSIX, a trailing separator in PATH implies the current working
+    directory, which is not acceptable when auditing untrusted PR
+    worktrees.
+    """
+    monkeypatch.delenv("PATH", raising=False)
+    fake_venv = tmp_path / "venv"
+    (fake_venv / "bin").mkdir(parents=True)
+    (fake_venv / "bin" / "python").touch()
+    env = c._build_subprocess_env(fake_venv)
+    assert env["VIRTUAL_ENV"] == str(fake_venv)
+    assert env["PATH"] == str(fake_venv / "bin")
+
+
+def test_build_subprocess_env_clears_pythonhome_when_venv_set(
+    tmp_path, monkeypatch,
+):
+    """A stale PYTHONHOME would override the venv's site-packages
+    lookup. Defensive: scrub it when we set VIRTUAL_ENV."""
+    monkeypatch.setenv("PYTHONHOME", "/some/stale/python")
+    fake_venv = tmp_path / "venv"
+    (fake_venv / "bin").mkdir(parents=True)
+    (fake_venv / "bin" / "python").touch()
+    env = c._build_subprocess_env(fake_venv)
+    assert "PYTHONHOME" not in env
+
+
+def test_build_subprocess_env_resolves_relative_venv_path_to_absolute(
+    tmp_path, monkeypatch,
+):
+    """Round-4 P2 on PR #264: a relative venv path injected into PATH
+    would be re-resolved from the subprocess's cwd (the temp worktree),
+    not the caller's cwd. `_build_subprocess_env` must resolve() to
+    absolute before injecting so the subprocess finds the right
+    `bin/python` regardless of where it runs."""
+    monkeypatch.setenv("PATH", "/sentinel/path")
+    fake_venv = tmp_path / "venv"
+    (fake_venv / "bin").mkdir(parents=True)
+    (fake_venv / "bin" / "python").touch()
+    # Pass a RELATIVE path — by changing cwd, simulate the caller
+    # passing `--venv-path venv` while pwd is tmp_path.
+    monkeypatch.chdir(tmp_path)
+    env = c._build_subprocess_env(Path("venv"))
+    abs_venv = (tmp_path / "venv").resolve()
+    assert env["VIRTUAL_ENV"] == str(abs_venv), (
+        f"VIRTUAL_ENV must be absolute; got {env['VIRTUAL_ENV']!r}"
+    )
+    expected_prefix = f"{abs_venv / 'bin'}{os.pathsep}"
+    assert env["PATH"].startswith(expected_prefix), (
+        f"PATH must start with the ABSOLUTE bin/, not the relative form; "
+        f"got {env['PATH']!r}"
+    )
+
+
+def test_build_subprocess_env_does_not_inject_cwd_when_path_is_empty(
+    tmp_path, monkeypatch,
+):
+    """Round-4 round-2 P2 on PR #264: `Path("")` and `Path(".")` both
+    stringify as `"."` and resolve to cwd. If cwd happens to have
+    `./bin/python` (e.g. audit machine started from a venv-shaped
+    directory), naive resolution would silently inject cwd as
+    VIRTUAL_ENV — exactly the silent-cwd-injection bug round-4 was
+    meant to fix.
+
+    `_build_subprocess_env` must refuse to inject for these
+    empty-ish Path values REGARDLESS of cwd contents. CLI callers
+    never reach this function with `Path("")` (they route through
+    `disable_venv=True`), but library callers can — and the function
+    must be defensive for those callers too. Codex audit on PR #264
+    round 4 caught the earlier "by design" pin that allowed this
+    surprise injection.
+    """
+    monkeypatch.setenv("PATH", "/sentinel/path")
+    # Build the booby-trap: pwd has bin/python.
+    (tmp_path / "bin").mkdir()
+    (tmp_path / "bin" / "python").touch()
+    monkeypatch.chdir(tmp_path)
+    for empty_path in (Path(""), Path("."), Path("./")):
+        env = c._build_subprocess_env(empty_path)
+        assert env["PATH"] == "/sentinel/path", (
+            f"_build_subprocess_env({empty_path!r}) must NOT inject cwd "
+            f"as PATH prefix; got PATH={env['PATH']!r}"
+        )
+        assert "VIRTUAL_ENV" not in env, (
+            f"_build_subprocess_env({empty_path!r}) must NOT set "
+            f"VIRTUAL_ENV; got {env.get('VIRTUAL_ENV')!r}"
+        )
+
+
+def test_discover_venv_finds_venv_when_bin_python_present(tmp_path):
+    """`_discover_venv` returns the path when `.venv/bin/python` exists."""
+    venv = tmp_path / ".venv"
+    (venv / "bin").mkdir(parents=True)
+    (venv / "bin" / "python").touch()
+    discovered = c._discover_venv(tmp_path)
+    assert discovered == venv
+
+
+def test_discover_venv_returns_none_when_no_venv(tmp_path):
+    """`_discover_venv` is a no-op when the local repo has no
+    `.venv/bin/python` (matches cube-snap's actual state)."""
+    discovered = c._discover_venv(tmp_path)
+    assert discovered is None
+
+
+def test_discover_venv_returns_none_when_venv_present_but_no_python(tmp_path):
+    """A bare `.venv/` directory without `bin/python` is treated as
+    'not a venv' — better to return None than to point at a broken
+    one and create a misleading VIRTUAL_ENV later."""
+    venv = tmp_path / ".venv"
+    venv.mkdir()
+    discovered = c._discover_venv(tmp_path)
+    assert discovered is None
+
+
+def test_audit_pr_auto_discovers_repo_venv_when_unset(monkeypatch, tmp_path):
+    """End-to-end: when `config.venv_path` is None and the local repo
+    contains a `.venv/bin/python`, audit_pr discovers it and passes
+    the right config into run_codex_review.
+
+    Captures the config passed to run_codex_review via a stub and
+    asserts venv_path was promoted to the discovered path. Without
+    this end-to-end check, the auto-discovery logic could regress to
+    a no-op and we wouldn't notice until live audits started using
+    anaconda Python again (the Task #97 failure mode).
+    """
+    pr_meta = _fake_pr(head_sha="aaaa11112222")
+    captured: Dict[str, Any] = {}
+    repo_root = tmp_path / "fake-repo"
+    venv = repo_root / ".venv"
+    (venv / "bin").mkdir(parents=True)
+    (venv / "bin" / "python").touch()
+
+    def fake_run_codex_review(cfg, worktree_path):
+        captured["venv_path"] = cfg.venv_path
+        return REAL_PASS_OUTPUT, ""
+
+    _install_audit_mocks(
+        monkeypatch, pr_meta=pr_meta, codex_stdout=REAL_PASS_OUTPUT,
+    )
+    monkeypatch.setattr(c, "run_codex_review", fake_run_codex_review)
+    config = c.AuditConfig(
+        github_token="test",
+        repo_paths={"jeffhuber/cube-two-view-debugger": repo_root},
+    )
+    c.audit_pr(config, "jeffhuber/cube-two-view-debugger", 17)
+    assert captured["venv_path"] == venv, (
+        f"audit_pr should have auto-discovered {venv}; "
+        f"got {captured.get('venv_path')}"
+    )
+
+
+def test_audit_pr_respects_explicit_venv_path_override(
+    monkeypatch, tmp_path,
+):
+    """If `config.venv_path` is set explicitly, auto-discovery must NOT
+    overwrite it — caller's choice wins."""
+    pr_meta = _fake_pr(head_sha="aaaa11112222")
+    captured: Dict[str, Any] = {}
+    repo_root = tmp_path / "fake-repo"
+    # Repo has its own .venv (would normally be auto-discovered).
+    real_venv = repo_root / ".venv"
+    (real_venv / "bin").mkdir(parents=True)
+    (real_venv / "bin" / "python").touch()
+    # But the caller pinned a different venv explicitly.
+    explicit_venv = tmp_path / "other-venv"
+    (explicit_venv / "bin").mkdir(parents=True)
+    (explicit_venv / "bin" / "python").touch()
+
+    def fake_run_codex_review(cfg, worktree_path):
+        captured["venv_path"] = cfg.venv_path
+        return REAL_PASS_OUTPUT, ""
+
+    _install_audit_mocks(
+        monkeypatch, pr_meta=pr_meta, codex_stdout=REAL_PASS_OUTPUT,
+    )
+    monkeypatch.setattr(c, "run_codex_review", fake_run_codex_review)
+    config = c.AuditConfig(
+        github_token="test",
+        repo_paths={"jeffhuber/cube-two-view-debugger": repo_root},
+        venv_path=explicit_venv,
+    )
+    c.audit_pr(config, "jeffhuber/cube-two-view-debugger", 17)
+    assert captured["venv_path"] == explicit_venv
+
+
+def test_audit_pr_no_op_when_repo_has_no_venv(monkeypatch, tmp_path):
+    """A repo without a `.venv/` (e.g. cube-snap) gets `venv_path=None`
+    — same as before this patch. No change in behavior for venv-less
+    repos."""
+    pr_meta = _fake_pr(head_sha="aaaa11112222")
+    captured: Dict[str, Any] = {}
+    repo_root = tmp_path / "no-venv-repo"
+    repo_root.mkdir()  # exists but has no .venv
+
+    def fake_run_codex_review(cfg, worktree_path):
+        captured["venv_path"] = cfg.venv_path
+        return REAL_PASS_OUTPUT, ""
+
+    _install_audit_mocks(
+        monkeypatch, pr_meta=pr_meta, codex_stdout=REAL_PASS_OUTPUT,
+    )
+    monkeypatch.setattr(c, "run_codex_review", fake_run_codex_review)
+    config = c.AuditConfig(
+        github_token="test",
+        repo_paths={"jeffhuber/cube-snap": repo_root},
+    )
+    c.audit_pr(config, "jeffhuber/cube-snap", 17)
+    assert captured["venv_path"] is None
+
+
+def test_audit_pr_disable_venv_blocks_auto_discovery(
+    monkeypatch, tmp_path,
+):
+    """Round-4 P2 on PR #264: when `config.disable_venv=True` (set by
+    CLI's `--venv-path ""`), audit_pr must NOT auto-discover even if
+    `<local_repo>/.venv/` exists."""
+    pr_meta = _fake_pr(head_sha="aaaa11112222")
+    captured: Dict[str, Any] = {}
+    repo_root = tmp_path / "repo-with-venv"
+    venv = repo_root / ".venv"
+    (venv / "bin").mkdir(parents=True)
+    (venv / "bin" / "python").touch()
+
+    def fake_run_codex_review(cfg, worktree_path):
+        captured["venv_path"] = cfg.venv_path
+        return REAL_PASS_OUTPUT, ""
+
+    _install_audit_mocks(
+        monkeypatch, pr_meta=pr_meta, codex_stdout=REAL_PASS_OUTPUT,
+    )
+    monkeypatch.setattr(c, "run_codex_review", fake_run_codex_review)
+    config = c.AuditConfig(
+        github_token="test",
+        repo_paths={"jeffhuber/cube-two-view-debugger": repo_root},
+        disable_venv=True,
+    )
+    c.audit_pr(config, "jeffhuber/cube-two-view-debugger", 17)
+    assert captured["venv_path"] is None, (
+        f"disable_venv=True must block auto-discovery; got "
+        f"{captured.get('venv_path')}"
+    )
+
+
+def test_audit_pr_auto_discovery_returns_absolute_venv_path(
+    monkeypatch, tmp_path,
+):
+    """Round-4 P2 on PR #264: `_discover_venv` must return an absolute
+    path. Otherwise the subprocess (cwd=worktree_path) would resolve
+    a relative `.venv/bin` against the worktree dir, not the audit
+    machine's cwd."""
+    pr_meta = _fake_pr(head_sha="aaaa11112222")
+    captured: Dict[str, Any] = {}
+    # Use a RELATIVE local_repo path by changing into tmp_path first.
+    repo_dir = tmp_path / "fake-repo"
+    (repo_dir / ".venv" / "bin").mkdir(parents=True)
+    (repo_dir / ".venv" / "bin" / "python").touch()
+    monkeypatch.chdir(tmp_path)
+
+    def fake_run_codex_review(cfg, worktree_path):
+        captured["venv_path"] = cfg.venv_path
+        return REAL_PASS_OUTPUT, ""
+
+    _install_audit_mocks(
+        monkeypatch, pr_meta=pr_meta, codex_stdout=REAL_PASS_OUTPUT,
+    )
+    monkeypatch.setattr(c, "run_codex_review", fake_run_codex_review)
+    config = c.AuditConfig(
+        github_token="test",
+        repo_paths={"jeffhuber/cube-two-view-debugger": Path("fake-repo")},
+    )
+    c.audit_pr(config, "jeffhuber/cube-two-view-debugger", 17)
+    discovered = captured["venv_path"]
+    assert discovered is not None
+    assert discovered.is_absolute(), (
+        f"discovered venv path must be absolute (PR #264 round-4 P2); "
+        f"got {discovered!r}"
+    )

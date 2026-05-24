@@ -61,6 +61,7 @@ Run as a module to use the canonical sys.path:
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import json
 import sys
 from dataclasses import dataclass
@@ -81,7 +82,6 @@ from rubik_recognizer.colors import (  # noqa: E402
 )
 from tools.corner_conventions import (  # noqa: E402
     FACE_DEFS_BY_SIDE,
-    VERTEX_NAME_BY_SIDE,
     wca_face_by_slot,
     wca_facelets_for_label,
 )
@@ -670,7 +670,6 @@ def select_rows(
     """Return sorted list of row keys matching `rows_glob` (comma-separated;
     `*` wildcard). Filters out unapproved rows unless `require_approved`
     is False."""
-    import fnmatch
     patterns = [p.strip() for p in rows_glob.split(",") if p.strip()]
     if not patterns:
         patterns = ["*"]

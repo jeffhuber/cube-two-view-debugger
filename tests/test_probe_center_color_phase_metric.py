@@ -323,3 +323,131 @@ def test_main_expected_rows_zero_disables_check(tmp_path: Path):
     assert payload["expected_rows"] is None
     md = (tmp_path / "report.md").read_text()
     assert "Metric is sound" in md
+
+
+# --------------- Codex P2 round 2 on PR #262: small-sample + exit-code ---------------
+
+
+def _flipped_row(side: str, yaw: int):
+    """Build a synthetic row where the centers are assigned to the
+    WRONG canonical colors (one cyclic rotation off), forcing the
+    identity hypothesis to LOSE."""
+    from tools.corner_conventions import wca_face_by_slot
+    face_by_slot = wca_face_by_slot(side, yaw)
+    canonical_color_name = {
+        "U": "white", "D": "yellow",
+        "R": "red", "L": "orange",
+        "F": "green", "B": "blue",
+    }
+    slots_order = ("upper", "right", "front")
+    # Cyclic shift: upper gets right's canonical color, etc.
+    shifted_colors = [
+        canonical_color_name[face_by_slot[slots_order[(i + 1) % 3]]]
+        for i in range(3)
+    ]
+    faces = []
+    for slot, shifted_color in zip(slots_order, shifted_colors):
+        face = face_by_slot[slot]
+        wrong_lab = rgb_to_lab(CANONICAL_RGB[shifted_color])
+        stickers = []
+        for sid in range(1, 10):
+            stickers.append({
+                "row": (sid - 1) // 3,
+                "col": (sid - 1) % 3,
+                "sticker_id": sid,
+                "facelet_id": f"{face}{sid}",
+                "rgb": [0, 0, 0],
+                "lab": list(wrong_lab if sid == 5 else (0.0, 0.0, 0.0)),
+            })
+        faces.append({
+            "slot": slot, "wca_face": face, "stickers": stickers,
+        })
+    return {
+        "key": f"99_{side}",
+        "side": side,
+        "yaw_quarter_turns": yaw,
+        "faces": faces,
+    }
+
+
+def test_classify_verdict_single_failing_row_is_not_sound_not_mostly_sound():
+    """Codex P2 round 2 on PR #262: a 1-row run with 0 identity wins
+    should classify as NOT_SOUND (or INCOMPLETE), NOT 'mostly sound'.
+    The n-1 leniency must require a meaningful sample size."""
+    flipped = [_flipped_row("A", 0)]
+    results = [p.evaluate_row(flipped[0])]
+    # With expected_rows=1 (matches actual), the row-count check passes,
+    # so we land in the small-sample branch. The 1-row run with 0 wins
+    # must NOT be reported as "mostly sound" — that would be the n-1
+    # leniency over-firing on tiny samples.
+    assert p.classify_verdict(results, expected_rows=1) == p.VERDICT_NOT_SOUND
+
+
+def test_classify_verdict_n_minus_one_requires_min_sample_size():
+    """The 'mostly sound' leniency requires at least
+    _MOSTLY_SOUND_MIN_SAMPLE rows of evidence. Below that threshold,
+    a single failure makes the verdict NOT_SOUND rather than
+    over-trusting the n-1 heuristic."""
+    # 4 rows = below the min sample threshold; even with 3/4 wins,
+    # don't claim 'mostly sound'.
+    rows = [
+        _synthetic_row("A", 0), _synthetic_row("A", 1),
+        _synthetic_row("B", 0), _flipped_row("B", 1),
+    ]
+    results = [p.evaluate_row(r) for r in rows]
+    assert p.classify_verdict(results, expected_rows=4) == p.VERDICT_NOT_SOUND
+    # Same shape but at sample size >= threshold: 'mostly sound' applies.
+    larger = [
+        _synthetic_row("A", 0), _synthetic_row("A", 1),
+        _synthetic_row("A", 2), _synthetic_row("B", 0),
+        _flipped_row("B", 1),
+    ]
+    results = [p.evaluate_row(r) for r in larger]
+    assert p.classify_verdict(results, expected_rows=5) == p.VERDICT_MOSTLY_SOUND
+
+
+def test_classify_verdict_sound_when_all_identity_wins_with_margin():
+    rows = [_synthetic_row("A", 0), _synthetic_row("B", 0)]
+    results = [p.evaluate_row(r) for r in rows]
+    assert p.classify_verdict(results, expected_rows=2) == p.VERDICT_SOUND
+
+
+def test_main_exits_nonzero_when_metric_not_sound_even_if_count_matches(
+    tmp_path: Path,
+):
+    """Codex P2 round 2 on PR #262: previously is_incomplete only
+    checked the row-count precondition. A complete-but-failing run
+    (e.g. 0/2 wins on 2 rows with --expected-rows 2) would exit 0
+    while the report said 'NOT sound'. The exit code must reflect the
+    VERDICT, not just the count precondition."""
+    rows = [_flipped_row("A", 0), _flipped_row("B", 0)]
+    index_path = tmp_path / "index.json"
+    index_path.write_text(json.dumps({"rows": rows}))
+    rc = p.main([
+        "--index", str(index_path),
+        "--out-json", str(tmp_path / "trace.json"),
+        "--out-md", str(tmp_path / "report.md"),
+        "--expected-rows", "2",
+    ])
+    assert rc == 2, (
+        f"complete-but-NOT-sound run must exit non-zero; got {rc}. "
+        "If this fires, the exit-code logic regressed to relying only "
+        "on the row-count precondition (Codex P2 round 2 on PR #262)."
+    )
+    md = (tmp_path / "report.md").read_text()
+    assert "NOT sound" in md
+
+
+def test_main_exits_zero_only_on_sound_or_sound_soft(tmp_path: Path):
+    """Positive control for the prior test: the same shape of CLI call
+    with a SOUND verdict exits 0."""
+    rows = [_synthetic_row("A", 0), _synthetic_row("B", 0)]
+    index_path = tmp_path / "index.json"
+    index_path.write_text(json.dumps({"rows": rows}))
+    rc = p.main([
+        "--index", str(index_path),
+        "--out-json", str(tmp_path / "trace.json"),
+        "--out-md", str(tmp_path / "report.md"),
+        "--expected-rows", "2",
+    ])
+    assert rc == 0

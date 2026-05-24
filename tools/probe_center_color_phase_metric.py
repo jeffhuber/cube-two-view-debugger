@@ -267,6 +267,62 @@ def _serialize_result(r: RowHypothesisResult) -> Dict[str, Any]:
     }
 
 
+# The "mostly sound" verdict (identity wins on n_total-1 rows) requires
+# a meaningful sample size — otherwise a 1-row run with 0 wins would
+# satisfy `n_identity_wins >= n_total - 1` (0 >= 0) and report as
+# "mostly sound" when it's clearly NOT sound. Codex P2 round 2 on PR #262.
+_MOSTLY_SOUND_MIN_SAMPLE = 5
+
+
+# Verdict classifications surfaced to callers. The CLI's exit code is
+# derived from these (only SOUND / SOUND_SOFT exit 0; everything else
+# is non-zero so shell pipelines fail closed). Codex P2 round 2 on
+# PR #262: previously the CLI exited 0 whenever the row-count
+# precondition was met, even if the verdict was MOSTLY_SOUND or
+# NOT_SOUND, letting CI think validation passed.
+VERDICT_SOUND = "sound"
+VERDICT_SOUND_SOFT = "sound_soft"
+VERDICT_MOSTLY_SOUND = "mostly_sound"
+VERDICT_NOT_SOUND = "not_sound"
+VERDICT_INCOMPLETE_EMPTY = "incomplete_empty"
+VERDICT_INCOMPLETE_PARTIAL = "incomplete_partial"
+
+_VERDICTS_PASSING = frozenset({VERDICT_SOUND, VERDICT_SOUND_SOFT})
+
+
+def classify_verdict(
+    results: List[RowHypothesisResult],
+    expected_rows: Optional[int] = None,
+) -> str:
+    """Pure classifier for the soundness verdict (no string formatting).
+
+    Pulled out of `render_report` so `main()` can derive the CLI exit
+    code from the same logic the report displays. Codex P2 round 2 on
+    PR #262.
+    """
+    n_total = len(results)
+    if n_total == 0:
+        return VERDICT_INCOMPLETE_EMPTY
+    if expected_rows is not None and n_total != expected_rows:
+        return VERDICT_INCOMPLETE_PARTIAL
+    n_identity_wins = sum(
+        1 for r in results if r.winning_hypothesis == "identity"
+    )
+    if n_identity_wins == n_total and all(r.margin > 0 for r in results):
+        return VERDICT_SOUND
+    if n_identity_wins == n_total:
+        return VERDICT_SOUND_SOFT
+    # Codex P2 round 2: don't claim "mostly sound" on tiny samples where
+    # the n-1 heuristic over-fires (e.g. 0/1 wins). Require a meaningful
+    # sample size before the n-1 leniency kicks in.
+    if (
+        n_total >= _MOSTLY_SOUND_MIN_SAMPLE
+        and n_identity_wins >= n_total - 1
+    ):
+        return VERDICT_MOSTLY_SOUND
+    return VERDICT_NOT_SOUND
+
+
 def render_report(
     results: List[RowHypothesisResult],
     expected_rows: Optional[int] = None,
@@ -354,21 +410,21 @@ def render_report(
         )
     lines.append("")
 
-    # Verdict — fail-closed on empty input and on partial input vs
-    # the expected row count. Codex P2 on PR #262: without these
-    # guards `n_identity_wins == n_total and all(...)` is vacuously
-    # true on 0 results, so an empty / partially-generated oracle
-    # index would print a green "Metric is sound" report.
-    if n_total == 0:
-        verdict = (
+    # Verdict — derived from `classify_verdict` so the report and the
+    # CLI exit code stay in lockstep. Codex P2 (both rounds) on PR #262:
+    # empty/partial input must fail-closed; small-sample failures must
+    # not be classified as "mostly sound"; the CLI exit code must
+    # reflect the verdict, not only the row-count precondition.
+    verdict_class = classify_verdict(results, expected_rows=expected_rows)
+    verdict_text = {
+        VERDICT_INCOMPLETE_EMPTY: (
             "**Validation INCOMPLETE.** No results to evaluate — the "
             "oracle index appears empty. Soundness cannot be claimed "
             "on zero observations; check that "
             "`tools/build_oracle_rectified_faces.py` produced its "
             "expected output and rerun."
-        )
-    elif expected_rows is not None and n_total != expected_rows:
-        verdict = (
+        ),
+        VERDICT_INCOMPLETE_PARTIAL: (
             f"**Validation INCOMPLETE.** Got {n_total} rows but "
             f"expected {expected_rows} (the full-corner ground-truth "
             "fixture's documented row count). Soundness cannot be "
@@ -377,33 +433,31 @@ def render_report(
             "Regenerate the oracle index over all approved rows, or "
             "set --expected-rows explicitly if reducing scope on "
             "purpose."
-        )
-    elif n_identity_wins == n_total and all(r.margin > 0 for r in results):
-        verdict = (
+        ),
+        VERDICT_SOUND: (
             "**Metric is sound.** Identity wins strictly on all rows. "
             "Safe to wire into the production pipeline as a per-row "
             "phase-correction gate."
-        )
-    elif n_identity_wins == n_total:
-        verdict = (
+        ),
+        VERDICT_SOUND_SOFT: (
             "**Metric is sound but soft.** Identity wins (or ties) on "
             "all rows, but some margins are zero. Production use is "
             "viable but a tie-breaker secondary signal may be needed."
-        )
-    elif n_identity_wins >= n_total - 1:
-        verdict = (
+        ),
+        VERDICT_MOSTLY_SOUND: (
             "**Metric is mostly sound.** Identity wins on all but "
-            f"{n_total - n_identity_wins} rows. Investigate the "
-            "failing case(s) before relying on this as the only signal."
-        )
-    else:
-        verdict = (
+            f"{n_total - n_identity_wins} rows (sample size "
+            f"{n_total}). Investigate the failing case(s) before "
+            "relying on this as the only signal."
+        ),
+        VERDICT_NOT_SOUND: (
             "**Metric is NOT sound.** Identity loses on "
             f"{n_total - n_identity_wins}/{n_total} rows. Center-color "
             "alone is not strong enough; need additional orthogonal "
             "evidence."
-        )
-    lines.append(f"## Verdict\n\n{verdict}")
+        ),
+    }[verdict_class]
+    lines.append(f"## Verdict\n\n{verdict_text}")
     lines.append("")
 
     # Per-row table
@@ -520,20 +574,22 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         render_report(results, expected_rows=expected_rows),
         encoding="utf-8",
     )
-    # Fail-closed exit code when the documented precondition isn't met
-    # (empty index, or row count != expected). Codex P2 on PR #262.
-    is_incomplete = (
-        len(results) == 0
-        or (expected_rows is not None and len(results) != expected_rows)
-    )
-    status = "INCOMPLETE" if is_incomplete else "ok"
+    # Fail-closed exit code based on the soundness verdict — not just
+    # the row-count precondition. Codex P2 round 2 on PR #262:
+    # previously a complete-but-failing run (e.g. 11/12 wins) would
+    # exit 0 because the count check passed, letting CI think the
+    # validation was successful when the report clearly said it
+    # wasn't. SOUND and SOUND_SOFT both exit 0 (the metric works for
+    # the documented purpose); anything else exits 2.
+    verdict_class = classify_verdict(results, expected_rows=expected_rows)
+    is_passing = verdict_class in _VERDICTS_PASSING
     print(
         f"wrote {args.out_json} and {args.out_md} "
         f"({payload['n_identity_wins']}/{payload['n_rows']} identity wins; "
-        f"{status})",
+        f"verdict={verdict_class})",
         file=sys.stderr,
     )
-    return 2 if is_incomplete else 0
+    return 0 if is_passing else 2
 
 
 if __name__ == "__main__":

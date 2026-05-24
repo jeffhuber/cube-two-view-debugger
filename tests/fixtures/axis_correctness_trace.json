@@ -2,8 +2,8 @@
   "schema": "axis_correctness_v1",
   "source": {
     "tool": "tools/measure_axis_correctness.py",
-    "git_sha": "70f90ca1554fd8e492c8b9867f050946fb216a08",
-    "generated_at_utc": "2026-05-24T19:05:09.986619+00:00",
+    "git_sha": "bec408d8fefcbced7baefa5b21a2a7ece7efa9b1",
+    "generated_at_utc": "2026-05-24T19:26:24.981781+00:00",
     "truth": "tests/fixtures/full_corner_ground_truth.json",
     "manifest": "tests/fixtures/corpus_manifest.json",
     "max_image_dim": 1600,

@@ -9,6 +9,7 @@ which captures real-data output on the 12 oracle rows.
 """
 from __future__ import annotations
 
+import json
 import math
 import sys
 from pathlib import Path
@@ -317,6 +318,55 @@ def test_default_output_blocker_accepts_clean_traced_row_both_hypotheses():
         "skipped": [],
     })
     assert msg is None
+
+
+def test_default_output_blocker_rejects_subset_truth_with_default_outputs(
+    tmp_path, monkeypatch,
+):
+    """Codex P2 on PR #268 head bec408d: if `--truth` points at an
+    exploratory subset fixture and every subset row traces cleanly, the
+    pre-fix blocker returned None (no skipped, no errors, hypotheses
+    populated) → main wrote to the default committed paths and silently
+    shrank the canonical 12-row artifact to N-row. The fix: compare
+    truth path against canonical default; if non-default AND traced
+    count < canonical approved-row count, block.
+    """
+    # Pretend the canonical fixture has 12 approved rows.
+    canonical = tmp_path / "canonical_truth.json"
+    canonical.write_text(
+        json.dumps({f"{i}_A": {"approved": True} for i in range(12)}),
+        encoding="utf-8",
+    )
+    subset = tmp_path / "subset_truth.json"
+    subset.write_text(
+        json.dumps({"20_A": {"approved": True}}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(m, "DEFAULT_TRUTH", canonical)
+
+    payload = {
+        "per_row": [
+            {
+                "key": "20_A",
+                "status": "traced",
+                "corr_true": {"axis_match": {"total_misfit_deg": 12.3}},
+                "corr_false": {"axis_match": {"total_misfit_deg": 14.1}},
+            },
+        ],
+        "skipped": [],
+    }
+    # Passing the subset path: blocker must fire (1 traced row < 12 canonical).
+    msg = m._default_output_blocker(payload, truth_path=subset)
+    assert msg is not None
+    assert "1 row(s) traced" in msg
+    assert "12 approved rows" in msg
+    # Passing the canonical path with same single-row payload: still
+    # passes the count check (truth_path==canonical short-circuits) so
+    # blocker returns None (this case represents a happy-path single-row
+    # run against the canonical fixture, which would only ever happen
+    # in tests).
+    msg2 = m._default_output_blocker(payload, truth_path=canonical)
+    assert msg2 is None
 
 
 def test_main_per_path_guard_protects_asymmetric_default(monkeypatch, tmp_path):

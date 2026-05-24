@@ -597,7 +597,28 @@ def _hypothesis_errors(rows: Sequence[Dict[str, Any]]) -> List[str]:
     return out
 
 
-def _default_output_blocker(payload: Dict[str, Any]) -> Optional[str]:
+def _canonical_truth_row_count(truth_path: Path) -> Optional[int]:
+    """Return the count of approved rows in the canonical truth fixture
+    (without loading the entire trace). Used by `_default_output_blocker`
+    to detect "user passed an exploratory subset truth fixture" — even
+    if every subset row traces cleanly, writing to the default
+    committed paths would silently shrink the canonical artifact.
+
+    Returns None if the canonical fixture can't be read (defensive — the
+    caller treats absent as "skip the canonical-count check").
+    """
+    try:
+        truth = json.loads(truth_path.read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        return None
+    return sum(1 for v in truth.values() if v.get("approved"))
+
+
+def _default_output_blocker(
+    payload: Dict[str, Any],
+    *,
+    truth_path: Optional[Path] = None,
+) -> Optional[str]:
     rows = payload.get("per_row", [])
     skipped = payload.get("skipped", [])
     errored = [r for r in rows if r.get("status") != "traced"]
@@ -613,6 +634,21 @@ def _default_output_blocker(payload: Dict[str, Any]) -> Optional[str]:
         sample = ", ".join(hypo_errs[:3])
         suffix = f" (sample: {sample})" if hypo_errs else ""
         return f"{len(hypo_errs)} hypothesis fit(s) failed{suffix}"
+    # Canonical-count check: if the caller passed a non-default truth
+    # path (e.g. an exploratory subset), the row count won't match the
+    # canonical fixture's approved-row count. Writing to default outputs
+    # would silently shrink the committed artifact. Codex P2 on PR #268
+    # head bec408d.
+    if truth_path is not None:
+        if truth_path.resolve() != DEFAULT_TRUTH.resolve():
+            canonical_count = _canonical_truth_row_count(DEFAULT_TRUTH)
+            if canonical_count is not None and traced_count < canonical_count:
+                return (
+                    f"only {traced_count} row(s) traced — fewer than the "
+                    f"canonical {canonical_count} approved rows in "
+                    f"{_display_path(DEFAULT_TRUTH)} (probably an "
+                    f"exploratory subset truth fixture)"
+                )
     return None
 
 
@@ -635,7 +671,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         truth_path=args.truth,
         manifest_path=args.manifest,
     )
-    blocker = _default_output_blocker(payload)
+    blocker = _default_output_blocker(payload, truth_path=args.truth)
     blocked_paths: List[str] = []
     if blocker is not None:
         # Per-path: protect any output that resolves to a committed

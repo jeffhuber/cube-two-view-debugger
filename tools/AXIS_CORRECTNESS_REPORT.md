@@ -5,8 +5,8 @@ For each (row, hypothesis), measures how close the production fit's 3 axis vecto
 ## Source
 
 - Tool: `tools/measure_axis_correctness.py`
-- Commit: `70f90ca1554fd8e492c8b9867f050946fb216a08`
-- Generated: `2026-05-24T19:05:09.986619+00:00`
+- Commit: `bec408d8fefcbced7baefa5b21a2a7ece7efa9b1`
+- Generated: `2026-05-24T19:26:24.981781+00:00`
 - Truth: `tests/fixtures/full_corner_ground_truth.json`
 - Manifest: `tests/fixtures/corpus_manifest.json`
 - Max image dim: `1600`

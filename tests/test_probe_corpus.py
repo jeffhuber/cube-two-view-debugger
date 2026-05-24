@@ -859,3 +859,5 @@ def test_probe_manifest_records_executable_yaw_for_63_68_cohort():
     }
     assert "expectedYaw" not in rows["64"]
     assert "Human-confirmed capture yaw=0" in rows["64"]["notes"]
+    assert "expectedYaw" not in rows["65"]
+    assert "expectedYaw" not in rows["66"]

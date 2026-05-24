@@ -1,0 +1,293 @@
+"""Unit tests for `tools/measure_axis_correctness.py`.
+
+Pure-function tests of the angle math, axis-matching, ground-truth
+derivation, and report rendering. The pipeline invocation
+(`evaluate_one_row`) is not unit-tested here because it depends on
+rembg + bezel + global cube model fit; the canonical end-to-end
+validation is the committed `tests/fixtures/axis_correctness_trace.json`
+which captures real-data output on the 12 oracle rows.
+"""
+from __future__ import annotations
+
+import math
+import sys
+from pathlib import Path
+
+import pytest
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from tools import measure_axis_correctness as m  # noqa: E402
+
+
+# ---------------- angle math ----------------
+
+
+def test_angle_between_parallel_vectors_is_zero():
+    assert m._angle_between((1.0, 0.0), (5.0, 0.0)) == pytest.approx(0.0)
+
+
+def test_angle_between_perpendicular_vectors_is_90():
+    assert m._angle_between((1.0, 0.0), (0.0, 1.0)) == pytest.approx(90.0)
+
+
+def test_angle_between_antiparallel_vectors_is_180():
+    assert m._angle_between((1.0, 0.0), (-1.0, 0.0)) == pytest.approx(180.0)
+
+
+def test_angle_between_handles_zero_vector_safely():
+    """Degenerate input (zero-length vector) returns NaN, not crash."""
+    result = m._angle_between((0.0, 0.0), (1.0, 0.0))
+    assert math.isnan(result)
+
+
+def test_angle_between_clamps_floating_point_overflow():
+    """Two near-identical vectors should give ~0° even if the cos
+    computation produces 1.0000000001 due to floating point."""
+    a = (1.0, 0.0)
+    b = (1.0, 1e-15)
+    assert 0.0 <= m._angle_between(a, b) < 1.0
+
+
+def test_length_uses_euclidean_norm():
+    assert m._length((3.0, 4.0)) == pytest.approx(5.0)
+    assert m._length((0.0, 0.0)) == pytest.approx(0.0)
+
+
+# ---------------- axis matching ----------------
+
+
+def test_match_axes_identical_input_returns_zero_misfit():
+    """If predicted axes == ground truth, total misfit is 0 and
+    assignment is identity."""
+    axes = [(100.0, 0.0), (0.0, 100.0), (-50.0, -50.0)]
+    result = m._match_axes_to_ground_truth(axes, axes)
+    assert result["total_misfit_deg"] == pytest.approx(0.0, abs=1e-6)
+    assert result["assignment"] == [0, 1, 2]
+    for err in result["per_axis_angle_errors_deg"]:
+        assert err == pytest.approx(0.0, abs=1e-6)
+
+
+def test_match_axes_finds_best_permutation_under_reordering():
+    """Predicted axes reordered should be matched back via the best
+    permutation; final misfit still 0."""
+    gt = [(100.0, 0.0), (0.0, 100.0), (-50.0, -50.0)]
+    # Predicted in reverse order:
+    predicted = [gt[2], gt[1], gt[0]]
+    result = m._match_axes_to_ground_truth(predicted, gt)
+    assert result["total_misfit_deg"] == pytest.approx(0.0, abs=1e-6)
+    # assignment[i] = which GT axis predicted[i] matches.
+    assert result["assignment"] == [2, 1, 0]
+
+
+def test_match_axes_chirality_flip_signature_around_180():
+    """The 60° body-diagonal flip in the chirality detector produces
+    axes that are systematically off by ~50-70° each. The TOTAL
+    misfit across 3 axes after best permutation matching is ~178°
+    — the signature pattern the diagnostic surfaces. This pins
+    that interpretation so the threshold (~30° for clean, ~175° for
+    broken) in the report stays meaningful."""
+    # GT: axes at 90°, 210°, 330° (standard iso layout, pointing
+    # down/up-left/up-right).
+    gt = [
+        (math.cos(math.radians(90.0)) * 100, math.sin(math.radians(90.0)) * 100),
+        (math.cos(math.radians(210.0)) * 100, math.sin(math.radians(210.0)) * 100),
+        (math.cos(math.radians(330.0)) * 100, math.sin(math.radians(330.0)) * 100),
+    ]
+    # Predicted: rotated 60° (the body-diagonal flip signature) — same
+    # length but pointing at the OPPOSITE 3 hexagon corners.
+    pred = [
+        (math.cos(math.radians(150.0)) * 100, math.sin(math.radians(150.0)) * 100),
+        (math.cos(math.radians(270.0)) * 100, math.sin(math.radians(270.0)) * 100),
+        (math.cos(math.radians(30.0)) * 100, math.sin(math.radians(30.0)) * 100),
+    ]
+    result = m._match_axes_to_ground_truth(pred, gt)
+    # Best permutation finds the minimum sum of 3 angles. Each
+    # predicted axis is 60° from its nearest GT neighbor → total ~180°.
+    assert 170.0 <= result["total_misfit_deg"] <= 190.0
+
+
+# ---------------- ground-truth axes derivation ----------------
+
+
+def test_ground_truth_axes_uses_one_edge_corners_for_side_a():
+    """Per `ONE_EDGE_CORNERS_BY_SIDE['A']`, the single-axis hex
+    corners on side A are corner_1, corner_3, corner_5. The derived
+    GT axes must point from the vertex at those 3 corners."""
+    truth_row = {
+        "vertex": [100.0, 100.0],
+        "corner_0": [999.0, 999.0],  # FAR corner; should NOT be used
+        "corner_1": [200.0, 100.0],  # ONE_EDGE; should be used
+        "corner_2": [999.0, 999.0],
+        "corner_3": [100.0, 200.0],  # ONE_EDGE; should be used
+        "corner_4": [999.0, 999.0],
+        "corner_5": [50.0, 50.0],    # ONE_EDGE; should be used
+    }
+    vertex, axes = m._ground_truth_axes(truth_row, "A", scale=1.0)
+    assert vertex == (100.0, 100.0)
+    assert axes == [
+        (100.0, 0.0),   # corner_1 - vertex
+        (0.0, 100.0),   # corner_3 - vertex
+        (-50.0, -50.0), # corner_5 - vertex
+    ]
+
+
+def test_ground_truth_axes_uses_one_edge_corners_for_side_b():
+    """Side B's ONE_EDGE corners are corner_0, corner_2, corner_4."""
+    truth_row = {
+        "vertex": [0.0, 0.0],
+        "corner_0": [10.0, 0.0],
+        "corner_1": [999.0, 999.0],
+        "corner_2": [0.0, 10.0],
+        "corner_3": [999.0, 999.0],
+        "corner_4": [-5.0, -5.0],
+        "corner_5": [999.0, 999.0],
+    }
+    vertex, axes = m._ground_truth_axes(truth_row, "B", scale=1.0)
+    assert vertex == (0.0, 0.0)
+    assert axes == [
+        (10.0, 0.0),
+        (0.0, 10.0),
+        (-5.0, -5.0),
+    ]
+
+
+def test_ground_truth_axes_applies_scale():
+    """The processing-resolution image is downscaled from full-res by
+    `scale`. GT corners come from full-res coords; tool must scale them
+    down to match the model's processing-resolution output."""
+    truth_row = {
+        "vertex": [100.0, 100.0],
+        "corner_0": [0.0, 0.0],
+        "corner_1": [200.0, 100.0],
+        "corner_2": [0.0, 0.0],
+        "corner_3": [100.0, 200.0],
+        "corner_4": [0.0, 0.0],
+        "corner_5": [50.0, 50.0],
+    }
+    vertex_full, _ = m._ground_truth_axes(truth_row, "A", scale=1.0)
+    vertex_half, axes_half = m._ground_truth_axes(truth_row, "A", scale=0.5)
+    assert vertex_full == (100.0, 100.0)
+    assert vertex_half == (50.0, 50.0)
+    # Axes are differences, so they also scale.
+    assert axes_half[0] == (50.0, 0.0)
+
+
+# ---------------- visual-quality classification ----------------
+
+
+def test_classify_face_for_row_returns_unknown_when_no_labels():
+    """Rows with no labels in `_VISUAL_QUALITY_SAMPLES` classify as
+    'unknown' (the un-eyeballed bucket)."""
+    assert m._classify_face_for_row_visual("99_X", "corr_true") == "unknown"
+
+
+def test_classify_face_for_row_returns_broken_if_any_face_broken():
+    """The aggregation rule: 'broken' if any of 3 faces is broken,
+    'clean' if all clean/decent, 'marginal' otherwise. Verifies the
+    20_A corr_true row classifies as 'broken' since all 3 face labels
+    in the committed sample are 'broken'."""
+    assert m._classify_face_for_row_visual("20_A", "corr_true") == "broken"
+
+
+def test_classify_face_for_row_returns_clean_when_all_clean_or_decent():
+    """41_A corr_false has labels {decent, clean, clean} → clean."""
+    assert m._classify_face_for_row_visual("41_A", "corr_false") == "clean"
+
+
+def test_classify_face_for_row_returns_marginal_when_mixed():
+    """41_A corr_true has labels {decent, decent, marginal} →
+    marginal (mixed clean/decent + marginal, no broken)."""
+    assert m._classify_face_for_row_visual("41_A", "corr_true") == "marginal"
+
+
+# ---------------- report rendering ----------------
+
+
+def test_render_report_includes_per_row_table_and_cross_reference():
+    """End-to-end render: feed a minimal payload with one traced row
+    + one untraced row, verify the markdown structure."""
+    payload = {
+        "per_row": [
+            {
+                "key": "20_A",
+                "side": "A",
+                "yaw_quarter_turns": 0,
+                "status": "traced",
+                "corr_true": {
+                    "vertex_error_processing_px": 44.2,
+                    "flip_applied": False,
+                    "axis_match": {
+                        "total_misfit_deg": 177.4,
+                        "per_axis_angle_errors_deg": [63.6, 56.3, 57.5],
+                        "predicted_axis_lengths_px": [408.9, 411.4, 410.8],
+                        "gt_axis_lengths_px": [502.2, 590.4, 547.0],
+                    },
+                },
+                "corr_false": {
+                    "vertex_error_processing_px": 44.2,
+                    "flip_applied": False,
+                    "axis_match": {
+                        "total_misfit_deg": 177.4,
+                        "per_axis_angle_errors_deg": [63.6, 56.3, 57.5],
+                        "predicted_axis_lengths_px": [408.9, 411.4, 410.8],
+                        "gt_axis_lengths_px": [502.2, 590.4, 547.0],
+                    },
+                },
+            },
+            {
+                "key": "99_X",
+                "status": "error",
+                "error": "rembg failed: synthetic test error",
+            },
+        ],
+    }
+    md = m.render_report(payload)
+    assert "# Axis-correctness diagnostic" in md
+    assert "`20_A`" in md
+    assert "corr_true" in md
+    # Untraced row error message surfaces.
+    assert "ERR" in md and "synthetic test error" in md
+    # Cross-reference section exists and includes the broken bucket
+    # (since 20_A corr_true has _VISUAL_QUALITY_SAMPLES entries
+    # tagged 'broken').
+    assert "Cross-reference" in md
+
+
+# ---------------- committed trace sanity ----------------
+
+
+def test_committed_trace_matches_expected_shape():
+    """The trace JSON committed under tests/fixtures/ is the canonical
+    post-#267 measurement. Pin its structure so a future refactor
+    that breaks the schema fails loudly here."""
+    import json
+    trace_path = (
+        REPO_ROOT / "tests" / "fixtures" / "axis_correctness_trace.json"
+    )
+    if not trace_path.exists():
+        pytest.skip(
+            "axis_correctness_trace.json not committed — run "
+            "`python tools/measure_axis_correctness.py` to regenerate."
+        )
+    payload = json.loads(trace_path.read_text(encoding="utf-8"))
+    assert payload.get("schema") == "axis_correctness_v1"
+    assert isinstance(payload.get("per_row"), list)
+    assert len(payload["per_row"]) >= 10, (
+        "Expected ~12 rows (all approved full-corner-ground-truth rows); "
+        f"got {len(payload['per_row'])}"
+    )
+    # Spot-check: at least one row should have both hypotheses
+    # populated.
+    has_both = any(
+        r.get("status") == "traced"
+        and "corr_true" in r
+        and "corr_false" in r
+        for r in payload["per_row"]
+    )
+    assert has_both, (
+        "no row has both corr_true and corr_false populated — trace "
+        "appears malformed"
+    )

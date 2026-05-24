@@ -200,7 +200,9 @@ def test_evaluate_row_missing_slot_raises():
 
 def test_main_writes_outputs_and_returns_success(tmp_path: Path):
     """The CLI should consume an oracle-shaped index.json, emit the
-    summary JSON + markdown report, and exit cleanly."""
+    summary JSON + markdown report, and exit cleanly. Pin --expected-rows
+    to match the synthetic fixture's actual count so the fail-closed
+    check doesn't fire."""
     rows = [_synthetic_row("A", 0), _synthetic_row("B", 0)]
     index_path = tmp_path / "index.json"
     index_path.write_text(json.dumps({"rows": rows}))
@@ -210,12 +212,14 @@ def test_main_writes_outputs_and_returns_success(tmp_path: Path):
         "--index", str(index_path),
         "--out-json", str(out_json),
         "--out-md", str(out_md),
+        "--expected-rows", "2",
     ])
     assert rc == 0
     payload = json.loads(out_json.read_text())
     assert payload["schema"] == "center_color_phase_metric_v1"
     assert payload["n_rows"] == 2
     assert payload["n_identity_wins"] == 2
+    assert payload["expected_rows"] == 2
     md = out_md.read_text()
     assert "identity` wins on **2/2**" in md
     assert "Metric is sound" in md
@@ -228,3 +232,94 @@ def test_main_errors_when_index_missing(tmp_path: Path):
         "--out-md", str(tmp_path / "report.md"),
     ])
     assert rc == 1
+
+
+# --------------- Codex P2 on PR #262: fail-closed on empty/partial ---------------
+
+
+def test_render_report_does_not_claim_soundness_on_empty_results():
+    """`render_report([])` must NOT print 'Metric is sound' — the
+    `n_identity_wins == n_total and all(...)` chain is vacuously true
+    on zero results, so a guard is required. Codex P2 on PR #262."""
+    md = p.render_report([])
+    assert "INCOMPLETE" in md
+    assert "Metric is sound" not in md
+
+
+def test_render_report_does_not_claim_soundness_on_empty_results_even_with_expected_rows():
+    """Same guard, exercised via --expected-rows path."""
+    md = p.render_report([], expected_rows=12)
+    assert "INCOMPLETE" in md
+    assert "Metric is sound" not in md
+
+
+def test_render_report_flags_partial_input_against_expected_rows():
+    """If the actual row count is less than `expected_rows`, the
+    verdict must surface as INCOMPLETE — a perfect score on a subset
+    doesn't validate the documented precondition."""
+    rows = [_synthetic_row("A", 0)]  # 1 row, but the precondition expects 12
+    results = [p.evaluate_row(r) for r in rows]
+    md = p.render_report(results, expected_rows=12)
+    assert "INCOMPLETE" in md
+    assert "Got 1 rows but expected 12" in md
+    assert "Metric is sound" not in md
+
+
+def test_render_report_claims_soundness_when_expected_rows_matches_actual():
+    """The positive path: when row count matches the expected count
+    AND identity wins all, the verdict goes back to 'Metric is sound'."""
+    rows = [_synthetic_row("A", 0), _synthetic_row("B", 0)]
+    results = [p.evaluate_row(r) for r in rows]
+    md = p.render_report(results, expected_rows=2)
+    assert "Metric is sound" in md
+    assert "INCOMPLETE" not in md
+
+
+def test_main_exits_nonzero_when_oracle_index_is_empty(tmp_path: Path):
+    """End-to-end: an empty oracle index must NOT exit 0 (which would
+    let CI think the validation passed). It must exit 2 (INCOMPLETE)
+    so the fail-closed status is visible in shell pipelines."""
+    index_path = tmp_path / "index.json"
+    index_path.write_text(json.dumps({"rows": []}))
+    rc = p.main([
+        "--index", str(index_path),
+        "--out-json", str(tmp_path / "trace.json"),
+        "--out-md", str(tmp_path / "report.md"),
+    ])
+    assert rc == 2
+
+
+def test_main_exits_nonzero_when_row_count_does_not_match_expected(tmp_path: Path):
+    """End-to-end: a partial oracle index against the default 12-row
+    expectation must exit 2."""
+    rows = [_synthetic_row("A", 0)]
+    index_path = tmp_path / "index.json"
+    index_path.write_text(json.dumps({"rows": rows}))
+    rc = p.main([
+        "--index", str(index_path),
+        "--out-json", str(tmp_path / "trace.json"),
+        "--out-md", str(tmp_path / "report.md"),
+        # Default --expected-rows is 12; 1 row != 12, expect rc=2.
+    ])
+    assert rc == 2
+
+
+def test_main_expected_rows_zero_disables_check(tmp_path: Path):
+    """Escape hatch for ad-hoc smaller runs: --expected-rows 0 turns
+    the precondition check off entirely. Verifies that a 1-row input
+    with --expected-rows 0 succeeds and reports 'Metric is sound' on
+    that single row."""
+    rows = [_synthetic_row("A", 0)]
+    index_path = tmp_path / "index.json"
+    index_path.write_text(json.dumps({"rows": rows}))
+    rc = p.main([
+        "--index", str(index_path),
+        "--out-json", str(tmp_path / "trace.json"),
+        "--out-md", str(tmp_path / "report.md"),
+        "--expected-rows", "0",
+    ])
+    assert rc == 0
+    payload = json.loads((tmp_path / "trace.json").read_text())
+    assert payload["expected_rows"] is None
+    md = (tmp_path / "report.md").read_text()
+    assert "Metric is sound" in md

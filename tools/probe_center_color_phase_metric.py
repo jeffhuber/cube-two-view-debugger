@@ -89,6 +89,14 @@ DEFAULT_OUT_MD = (
     REPO_ROOT / "tools" / "CENTER_COLOR_PHASE_METRIC_REPORT.md"
 )
 
+# The current full-corner ground-truth fixture has 12 approved rows
+# (6 sets x 2 sides). The probe's documented soundness claim is over
+# this row count; running on a partial/empty oracle index without
+# requiring the expected count would let a `green` report appear on
+# 0/0 wins (vacuously true `all(...)` + `n_identity_wins == n_total`).
+# Codex P2 on PR #262: require the count before declaring soundness.
+DEFAULT_EXPECTED_ROWS = 12
+
 CENTER_STICKER_ID = 5  # row=1, col=1 in URFDLB row-major numbering
 
 
@@ -259,9 +267,18 @@ def _serialize_result(r: RowHypothesisResult) -> Dict[str, Any]:
     }
 
 
-def render_report(results: List[RowHypothesisResult]) -> str:
+def render_report(
+    results: List[RowHypothesisResult],
+    expected_rows: Optional[int] = None,
+) -> str:
     """Produce a human-readable Markdown summary of per-row + aggregate
-    findings."""
+    findings.
+
+    `expected_rows`, if set, pins the probe's soundness claim to a
+    specific row count — when the actual count differs (including the
+    empty / partially-generated index case), the verdict surfaces as
+    INCOMPLETE rather than claiming soundness. Codex P2 on PR #262.
+    """
     lines: List[str] = []
     lines.append("# Center-color phase metric — validation report")
     lines.append("")
@@ -337,8 +354,31 @@ def render_report(results: List[RowHypothesisResult]) -> str:
         )
     lines.append("")
 
-    # Verdict
-    if n_identity_wins == n_total and all(r.margin > 0 for r in results):
+    # Verdict — fail-closed on empty input and on partial input vs
+    # the expected row count. Codex P2 on PR #262: without these
+    # guards `n_identity_wins == n_total and all(...)` is vacuously
+    # true on 0 results, so an empty / partially-generated oracle
+    # index would print a green "Metric is sound" report.
+    if n_total == 0:
+        verdict = (
+            "**Validation INCOMPLETE.** No results to evaluate — the "
+            "oracle index appears empty. Soundness cannot be claimed "
+            "on zero observations; check that "
+            "`tools/build_oracle_rectified_faces.py` produced its "
+            "expected output and rerun."
+        )
+    elif expected_rows is not None and n_total != expected_rows:
+        verdict = (
+            f"**Validation INCOMPLETE.** Got {n_total} rows but "
+            f"expected {expected_rows} (the full-corner ground-truth "
+            "fixture's documented row count). Soundness cannot be "
+            "claimed on partial input — even a perfect score on a "
+            "subset doesn't validate the documented precondition. "
+            "Regenerate the oracle index over all approved rows, or "
+            "set --expected-rows explicitly if reducing scope on "
+            "purpose."
+        )
+    elif n_identity_wins == n_total and all(r.margin > 0 for r in results):
         verdict = (
             "**Metric is sound.** Identity wins strictly on all rows. "
             "Safe to wire into the production pipeline as a per-row "
@@ -437,6 +477,16 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         "--out-md", type=Path, default=DEFAULT_OUT_MD,
         help="Human-readable markdown report.",
     )
+    ap.add_argument(
+        "--expected-rows", type=int, default=DEFAULT_EXPECTED_ROWS,
+        help=(
+            f"Expected number of rows in the oracle index (default "
+            f"{DEFAULT_EXPECTED_ROWS} — the full-corner ground-truth "
+            "fixture's row count). When the actual count differs, the "
+            "verdict surfaces as INCOMPLETE and main() exits non-zero. "
+            "Pass 0 to disable the check (e.g. for ad-hoc smaller runs)."
+        ),
+    )
     args = ap.parse_args(list(argv) if argv is not None else None)
     if not args.index.exists():
         print(
@@ -448,9 +498,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     index = json.loads(args.index.read_text(encoding="utf-8"))
     results = evaluate_all(index)
     args.out_json.parent.mkdir(parents=True, exist_ok=True)
+    # Translate `--expected-rows 0` to None (disabled). Any positive
+    # value remains the pinned count. Negative values are nonsensical;
+    # argparse + int() permits them but treat <=0 as "no check".
+    expected_rows = args.expected_rows if args.expected_rows > 0 else None
     payload = {
         "schema": "center_color_phase_metric_v1",
         "source_index": str(args.index),
+        "expected_rows": expected_rows,
         "n_rows": len(results),
         "n_identity_wins": sum(
             1 for r in results if r.winning_hypothesis == "identity"
@@ -461,13 +516,24 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         json.dumps(payload, indent=2), encoding="utf-8"
     )
     args.out_md.parent.mkdir(parents=True, exist_ok=True)
-    args.out_md.write_text(render_report(results), encoding="utf-8")
+    args.out_md.write_text(
+        render_report(results, expected_rows=expected_rows),
+        encoding="utf-8",
+    )
+    # Fail-closed exit code when the documented precondition isn't met
+    # (empty index, or row count != expected). Codex P2 on PR #262.
+    is_incomplete = (
+        len(results) == 0
+        or (expected_rows is not None and len(results) != expected_rows)
+    )
+    status = "INCOMPLETE" if is_incomplete else "ok"
     print(
         f"wrote {args.out_json} and {args.out_md} "
-        f"({payload['n_identity_wins']}/{payload['n_rows']} identity wins)",
+        f"({payload['n_identity_wins']}/{payload['n_rows']} identity wins; "
+        f"{status})",
         file=sys.stderr,
     )
-    return 0
+    return 2 if is_incomplete else 0
 
 
 if __name__ == "__main__":

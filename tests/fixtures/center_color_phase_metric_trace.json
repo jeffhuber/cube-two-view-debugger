@@ -1,6 +1,7 @@
 {
   "schema": "center_color_phase_metric_v1",
   "source_index": "/tmp/oracle_rectified_faces_v1/index.json",
+  "expected_rows": 12,
   "n_rows": 12,
   "n_identity_wins": 12,
   "results": [

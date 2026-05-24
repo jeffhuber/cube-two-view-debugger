@@ -274,7 +274,8 @@ def trace_one_row(
     try:
         image, scale = _processing_image(image_path, max_image_dim)
         rgb_array = np.array(image)
-        mask_array = np.array(remove(image, session=sess, only_mask=True)) > 128
+        rgba = remove(image, session=sess)
+        mask_array = np.array(rgba.split()[-1], dtype=np.uint8) > 128
         detection = detect_interior_bezel_lines(rgb_array, mask_array)
         hexagon = detect_hexagon_anchors(mask_array)
         if len(hexagon) != 6:
@@ -513,7 +514,7 @@ def run_all(
 ) -> Dict[str, Any]:
     from rembg import new_session  # noqa: E402
 
-    sess = new_session()
+    sess = new_session("u2net")
     set_index = {
         str(pair["setId"]): pair for pair in manifest.get("pairs", [])
     }
@@ -558,6 +559,7 @@ def run_all(
             "manifest": _display_path(manifest_path),
             "max_image_dim": max_image_dim,
             "run_selection": "single deterministic run per row",
+            "mask_path": "rembg.remove(...).alpha channel, matching production baselines",
         },
         "summary": summarize_payload(rows),
         "per_row": rows,
@@ -588,6 +590,7 @@ def render_report(payload: Dict[str, Any]) -> str:
         f"- Manifest: `{source.get('manifest', '-')}`",
         f"- Max image dim: `{source.get('max_image_dim', '-')}`",
         f"- Run selection: {source.get('run_selection', '-')}",
+        f"- Mask path: {source.get('mask_path', '-')}",
         "",
         "## Aggregate",
         "",

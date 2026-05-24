@@ -209,7 +209,27 @@ def score_model_center_colors(
 
 
 def force_phase_flip_model(model: GlobalCubeModel) -> GlobalCubeModel:
-    """Return the detector-independent forced near/far flip hypothesis."""
+    """Return the detector-independent forced near/far flip hypothesis.
+
+    The forced-flip model is constructed analytically from the
+    unflipped model's far-corner positions — no optimization loop
+    runs for it. So:
+
+    - `fit_loss` and `fit_quality` are left at their dataclass defaults
+      (the existing "no fit ran" sentinel — `fit_loss=inf`,
+      `fit_quality=0.0`). Copying the unflipped model's values would
+      mislead any future best-of-N picker into treating the synthetic
+      hypothesis as having equivalent fit quality. Greptile P2 on
+      PR #265.
+    - `flipped.debug` is left as the fresh dict populated by
+      `derive_geometry`, with only `phase_check` added explicitly.
+      Copying the unflipped model's full `debug` would carry over
+      stale signals like `phase_darkness_separation` (which was
+      computed for the UNFLIPPED model, not for this synthetic
+      hypothesis). Trace consumers should see absent/None for
+      detector signals on the forced-flip hypothesis — that's the
+      honest signal that no detector ran. Greptile P2 on PR #265.
+    """
     cx, cy = model.cube_center_screen
     far_keys = ("h_xy", "h_xz", "h_yz")
     if not all(key in model.visible_corners for key in far_keys):
@@ -221,11 +241,8 @@ def force_phase_flip_model(model: GlobalCubeModel) -> GlobalCubeModel:
         axis_x_2d=new_axes[0],
         axis_y_2d=new_axes[1],
         axis_z_2d=new_axes[2],
-        fit_loss=model.fit_loss,
-        fit_quality=model.fit_quality,
     )
     derive_geometry(flipped)
-    flipped.debug.update(model.debug or {})
     flipped.debug["phase_check"] = "forced_60deg_flip_diagnostic"
     return flipped
 

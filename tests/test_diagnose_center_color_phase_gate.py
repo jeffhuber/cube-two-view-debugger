@@ -103,6 +103,75 @@ def test_force_phase_flip_model_uses_far_corners_as_new_axes():
     assert flipped.debug["phase_check"] == "forced_60deg_flip_diagnostic"
 
 
+def test_force_phase_flip_model_does_not_inherit_unflipped_fit_quality():
+    """Greptile P2 on PR #265: the forced-flip model is analytically
+    constructed (no optimization loop). Inheriting the unflipped
+    model's `fit_loss` / `fit_quality` would mislead any future
+    best-of-N picker into treating the synthetic hypothesis as
+    equivalently well-fit. Default sentinel values (fit_loss=inf,
+    fit_quality=0) are the honest signal that no fit ran."""
+    from tools.global_cube_model import derive_geometry
+
+    original = GlobalCubeModel(
+        cube_center_screen=(100.0, 100.0),
+        axis_x_2d=(10.0, 0.0),
+        axis_y_2d=(0.0, 20.0),
+        axis_z_2d=(-5.0, -15.0),
+        fit_loss=0.5,
+        fit_quality=0.95,
+    )
+    derive_geometry(original)
+    flipped = d.force_phase_flip_model(original)
+    # The forced-flip model MUST NOT inherit the unflipped's fit
+    # quality — those numbers came from a Procrustes optimization
+    # that didn't run for this synthetic hypothesis. Pinning to the
+    # GlobalCubeModel defaults (inf / 0.0) so the "no fit ran"
+    # signal is unambiguous.
+    assert flipped.fit_loss == float("inf"), (
+        f"forced_flip.fit_loss must be the inf sentinel, not the "
+        f"unflipped value 0.5; got {flipped.fit_loss}"
+    )
+    assert flipped.fit_quality == 0.0, (
+        f"forced_flip.fit_quality must be 0.0 sentinel, not the "
+        f"unflipped value 0.95; got {flipped.fit_quality}"
+    )
+
+
+def test_force_phase_flip_model_does_not_inherit_unflipped_debug_signals():
+    """Greptile P2 on PR #265: copying the unflipped model's full
+    `debug` into the forced-flip model carried stale detector signals
+    like `phase_darkness_separation` (which was computed for the
+    UNFLIPPED model, not for the synthetic forced-flip hypothesis).
+    Trace consumers must see absent/None for those signals on the
+    forced-flip side — that's the honest "no detector ran" signal."""
+    from tools.global_cube_model import derive_geometry
+
+    original = GlobalCubeModel(
+        cube_center_screen=(100.0, 100.0),
+        axis_x_2d=(10.0, 0.0),
+        axis_y_2d=(0.0, 20.0),
+        axis_z_2d=(-5.0, -15.0),
+    )
+    derive_geometry(original)
+    # Stuff the unflipped model's debug with detector signals that
+    # would NOT be valid for the forced-flip hypothesis if blindly
+    # copied over.
+    original.debug["phase_check"] = "corrected_60deg_flip"
+    original.debug["phase_darkness_separation"] = 42.5
+    original.debug["phase_mean_near_darkness"] = 100.0
+    flipped = d.force_phase_flip_model(original)
+    # phase_check on the forced-flip MUST identify it as synthetic,
+    # not carry over the unflipped's detector verdict.
+    assert flipped.debug["phase_check"] == "forced_60deg_flip_diagnostic"
+    # Stale detector-derived numerics must NOT be present.
+    assert "phase_darkness_separation" not in flipped.debug, (
+        "forced_flip must not carry over the unflipped model's "
+        "phase_darkness_separation — that signal applies to a "
+        "different hypothesis"
+    )
+    assert "phase_mean_near_darkness" not in flipped.debug
+
+
 def test_render_report_handles_not_traced_rows():
     payload = {
         "schema": "center_color_phase_gate_trace_v1",

@@ -485,6 +485,17 @@ def _build_subprocess_env(venv_path: Optional[Path]) -> Dict[str, str]:
     env = dict(os.environ)
     if venv_path is None:
         return env
+    # Path("") and Path(".") both stringify as "." and resolve to cwd.
+    # If cwd happens to have ./bin/python (e.g. the audit machine
+    # was started from a directory shaped like a venv) the resolution
+    # below would naively inject cwd as VIRTUAL_ENV — exactly the
+    # silent-cwd-injection bug round-4 was meant to fix. Round-4
+    # round-2 P2 on PR #264: refuse to inject for empty-ish paths
+    # regardless of cwd contents. CLI callers never reach here with
+    # Path("") because main() routes `--venv-path ""` through
+    # `disable_venv=True`, but library callers can.
+    if str(venv_path) in ("", "."):
+        return env
     abs_venv = venv_path.resolve()
     if not (abs_venv / "bin" / "python").exists():
         return env

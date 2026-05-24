@@ -872,36 +872,39 @@ def test_build_subprocess_env_resolves_relative_venv_path_to_absolute(
     )
 
 
-def test_build_subprocess_env_does_not_inject_dot_when_path_is_empty(
+def test_build_subprocess_env_does_not_inject_cwd_when_path_is_empty(
     tmp_path, monkeypatch,
 ):
-    """Round-4 P2 on PR #264: `str(Path(""))` returns `"."`. The
-    previous version used `str(venv_path) == ""` as the disable
-    sentinel, but `Path("")` stringifies to `"."`, so if the caller's
-    cwd happens to have `./bin/python`, the "disable" branch would
-    INSTEAD inject that bogus Python. The fix: callers must use
-    `config.disable_venv=True` (handled in main()) and never pass
-    `Path("")` as `venv_path`. This test pins the worst-case scenario:
-    a `Path("")` `venv_path` + a `bin/python` in the audit machine's
-    cwd MUST NOT inject."""
+    """Round-4 round-2 P2 on PR #264: `Path("")` and `Path(".")` both
+    stringify as `"."` and resolve to cwd. If cwd happens to have
+    `./bin/python` (e.g. audit machine started from a venv-shaped
+    directory), naive resolution would silently inject cwd as
+    VIRTUAL_ENV — exactly the silent-cwd-injection bug round-4 was
+    meant to fix.
+
+    `_build_subprocess_env` must refuse to inject for these
+    empty-ish Path values REGARDLESS of cwd contents. CLI callers
+    never reach this function with `Path("")` (they route through
+    `disable_venv=True`), but library callers can — and the function
+    must be defensive for those callers too. Codex audit on PR #264
+    round 4 caught the earlier "by design" pin that allowed this
+    surprise injection.
+    """
     monkeypatch.setenv("PATH", "/sentinel/path")
     # Build the booby-trap: pwd has bin/python.
     (tmp_path / "bin").mkdir()
     (tmp_path / "bin" / "python").touch()
     monkeypatch.chdir(tmp_path)
-    env = c._build_subprocess_env(Path(""))
-    # The resolved Path("") is cwd, which has bin/python — so the
-    # function WILL inject it. That's a degenerate caller bug (they
-    # passed Path("") on purpose), but pin the documented behavior so
-    # a future refactor doesn't regress to claiming an empty Path is a
-    # no-op when in fact it injects cwd. Callers that want "disable"
-    # MUST set config.disable_venv (verified separately).
-    abs_cwd = tmp_path.resolve()
-    assert env["VIRTUAL_ENV"] == str(abs_cwd), (
-        "Path(\"\") resolves to cwd; if cwd has bin/python, injection "
-        "happens. This is by design now — disable is via disable_venv, "
-        "not via Path(\"\")."
-    )
+    for empty_path in (Path(""), Path("."), Path("./")):
+        env = c._build_subprocess_env(empty_path)
+        assert env["PATH"] == "/sentinel/path", (
+            f"_build_subprocess_env({empty_path!r}) must NOT inject cwd "
+            f"as PATH prefix; got PATH={env['PATH']!r}"
+        )
+        assert "VIRTUAL_ENV" not in env, (
+            f"_build_subprocess_env({empty_path!r}) must NOT set "
+            f"VIRTUAL_ENV; got {env.get('VIRTUAL_ENV')!r}"
+        )
 
 
 def test_discover_venv_finds_venv_when_bin_python_present(tmp_path):

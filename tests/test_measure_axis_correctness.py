@@ -264,6 +264,66 @@ def test_resolve_image_path_falls_back_to_corpus_root(tmp_path):
     )
 
 
+def test_resolve_image_path_finds_sha_matching_candidate(tmp_path):
+    """Codex P2 on PR #268 head 9a12e97: when the first-resolved path
+    exists but has the WRONG content (different SHA), the resolver
+    must check later candidates for the expected SHA before giving
+    up. The pre-fix flow skipped immediately on the first mismatch,
+    which broke canonical regeneration on setups where a stale
+    same-named copy lived in `/Users/jhuber/Downloads` while the
+    canonical bytes were in `~/cube-corpus`."""
+    import hashlib
+    canonical_payload = b"correct canonical image bytes"
+    stale_payload = b"wrong/stale image bytes with different content"
+    expected_sha = hashlib.sha256(canonical_payload).hexdigest()
+
+    downloads_root = tmp_path / "Downloads"
+    downloads_root.mkdir()
+    corpus_root = tmp_path / "cube-corpus"
+    corpus_root.mkdir()
+    # First candidate (the raw path from the manifest) exists but has
+    # the WRONG content.
+    raw = downloads_root / "Set 20 - A - white up IMG_9999.JPG"
+    raw.write_bytes(stale_payload)
+    # Fallback candidate in corpus_root has the CORRECT content.
+    canonical = corpus_root / "Set 20 - A - white up IMG_9999.JPG"
+    canonical.write_bytes(canonical_payload)
+
+    # Without expected SHA: returns first existing (the stale one) —
+    # legacy behavior preserved.
+    assert (
+        m._resolve_image_path(str(raw), "20", "A", [downloads_root, corpus_root])
+        == raw
+    )
+    # With expected SHA: skips the stale one, returns the canonical
+    # one from corpus_root.
+    assert (
+        m._resolve_image_path(
+            str(raw), "20", "A", [downloads_root, corpus_root],
+            expected_sha256=expected_sha,
+        )
+        == canonical
+    )
+
+
+def test_resolve_image_path_returns_none_when_no_sha_match(tmp_path):
+    """If no candidate matches the expected SHA, resolver returns None
+    (caller skips the row instead of tracing wrong pixels)."""
+    import hashlib
+    expected_sha = hashlib.sha256(b"never appears anywhere").hexdigest()
+
+    downloads_root = tmp_path / "Downloads"
+    downloads_root.mkdir()
+    raw = downloads_root / "Set 20 - A.JPG"
+    raw.write_bytes(b"wrong content")
+
+    result = m._resolve_image_path(
+        str(raw), "20", "A", [downloads_root],
+        expected_sha256=expected_sha,
+    )
+    assert result is None
+
+
 def test_default_output_blocker_rejects_empty_or_partial_trace():
     assert m._default_output_blocker({
         "per_row": [],

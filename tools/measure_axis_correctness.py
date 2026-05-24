@@ -150,18 +150,50 @@ def _resolve_image_path(
     set_id: str,
     side: str,
     image_roots: Sequence[Path],
+    expected_sha256: Optional[str] = None,
 ) -> Optional[Path]:
+    """Find the file backing this (set_id, side). When the original
+    `raw_path` is missing or has wrong content, fall back to alternate
+    corpus roots (by filename match, then by `Set N - SIDE -*` pattern).
+
+    When `expected_sha256` is provided, the resolver SHA-checks each
+    candidate and returns the first SHA-matching one. The legacy
+    behavior (no SHA check, return first existing path) is preserved
+    when `expected_sha256` is None.
+
+    Codex P2 on PR #268 head 9a12e97: the previous setup did the SHA
+    check OUTSIDE the resolver, which skipped the row immediately if
+    the first-returned path's SHA didn't match — even when a valid
+    SHA-matching candidate sat in `~/cube-corpus`. Pushing the SHA
+    check inside the resolver lets the fallback chain locate the right
+    file before declaring the row unrecoverable.
+    """
+    def _matches_sha(p: Path) -> bool:
+        if expected_sha256 is None:
+            return True
+        actual = _file_sha256(p)
+        return actual == expected_sha256
+
+    candidates: List[Path] = []
     path = Path(raw_path).expanduser()
     if path.exists():
-        return path
-
+        candidates.append(path)
     for root in image_roots:
         by_name = root / path.name
-        if by_name.exists():
-            return by_name
+        if by_name.exists() and by_name not in candidates:
+            candidates.append(by_name)
         by_pattern = _find_corpus_side(root, set_id, side)
-        if by_pattern is not None:
-            return by_pattern
+        if by_pattern is not None and by_pattern not in candidates:
+            candidates.append(by_pattern)
+    for cand in candidates:
+        if _matches_sha(cand):
+            return cand
+    # No SHA-matching candidate. If we had an expected_sha, treat as
+    # unresolved (caller will skip the row with "image not found"
+    # reason). If no expected_sha was provided, return the first
+    # existing candidate (legacy behavior).
+    if expected_sha256 is None and candidates:
+        return candidates[0]
     return None
 
 
@@ -401,41 +433,26 @@ def run_all(
         if not image_path_str:
             skipped.append({"key": key, "reason": "no image path"})
             continue
+        # SHA-aware resolution: pass the manifest's expected SHA to the
+        # resolver so it can pick the SHA-matching candidate from the
+        # fallback chain (Codex P2 on PR #268 head 9a12e97 — the prior
+        # post-resolver SHA check skipped the row on a single mismatch
+        # even when a valid candidate sat in another corpus root).
+        expected_sha = pair.get(f"image{side}_sha256_expected")
         image_path = _resolve_image_path(
-            str(image_path_str), set_id, side, image_roots
+            str(image_path_str), set_id, side, image_roots,
+            expected_sha256=expected_sha,
         )
         if image_path is None:
-            skipped.append({
-                "key": key,
-                "reason": f"image not found: {Path(str(image_path_str)).expanduser()}",
-            })
+            reason = (
+                f"no image with expected SHA "
+                f"{expected_sha[:12]}… found in candidate paths "
+                f"(searched: {Path(str(image_path_str)).expanduser().name})"
+                if expected_sha
+                else f"image not found: {Path(str(image_path_str)).expanduser()}"
+            )
+            skipped.append({"key": key, "reason": reason})
             continue
-        # SHA verification: when the manifest carries an expected SHA-256
-        # for this image, refuse to trace if the resolved file's actual
-        # SHA differs (Codex P2 #2 on PR #268 head 7d90d30). The fuzzy
-        # path resolver _resolve_image_path can land on a same-named
-        # file from a different corpus root, and without this check the
-        # trace would be canonical-named but contain measurements from
-        # the wrong pixels.
-        expected_sha = pair.get(f"image{side}_sha256_expected")
-        if expected_sha:
-            actual_sha = _file_sha256(image_path)
-            if actual_sha is None:
-                skipped.append({
-                    "key": key,
-                    "reason": f"could not read {image_path} for SHA check",
-                })
-                continue
-            if actual_sha != expected_sha:
-                skipped.append({
-                    "key": key,
-                    "reason": (
-                        f"image SHA mismatch at {image_path}: "
-                        f"got {actual_sha[:12]}…, expected "
-                        f"{expected_sha[:12]}…"
-                    ),
-                })
-                continue
         record = evaluate_one_row(sess, key, image_path, row, max_image_dim)
         records.append(record)
     return {

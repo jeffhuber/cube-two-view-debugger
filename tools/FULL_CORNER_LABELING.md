@@ -119,7 +119,10 @@ At yaw `0`, corner positions map to flattened-net facelets as follows:
 Do not describe `Va` as a sticker. It is a physical corner position. At yaw
 `0`, it is the `URF` corner where `U9`, `R1`, and `F3` meet. Likewise, at
 yaw `0`, `Vb` is the `DBL` corner where `D7`, `L7`, and `B9` meet. For
-non-zero yaw, derive the WCA facelet mapping from the yaw table above.
+non-zero yaw, derive the WCA facelet mapping from the yaw table above. Code
+should use `tools.corner_conventions.wca_facelets_for_label(...)` rather than
+hand-replacing face letters; yaw changes the physical corner identity, including
+the U/D facelet index.
 
 ## JSON Schema
 

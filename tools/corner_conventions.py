@@ -7,7 +7,7 @@ not each reinvent the mapping.
 """
 from __future__ import annotations
 
-from typing import Dict, Tuple
+from typing import Dict, FrozenSet, Tuple
 
 
 POINT_NAMES = (
@@ -81,6 +81,11 @@ YAW0_CORNER_FACELETS = {
     "corner_5": ("U7", "F1", "L3"),
 }
 
+_WCA_CORNER_FACELETS_BY_FACE_SET: Dict[FrozenSet[str], Tuple[str, str, str]] = {
+    frozenset(facelet[0] for facelet in facelets): facelets
+    for facelets in YAW0_CORNER_FACELETS.values()
+}
+
 
 def capture_to_wca_yaw_map(yaw_quarter_turns: int) -> Dict[str, str]:
     """Map capture-frame face labels to canonical WCA faces for a yaw."""
@@ -98,3 +103,42 @@ def wca_face_by_slot(side: str, yaw_quarter_turns: int) -> Dict[str, str]:
         slot: capture_to_wca[capture_face]
         for slot, capture_face in CAPTURE_FACE_BY_SLOT_BY_SIDE[side].items()
     }
+
+
+def wca_facelets_for_point(point_name: str, yaw_quarter_turns: int) -> Tuple[str, str, str]:
+    """Return canonical WCA facelets for a labeled physical corner.
+
+    `YAW0_CORNER_FACELETS` names the capture-frame corner identities. Under
+    non-zero yaw, the visible point keeps its human label, but its physical
+    WCA corner changes. We first map the capture-frame faces through yaw, then
+    look up the canonical WCA facelet indices for that resulting corner.
+    """
+    if point_name not in YAW0_CORNER_FACELETS:
+        raise KeyError(f"unknown full-corner point: {point_name}")
+    capture_to_wca = capture_to_wca_yaw_map(yaw_quarter_turns)
+    wca_faces = frozenset(
+        capture_to_wca[facelet[0]]
+        for facelet in YAW0_CORNER_FACELETS[point_name]
+    )
+    return _WCA_CORNER_FACELETS_BY_FACE_SET[wca_faces]
+
+
+def wca_facelets_by_point(yaw_quarter_turns: int) -> Dict[str, Tuple[str, str, str]]:
+    """Return WCA facelets for `Va/Vb + corner_0..5` under capture yaw."""
+    return {
+        point_name: wca_facelets_for_point(point_name, yaw_quarter_turns)
+        for point_name in (
+            "Va", "Vb", "corner_0", "corner_1", "corner_2",
+            "corner_3", "corner_4", "corner_5",
+        )
+    }
+
+
+def wca_facelets_for_label(side: str, label: str, yaw_quarter_turns: int) -> Tuple[str, str, str]:
+    """Return WCA facelets for a fixture label on side A/B.
+
+    Full-corner fixture rows use the generic key `vertex`; humans call that
+    point `Va` on side A and `Vb` on side B. Numbered corners are shared.
+    """
+    point_name = VERTEX_NAME_BY_SIDE[side] if label == "vertex" else label
+    return wca_facelets_for_point(point_name, yaw_quarter_turns)

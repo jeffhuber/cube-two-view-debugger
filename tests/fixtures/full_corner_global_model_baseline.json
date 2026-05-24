@@ -1,0 +1,3266 @@
+{
+  "schema": "canonical_full_corner_global_model_baseline_v1",
+  "source": {
+    "model": "tools.global_cube_model.fit_global_cube_model",
+    "truth": "tests/fixtures/full_corner_ground_truth.json",
+    "runs_per_row": 1,
+    "max_image_dim": 1600
+  },
+  "summary": {
+    "n_rows": 12,
+    "n_scored": 12,
+    "category_counts": {
+      "PHASE_SWAPPED": 8,
+      "GOOD": 3,
+      "MARGINAL": 1
+    },
+    "median_vertex_error_px": 153.1,
+    "median_one_edge_angle_error_deg": 58.76,
+    "median_far_angle_error_deg": 58.66,
+    "median_swapped_angle_error_deg": 7.42
+  },
+  "by_case": {
+    "20_A": {
+      "key": "20_A",
+      "side": "A",
+      "status": "scored",
+      "category": "PHASE_SWAPPED",
+      "vertex_error_px": 104.1,
+      "truth_vertex": [
+        1491.7,
+        1883.8
+      ],
+      "candidate_vertex": [
+        1431.4,
+        1968.6
+      ],
+      "one_edge": {
+        "mean_angle_error_deg": 58.93,
+        "max_angle_error_deg": 60.97,
+        "mean_abs_length_error_px": 349.8,
+        "mean_point_error_px": 1220.6,
+        "max_point_error_px": 1257.1,
+        "permutation": [
+          1,
+          0,
+          2
+        ]
+      },
+      "far": {
+        "mean_angle_error_deg": 58.85,
+        "max_angle_error_deg": 64.86,
+        "mean_abs_length_error_px": 63.3,
+        "mean_point_error_px": 1015.6,
+        "max_point_error_px": 1030.3,
+        "permutation": [
+          2,
+          0,
+          1
+        ]
+      },
+      "swapped_mean_angle_error_deg": 2.68,
+      "swapped_one_edge_to_truth_far": {
+        "mean_angle_error_deg": 4.29,
+        "max_angle_error_deg": 4.67,
+        "mean_abs_length_error_px": 69.3,
+        "mean_point_error_px": 26.3,
+        "max_point_error_px": 33.2,
+        "permutation": [
+          1,
+          0,
+          2
+        ]
+      },
+      "swapped_far_to_truth_one_edge": {
+        "mean_angle_error_deg": 1.07,
+        "max_angle_error_deg": 2.45,
+        "mean_abs_length_error_px": 349.6,
+        "mean_point_error_px": 351.5,
+        "max_point_error_px": 372.2,
+        "permutation": [
+          0,
+          1,
+          2
+        ]
+      },
+      "candidate_debug": {
+        "approach": "procrustes_template_fit+mean3_vertex",
+        "affine_rms_px": 59.12,
+        "pnp_rms_px": 8.48,
+        "fit_residual_rms_px": 8.48,
+        "fit_residual_px2": 71.91,
+        "best_permutation": [
+          2,
+          0,
+          4,
+          1,
+          3,
+          5
+        ],
+        "best_template_keys": [
+          "h_x",
+          "h_y",
+          "h_z",
+          "h_xy",
+          "h_xz",
+          "h_yz"
+        ],
+        "bezel_detected_cube_center": [
+          566.0,
+          789.8
+        ],
+        "fit_derived_cube_center": [
+          569.6,
+          770.3
+        ],
+        "bezel_vs_fit_cube_center_offset_px": 19.9,
+        "camera_fx_px": 1312.0,
+        "camera_principal_point_px": [
+          600.0,
+          800.0
+        ],
+        "hexagon_centroid_vs_bezel_vertex_offset_px": 6.7,
+        "n_hexagon_anchors": 6,
+        "cube_center_source": "mean3_ensemble",
+        "ensemble_n_candidates": 3,
+        "ensemble_shift_px": 11.1,
+        "phase_near_line_darkness": [
+          206.0,
+          132.3,
+          175.1
+        ],
+        "phase_far_line_darkness": [
+          231.2,
+          182.2,
+          172.1
+        ],
+        "phase_mean_near_darkness": 171.1,
+        "phase_mean_far_darkness": 195.2,
+        "phase_darkness_separation": -24.0,
+        "phase_axis_angle_errors_before_deg": [
+          116.6,
+          0.0,
+          59.3
+        ],
+        "phase_axis_angle_errors_after_deg": [
+          61.7,
+          57.7,
+          0.0
+        ],
+        "phase_check": "correct",
+        "junction_score_at_ensemble": 214.3,
+        "junction_score_gate": 200.0,
+        "refinement": "skipped_high_base_score"
+      }
+    },
+    "20_B": {
+      "key": "20_B",
+      "side": "B",
+      "status": "scored",
+      "category": "PHASE_SWAPPED",
+      "vertex_error_px": 155.6,
+      "truth_vertex": [
+        1459.6,
+        2186.1
+      ],
+      "candidate_vertex": [
+        1446.0,
+        2031.1
+      ],
+      "one_edge": {
+        "mean_angle_error_deg": 59.1,
+        "max_angle_error_deg": 68.18,
+        "mean_abs_length_error_px": 138.5,
+        "mean_point_error_px": 1374.0,
+        "max_point_error_px": 1550.2,
+        "permutation": [
+          1,
+          0,
+          2
+        ]
+      },
+      "far": {
+        "mean_angle_error_deg": 59.71,
+        "max_angle_error_deg": 66.13,
+        "mean_abs_length_error_px": 315.1,
+        "mean_point_error_px": 1269.9,
+        "max_point_error_px": 1547.4,
+        "permutation": [
+          2,
+          0,
+          1
+        ]
+      },
+      "swapped_mean_angle_error_deg": 4.12,
+      "swapped_one_edge_to_truth_far": {
+        "mean_angle_error_deg": 1.89,
+        "max_angle_error_deg": 3.17,
+        "mean_abs_length_error_px": 299.8,
+        "mean_point_error_px": 333.2,
+        "max_point_error_px": 427.1,
+        "permutation": [
+          1,
+          0,
+          2
+        ]
+      },
+      "swapped_far_to_truth_one_edge": {
+        "mean_angle_error_deg": 6.35,
+        "max_angle_error_deg": 10.1,
+        "mean_abs_length_error_px": 168.9,
+        "mean_point_error_px": 388.9,
+        "max_point_error_px": 440.7,
+        "permutation": [
+          2,
+          0,
+          1
+        ]
+      },
+      "candidate_debug": {
+        "approach": "procrustes_template_fit+mean3_vertex",
+        "affine_rms_px": 66.81,
+        "pnp_rms_px": 10.81,
+        "fit_residual_rms_px": 10.81,
+        "fit_residual_px2": 116.88,
+        "best_permutation": [
+          4,
+          2,
+          0,
+          3,
+          5,
+          1
+        ],
+        "best_template_keys": [
+          "h_x",
+          "h_y",
+          "h_z",
+          "h_xy",
+          "h_xz",
+          "h_yz"
+        ],
+        "bezel_detected_cube_center": [
+          579.8,
+          790.8
+        ],
+        "fit_derived_cube_center": [
+          561.7,
+          832.6
+        ],
+        "bezel_vs_fit_cube_center_offset_px": 45.5,
+        "camera_fx_px": 1312.0,
+        "camera_principal_point_px": [
+          600.0,
+          800.0
+        ],
+        "hexagon_centroid_vs_bezel_vertex_offset_px": 3.8,
+        "n_hexagon_anchors": 6,
+        "cube_center_source": "mean3_ensemble",
+        "ensemble_n_candidates": 3,
+        "ensemble_shift_px": 29.2,
+        "phase_near_line_darkness": [
+          208.2,
+          212.0,
+          237.9
+        ],
+        "phase_far_line_darkness": [
+          140.5,
+          183.7,
+          130.8
+        ],
+        "phase_mean_near_darkness": 219.3,
+        "phase_mean_far_darkness": 151.7,
+        "phase_darkness_separation": 67.7,
+        "phase_axis_angle_errors_before_deg": [
+          55.5,
+          57.3,
+          66.9
+        ],
+        "phase_axis_angle_errors_after_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "phase_check": "corrected_60deg_flip",
+        "junction_score_at_ensemble": 211.1,
+        "junction_score_gate": 200.0,
+        "refinement": "skipped_high_base_score"
+      }
+    },
+    "38_A": {
+      "key": "38_A",
+      "side": "A",
+      "status": "scored",
+      "category": "PHASE_SWAPPED",
+      "vertex_error_px": 200.2,
+      "truth_vertex": [
+        1379.0,
+        1932.3
+      ],
+      "candidate_vertex": [
+        1542.2,
+        1816.4
+      ],
+      "one_edge": {
+        "mean_angle_error_deg": 58.89,
+        "max_angle_error_deg": 63.77,
+        "mean_abs_length_error_px": 301.9,
+        "mean_point_error_px": 1156.5,
+        "max_point_error_px": 1180.1,
+        "permutation": [
+          1,
+          0,
+          2
+        ]
+      },
+      "far": {
+        "mean_angle_error_deg": 58.8,
+        "max_angle_error_deg": 71.09,
+        "mean_abs_length_error_px": 213.4,
+        "mean_point_error_px": 988.9,
+        "max_point_error_px": 1042.5,
+        "permutation": [
+          2,
+          0,
+          1
+        ]
+      },
+      "swapped_mean_angle_error_deg": 6.98,
+      "swapped_one_edge_to_truth_far": {
+        "mean_angle_error_deg": 7.7,
+        "max_angle_error_deg": 11.81,
+        "mean_abs_length_error_px": 169.9,
+        "mean_point_error_px": 51.1,
+        "max_point_error_px": 70.7,
+        "permutation": [
+          2,
+          1,
+          0
+        ]
+      },
+      "swapped_far_to_truth_one_edge": {
+        "mean_angle_error_deg": 6.26,
+        "max_angle_error_deg": 8.67,
+        "mean_abs_length_error_px": 301.6,
+        "mean_point_error_px": 301.8,
+        "max_point_error_px": 390.0,
+        "permutation": [
+          2,
+          0,
+          1
+        ]
+      },
+      "candidate_debug": {
+        "approach": "procrustes_template_fit+mean3_vertex",
+        "affine_rms_px": 59.8,
+        "pnp_rms_px": 13.65,
+        "fit_residual_rms_px": 13.65,
+        "fit_residual_px2": 186.36,
+        "best_permutation": [
+          0,
+          4,
+          2,
+          5,
+          1,
+          3
+        ],
+        "best_template_keys": [
+          "h_x",
+          "h_y",
+          "h_z",
+          "h_xy",
+          "h_xz",
+          "h_yz"
+        ],
+        "bezel_detected_cube_center": [
+          595.3,
+          724.8
+        ],
+        "fit_derived_cube_center": [
+          633.9,
+          718.5
+        ],
+        "bezel_vs_fit_cube_center_offset_px": 39.1,
+        "camera_fx_px": 1312.0,
+        "camera_principal_point_px": [
+          600.0,
+          800.0
+        ],
+        "hexagon_centroid_vs_bezel_vertex_offset_px": 12.7,
+        "n_hexagon_anchors": 6,
+        "cube_center_source": "mean3_ensemble",
+        "ensemble_n_candidates": 3,
+        "ensemble_shift_px": 22.0,
+        "phase_near_line_darkness": [
+          163.6,
+          165.2,
+          162.7
+        ],
+        "phase_far_line_darkness": [
+          156.8,
+          136.5,
+          205.2
+        ],
+        "phase_mean_near_darkness": 163.9,
+        "phase_mean_far_darkness": 166.2,
+        "phase_darkness_separation": -2.3,
+        "phase_axis_angle_errors_before_deg": [
+          57.3,
+          61.1,
+          0.0
+        ],
+        "phase_axis_angle_errors_after_deg": [
+          0.0,
+          0.0,
+          61.1
+        ],
+        "phase_check": "ambiguous_no_correction",
+        "junction_score_at_ensemble": 236.9,
+        "junction_score_gate": 200.0,
+        "refinement": "skipped_high_base_score"
+      }
+    },
+    "38_B": {
+      "key": "38_B",
+      "side": "B",
+      "status": "scored",
+      "category": "GOOD",
+      "vertex_error_px": 209.7,
+      "truth_vertex": [
+        1463.0,
+        1791.3
+      ],
+      "candidate_vertex": [
+        1622.9,
+        1655.6
+      ],
+      "one_edge": {
+        "mean_angle_error_deg": 2.99,
+        "max_angle_error_deg": 5.79,
+        "mean_abs_length_error_px": 248.1,
+        "mean_point_error_px": 264.9,
+        "max_point_error_px": 309.9,
+        "permutation": [
+          2,
+          1,
+          0
+        ]
+      },
+      "far": {
+        "mean_angle_error_deg": 6.99,
+        "max_angle_error_deg": 12.46,
+        "mean_abs_length_error_px": 133.7,
+        "mean_point_error_px": 55.7,
+        "max_point_error_px": 68.9,
+        "permutation": [
+          2,
+          0,
+          1
+        ]
+      },
+      "swapped_mean_angle_error_deg": 58.22,
+      "swapped_one_edge_to_truth_far": {
+        "mean_angle_error_deg": 58.48,
+        "max_angle_error_deg": 61.83,
+        "mean_abs_length_error_px": 103.6,
+        "mean_point_error_px": 886.7,
+        "max_point_error_px": 953.4,
+        "permutation": [
+          1,
+          0,
+          2
+        ]
+      },
+      "swapped_far_to_truth_one_edge": {
+        "mean_angle_error_deg": 57.96,
+        "max_angle_error_deg": 62.48,
+        "mean_abs_length_error_px": 245.7,
+        "mean_point_error_px": 1022.4,
+        "max_point_error_px": 1068.2,
+        "permutation": [
+          2,
+          0,
+          1
+        ]
+      },
+      "candidate_debug": {
+        "approach": "procrustes_template_fit+mean3_vertex",
+        "affine_rms_px": 45.79,
+        "pnp_rms_px": 3.59,
+        "fit_residual_rms_px": 3.59,
+        "fit_residual_px2": 12.85,
+        "best_permutation": [
+          3,
+          1,
+          5,
+          2,
+          4,
+          0
+        ],
+        "best_template_keys": [
+          "h_x",
+          "h_y",
+          "h_z",
+          "h_xy",
+          "h_xz",
+          "h_yz"
+        ],
+        "bezel_detected_cube_center": [
+          606.2,
+          674.5
+        ],
+        "fit_derived_cube_center": [
+          623.9,
+          673.0
+        ],
+        "bezel_vs_fit_cube_center_offset_px": 17.8,
+        "camera_fx_px": 1312.0,
+        "camera_principal_point_px": [
+          600.0,
+          800.0
+        ],
+        "hexagon_centroid_vs_bezel_vertex_offset_px": 171.8,
+        "n_hexagon_anchors": 6,
+        "cube_center_source": "mean3_ensemble+image_refined",
+        "ensemble_n_candidates": 3,
+        "ensemble_shift_px": 58.3,
+        "phase_near_line_darkness": [
+          178.9,
+          165.6,
+          205.3
+        ],
+        "phase_far_line_darkness": [
+          113.9,
+          127.4,
+          235.7
+        ],
+        "phase_mean_near_darkness": 183.3,
+        "phase_mean_far_darkness": 159.0,
+        "phase_darkness_separation": 24.2,
+        "phase_axis_angle_errors_before_deg": [
+          58.3,
+          0.0,
+          64.4
+        ],
+        "phase_axis_angle_errors_after_deg": [
+          0.0,
+          0.0,
+          57.6
+        ],
+        "phase_check": "corrected_60deg_flip",
+        "junction_score_at_ensemble": 179.8,
+        "junction_score_gate": 200.0,
+        "junction_score_at_refined": 247.1,
+        "refinement_movement_px": 53.9,
+        "refinement": "applied"
+      }
+    },
+    "40_A": {
+      "key": "40_A",
+      "side": "A",
+      "status": "scored",
+      "category": "GOOD",
+      "vertex_error_px": 136.3,
+      "truth_vertex": [
+        1331.2,
+        1786.4
+      ],
+      "candidate_vertex": [
+        1375.9,
+        1915.2
+      ],
+      "one_edge": {
+        "mean_angle_error_deg": 4.2,
+        "max_angle_error_deg": 7.21,
+        "mean_abs_length_error_px": 145.2,
+        "mean_point_error_px": 92.1,
+        "max_point_error_px": 146.4,
+        "permutation": [
+          1,
+          0,
+          2
+        ]
+      },
+      "far": {
+        "mean_angle_error_deg": 11.61,
+        "max_angle_error_deg": 15.02,
+        "mean_abs_length_error_px": 195.5,
+        "mean_point_error_px": 205.1,
+        "max_point_error_px": 235.2,
+        "permutation": [
+          2,
+          0,
+          1
+        ]
+      },
+      "swapped_mean_angle_error_deg": 58.89,
+      "swapped_one_edge_to_truth_far": {
+        "mean_angle_error_deg": 58.4,
+        "max_angle_error_deg": 73.45,
+        "mean_abs_length_error_px": 212.0,
+        "mean_point_error_px": 1169.5,
+        "max_point_error_px": 1303.4,
+        "permutation": [
+          1,
+          0,
+          2
+        ]
+      },
+      "swapped_far_to_truth_one_edge": {
+        "mean_angle_error_deg": 59.39,
+        "max_angle_error_deg": 64.7,
+        "mean_abs_length_error_px": 137.9,
+        "mean_point_error_px": 1229.9,
+        "max_point_error_px": 1287.8,
+        "permutation": [
+          0,
+          1,
+          2
+        ]
+      },
+      "candidate_debug": {
+        "approach": "procrustes_template_fit+mean3_vertex",
+        "affine_rms_px": 31.34,
+        "pnp_rms_px": 37.32,
+        "fit_residual_rms_px": 31.34,
+        "fit_residual_px2": 982.0,
+        "best_permutation": [
+          0,
+          2,
+          4,
+          1,
+          5,
+          3
+        ],
+        "best_template_keys": [
+          "h_x",
+          "h_y",
+          "h_z",
+          "h_xy",
+          "h_xz",
+          "h_yz"
+        ],
+        "bezel_detected_cube_center": [
+          575.3,
+          800.7
+        ],
+        "fit_derived_cube_center": [
+          575.3,
+          800.7
+        ],
+        "bezel_vs_fit_cube_center_offset_px": 0.0,
+        "camera_fx_px": 1312.0,
+        "camera_principal_point_px": [
+          600.0,
+          800.0
+        ],
+        "hexagon_centroid_vs_bezel_vertex_offset_px": 4.2,
+        "n_hexagon_anchors": 6,
+        "cube_center_source": "mean3_ensemble+image_refined",
+        "ensemble_n_candidates": 3,
+        "ensemble_shift_px": 1.4,
+        "phase_near_line_darkness": [
+          203.0,
+          161.8,
+          185.8
+        ],
+        "phase_far_line_darkness": [
+          191.5,
+          200.3,
+          127.6
+        ],
+        "phase_mean_near_darkness": 183.6,
+        "phase_mean_far_darkness": 173.1,
+        "phase_darkness_separation": 10.4,
+        "phase_axis_angle_errors_before_deg": [
+          180.0,
+          0.0,
+          0.0
+        ],
+        "phase_axis_angle_errors_after_deg": [
+          59.3,
+          59.3,
+          0.0
+        ],
+        "phase_check": "corrected_60deg_flip",
+        "junction_score_at_ensemble": 168.6,
+        "junction_score_gate": 200.0,
+        "junction_score_at_refined": 243.3,
+        "refinement_movement_px": 49.7,
+        "refinement": "applied"
+      }
+    },
+    "40_B": {
+      "key": "40_B",
+      "side": "B",
+      "status": "scored",
+      "category": "PHASE_SWAPPED",
+      "vertex_error_px": 464.7,
+      "truth_vertex": [
+        1436.3,
+        1593.6
+      ],
+      "candidate_vertex": [
+        1650.6,
+        2005.9
+      ],
+      "one_edge": {
+        "mean_angle_error_deg": 59.19,
+        "max_angle_error_deg": 65.29,
+        "mean_abs_length_error_px": 284.3,
+        "mean_point_error_px": 1204.6,
+        "max_point_error_px": 1371.2,
+        "permutation": [
+          0,
+          1,
+          2
+        ]
+      },
+      "far": {
+        "mean_angle_error_deg": 58.7,
+        "max_angle_error_deg": 73.92,
+        "mean_abs_length_error_px": 221.5,
+        "mean_point_error_px": 1077.8,
+        "max_point_error_px": 1143.6,
+        "permutation": [
+          0,
+          2,
+          1
+        ]
+      },
+      "swapped_mean_angle_error_deg": 10.36,
+      "swapped_one_edge_to_truth_far": {
+        "mean_angle_error_deg": 11.92,
+        "max_angle_error_deg": 15.87,
+        "mean_abs_length_error_px": 259.3,
+        "mean_point_error_px": 138.9,
+        "max_point_error_px": 198.3,
+        "permutation": [
+          1,
+          2,
+          0
+        ]
+      },
+      "swapped_far_to_truth_one_edge": {
+        "mean_angle_error_deg": 8.8,
+        "max_angle_error_deg": 14.38,
+        "mean_abs_length_error_px": 290.6,
+        "mean_point_error_px": 316.3,
+        "max_point_error_px": 394.2,
+        "permutation": [
+          0,
+          2,
+          1
+        ]
+      },
+      "candidate_debug": {
+        "approach": "procrustes_template_fit+mean3_vertex",
+        "affine_rms_px": 40.98,
+        "pnp_rms_px": 28.87,
+        "fit_residual_rms_px": 28.87,
+        "fit_residual_px2": 833.34,
+        "best_permutation": [
+          2,
+          0,
+          4,
+          1,
+          3,
+          5
+        ],
+        "best_template_keys": [
+          "h_x",
+          "h_y",
+          "h_z",
+          "h_xy",
+          "h_xz",
+          "h_yz"
+        ],
+        "bezel_detected_cube_center": [
+          593.0,
+          721.3
+        ],
+        "fit_derived_cube_center": [
+          623.3,
+          764.7
+        ],
+        "bezel_vs_fit_cube_center_offset_px": 52.9,
+        "camera_fx_px": 1312.0,
+        "camera_principal_point_px": [
+          600.0,
+          800.0
+        ],
+        "hexagon_centroid_vs_bezel_vertex_offset_px": 177.3,
+        "n_hexagon_anchors": 6,
+        "cube_center_source": "mean3_ensemble+image_refined",
+        "ensemble_n_candidates": 3,
+        "ensemble_shift_px": 36.5,
+        "phase_near_line_darkness": [
+          183.6,
+          198.1,
+          162.9
+        ],
+        "phase_far_line_darkness": [
+          191.9,
+          198.6,
+          191.9
+        ],
+        "phase_mean_near_darkness": 181.5,
+        "phase_mean_far_darkness": 194.1,
+        "phase_darkness_separation": -12.6,
+        "phase_axis_angle_errors_before_deg": [
+          0.0,
+          66.3,
+          0.0
+        ],
+        "phase_axis_angle_errors_after_deg": [
+          0.0,
+          58.1,
+          55.7
+        ],
+        "phase_check": "correct",
+        "junction_score_at_ensemble": 186.1,
+        "junction_score_gate": 200.0,
+        "junction_score_at_refined": 230.6,
+        "refinement_movement_px": 40.3,
+        "refinement": "applied"
+      }
+    },
+    "41_A": {
+      "key": "41_A",
+      "side": "A",
+      "status": "scored",
+      "category": "GOOD",
+      "vertex_error_px": 111.2,
+      "truth_vertex": [
+        1475.8,
+        1773.7
+      ],
+      "candidate_vertex": [
+        1553.3,
+        1853.5
+      ],
+      "one_edge": {
+        "mean_angle_error_deg": 3.84,
+        "max_angle_error_deg": 7.54,
+        "mean_abs_length_error_px": 70.0,
+        "mean_point_error_px": 222.5,
+        "max_point_error_px": 258.5,
+        "permutation": [
+          2,
+          1,
+          0
+        ]
+      },
+      "far": {
+        "mean_angle_error_deg": 6.7,
+        "max_angle_error_deg": 10.48,
+        "mean_abs_length_error_px": 258.7,
+        "mean_point_error_px": 396.4,
+        "max_point_error_px": 514.4,
+        "permutation": [
+          1,
+          2,
+          0
+        ]
+      },
+      "swapped_mean_angle_error_deg": 58.42,
+      "swapped_one_edge_to_truth_far": {
+        "mean_angle_error_deg": 57.68,
+        "max_angle_error_deg": 62.98,
+        "mean_abs_length_error_px": 230.4,
+        "mean_point_error_px": 1201.4,
+        "max_point_error_px": 1278.8,
+        "permutation": [
+          2,
+          1,
+          0
+        ]
+      },
+      "swapped_far_to_truth_one_edge": {
+        "mean_angle_error_deg": 59.16,
+        "max_angle_error_deg": 81.0,
+        "mean_abs_length_error_px": 412.2,
+        "mean_point_error_px": 1348.2,
+        "max_point_error_px": 1825.0,
+        "permutation": [
+          1,
+          2,
+          0
+        ]
+      },
+      "candidate_debug": {
+        "approach": "procrustes_template_fit+mean3_vertex",
+        "affine_rms_px": 35.74,
+        "pnp_rms_px": 34.82,
+        "fit_residual_rms_px": 34.82,
+        "fit_residual_px2": 1212.46,
+        "best_permutation": [
+          1,
+          5,
+          3,
+          0,
+          2,
+          4
+        ],
+        "best_template_keys": [
+          "h_x",
+          "h_y",
+          "h_z",
+          "h_xy",
+          "h_xz",
+          "h_yz"
+        ],
+        "bezel_detected_cube_center": [
+          627.8,
+          780.0
+        ],
+        "fit_derived_cube_center": [
+          588.6,
+          645.9
+        ],
+        "bezel_vs_fit_cube_center_offset_px": 139.7,
+        "camera_fx_px": 1312.0,
+        "camera_principal_point_px": [
+          600.0,
+          800.0
+        ],
+        "hexagon_centroid_vs_bezel_vertex_offset_px": 5.1,
+        "n_hexagon_anchors": 6,
+        "cube_center_source": "mean3_ensemble",
+        "ensemble_n_candidates": 3,
+        "ensemble_shift_px": 93.8,
+        "phase_near_line_darkness": [
+          116.6,
+          194.7,
+          150.5
+        ],
+        "phase_far_line_darkness": [
+          144.6,
+          173.5,
+          177.6
+        ],
+        "phase_mean_near_darkness": 153.9,
+        "phase_mean_far_darkness": 165.2,
+        "phase_darkness_separation": -11.3,
+        "phase_axis_angle_errors_before_deg": [
+          0.0,
+          39.4,
+          0.0
+        ],
+        "phase_axis_angle_errors_after_deg": [
+          0.0,
+          85.0,
+          61.7
+        ],
+        "phase_check": "correct",
+        "junction_score_at_ensemble": 213.3,
+        "junction_score_gate": 200.0,
+        "refinement": "skipped_high_base_score"
+      }
+    },
+    "41_B": {
+      "key": "41_B",
+      "side": "B",
+      "status": "scored",
+      "category": "PHASE_SWAPPED",
+      "vertex_error_px": 54.7,
+      "truth_vertex": [
+        1577.6,
+        2055.7
+      ],
+      "candidate_vertex": [
+        1552.3,
+        2104.2
+      ],
+      "one_edge": {
+        "mean_angle_error_deg": 59.25,
+        "max_angle_error_deg": 67.87,
+        "mean_abs_length_error_px": 126.4,
+        "mean_point_error_px": 1237.5,
+        "max_point_error_px": 1441.6,
+        "permutation": [
+          1,
+          2,
+          0
+        ]
+      },
+      "far": {
+        "mean_angle_error_deg": 58.29,
+        "max_angle_error_deg": 75.82,
+        "mean_abs_length_error_px": 390.1,
+        "mean_point_error_px": 1207.9,
+        "max_point_error_px": 1463.2,
+        "permutation": [
+          2,
+          1,
+          0
+        ]
+      },
+      "swapped_mean_angle_error_deg": 7.85,
+      "swapped_one_edge_to_truth_far": {
+        "mean_angle_error_deg": 2.22,
+        "max_angle_error_deg": 3.97,
+        "mean_abs_length_error_px": 178.9,
+        "mean_point_error_px": 205.6,
+        "max_point_error_px": 273.6,
+        "permutation": [
+          1,
+          2,
+          0
+        ]
+      },
+      "swapped_far_to_truth_one_edge": {
+        "mean_angle_error_deg": 13.47,
+        "max_angle_error_deg": 17.16,
+        "mean_abs_length_error_px": 267.0,
+        "mean_point_error_px": 466.3,
+        "max_point_error_px": 494.7,
+        "permutation": [
+          0,
+          2,
+          1
+        ]
+      },
+      "candidate_debug": {
+        "approach": "procrustes_template_fit+mean3_vertex",
+        "affine_rms_px": 30.19,
+        "pnp_rms_px": 28.15,
+        "fit_residual_rms_px": 28.15,
+        "fit_residual_px2": 792.41,
+        "best_permutation": [
+          0,
+          2,
+          4,
+          1,
+          5,
+          3
+        ],
+        "best_template_keys": [
+          "h_x",
+          "h_y",
+          "h_z",
+          "h_xy",
+          "h_xz",
+          "h_yz"
+        ],
+        "bezel_detected_cube_center": [
+          608.2,
+          868.0
+        ],
+        "fit_derived_cube_center": [
+          636.1,
+          815.6
+        ],
+        "bezel_vs_fit_cube_center_offset_px": 59.3,
+        "camera_fx_px": 1312.0,
+        "camera_principal_point_px": [
+          600.0,
+          800.0
+        ],
+        "hexagon_centroid_vs_bezel_vertex_offset_px": 140.5,
+        "n_hexagon_anchors": 6,
+        "cube_center_source": "mean3_ensemble+image_refined",
+        "ensemble_n_candidates": 3,
+        "ensemble_shift_px": 62.0,
+        "phase_near_line_darkness": [
+          145.8,
+          155.3,
+          216.9
+        ],
+        "phase_far_line_darkness": [
+          128.8,
+          178.1,
+          156.5
+        ],
+        "phase_mean_near_darkness": 172.7,
+        "phase_mean_far_darkness": 154.5,
+        "phase_darkness_separation": 18.2,
+        "phase_axis_angle_errors_before_deg": [
+          0.0,
+          0.0,
+          171.5
+        ],
+        "phase_axis_angle_errors_after_deg": [
+          0.0,
+          49.6,
+          57.8
+        ],
+        "phase_check": "corrected_60deg_flip",
+        "junction_score_at_ensemble": 39.9,
+        "junction_score_gate": 200.0,
+        "junction_score_at_refined": 234.7,
+        "refinement_movement_px": 40.7,
+        "refinement": "applied"
+      }
+    },
+    "43_A": {
+      "key": "43_A",
+      "side": "A",
+      "status": "scored",
+      "category": "PHASE_SWAPPED",
+      "vertex_error_px": 115.1,
+      "truth_vertex": [
+        1496.1,
+        1621.1
+      ],
+      "candidate_vertex": [
+        1548.8,
+        1723.4
+      ],
+      "one_edge": {
+        "mean_angle_error_deg": 58.63,
+        "max_angle_error_deg": 60.42,
+        "mean_abs_length_error_px": 40.7,
+        "mean_point_error_px": 1190.5,
+        "max_point_error_px": 1249.3,
+        "permutation": [
+          1,
+          2,
+          0
+        ]
+      },
+      "far": {
+        "mean_angle_error_deg": 59.11,
+        "max_angle_error_deg": 61.69,
+        "mean_abs_length_error_px": 240.9,
+        "mean_point_error_px": 1084.2,
+        "max_point_error_px": 1161.3,
+        "permutation": [
+          0,
+          2,
+          1
+        ]
+      },
+      "swapped_mean_angle_error_deg": 4.96,
+      "swapped_one_edge_to_truth_far": {
+        "mean_angle_error_deg": 5.67,
+        "max_angle_error_deg": 7.06,
+        "mean_abs_length_error_px": 238.6,
+        "mean_point_error_px": 244.6,
+        "max_point_error_px": 267.4,
+        "permutation": [
+          0,
+          1,
+          2
+        ]
+      },
+      "swapped_far_to_truth_one_edge": {
+        "mean_angle_error_deg": 4.25,
+        "max_angle_error_deg": 4.43,
+        "mean_abs_length_error_px": 106.2,
+        "mean_point_error_px": 121.3,
+        "max_point_error_px": 156.3,
+        "permutation": [
+          0,
+          2,
+          1
+        ]
+      },
+      "candidate_debug": {
+        "approach": "procrustes_template_fit+mean3_vertex",
+        "affine_rms_px": 52.73,
+        "pnp_rms_px": 8.08,
+        "fit_residual_rms_px": 8.08,
+        "fit_residual_px2": 65.27,
+        "best_permutation": [
+          2,
+          0,
+          4,
+          1,
+          3,
+          5
+        ],
+        "best_template_keys": [
+          "h_x",
+          "h_y",
+          "h_z",
+          "h_xy",
+          "h_xz",
+          "h_yz"
+        ],
+        "bezel_detected_cube_center": [
+          611.8,
+          689.3
+        ],
+        "fit_derived_cube_center": [
+          623.4,
+          678.3
+        ],
+        "bezel_vs_fit_cube_center_offset_px": 16.0,
+        "camera_fx_px": 1312.0,
+        "camera_principal_point_px": [
+          600.0,
+          800.0
+        ],
+        "hexagon_centroid_vs_bezel_vertex_offset_px": 6.2,
+        "n_hexagon_anchors": 6,
+        "cube_center_source": "mean3_ensemble",
+        "ensemble_n_candidates": 3,
+        "ensemble_shift_px": 10.4,
+        "phase_near_line_darkness": [
+          202.7,
+          185.2,
+          208.8
+        ],
+        "phase_far_line_darkness": [
+          108.8,
+          157.4,
+          169.7
+        ],
+        "phase_mean_near_darkness": 198.9,
+        "phase_mean_far_darkness": 145.3,
+        "phase_darkness_separation": 53.6,
+        "phase_axis_angle_errors_before_deg": [
+          61.5,
+          59.2,
+          59.1
+        ],
+        "phase_axis_angle_errors_after_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "phase_check": "corrected_60deg_flip",
+        "junction_score_at_ensemble": 215.1,
+        "junction_score_gate": 200.0,
+        "refinement": "skipped_high_base_score"
+      }
+    },
+    "43_B": {
+      "key": "43_B",
+      "side": "B",
+      "status": "scored",
+      "category": "PHASE_SWAPPED",
+      "vertex_error_px": 150.6,
+      "truth_vertex": [
+        1615.2,
+        2039.3
+      ],
+      "candidate_vertex": [
+        1544.3,
+        1906.4
+      ],
+      "one_edge": {
+        "mean_angle_error_deg": 58.51,
+        "max_angle_error_deg": 65.26,
+        "mean_abs_length_error_px": 155.9,
+        "mean_point_error_px": 1233.9,
+        "max_point_error_px": 1416.8,
+        "permutation": [
+          1,
+          2,
+          0
+        ]
+      },
+      "far": {
+        "mean_angle_error_deg": 58.61,
+        "max_angle_error_deg": 79.12,
+        "mean_abs_length_error_px": 327.3,
+        "mean_point_error_px": 1130.9,
+        "max_point_error_px": 1339.2,
+        "permutation": [
+          2,
+          1,
+          0
+        ]
+      },
+      "swapped_mean_angle_error_deg": 6.15,
+      "swapped_one_edge_to_truth_far": {
+        "mean_angle_error_deg": 3.63,
+        "max_angle_error_deg": 4.57,
+        "mean_abs_length_error_px": 250.3,
+        "mean_point_error_px": 270.7,
+        "max_point_error_px": 329.7,
+        "permutation": [
+          2,
+          0,
+          1
+        ]
+      },
+      "swapped_far_to_truth_one_edge": {
+        "mean_angle_error_deg": 8.67,
+        "max_angle_error_deg": 10.78,
+        "mean_abs_length_error_px": 139.3,
+        "mean_point_error_px": 351.2,
+        "max_point_error_px": 382.9,
+        "permutation": [
+          2,
+          1,
+          0
+        ]
+      },
+      "candidate_debug": {
+        "approach": "procrustes_template_fit+mean3_vertex",
+        "affine_rms_px": 56.06,
+        "pnp_rms_px": 9.8,
+        "fit_residual_rms_px": 9.8,
+        "fit_residual_px2": 96.1,
+        "best_permutation": [
+          0,
+          2,
+          4,
+          1,
+          5,
+          3
+        ],
+        "best_template_keys": [
+          "h_x",
+          "h_y",
+          "h_z",
+          "h_xy",
+          "h_xz",
+          "h_yz"
+        ],
+        "bezel_detected_cube_center": [
+          601.0,
+          750.7
+        ],
+        "fit_derived_cube_center": [
+          640.4,
+          767.1
+        ],
+        "bezel_vs_fit_cube_center_offset_px": 42.6,
+        "camera_fx_px": 1312.0,
+        "camera_principal_point_px": [
+          600.0,
+          800.0
+        ],
+        "hexagon_centroid_vs_bezel_vertex_offset_px": 4.0,
+        "n_hexagon_anchors": 6,
+        "cube_center_source": "mean3_ensemble",
+        "ensemble_n_candidates": 3,
+        "ensemble_shift_px": 29.5,
+        "phase_near_line_darkness": [
+          224.9,
+          114.5,
+          173.4
+        ],
+        "phase_far_line_darkness": [
+          140.7,
+          166.6,
+          142.6
+        ],
+        "phase_mean_near_darkness": 170.9,
+        "phase_mean_far_darkness": 150.0,
+        "phase_darkness_separation": 21.0,
+        "phase_axis_angle_errors_before_deg": [
+          53.0,
+          0.0,
+          63.0
+        ],
+        "phase_axis_angle_errors_after_deg": [
+          64.6,
+          105.6,
+          0.0
+        ],
+        "phase_check": "corrected_60deg_flip",
+        "junction_score_at_ensemble": 204.7,
+        "junction_score_gate": 200.0,
+        "refinement": "skipped_high_base_score"
+      }
+    },
+    "45_A": {
+      "key": "45_A",
+      "side": "A",
+      "status": "scored",
+      "category": "PHASE_SWAPPED",
+      "vertex_error_px": 168.4,
+      "truth_vertex": [
+        1436.8,
+        2173.7
+      ],
+      "candidate_vertex": [
+        1559.9,
+        2058.8
+      ],
+      "one_edge": {
+        "mean_angle_error_deg": 59.68,
+        "max_angle_error_deg": 66.88,
+        "mean_abs_length_error_px": 74.1,
+        "mean_point_error_px": 1251.9,
+        "max_point_error_px": 1391.1,
+        "permutation": [
+          2,
+          1,
+          0
+        ]
+      },
+      "far": {
+        "mean_angle_error_deg": 59.49,
+        "max_angle_error_deg": 67.16,
+        "mean_abs_length_error_px": 262.7,
+        "mean_point_error_px": 1145.6,
+        "max_point_error_px": 1393.7,
+        "permutation": [
+          1,
+          2,
+          0
+        ]
+      },
+      "swapped_mean_angle_error_deg": 4.67,
+      "swapped_one_edge_to_truth_far": {
+        "mean_angle_error_deg": 3.34,
+        "max_angle_error_deg": 5.25,
+        "mean_abs_length_error_px": 239.6,
+        "mean_point_error_px": 257.4,
+        "max_point_error_px": 293.2,
+        "permutation": [
+          2,
+          1,
+          0
+        ]
+      },
+      "swapped_far_to_truth_one_edge": {
+        "mean_angle_error_deg": 6.0,
+        "max_angle_error_deg": 8.0,
+        "mean_abs_length_error_px": 155.6,
+        "mean_point_error_px": 321.9,
+        "max_point_error_px": 377.4,
+        "permutation": [
+          2,
+          0,
+          1
+        ]
+      },
+      "candidate_debug": {
+        "approach": "procrustes_template_fit+mean3_vertex",
+        "affine_rms_px": 56.63,
+        "pnp_rms_px": 14.49,
+        "fit_residual_rms_px": 14.49,
+        "fit_residual_px2": 209.84,
+        "best_permutation": [
+          0,
+          2,
+          4,
+          1,
+          5,
+          3
+        ],
+        "best_template_keys": [
+          "h_x",
+          "h_y",
+          "h_z",
+          "h_xy",
+          "h_xz",
+          "h_yz"
+        ],
+        "bezel_detected_cube_center": [
+          579.3,
+          765.0
+        ],
+        "fit_derived_cube_center": [
+          587.6,
+          812.1
+        ],
+        "bezel_vs_fit_cube_center_offset_px": 47.8,
+        "camera_fx_px": 1312.0,
+        "camera_principal_point_px": [
+          600.0,
+          800.0
+        ],
+        "hexagon_centroid_vs_bezel_vertex_offset_px": 2.7,
+        "n_hexagon_anchors": 6,
+        "cube_center_source": "mean3_ensemble+image_refined",
+        "ensemble_n_candidates": 3,
+        "ensemble_shift_px": 31.8,
+        "phase_near_line_darkness": [
+          221.8,
+          125.0,
+          140.5
+        ],
+        "phase_far_line_darkness": [
+          173.6,
+          168.8,
+          109.3
+        ],
+        "phase_mean_near_darkness": 162.4,
+        "phase_mean_far_darkness": 150.6,
+        "phase_darkness_separation": 11.9,
+        "phase_axis_angle_errors_before_deg": [
+          177.7,
+          0.0,
+          0.0
+        ],
+        "phase_axis_angle_errors_after_deg": [
+          52.6,
+          54.9,
+          0.0
+        ],
+        "phase_check": "corrected_60deg_flip",
+        "junction_score_at_ensemble": 58.6,
+        "junction_score_gate": 200.0,
+        "junction_score_at_refined": 211.6,
+        "refinement_movement_px": 51.2,
+        "refinement": "applied"
+      }
+    },
+    "45_B": {
+      "key": "45_B",
+      "side": "B",
+      "status": "scored",
+      "category": "MARGINAL",
+      "vertex_error_px": 290.7,
+      "truth_vertex": [
+        1627.1,
+        2155.6
+      ],
+      "candidate_vertex": [
+        1426.3,
+        1945.4
+      ],
+      "one_edge": {
+        "mean_angle_error_deg": 7.25,
+        "max_angle_error_deg": 12.0,
+        "mean_abs_length_error_px": 350.2,
+        "mean_point_error_px": 341.0,
+        "max_point_error_px": 486.6,
+        "permutation": [
+          2,
+          0,
+          1
+        ]
+      },
+      "far": {
+        "mean_angle_error_deg": 18.17,
+        "max_angle_error_deg": 25.46,
+        "mean_abs_length_error_px": 275.9,
+        "mean_point_error_px": 231.8,
+        "max_point_error_px": 239.5,
+        "permutation": [
+          1,
+          0,
+          2
+        ]
+      },
+      "swapped_mean_angle_error_deg": 59.03,
+      "swapped_one_edge_to_truth_far": {
+        "mean_angle_error_deg": 58.82,
+        "max_angle_error_deg": 77.89,
+        "mean_abs_length_error_px": 257.9,
+        "mean_point_error_px": 1028.4,
+        "max_point_error_px": 1174.5,
+        "permutation": [
+          0,
+          1,
+          2
+        ]
+      },
+      "swapped_far_to_truth_one_edge": {
+        "mean_angle_error_deg": 59.24,
+        "max_angle_error_deg": 73.52,
+        "mean_abs_length_error_px": 363.1,
+        "mean_point_error_px": 1213.2,
+        "max_point_error_px": 1342.3,
+        "permutation": [
+          1,
+          0,
+          2
+        ]
+      },
+      "candidate_debug": {
+        "approach": "procrustes_template_fit+mean3_vertex",
+        "affine_rms_px": 65.68,
+        "pnp_rms_px": 11.14,
+        "fit_residual_rms_px": 11.14,
+        "fit_residual_px2": 124.01,
+        "best_permutation": [
+          5,
+          1,
+          3,
+          0,
+          4,
+          2
+        ],
+        "best_template_keys": [
+          "h_x",
+          "h_y",
+          "h_z",
+          "h_xy",
+          "h_xz",
+          "h_yz"
+        ],
+        "bezel_detected_cube_center": [
+          608.2,
+          744.3
+        ],
+        "fit_derived_cube_center": [
+          595.0,
+          718.5
+        ],
+        "bezel_vs_fit_cube_center_offset_px": 29.0,
+        "camera_fx_px": 1312.0,
+        "camera_principal_point_px": [
+          600.0,
+          800.0
+        ],
+        "hexagon_centroid_vs_bezel_vertex_offset_px": 11.7,
+        "n_hexagon_anchors": 6,
+        "cube_center_source": "mean3_ensemble+image_refined",
+        "ensemble_n_candidates": 3,
+        "ensemble_shift_px": 17.5,
+        "phase_near_line_darkness": [
+          123.2,
+          158.5,
+          202.0
+        ],
+        "phase_far_line_darkness": [
+          83.3,
+          69.9,
+          218.3
+        ],
+        "phase_mean_near_darkness": 161.3,
+        "phase_mean_far_darkness": 123.8,
+        "phase_darkness_separation": 37.4,
+        "phase_axis_angle_errors_before_deg": [
+          0.0,
+          59.0,
+          62.0
+        ],
+        "phase_axis_angle_errors_after_deg": [
+          61.3,
+          0.0,
+          115.8
+        ],
+        "phase_check": "corrected_60deg_flip",
+        "junction_score_at_ensemble": 22.6,
+        "junction_score_gate": 200.0,
+        "junction_score_at_refined": 177.7,
+        "refinement_movement_px": 56.1,
+        "refinement": "applied"
+      }
+    }
+  },
+  "all_runs_by_case": {
+    "20_A": [
+      {
+        "key": "20_A",
+        "side": "A",
+        "status": "scored",
+        "category": "PHASE_SWAPPED",
+        "vertex_error_px": 104.1,
+        "truth_vertex": [
+          1491.7,
+          1883.8
+        ],
+        "candidate_vertex": [
+          1431.4,
+          1968.6
+        ],
+        "one_edge": {
+          "mean_angle_error_deg": 58.93,
+          "max_angle_error_deg": 60.97,
+          "mean_abs_length_error_px": 349.8,
+          "mean_point_error_px": 1220.6,
+          "max_point_error_px": 1257.1,
+          "permutation": [
+            1,
+            0,
+            2
+          ]
+        },
+        "far": {
+          "mean_angle_error_deg": 58.85,
+          "max_angle_error_deg": 64.86,
+          "mean_abs_length_error_px": 63.3,
+          "mean_point_error_px": 1015.6,
+          "max_point_error_px": 1030.3,
+          "permutation": [
+            2,
+            0,
+            1
+          ]
+        },
+        "swapped_mean_angle_error_deg": 2.68,
+        "swapped_one_edge_to_truth_far": {
+          "mean_angle_error_deg": 4.29,
+          "max_angle_error_deg": 4.67,
+          "mean_abs_length_error_px": 69.3,
+          "mean_point_error_px": 26.3,
+          "max_point_error_px": 33.2,
+          "permutation": [
+            1,
+            0,
+            2
+          ]
+        },
+        "swapped_far_to_truth_one_edge": {
+          "mean_angle_error_deg": 1.07,
+          "max_angle_error_deg": 2.45,
+          "mean_abs_length_error_px": 349.6,
+          "mean_point_error_px": 351.5,
+          "max_point_error_px": 372.2,
+          "permutation": [
+            0,
+            1,
+            2
+          ]
+        },
+        "candidate_debug": {
+          "approach": "procrustes_template_fit+mean3_vertex",
+          "affine_rms_px": 59.12,
+          "pnp_rms_px": 8.48,
+          "fit_residual_rms_px": 8.48,
+          "fit_residual_px2": 71.91,
+          "best_permutation": [
+            2,
+            0,
+            4,
+            1,
+            3,
+            5
+          ],
+          "best_template_keys": [
+            "h_x",
+            "h_y",
+            "h_z",
+            "h_xy",
+            "h_xz",
+            "h_yz"
+          ],
+          "bezel_detected_cube_center": [
+            566.0,
+            789.8
+          ],
+          "fit_derived_cube_center": [
+            569.6,
+            770.3
+          ],
+          "bezel_vs_fit_cube_center_offset_px": 19.9,
+          "camera_fx_px": 1312.0,
+          "camera_principal_point_px": [
+            600.0,
+            800.0
+          ],
+          "hexagon_centroid_vs_bezel_vertex_offset_px": 6.7,
+          "n_hexagon_anchors": 6,
+          "cube_center_source": "mean3_ensemble",
+          "ensemble_n_candidates": 3,
+          "ensemble_shift_px": 11.1,
+          "phase_near_line_darkness": [
+            206.0,
+            132.3,
+            175.1
+          ],
+          "phase_far_line_darkness": [
+            231.2,
+            182.2,
+            172.1
+          ],
+          "phase_mean_near_darkness": 171.1,
+          "phase_mean_far_darkness": 195.2,
+          "phase_darkness_separation": -24.0,
+          "phase_axis_angle_errors_before_deg": [
+            116.6,
+            0.0,
+            59.3
+          ],
+          "phase_axis_angle_errors_after_deg": [
+            61.7,
+            57.7,
+            0.0
+          ],
+          "phase_check": "correct",
+          "junction_score_at_ensemble": 214.3,
+          "junction_score_gate": 200.0,
+          "refinement": "skipped_high_base_score"
+        }
+      }
+    ],
+    "20_B": [
+      {
+        "key": "20_B",
+        "side": "B",
+        "status": "scored",
+        "category": "PHASE_SWAPPED",
+        "vertex_error_px": 155.6,
+        "truth_vertex": [
+          1459.6,
+          2186.1
+        ],
+        "candidate_vertex": [
+          1446.0,
+          2031.1
+        ],
+        "one_edge": {
+          "mean_angle_error_deg": 59.1,
+          "max_angle_error_deg": 68.18,
+          "mean_abs_length_error_px": 138.5,
+          "mean_point_error_px": 1374.0,
+          "max_point_error_px": 1550.2,
+          "permutation": [
+            1,
+            0,
+            2
+          ]
+        },
+        "far": {
+          "mean_angle_error_deg": 59.71,
+          "max_angle_error_deg": 66.13,
+          "mean_abs_length_error_px": 315.1,
+          "mean_point_error_px": 1269.9,
+          "max_point_error_px": 1547.4,
+          "permutation": [
+            2,
+            0,
+            1
+          ]
+        },
+        "swapped_mean_angle_error_deg": 4.12,
+        "swapped_one_edge_to_truth_far": {
+          "mean_angle_error_deg": 1.89,
+          "max_angle_error_deg": 3.17,
+          "mean_abs_length_error_px": 299.8,
+          "mean_point_error_px": 333.2,
+          "max_point_error_px": 427.1,
+          "permutation": [
+            1,
+            0,
+            2
+          ]
+        },
+        "swapped_far_to_truth_one_edge": {
+          "mean_angle_error_deg": 6.35,
+          "max_angle_error_deg": 10.1,
+          "mean_abs_length_error_px": 168.9,
+          "mean_point_error_px": 388.9,
+          "max_point_error_px": 440.7,
+          "permutation": [
+            2,
+            0,
+            1
+          ]
+        },
+        "candidate_debug": {
+          "approach": "procrustes_template_fit+mean3_vertex",
+          "affine_rms_px": 66.81,
+          "pnp_rms_px": 10.81,
+          "fit_residual_rms_px": 10.81,
+          "fit_residual_px2": 116.88,
+          "best_permutation": [
+            4,
+            2,
+            0,
+            3,
+            5,
+            1
+          ],
+          "best_template_keys": [
+            "h_x",
+            "h_y",
+            "h_z",
+            "h_xy",
+            "h_xz",
+            "h_yz"
+          ],
+          "bezel_detected_cube_center": [
+            579.8,
+            790.8
+          ],
+          "fit_derived_cube_center": [
+            561.7,
+            832.6
+          ],
+          "bezel_vs_fit_cube_center_offset_px": 45.5,
+          "camera_fx_px": 1312.0,
+          "camera_principal_point_px": [
+            600.0,
+            800.0
+          ],
+          "hexagon_centroid_vs_bezel_vertex_offset_px": 3.8,
+          "n_hexagon_anchors": 6,
+          "cube_center_source": "mean3_ensemble",
+          "ensemble_n_candidates": 3,
+          "ensemble_shift_px": 29.2,
+          "phase_near_line_darkness": [
+            208.2,
+            212.0,
+            237.9
+          ],
+          "phase_far_line_darkness": [
+            140.5,
+            183.7,
+            130.8
+          ],
+          "phase_mean_near_darkness": 219.3,
+          "phase_mean_far_darkness": 151.7,
+          "phase_darkness_separation": 67.7,
+          "phase_axis_angle_errors_before_deg": [
+            55.5,
+            57.3,
+            66.9
+          ],
+          "phase_axis_angle_errors_after_deg": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "phase_check": "corrected_60deg_flip",
+          "junction_score_at_ensemble": 211.1,
+          "junction_score_gate": 200.0,
+          "refinement": "skipped_high_base_score"
+        }
+      }
+    ],
+    "38_A": [
+      {
+        "key": "38_A",
+        "side": "A",
+        "status": "scored",
+        "category": "PHASE_SWAPPED",
+        "vertex_error_px": 200.2,
+        "truth_vertex": [
+          1379.0,
+          1932.3
+        ],
+        "candidate_vertex": [
+          1542.2,
+          1816.4
+        ],
+        "one_edge": {
+          "mean_angle_error_deg": 58.89,
+          "max_angle_error_deg": 63.77,
+          "mean_abs_length_error_px": 301.9,
+          "mean_point_error_px": 1156.5,
+          "max_point_error_px": 1180.1,
+          "permutation": [
+            1,
+            0,
+            2
+          ]
+        },
+        "far": {
+          "mean_angle_error_deg": 58.8,
+          "max_angle_error_deg": 71.09,
+          "mean_abs_length_error_px": 213.4,
+          "mean_point_error_px": 988.9,
+          "max_point_error_px": 1042.5,
+          "permutation": [
+            2,
+            0,
+            1
+          ]
+        },
+        "swapped_mean_angle_error_deg": 6.98,
+        "swapped_one_edge_to_truth_far": {
+          "mean_angle_error_deg": 7.7,
+          "max_angle_error_deg": 11.81,
+          "mean_abs_length_error_px": 169.9,
+          "mean_point_error_px": 51.1,
+          "max_point_error_px": 70.7,
+          "permutation": [
+            2,
+            1,
+            0
+          ]
+        },
+        "swapped_far_to_truth_one_edge": {
+          "mean_angle_error_deg": 6.26,
+          "max_angle_error_deg": 8.67,
+          "mean_abs_length_error_px": 301.6,
+          "mean_point_error_px": 301.8,
+          "max_point_error_px": 390.0,
+          "permutation": [
+            2,
+            0,
+            1
+          ]
+        },
+        "candidate_debug": {
+          "approach": "procrustes_template_fit+mean3_vertex",
+          "affine_rms_px": 59.8,
+          "pnp_rms_px": 13.65,
+          "fit_residual_rms_px": 13.65,
+          "fit_residual_px2": 186.36,
+          "best_permutation": [
+            0,
+            4,
+            2,
+            5,
+            1,
+            3
+          ],
+          "best_template_keys": [
+            "h_x",
+            "h_y",
+            "h_z",
+            "h_xy",
+            "h_xz",
+            "h_yz"
+          ],
+          "bezel_detected_cube_center": [
+            595.3,
+            724.8
+          ],
+          "fit_derived_cube_center": [
+            633.9,
+            718.5
+          ],
+          "bezel_vs_fit_cube_center_offset_px": 39.1,
+          "camera_fx_px": 1312.0,
+          "camera_principal_point_px": [
+            600.0,
+            800.0
+          ],
+          "hexagon_centroid_vs_bezel_vertex_offset_px": 12.7,
+          "n_hexagon_anchors": 6,
+          "cube_center_source": "mean3_ensemble",
+          "ensemble_n_candidates": 3,
+          "ensemble_shift_px": 22.0,
+          "phase_near_line_darkness": [
+            163.6,
+            165.2,
+            162.7
+          ],
+          "phase_far_line_darkness": [
+            156.8,
+            136.5,
+            205.2
+          ],
+          "phase_mean_near_darkness": 163.9,
+          "phase_mean_far_darkness": 166.2,
+          "phase_darkness_separation": -2.3,
+          "phase_axis_angle_errors_before_deg": [
+            57.3,
+            61.1,
+            0.0
+          ],
+          "phase_axis_angle_errors_after_deg": [
+            0.0,
+            0.0,
+            61.1
+          ],
+          "phase_check": "ambiguous_no_correction",
+          "junction_score_at_ensemble": 236.9,
+          "junction_score_gate": 200.0,
+          "refinement": "skipped_high_base_score"
+        }
+      }
+    ],
+    "38_B": [
+      {
+        "key": "38_B",
+        "side": "B",
+        "status": "scored",
+        "category": "GOOD",
+        "vertex_error_px": 209.7,
+        "truth_vertex": [
+          1463.0,
+          1791.3
+        ],
+        "candidate_vertex": [
+          1622.9,
+          1655.6
+        ],
+        "one_edge": {
+          "mean_angle_error_deg": 2.99,
+          "max_angle_error_deg": 5.79,
+          "mean_abs_length_error_px": 248.1,
+          "mean_point_error_px": 264.9,
+          "max_point_error_px": 309.9,
+          "permutation": [
+            2,
+            1,
+            0
+          ]
+        },
+        "far": {
+          "mean_angle_error_deg": 6.99,
+          "max_angle_error_deg": 12.46,
+          "mean_abs_length_error_px": 133.7,
+          "mean_point_error_px": 55.7,
+          "max_point_error_px": 68.9,
+          "permutation": [
+            2,
+            0,
+            1
+          ]
+        },
+        "swapped_mean_angle_error_deg": 58.22,
+        "swapped_one_edge_to_truth_far": {
+          "mean_angle_error_deg": 58.48,
+          "max_angle_error_deg": 61.83,
+          "mean_abs_length_error_px": 103.6,
+          "mean_point_error_px": 886.7,
+          "max_point_error_px": 953.4,
+          "permutation": [
+            1,
+            0,
+            2
+          ]
+        },
+        "swapped_far_to_truth_one_edge": {
+          "mean_angle_error_deg": 57.96,
+          "max_angle_error_deg": 62.48,
+          "mean_abs_length_error_px": 245.7,
+          "mean_point_error_px": 1022.4,
+          "max_point_error_px": 1068.2,
+          "permutation": [
+            2,
+            0,
+            1
+          ]
+        },
+        "candidate_debug": {
+          "approach": "procrustes_template_fit+mean3_vertex",
+          "affine_rms_px": 45.79,
+          "pnp_rms_px": 3.59,
+          "fit_residual_rms_px": 3.59,
+          "fit_residual_px2": 12.85,
+          "best_permutation": [
+            3,
+            1,
+            5,
+            2,
+            4,
+            0
+          ],
+          "best_template_keys": [
+            "h_x",
+            "h_y",
+            "h_z",
+            "h_xy",
+            "h_xz",
+            "h_yz"
+          ],
+          "bezel_detected_cube_center": [
+            606.2,
+            674.5
+          ],
+          "fit_derived_cube_center": [
+            623.9,
+            673.0
+          ],
+          "bezel_vs_fit_cube_center_offset_px": 17.8,
+          "camera_fx_px": 1312.0,
+          "camera_principal_point_px": [
+            600.0,
+            800.0
+          ],
+          "hexagon_centroid_vs_bezel_vertex_offset_px": 171.8,
+          "n_hexagon_anchors": 6,
+          "cube_center_source": "mean3_ensemble+image_refined",
+          "ensemble_n_candidates": 3,
+          "ensemble_shift_px": 58.3,
+          "phase_near_line_darkness": [
+            178.9,
+            165.6,
+            205.3
+          ],
+          "phase_far_line_darkness": [
+            113.9,
+            127.4,
+            235.7
+          ],
+          "phase_mean_near_darkness": 183.3,
+          "phase_mean_far_darkness": 159.0,
+          "phase_darkness_separation": 24.2,
+          "phase_axis_angle_errors_before_deg": [
+            58.3,
+            0.0,
+            64.4
+          ],
+          "phase_axis_angle_errors_after_deg": [
+            0.0,
+            0.0,
+            57.6
+          ],
+          "phase_check": "corrected_60deg_flip",
+          "junction_score_at_ensemble": 179.8,
+          "junction_score_gate": 200.0,
+          "junction_score_at_refined": 247.1,
+          "refinement_movement_px": 53.9,
+          "refinement": "applied"
+        }
+      }
+    ],
+    "40_A": [
+      {
+        "key": "40_A",
+        "side": "A",
+        "status": "scored",
+        "category": "GOOD",
+        "vertex_error_px": 136.3,
+        "truth_vertex": [
+          1331.2,
+          1786.4
+        ],
+        "candidate_vertex": [
+          1375.9,
+          1915.2
+        ],
+        "one_edge": {
+          "mean_angle_error_deg": 4.2,
+          "max_angle_error_deg": 7.21,
+          "mean_abs_length_error_px": 145.2,
+          "mean_point_error_px": 92.1,
+          "max_point_error_px": 146.4,
+          "permutation": [
+            1,
+            0,
+            2
+          ]
+        },
+        "far": {
+          "mean_angle_error_deg": 11.61,
+          "max_angle_error_deg": 15.02,
+          "mean_abs_length_error_px": 195.5,
+          "mean_point_error_px": 205.1,
+          "max_point_error_px": 235.2,
+          "permutation": [
+            2,
+            0,
+            1
+          ]
+        },
+        "swapped_mean_angle_error_deg": 58.89,
+        "swapped_one_edge_to_truth_far": {
+          "mean_angle_error_deg": 58.4,
+          "max_angle_error_deg": 73.45,
+          "mean_abs_length_error_px": 212.0,
+          "mean_point_error_px": 1169.5,
+          "max_point_error_px": 1303.4,
+          "permutation": [
+            1,
+            0,
+            2
+          ]
+        },
+        "swapped_far_to_truth_one_edge": {
+          "mean_angle_error_deg": 59.39,
+          "max_angle_error_deg": 64.7,
+          "mean_abs_length_error_px": 137.9,
+          "mean_point_error_px": 1229.9,
+          "max_point_error_px": 1287.8,
+          "permutation": [
+            0,
+            1,
+            2
+          ]
+        },
+        "candidate_debug": {
+          "approach": "procrustes_template_fit+mean3_vertex",
+          "affine_rms_px": 31.34,
+          "pnp_rms_px": 37.32,
+          "fit_residual_rms_px": 31.34,
+          "fit_residual_px2": 982.0,
+          "best_permutation": [
+            0,
+            2,
+            4,
+            1,
+            5,
+            3
+          ],
+          "best_template_keys": [
+            "h_x",
+            "h_y",
+            "h_z",
+            "h_xy",
+            "h_xz",
+            "h_yz"
+          ],
+          "bezel_detected_cube_center": [
+            575.3,
+            800.7
+          ],
+          "fit_derived_cube_center": [
+            575.3,
+            800.7
+          ],
+          "bezel_vs_fit_cube_center_offset_px": 0.0,
+          "camera_fx_px": 1312.0,
+          "camera_principal_point_px": [
+            600.0,
+            800.0
+          ],
+          "hexagon_centroid_vs_bezel_vertex_offset_px": 4.2,
+          "n_hexagon_anchors": 6,
+          "cube_center_source": "mean3_ensemble+image_refined",
+          "ensemble_n_candidates": 3,
+          "ensemble_shift_px": 1.4,
+          "phase_near_line_darkness": [
+            203.0,
+            161.8,
+            185.8
+          ],
+          "phase_far_line_darkness": [
+            191.5,
+            200.3,
+            127.6
+          ],
+          "phase_mean_near_darkness": 183.6,
+          "phase_mean_far_darkness": 173.1,
+          "phase_darkness_separation": 10.4,
+          "phase_axis_angle_errors_before_deg": [
+            180.0,
+            0.0,
+            0.0
+          ],
+          "phase_axis_angle_errors_after_deg": [
+            59.3,
+            59.3,
+            0.0
+          ],
+          "phase_check": "corrected_60deg_flip",
+          "junction_score_at_ensemble": 168.6,
+          "junction_score_gate": 200.0,
+          "junction_score_at_refined": 243.3,
+          "refinement_movement_px": 49.7,
+          "refinement": "applied"
+        }
+      }
+    ],
+    "40_B": [
+      {
+        "key": "40_B",
+        "side": "B",
+        "status": "scored",
+        "category": "PHASE_SWAPPED",
+        "vertex_error_px": 464.7,
+        "truth_vertex": [
+          1436.3,
+          1593.6
+        ],
+        "candidate_vertex": [
+          1650.6,
+          2005.9
+        ],
+        "one_edge": {
+          "mean_angle_error_deg": 59.19,
+          "max_angle_error_deg": 65.29,
+          "mean_abs_length_error_px": 284.3,
+          "mean_point_error_px": 1204.6,
+          "max_point_error_px": 1371.2,
+          "permutation": [
+            0,
+            1,
+            2
+          ]
+        },
+        "far": {
+          "mean_angle_error_deg": 58.7,
+          "max_angle_error_deg": 73.92,
+          "mean_abs_length_error_px": 221.5,
+          "mean_point_error_px": 1077.8,
+          "max_point_error_px": 1143.6,
+          "permutation": [
+            0,
+            2,
+            1
+          ]
+        },
+        "swapped_mean_angle_error_deg": 10.36,
+        "swapped_one_edge_to_truth_far": {
+          "mean_angle_error_deg": 11.92,
+          "max_angle_error_deg": 15.87,
+          "mean_abs_length_error_px": 259.3,
+          "mean_point_error_px": 138.9,
+          "max_point_error_px": 198.3,
+          "permutation": [
+            1,
+            2,
+            0
+          ]
+        },
+        "swapped_far_to_truth_one_edge": {
+          "mean_angle_error_deg": 8.8,
+          "max_angle_error_deg": 14.38,
+          "mean_abs_length_error_px": 290.6,
+          "mean_point_error_px": 316.3,
+          "max_point_error_px": 394.2,
+          "permutation": [
+            0,
+            2,
+            1
+          ]
+        },
+        "candidate_debug": {
+          "approach": "procrustes_template_fit+mean3_vertex",
+          "affine_rms_px": 40.98,
+          "pnp_rms_px": 28.87,
+          "fit_residual_rms_px": 28.87,
+          "fit_residual_px2": 833.34,
+          "best_permutation": [
+            2,
+            0,
+            4,
+            1,
+            3,
+            5
+          ],
+          "best_template_keys": [
+            "h_x",
+            "h_y",
+            "h_z",
+            "h_xy",
+            "h_xz",
+            "h_yz"
+          ],
+          "bezel_detected_cube_center": [
+            593.0,
+            721.3
+          ],
+          "fit_derived_cube_center": [
+            623.3,
+            764.7
+          ],
+          "bezel_vs_fit_cube_center_offset_px": 52.9,
+          "camera_fx_px": 1312.0,
+          "camera_principal_point_px": [
+            600.0,
+            800.0
+          ],
+          "hexagon_centroid_vs_bezel_vertex_offset_px": 177.3,
+          "n_hexagon_anchors": 6,
+          "cube_center_source": "mean3_ensemble+image_refined",
+          "ensemble_n_candidates": 3,
+          "ensemble_shift_px": 36.5,
+          "phase_near_line_darkness": [
+            183.6,
+            198.1,
+            162.9
+          ],
+          "phase_far_line_darkness": [
+            191.9,
+            198.6,
+            191.9
+          ],
+          "phase_mean_near_darkness": 181.5,
+          "phase_mean_far_darkness": 194.1,
+          "phase_darkness_separation": -12.6,
+          "phase_axis_angle_errors_before_deg": [
+            0.0,
+            66.3,
+            0.0
+          ],
+          "phase_axis_angle_errors_after_deg": [
+            0.0,
+            58.1,
+            55.7
+          ],
+          "phase_check": "correct",
+          "junction_score_at_ensemble": 186.1,
+          "junction_score_gate": 200.0,
+          "junction_score_at_refined": 230.6,
+          "refinement_movement_px": 40.3,
+          "refinement": "applied"
+        }
+      }
+    ],
+    "41_A": [
+      {
+        "key": "41_A",
+        "side": "A",
+        "status": "scored",
+        "category": "GOOD",
+        "vertex_error_px": 111.2,
+        "truth_vertex": [
+          1475.8,
+          1773.7
+        ],
+        "candidate_vertex": [
+          1553.3,
+          1853.5
+        ],
+        "one_edge": {
+          "mean_angle_error_deg": 3.84,
+          "max_angle_error_deg": 7.54,
+          "mean_abs_length_error_px": 70.0,
+          "mean_point_error_px": 222.5,
+          "max_point_error_px": 258.5,
+          "permutation": [
+            2,
+            1,
+            0
+          ]
+        },
+        "far": {
+          "mean_angle_error_deg": 6.7,
+          "max_angle_error_deg": 10.48,
+          "mean_abs_length_error_px": 258.7,
+          "mean_point_error_px": 396.4,
+          "max_point_error_px": 514.4,
+          "permutation": [
+            1,
+            2,
+            0
+          ]
+        },
+        "swapped_mean_angle_error_deg": 58.42,
+        "swapped_one_edge_to_truth_far": {
+          "mean_angle_error_deg": 57.68,
+          "max_angle_error_deg": 62.98,
+          "mean_abs_length_error_px": 230.4,
+          "mean_point_error_px": 1201.4,
+          "max_point_error_px": 1278.8,
+          "permutation": [
+            2,
+            1,
+            0
+          ]
+        },
+        "swapped_far_to_truth_one_edge": {
+          "mean_angle_error_deg": 59.16,
+          "max_angle_error_deg": 81.0,
+          "mean_abs_length_error_px": 412.2,
+          "mean_point_error_px": 1348.2,
+          "max_point_error_px": 1825.0,
+          "permutation": [
+            1,
+            2,
+            0
+          ]
+        },
+        "candidate_debug": {
+          "approach": "procrustes_template_fit+mean3_vertex",
+          "affine_rms_px": 35.74,
+          "pnp_rms_px": 34.82,
+          "fit_residual_rms_px": 34.82,
+          "fit_residual_px2": 1212.46,
+          "best_permutation": [
+            1,
+            5,
+            3,
+            0,
+            2,
+            4
+          ],
+          "best_template_keys": [
+            "h_x",
+            "h_y",
+            "h_z",
+            "h_xy",
+            "h_xz",
+            "h_yz"
+          ],
+          "bezel_detected_cube_center": [
+            627.8,
+            780.0
+          ],
+          "fit_derived_cube_center": [
+            588.6,
+            645.9
+          ],
+          "bezel_vs_fit_cube_center_offset_px": 139.7,
+          "camera_fx_px": 1312.0,
+          "camera_principal_point_px": [
+            600.0,
+            800.0
+          ],
+          "hexagon_centroid_vs_bezel_vertex_offset_px": 5.1,
+          "n_hexagon_anchors": 6,
+          "cube_center_source": "mean3_ensemble",
+          "ensemble_n_candidates": 3,
+          "ensemble_shift_px": 93.8,
+          "phase_near_line_darkness": [
+            116.6,
+            194.7,
+            150.5
+          ],
+          "phase_far_line_darkness": [
+            144.6,
+            173.5,
+            177.6
+          ],
+          "phase_mean_near_darkness": 153.9,
+          "phase_mean_far_darkness": 165.2,
+          "phase_darkness_separation": -11.3,
+          "phase_axis_angle_errors_before_deg": [
+            0.0,
+            39.4,
+            0.0
+          ],
+          "phase_axis_angle_errors_after_deg": [
+            0.0,
+            85.0,
+            61.7
+          ],
+          "phase_check": "correct",
+          "junction_score_at_ensemble": 213.3,
+          "junction_score_gate": 200.0,
+          "refinement": "skipped_high_base_score"
+        }
+      }
+    ],
+    "41_B": [
+      {
+        "key": "41_B",
+        "side": "B",
+        "status": "scored",
+        "category": "PHASE_SWAPPED",
+        "vertex_error_px": 54.7,
+        "truth_vertex": [
+          1577.6,
+          2055.7
+        ],
+        "candidate_vertex": [
+          1552.3,
+          2104.2
+        ],
+        "one_edge": {
+          "mean_angle_error_deg": 59.25,
+          "max_angle_error_deg": 67.87,
+          "mean_abs_length_error_px": 126.4,
+          "mean_point_error_px": 1237.5,
+          "max_point_error_px": 1441.6,
+          "permutation": [
+            1,
+            2,
+            0
+          ]
+        },
+        "far": {
+          "mean_angle_error_deg": 58.29,
+          "max_angle_error_deg": 75.82,
+          "mean_abs_length_error_px": 390.1,
+          "mean_point_error_px": 1207.9,
+          "max_point_error_px": 1463.2,
+          "permutation": [
+            2,
+            1,
+            0
+          ]
+        },
+        "swapped_mean_angle_error_deg": 7.85,
+        "swapped_one_edge_to_truth_far": {
+          "mean_angle_error_deg": 2.22,
+          "max_angle_error_deg": 3.97,
+          "mean_abs_length_error_px": 178.9,
+          "mean_point_error_px": 205.6,
+          "max_point_error_px": 273.6,
+          "permutation": [
+            1,
+            2,
+            0
+          ]
+        },
+        "swapped_far_to_truth_one_edge": {
+          "mean_angle_error_deg": 13.47,
+          "max_angle_error_deg": 17.16,
+          "mean_abs_length_error_px": 267.0,
+          "mean_point_error_px": 466.3,
+          "max_point_error_px": 494.7,
+          "permutation": [
+            0,
+            2,
+            1
+          ]
+        },
+        "candidate_debug": {
+          "approach": "procrustes_template_fit+mean3_vertex",
+          "affine_rms_px": 30.19,
+          "pnp_rms_px": 28.15,
+          "fit_residual_rms_px": 28.15,
+          "fit_residual_px2": 792.41,
+          "best_permutation": [
+            0,
+            2,
+            4,
+            1,
+            5,
+            3
+          ],
+          "best_template_keys": [
+            "h_x",
+            "h_y",
+            "h_z",
+            "h_xy",
+            "h_xz",
+            "h_yz"
+          ],
+          "bezel_detected_cube_center": [
+            608.2,
+            868.0
+          ],
+          "fit_derived_cube_center": [
+            636.1,
+            815.6
+          ],
+          "bezel_vs_fit_cube_center_offset_px": 59.3,
+          "camera_fx_px": 1312.0,
+          "camera_principal_point_px": [
+            600.0,
+            800.0
+          ],
+          "hexagon_centroid_vs_bezel_vertex_offset_px": 140.5,
+          "n_hexagon_anchors": 6,
+          "cube_center_source": "mean3_ensemble+image_refined",
+          "ensemble_n_candidates": 3,
+          "ensemble_shift_px": 62.0,
+          "phase_near_line_darkness": [
+            145.8,
+            155.3,
+            216.9
+          ],
+          "phase_far_line_darkness": [
+            128.8,
+            178.1,
+            156.5
+          ],
+          "phase_mean_near_darkness": 172.7,
+          "phase_mean_far_darkness": 154.5,
+          "phase_darkness_separation": 18.2,
+          "phase_axis_angle_errors_before_deg": [
+            0.0,
+            0.0,
+            171.5
+          ],
+          "phase_axis_angle_errors_after_deg": [
+            0.0,
+            49.6,
+            57.8
+          ],
+          "phase_check": "corrected_60deg_flip",
+          "junction_score_at_ensemble": 39.9,
+          "junction_score_gate": 200.0,
+          "junction_score_at_refined": 234.7,
+          "refinement_movement_px": 40.7,
+          "refinement": "applied"
+        }
+      }
+    ],
+    "43_A": [
+      {
+        "key": "43_A",
+        "side": "A",
+        "status": "scored",
+        "category": "PHASE_SWAPPED",
+        "vertex_error_px": 115.1,
+        "truth_vertex": [
+          1496.1,
+          1621.1
+        ],
+        "candidate_vertex": [
+          1548.8,
+          1723.4
+        ],
+        "one_edge": {
+          "mean_angle_error_deg": 58.63,
+          "max_angle_error_deg": 60.42,
+          "mean_abs_length_error_px": 40.7,
+          "mean_point_error_px": 1190.5,
+          "max_point_error_px": 1249.3,
+          "permutation": [
+            1,
+            2,
+            0
+          ]
+        },
+        "far": {
+          "mean_angle_error_deg": 59.11,
+          "max_angle_error_deg": 61.69,
+          "mean_abs_length_error_px": 240.9,
+          "mean_point_error_px": 1084.2,
+          "max_point_error_px": 1161.3,
+          "permutation": [
+            0,
+            2,
+            1
+          ]
+        },
+        "swapped_mean_angle_error_deg": 4.96,
+        "swapped_one_edge_to_truth_far": {
+          "mean_angle_error_deg": 5.67,
+          "max_angle_error_deg": 7.06,
+          "mean_abs_length_error_px": 238.6,
+          "mean_point_error_px": 244.6,
+          "max_point_error_px": 267.4,
+          "permutation": [
+            0,
+            1,
+            2
+          ]
+        },
+        "swapped_far_to_truth_one_edge": {
+          "mean_angle_error_deg": 4.25,
+          "max_angle_error_deg": 4.43,
+          "mean_abs_length_error_px": 106.2,
+          "mean_point_error_px": 121.3,
+          "max_point_error_px": 156.3,
+          "permutation": [
+            0,
+            2,
+            1
+          ]
+        },
+        "candidate_debug": {
+          "approach": "procrustes_template_fit+mean3_vertex",
+          "affine_rms_px": 52.73,
+          "pnp_rms_px": 8.08,
+          "fit_residual_rms_px": 8.08,
+          "fit_residual_px2": 65.27,
+          "best_permutation": [
+            2,
+            0,
+            4,
+            1,
+            3,
+            5
+          ],
+          "best_template_keys": [
+            "h_x",
+            "h_y",
+            "h_z",
+            "h_xy",
+            "h_xz",
+            "h_yz"
+          ],
+          "bezel_detected_cube_center": [
+            611.8,
+            689.3
+          ],
+          "fit_derived_cube_center": [
+            623.4,
+            678.3
+          ],
+          "bezel_vs_fit_cube_center_offset_px": 16.0,
+          "camera_fx_px": 1312.0,
+          "camera_principal_point_px": [
+            600.0,
+            800.0
+          ],
+          "hexagon_centroid_vs_bezel_vertex_offset_px": 6.2,
+          "n_hexagon_anchors": 6,
+          "cube_center_source": "mean3_ensemble",
+          "ensemble_n_candidates": 3,
+          "ensemble_shift_px": 10.4,
+          "phase_near_line_darkness": [
+            202.7,
+            185.2,
+            208.8
+          ],
+          "phase_far_line_darkness": [
+            108.8,
+            157.4,
+            169.7
+          ],
+          "phase_mean_near_darkness": 198.9,
+          "phase_mean_far_darkness": 145.3,
+          "phase_darkness_separation": 53.6,
+          "phase_axis_angle_errors_before_deg": [
+            61.5,
+            59.2,
+            59.1
+          ],
+          "phase_axis_angle_errors_after_deg": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "phase_check": "corrected_60deg_flip",
+          "junction_score_at_ensemble": 215.1,
+          "junction_score_gate": 200.0,
+          "refinement": "skipped_high_base_score"
+        }
+      }
+    ],
+    "43_B": [
+      {
+        "key": "43_B",
+        "side": "B",
+        "status": "scored",
+        "category": "PHASE_SWAPPED",
+        "vertex_error_px": 150.6,
+        "truth_vertex": [
+          1615.2,
+          2039.3
+        ],
+        "candidate_vertex": [
+          1544.3,
+          1906.4
+        ],
+        "one_edge": {
+          "mean_angle_error_deg": 58.51,
+          "max_angle_error_deg": 65.26,
+          "mean_abs_length_error_px": 155.9,
+          "mean_point_error_px": 1233.9,
+          "max_point_error_px": 1416.8,
+          "permutation": [
+            1,
+            2,
+            0
+          ]
+        },
+        "far": {
+          "mean_angle_error_deg": 58.61,
+          "max_angle_error_deg": 79.12,
+          "mean_abs_length_error_px": 327.3,
+          "mean_point_error_px": 1130.9,
+          "max_point_error_px": 1339.2,
+          "permutation": [
+            2,
+            1,
+            0
+          ]
+        },
+        "swapped_mean_angle_error_deg": 6.15,
+        "swapped_one_edge_to_truth_far": {
+          "mean_angle_error_deg": 3.63,
+          "max_angle_error_deg": 4.57,
+          "mean_abs_length_error_px": 250.3,
+          "mean_point_error_px": 270.7,
+          "max_point_error_px": 329.7,
+          "permutation": [
+            2,
+            0,
+            1
+          ]
+        },
+        "swapped_far_to_truth_one_edge": {
+          "mean_angle_error_deg": 8.67,
+          "max_angle_error_deg": 10.78,
+          "mean_abs_length_error_px": 139.3,
+          "mean_point_error_px": 351.2,
+          "max_point_error_px": 382.9,
+          "permutation": [
+            2,
+            1,
+            0
+          ]
+        },
+        "candidate_debug": {
+          "approach": "procrustes_template_fit+mean3_vertex",
+          "affine_rms_px": 56.06,
+          "pnp_rms_px": 9.8,
+          "fit_residual_rms_px": 9.8,
+          "fit_residual_px2": 96.1,
+          "best_permutation": [
+            0,
+            2,
+            4,
+            1,
+            5,
+            3
+          ],
+          "best_template_keys": [
+            "h_x",
+            "h_y",
+            "h_z",
+            "h_xy",
+            "h_xz",
+            "h_yz"
+          ],
+          "bezel_detected_cube_center": [
+            601.0,
+            750.7
+          ],
+          "fit_derived_cube_center": [
+            640.4,
+            767.1
+          ],
+          "bezel_vs_fit_cube_center_offset_px": 42.6,
+          "camera_fx_px": 1312.0,
+          "camera_principal_point_px": [
+            600.0,
+            800.0
+          ],
+          "hexagon_centroid_vs_bezel_vertex_offset_px": 4.0,
+          "n_hexagon_anchors": 6,
+          "cube_center_source": "mean3_ensemble",
+          "ensemble_n_candidates": 3,
+          "ensemble_shift_px": 29.5,
+          "phase_near_line_darkness": [
+            224.9,
+            114.5,
+            173.4
+          ],
+          "phase_far_line_darkness": [
+            140.7,
+            166.6,
+            142.6
+          ],
+          "phase_mean_near_darkness": 170.9,
+          "phase_mean_far_darkness": 150.0,
+          "phase_darkness_separation": 21.0,
+          "phase_axis_angle_errors_before_deg": [
+            53.0,
+            0.0,
+            63.0
+          ],
+          "phase_axis_angle_errors_after_deg": [
+            64.6,
+            105.6,
+            0.0
+          ],
+          "phase_check": "corrected_60deg_flip",
+          "junction_score_at_ensemble": 204.7,
+          "junction_score_gate": 200.0,
+          "refinement": "skipped_high_base_score"
+        }
+      }
+    ],
+    "45_A": [
+      {
+        "key": "45_A",
+        "side": "A",
+        "status": "scored",
+        "category": "PHASE_SWAPPED",
+        "vertex_error_px": 168.4,
+        "truth_vertex": [
+          1436.8,
+          2173.7
+        ],
+        "candidate_vertex": [
+          1559.9,
+          2058.8
+        ],
+        "one_edge": {
+          "mean_angle_error_deg": 59.68,
+          "max_angle_error_deg": 66.88,
+          "mean_abs_length_error_px": 74.1,
+          "mean_point_error_px": 1251.9,
+          "max_point_error_px": 1391.1,
+          "permutation": [
+            2,
+            1,
+            0
+          ]
+        },
+        "far": {
+          "mean_angle_error_deg": 59.49,
+          "max_angle_error_deg": 67.16,
+          "mean_abs_length_error_px": 262.7,
+          "mean_point_error_px": 1145.6,
+          "max_point_error_px": 1393.7,
+          "permutation": [
+            1,
+            2,
+            0
+          ]
+        },
+        "swapped_mean_angle_error_deg": 4.67,
+        "swapped_one_edge_to_truth_far": {
+          "mean_angle_error_deg": 3.34,
+          "max_angle_error_deg": 5.25,
+          "mean_abs_length_error_px": 239.6,
+          "mean_point_error_px": 257.4,
+          "max_point_error_px": 293.2,
+          "permutation": [
+            2,
+            1,
+            0
+          ]
+        },
+        "swapped_far_to_truth_one_edge": {
+          "mean_angle_error_deg": 6.0,
+          "max_angle_error_deg": 8.0,
+          "mean_abs_length_error_px": 155.6,
+          "mean_point_error_px": 321.9,
+          "max_point_error_px": 377.4,
+          "permutation": [
+            2,
+            0,
+            1
+          ]
+        },
+        "candidate_debug": {
+          "approach": "procrustes_template_fit+mean3_vertex",
+          "affine_rms_px": 56.63,
+          "pnp_rms_px": 14.49,
+          "fit_residual_rms_px": 14.49,
+          "fit_residual_px2": 209.84,
+          "best_permutation": [
+            0,
+            2,
+            4,
+            1,
+            5,
+            3
+          ],
+          "best_template_keys": [
+            "h_x",
+            "h_y",
+            "h_z",
+            "h_xy",
+            "h_xz",
+            "h_yz"
+          ],
+          "bezel_detected_cube_center": [
+            579.3,
+            765.0
+          ],
+          "fit_derived_cube_center": [
+            587.6,
+            812.1
+          ],
+          "bezel_vs_fit_cube_center_offset_px": 47.8,
+          "camera_fx_px": 1312.0,
+          "camera_principal_point_px": [
+            600.0,
+            800.0
+          ],
+          "hexagon_centroid_vs_bezel_vertex_offset_px": 2.7,
+          "n_hexagon_anchors": 6,
+          "cube_center_source": "mean3_ensemble+image_refined",
+          "ensemble_n_candidates": 3,
+          "ensemble_shift_px": 31.8,
+          "phase_near_line_darkness": [
+            221.8,
+            125.0,
+            140.5
+          ],
+          "phase_far_line_darkness": [
+            173.6,
+            168.8,
+            109.3
+          ],
+          "phase_mean_near_darkness": 162.4,
+          "phase_mean_far_darkness": 150.6,
+          "phase_darkness_separation": 11.9,
+          "phase_axis_angle_errors_before_deg": [
+            177.7,
+            0.0,
+            0.0
+          ],
+          "phase_axis_angle_errors_after_deg": [
+            52.6,
+            54.9,
+            0.0
+          ],
+          "phase_check": "corrected_60deg_flip",
+          "junction_score_at_ensemble": 58.6,
+          "junction_score_gate": 200.0,
+          "junction_score_at_refined": 211.6,
+          "refinement_movement_px": 51.2,
+          "refinement": "applied"
+        }
+      }
+    ],
+    "45_B": [
+      {
+        "key": "45_B",
+        "side": "B",
+        "status": "scored",
+        "category": "MARGINAL",
+        "vertex_error_px": 290.7,
+        "truth_vertex": [
+          1627.1,
+          2155.6
+        ],
+        "candidate_vertex": [
+          1426.3,
+          1945.4
+        ],
+        "one_edge": {
+          "mean_angle_error_deg": 7.25,
+          "max_angle_error_deg": 12.0,
+          "mean_abs_length_error_px": 350.2,
+          "mean_point_error_px": 341.0,
+          "max_point_error_px": 486.6,
+          "permutation": [
+            2,
+            0,
+            1
+          ]
+        },
+        "far": {
+          "mean_angle_error_deg": 18.17,
+          "max_angle_error_deg": 25.46,
+          "mean_abs_length_error_px": 275.9,
+          "mean_point_error_px": 231.8,
+          "max_point_error_px": 239.5,
+          "permutation": [
+            1,
+            0,
+            2
+          ]
+        },
+        "swapped_mean_angle_error_deg": 59.03,
+        "swapped_one_edge_to_truth_far": {
+          "mean_angle_error_deg": 58.82,
+          "max_angle_error_deg": 77.89,
+          "mean_abs_length_error_px": 257.9,
+          "mean_point_error_px": 1028.4,
+          "max_point_error_px": 1174.5,
+          "permutation": [
+            0,
+            1,
+            2
+          ]
+        },
+        "swapped_far_to_truth_one_edge": {
+          "mean_angle_error_deg": 59.24,
+          "max_angle_error_deg": 73.52,
+          "mean_abs_length_error_px": 363.1,
+          "mean_point_error_px": 1213.2,
+          "max_point_error_px": 1342.3,
+          "permutation": [
+            1,
+            0,
+            2
+          ]
+        },
+        "candidate_debug": {
+          "approach": "procrustes_template_fit+mean3_vertex",
+          "affine_rms_px": 65.68,
+          "pnp_rms_px": 11.14,
+          "fit_residual_rms_px": 11.14,
+          "fit_residual_px2": 124.01,
+          "best_permutation": [
+            5,
+            1,
+            3,
+            0,
+            4,
+            2
+          ],
+          "best_template_keys": [
+            "h_x",
+            "h_y",
+            "h_z",
+            "h_xy",
+            "h_xz",
+            "h_yz"
+          ],
+          "bezel_detected_cube_center": [
+            608.2,
+            744.3
+          ],
+          "fit_derived_cube_center": [
+            595.0,
+            718.5
+          ],
+          "bezel_vs_fit_cube_center_offset_px": 29.0,
+          "camera_fx_px": 1312.0,
+          "camera_principal_point_px": [
+            600.0,
+            800.0
+          ],
+          "hexagon_centroid_vs_bezel_vertex_offset_px": 11.7,
+          "n_hexagon_anchors": 6,
+          "cube_center_source": "mean3_ensemble+image_refined",
+          "ensemble_n_candidates": 3,
+          "ensemble_shift_px": 17.5,
+          "phase_near_line_darkness": [
+            123.2,
+            158.5,
+            202.0
+          ],
+          "phase_far_line_darkness": [
+            83.3,
+            69.9,
+            218.3
+          ],
+          "phase_mean_near_darkness": 161.3,
+          "phase_mean_far_darkness": 123.8,
+          "phase_darkness_separation": 37.4,
+          "phase_axis_angle_errors_before_deg": [
+            0.0,
+            59.0,
+            62.0
+          ],
+          "phase_axis_angle_errors_after_deg": [
+            61.3,
+            0.0,
+            115.8
+          ],
+          "phase_check": "corrected_60deg_flip",
+          "junction_score_at_ensemble": 22.6,
+          "junction_score_gate": 200.0,
+          "junction_score_at_refined": 177.7,
+          "refinement_movement_px": 56.1,
+          "refinement": "applied"
+        }
+      }
+    ]
+  }
+}

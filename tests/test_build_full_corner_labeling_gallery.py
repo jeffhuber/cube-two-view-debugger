@@ -19,6 +19,8 @@ from tools.corner_conventions import (
     VERTEX_NAME_BY_SIDE,
     YAW0_CORNER_FACELETS,
     capture_to_wca_yaw_map,
+    wca_facelets_for_label,
+    wca_facelets_for_point,
     wca_face_by_slot,
 )
 
@@ -106,6 +108,23 @@ def test_capture_slots_are_distinct_from_wca_faces_under_yaw():
     }
     assert wca_face_by_slot("A", 1) == {"upper": "U", "right": "B", "front": "R"}
     assert wca_face_by_slot("B", 1) == {"upper": "D", "right": "L", "front": "F"}
+
+
+def test_wca_facelets_for_point_tracks_physical_corner_under_yaw():
+    assert wca_facelets_for_point("Va", 0) == ("U9", "R1", "F3")
+    assert wca_facelets_for_point("Va", 1) == ("U3", "R3", "B1")
+    assert wca_facelets_for_point("Va", 2) == ("U1", "L1", "B3")
+    assert wca_facelets_for_point("Va", 3) == ("U7", "F1", "L3")
+
+    assert wca_facelets_for_point("Vb", 1) == ("D1", "L9", "F7")
+    assert wca_facelets_for_point("corner_0", 1) == ("U7", "F1", "L3")
+    assert wca_facelets_for_point("corner_3", 1) == ("D9", "R9", "B7")
+
+
+def test_wca_facelets_for_label_maps_fixture_vertex_by_side():
+    assert wca_facelets_for_label("A", "vertex", 0) == ("U9", "R1", "F3")
+    assert wca_facelets_for_label("B", "vertex", 0) == ("D7", "L7", "B9")
+    assert wca_facelets_for_label("A", "corner_1", 0) == ("U3", "R3", "B1")
 
 
 def test_full_image_display_never_crops():

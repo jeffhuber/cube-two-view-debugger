@@ -3,6 +3,8 @@
 Source matrix: `tests/fixtures/phase2b_recomputed_signals.json`
 Total rows: 140 (70 cases × ~2 runs each)
 
+> ⚠️ **Legacy-category disclaimer (PR #251).** The per-row category labels enumerated below (`CHIRALITY_MISS`, `CHIRALITY_FALSE_FLIP`, `MARGINAL`, etc.) are derived from `tests/fixtures/gcm_axis_ground_truth.json`, whose `near_*` fields PR #251 confirmed actually map to the **FAR** (face-diagonal) corner triplet, not the **ONE_EDGE** (cube-edge-adjacent) triplet the field names imply. Until these categories are regenerated against `tests/fixtures/full_corner_ground_truth.json` under the clarified convention (`tools/corner_conventions.py`), counts and meta-signal trade-offs below should be read as **provisional**. The matrix-feature signals (`junction_score_at_ensemble`, `phase_darkness_separation`, etc.) are real recognizer outputs and independent of the relabel; the meta-signal finding stands as a feature-level observation but its mapping to right-call vs wrong-call populations inherits the same provisional status.
+
 ## Per-category row counts
 
 | Category | Rows |

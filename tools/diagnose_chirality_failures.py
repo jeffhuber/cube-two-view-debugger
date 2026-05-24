@@ -7,6 +7,26 @@ catastrophic mode is chirality-dominated. This script characterizes
 WHY the chirality detector (`tools/global_cube_model.py:_resolve_near_far_phase`)
 is failing on those rows.
 
+LEGACY-CATEGORY DISCLAIMER (PR #251). The per-row category labels this
+diagnostic enumerates (`CHIRALITY_MISS`, `CHIRALITY_FALSE_FLIP`,
+`MARGINAL`, etc.) are derived from `tests/fixtures/gcm_axis_ground_truth.json`,
+which #251 flagged as legacy/provisional: its `near_*` fields actually
+map to the FAR (face-diagonal) corner triplet, not the ONE_EDGE
+(cube-edge-adjacent) triplet the field names imply. Until those
+categories are regenerated against `tests/fixtures/full_corner_ground_truth.json`
+under the clarified convention (`tools/corner_conventions.py`), the
+per-row category labels — and any counts derived from them — should
+be read as PROVISIONAL. The matrix-feature signals themselves
+(`junction_score_at_ensemble`, `phase_darkness_separation`, etc.) are
+real recognizer outputs and independent of the relabel; the meta-signal
+finding stands as a feature-level observation but its mapping to
+"right-call vs wrong-call" populations inherits the same provisional
+status as the underlying categories.
+
+When the chirality categories are regenerated from full-corner truth,
+re-run this diagnostic to confirm the failure-mode breakdown + meta-
+signal IQR finding still hold.
+
 The detector's decision tree:
   - sep = mean_near_line_darkness - mean_far_line_darkness  (signed)
   - |sep| < 10  → "ambiguous_no_correction"  (no decision)
@@ -307,6 +327,26 @@ def render_report(result: Dict[str, Any]) -> str:
     lines.append(
         f"Total rows: {result['total_rows']} "
         f"({result['total_cases']} cases × ~2 runs each)"
+    )
+    lines.append("")
+    lines.append(
+        "> ⚠️ **Legacy-category disclaimer (PR #251).** The per-row "
+        "category labels enumerated below (`CHIRALITY_MISS`, "
+        "`CHIRALITY_FALSE_FLIP`, `MARGINAL`, etc.) are derived from "
+        "`tests/fixtures/gcm_axis_ground_truth.json`, whose `near_*` "
+        "fields PR #251 confirmed actually map to the **FAR** "
+        "(face-diagonal) corner triplet, not the **ONE_EDGE** "
+        "(cube-edge-adjacent) triplet the field names imply. Until "
+        "these categories are regenerated against "
+        "`tests/fixtures/full_corner_ground_truth.json` under the "
+        "clarified convention (`tools/corner_conventions.py`), counts "
+        "and meta-signal trade-offs below should be read as "
+        "**provisional**. The matrix-feature signals "
+        "(`junction_score_at_ensemble`, `phase_darkness_separation`, "
+        "etc.) are real recognizer outputs and independent of the "
+        "relabel; the meta-signal finding stands as a feature-level "
+        "observation but its mapping to right-call vs wrong-call "
+        "populations inherits the same provisional status."
     )
     lines.append("")
 

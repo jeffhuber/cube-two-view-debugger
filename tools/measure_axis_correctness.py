@@ -138,11 +138,32 @@ def _candidate_image_roots(manifest: Dict[str, Any]) -> List[Path]:
 
 
 def _find_corpus_side(root: Path, set_id: str, side: str) -> Optional[Path]:
+    """Back-compat shim: returns the lex-first match (legacy callers
+    expect a single Path). New code should use `_find_corpus_sides`
+    (plural) to walk all candidates and SHA-filter."""
+    matches = _find_corpus_sides(root, set_id, side)
+    return matches[0] if matches else None
+
+
+def _find_corpus_sides(root: Path, set_id: str, side: str) -> List[Path]:
+    """All files in `root` matching the `Set {set_id} - {side} -*` or
+    `Set {set_id} - {side} *` patterns, in lex order.
+
+    Returning ALL matches (not just the lex-first) lets the SHA-aware
+    resolver in `_resolve_image_path` walk same-pattern duplicates
+    within a single corpus root and pick the one matching the
+    manifest's expected SHA. Codex P2 on PR #268 head a384965: the
+    previous singleton `_find_corpus_side` returned only the lex-first
+    file, so a stale duplicate sitting before the canonical one in
+    `sorted()` order silently skipped the row even though a SHA-
+    matching file was present in the same directory.
+    """
+    matches: List[Path] = []
     for pattern in (f"Set {set_id} - {side} -*", f"Set {set_id} - {side} *"):
-        candidates = sorted(p for p in root.glob(pattern) if p.is_file())
-        if candidates:
-            return candidates[0]
-    return None
+        for p in sorted(root.glob(pattern)):
+            if p.is_file() and p not in matches:
+                matches.append(p)
+    return matches
 
 
 def _resolve_image_path(
@@ -182,9 +203,12 @@ def _resolve_image_path(
         by_name = root / path.name
         if by_name.exists() and by_name not in candidates:
             candidates.append(by_name)
-        by_pattern = _find_corpus_side(root, set_id, side)
-        if by_pattern is not None and by_pattern not in candidates:
-            candidates.append(by_pattern)
+        # Walk ALL same-pattern matches in this root, not just the
+        # lex-first one (Codex P2 on PR #268 head a384965 — multiple
+        # `Set N - SIDE -*` files in one root broke SHA fallback).
+        for by_pattern in _find_corpus_sides(root, set_id, side):
+            if by_pattern not in candidates:
+                candidates.append(by_pattern)
     for cand in candidates:
         if _matches_sha(cand):
             return cand

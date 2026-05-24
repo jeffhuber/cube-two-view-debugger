@@ -306,6 +306,56 @@ def test_resolve_image_path_finds_sha_matching_candidate(tmp_path):
     )
 
 
+def test_resolve_image_path_walks_all_same_pattern_matches_in_one_root(tmp_path):
+    """Codex P2 on PR #268 head a384965: when a single corpus root
+    contains MULTIPLE files matching the same `Set N - SIDE -*`
+    pattern (e.g. a stale duplicate sitting lex-before the canonical
+    one), the resolver used to return only the lex-first via
+    `_find_corpus_side`. With expected_sha256 set, the SHA check then
+    rejected that lex-first file and skipped the row even though a
+    valid file sat in the same directory.
+
+    The fix uses `_find_corpus_sides` (plural) so all same-pattern
+    matches participate in the SHA filter."""
+    import hashlib
+    canonical_payload = b"correct canonical bytes"
+    stale_payload = b"wrong stale bytes"
+    expected_sha = hashlib.sha256(canonical_payload).hexdigest()
+
+    root = tmp_path / "Downloads"
+    root.mkdir()
+    # Two same-pattern files in the SAME directory. Lex-first is the
+    # stale one (alphabetical: "001" < "999").
+    stale = root / "Set 20 - A - white up IMG_001.JPG"
+    stale.write_bytes(stale_payload)
+    canonical = root / "Set 20 - A - white up IMG_999.JPG"
+    canonical.write_bytes(canonical_payload)
+
+    raw = "/Users/nobody/missing/Set 20 - A - white up IMG_999.JPG"
+    # Without SHA: returns lex-first by name match (legacy behavior).
+    # The raw path's filename matches `IMG_999`, so by_name=root/IMG_999
+    # exists and gets returned first.
+    assert (
+        m._resolve_image_path(raw, "20", "A", [root])
+        == canonical
+    )
+    # With expected SHA matching the canonical: still returns canonical.
+    assert (
+        m._resolve_image_path(raw, "20", "A", [root], expected_sha256=expected_sha)
+        == canonical
+    )
+    # Now flip: raw points at the STALE file's name, so by_name would
+    # return the stale one first. With expected_sha set, the resolver
+    # must walk past it to the canonical match within the same root.
+    raw_stale = "/Users/nobody/missing/Set 20 - A - white up IMG_001.JPG"
+    assert (
+        m._resolve_image_path(
+            raw_stale, "20", "A", [root], expected_sha256=expected_sha,
+        )
+        == canonical
+    )
+
+
 def test_resolve_image_path_returns_none_when_no_sha_match(tmp_path):
     """If no candidate matches the expected SHA, resolver returns None
     (caller skips the row instead of tracing wrong pixels)."""

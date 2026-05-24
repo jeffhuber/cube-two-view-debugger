@@ -89,6 +89,50 @@ def _display_path(path: Path) -> str:
         return str(resolved)
 
 
+def _candidate_image_roots(manifest: Dict[str, Any]) -> List[Path]:
+    roots: List[Path] = []
+    for pair in manifest.get("pairs", []):
+        for field in ("imageAPath", "imageBPath"):
+            raw = pair.get(field)
+            if not raw:
+                continue
+            parent = Path(raw).expanduser().parent
+            if parent not in roots:
+                roots.append(parent)
+    home_corpus = Path.home() / "cube-corpus"
+    if home_corpus not in roots:
+        roots.append(home_corpus)
+    return roots
+
+
+def _find_corpus_side(root: Path, set_id: str, side: str) -> Optional[Path]:
+    for pattern in (f"Set {set_id} - {side} -*", f"Set {set_id} - {side} *"):
+        candidates = sorted(p for p in root.glob(pattern) if p.is_file())
+        if candidates:
+            return candidates[0]
+    return None
+
+
+def _resolve_image_path(
+    raw_path: str,
+    set_id: str,
+    side: str,
+    image_roots: Sequence[Path],
+) -> Optional[Path]:
+    path = Path(raw_path).expanduser()
+    if path.exists():
+        return path
+
+    for root in image_roots:
+        by_name = root / path.name
+        if by_name.exists():
+            return by_name
+        by_pattern = _find_corpus_side(root, set_id, side)
+        if by_pattern is not None:
+            return by_pattern
+    return None
+
+
 # Partial visual-quality classification from the rectification-quality
 # follow-up dig. These labels are subjective, partial visual evidence;
 # the question is whether axis misfit is a cleaner predictor than
@@ -291,6 +335,7 @@ def run_all(
     set_index = {
         pair["setId"]: pair for pair in manifest.get("pairs", [])
     }
+    image_roots = _candidate_image_roots(manifest)
     records: List[Dict[str, Any]] = []
     skipped: List[Dict[str, str]] = []
     for key in sorted(truth):
@@ -306,9 +351,14 @@ def run_all(
         if not image_path_str:
             skipped.append({"key": key, "reason": "no image path"})
             continue
-        image_path = Path(image_path_str)
-        if not image_path.exists():
-            skipped.append({"key": key, "reason": f"image not found: {image_path}"})
+        image_path = _resolve_image_path(
+            str(image_path_str), set_id, side, image_roots
+        )
+        if image_path is None:
+            skipped.append({
+                "key": key,
+                "reason": f"image not found: {Path(str(image_path_str)).expanduser()}",
+            })
             continue
         record = evaluate_one_row(sess, key, image_path, row, max_image_dim)
         records.append(record)
@@ -473,6 +523,27 @@ def render_report(payload: Dict[str, Any]) -> str:
 # ---------------- CLI ----------------
 
 
+def _using_default_outputs(out_json: Path, out_md: Path) -> bool:
+    return (
+        out_json.resolve() == DEFAULT_OUT_JSON.resolve()
+        and out_md.resolve() == DEFAULT_OUT_MD.resolve()
+    )
+
+
+def _default_output_blocker(payload: Dict[str, Any]) -> Optional[str]:
+    rows = payload.get("per_row", [])
+    skipped = payload.get("skipped", [])
+    errored = [r for r in rows if r.get("status") != "traced"]
+    traced_count = sum(1 for r in rows if r.get("status") == "traced")
+    if traced_count == 0:
+        return "no rows were traced"
+    if skipped:
+        return f"{len(skipped)} row(s) were skipped"
+    if errored:
+        return f"{len(errored)} row(s) failed during tracing"
+    return None
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--truth", type=Path, default=DEFAULT_TRUTH)
@@ -492,6 +563,16 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         truth_path=args.truth,
         manifest_path=args.manifest,
     )
+    if _using_default_outputs(args.out_json, args.out_md):
+        blocker = _default_output_blocker(payload)
+        if blocker is not None:
+            print(
+                "refusing to overwrite default committed axis-correctness "
+                f"outputs because {blocker}; pass explicit --out-json and "
+                "--out-md for exploratory partial runs",
+                file=sys.stderr,
+            )
+            return 2
     args.out_json.parent.mkdir(parents=True, exist_ok=True)
     args.out_json.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     args.out_md.parent.mkdir(parents=True, exist_ok=True)

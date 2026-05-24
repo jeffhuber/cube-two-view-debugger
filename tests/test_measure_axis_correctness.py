@@ -214,6 +214,67 @@ def test_classify_face_for_row_returns_marginal_when_mixed():
     assert m._classify_face_for_row_visual("41_A", "corr_true") == "marginal"
 
 
+# ---------------- image path resolution / output safety ----------------
+
+
+def test_resolve_image_path_falls_back_to_corpus_root(tmp_path):
+    corpus_root = tmp_path / "cube-corpus"
+    corpus_root.mkdir()
+    image = corpus_root / "Set 20 - A - white up IMG_9999.JPG"
+    image.write_bytes(b"fake image")
+
+    stale_downloads_path = (
+        "/Users/someone/Downloads/Set 20 - A - white up IMG_9999.JPG"
+    )
+
+    assert (
+        m._resolve_image_path(stale_downloads_path, "20", "A", [corpus_root])
+        == image
+    )
+
+
+def test_default_output_blocker_rejects_empty_or_partial_trace():
+    assert m._default_output_blocker({
+        "per_row": [],
+        "skipped": [],
+    }) == "no rows were traced"
+    assert m._default_output_blocker({
+        "per_row": [{"status": "traced"}],
+        "skipped": [{"key": "20_A", "reason": "missing"}],
+    }) == "1 row(s) were skipped"
+    assert m._default_output_blocker({
+        "per_row": [{"status": "error"}],
+        "skipped": [],
+    }) == "no rows were traced"
+
+
+def test_main_refuses_default_output_when_trace_is_incomplete(monkeypatch, tmp_path):
+    truth_path = tmp_path / "truth.json"
+    manifest_path = tmp_path / "manifest.json"
+    truth_path.write_text("{}", encoding="utf-8")
+    manifest_path.write_text('{"pairs": []}', encoding="utf-8")
+
+    out_json = tmp_path / "axis.json"
+    out_md = tmp_path / "axis.md"
+    monkeypatch.setattr(m, "DEFAULT_OUT_JSON", out_json)
+    monkeypatch.setattr(m, "DEFAULT_OUT_MD", out_md)
+    monkeypatch.setattr(
+        m,
+        "run_all",
+        lambda *args, **kwargs: {
+            "schema": "axis_correctness_v1",
+            "source": {},
+            "per_row": [],
+            "skipped": [{"key": "20_A", "reason": "missing"}],
+        },
+    )
+
+    rc = m.main(["--truth", str(truth_path), "--manifest", str(manifest_path)])
+    assert rc == 2
+    assert not out_json.exists()
+    assert not out_md.exists()
+
+
 # ---------------- report rendering ----------------
 
 

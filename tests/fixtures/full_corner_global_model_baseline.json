@@ -4,7 +4,8 @@
     "model": "tools.global_cube_model.fit_global_cube_model",
     "truth": "tests/fixtures/full_corner_ground_truth.json",
     "runs_per_row": 1,
-    "max_image_dim": 1600
+    "max_image_dim": 1600,
+    "run_selection": "min(aligned_one_edge_far_mean_deg, swapped_phase_mean_deg)"
   },
   "summary": {
     "n_rows": 12,

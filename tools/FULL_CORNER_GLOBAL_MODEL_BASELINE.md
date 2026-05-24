@@ -47,7 +47,8 @@ canonical path is expanded.
 - Model: `tools.global_cube_model.fit_global_cube_model`
 - Truth: `tests/fixtures/full_corner_ground_truth.json`
 - Max processing image dimension: `1600` px
-- Image root: resolved from corpus manifests and `/Users/jhuber/cube-corpus`
+- Run selection: `min(aligned_one_edge_far_mean_deg, swapped_phase_mean_deg)`
+- Image root: resolved from corpus manifests (local corpus path not recorded)
 
 Rows marked `PHASE_SWAPPED` mean the model's one-edge triplet matches
 the human far/double-axis triplet, and vice versa. This is the canonical

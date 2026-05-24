@@ -8,7 +8,10 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from tools.baseline_full_corner_global_model import _scale_candidate  # noqa: E402
+from tools.baseline_full_corner_global_model import (  # noqa: E402
+    _scale_candidate,
+    _select_representative_row,
+)
 from tools.evaluate_full_corner_ground_truth import evaluate, score_case  # noqa: E402
 
 
@@ -132,3 +135,24 @@ def test_scale_candidate_returns_predictions_to_original_coords():
     assert scaled["far"][0] == [14.0, 16.0]
     assert scaled["visible_corners"]["h_xz"] == [18.0, 20.0]
     assert scaled["processing_scale"] == 0.5
+
+
+def test_baseline_representative_row_balances_aligned_and_swapped_phase_errors():
+    lucky_aligned_outlier = {
+        "key": "20_A",
+        "status": "scored",
+        "one_edge": {"mean_angle_error_deg": 4.0},
+        "far": {"mean_angle_error_deg": 50.0},
+        "swapped_mean_angle_error_deg": 40.0,
+    }
+    representative_swapped = {
+        "key": "20_A",
+        "status": "scored",
+        "one_edge": {"mean_angle_error_deg": 58.0},
+        "far": {"mean_angle_error_deg": 60.0},
+        "swapped_mean_angle_error_deg": 3.0,
+    }
+
+    selected = _select_representative_row([lucky_aligned_outlier, representative_swapped])
+
+    assert selected is representative_swapped

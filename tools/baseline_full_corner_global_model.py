@@ -143,7 +143,8 @@ def _render_report(payload: Dict[str, Any]) -> str:
         f"- Model: `{source.get('model', 'unknown')}`",
         f"- Truth: `{source.get('truth', '')}`",
         f"- Max processing image dimension: `{source.get('max_image_dim', '')}` px",
-        f"- Image root: resolved from corpus manifests and `/Users/jhuber/cube-corpus`",
+        f"- Run selection: `{source.get('run_selection', 'single run')}`",
+        "- Image root: resolved from corpus manifests (local corpus path not recorded)",
         "",
         "Rows marked `PHASE_SWAPPED` mean the model's one-edge triplet matches",
         "the human far/double-axis triplet, and vice versa. This is the canonical",
@@ -183,13 +184,7 @@ def run_baseline(truth: Dict[str, Any], runs: int, max_image_dim: int) -> Dict[s
         by_case[key] = rows
         print(f"  [{index}/{len(keys)}] {key}", file=sys.stderr, flush=True)
 
-    best_rows = []
-    for key, rows in by_case.items():
-        scored = [row for row in rows if row.get("status") == "scored"]
-        if scored:
-            best_rows.append(min(scored, key=lambda row: row["one_edge"]["mean_angle_error_deg"]))
-        else:
-            best_rows.append(rows[0])
+    best_rows = [_select_representative_row(rows) for rows in by_case.values()]
 
     return {
         "schema": "canonical_full_corner_global_model_baseline_v1",
@@ -198,11 +193,27 @@ def run_baseline(truth: Dict[str, Any], runs: int, max_image_dim: int) -> Dict[s
             "truth": DEFAULT_TRUTH_LABEL,
             "runs_per_row": runs,
             "max_image_dim": max_image_dim,
+            "run_selection": "min(aligned_one_edge_far_mean_deg, swapped_phase_mean_deg)",
         },
         "summary": summarize(best_rows),
         "by_case": {row["key"]: row for row in best_rows},
         "all_runs_by_case": by_case,
     }
+
+
+def _representative_run_error(row: Dict[str, Any]) -> float:
+    aligned_mean = (
+        float(row["one_edge"]["mean_angle_error_deg"])
+        + float(row["far"]["mean_angle_error_deg"])
+    ) / 2.0
+    return min(aligned_mean, float(row["swapped_mean_angle_error_deg"]))
+
+
+def _select_representative_row(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
+    scored = [row for row in rows if row.get("status") == "scored"]
+    if not scored:
+        return rows[0]
+    return min(scored, key=_representative_run_error)
 
 
 def main() -> int:

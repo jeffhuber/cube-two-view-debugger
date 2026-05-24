@@ -548,11 +548,35 @@ def render_report(payload: Dict[str, Any]) -> str:
 # ---------------- CLI ----------------
 
 
-def _using_default_outputs(out_json: Path, out_md: Path) -> bool:
-    return (
-        out_json.resolve() == DEFAULT_OUT_JSON.resolve()
-        and out_md.resolve() == DEFAULT_OUT_MD.resolve()
-    )
+def _is_default_path(path: Path, default: Path) -> bool:
+    """True iff `path` resolves to the committed-artifact default. Checked
+    per-path so a mixed run like `--out-md /tmp/x.md` (explicit) without
+    `--out-json` (still default) still protects the JSON side (Codex P2
+    #2 on PR #268, head 808fc10)."""
+    return path.resolve() == default.resolve()
+
+
+def _hypothesis_errors(rows: Sequence[Dict[str, Any]]) -> List[str]:
+    """Find rows where row-level status is 'traced' but a hypothesis-level
+    fit raised or returned None. `evaluate_one_row` records those as
+    `corr_true.error` / `corr_false.error` while leaving the row status
+    as 'traced' (so per-hypothesis failures don't taint a whole row's
+    other working hypothesis). The blocker MUST surface these — without
+    this scan, a default regeneration would happily write a trace with
+    missing axis metrics for the failed hypothesis (Codex P2 #1 on PR
+    #268, head 808fc10).
+
+    Returns a flat list of "row:tag" strings for diagnostics.
+    """
+    out: List[str] = []
+    for r in rows:
+        if r.get("status") != "traced":
+            continue
+        for tag in ("corr_true", "corr_false"):
+            outcome = r.get(tag)
+            if isinstance(outcome, dict) and "error" in outcome:
+                out.append(f"{r.get('key', '?')}:{tag}")
+    return out
 
 
 def _default_output_blocker(payload: Dict[str, Any]) -> Optional[str]:
@@ -566,6 +590,11 @@ def _default_output_blocker(payload: Dict[str, Any]) -> Optional[str]:
         return f"{len(skipped)} row(s) were skipped"
     if errored:
         return f"{len(errored)} row(s) failed during tracing"
+    hypo_errs = _hypothesis_errors(rows)
+    if hypo_errs:
+        sample = ", ".join(hypo_errs[:3])
+        suffix = f" (sample: {sample})" if hypo_errs else ""
+        return f"{len(hypo_errs)} hypothesis fit(s) failed{suffix}"
     return None
 
 
@@ -588,16 +617,27 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         truth_path=args.truth,
         manifest_path=args.manifest,
     )
-    if _using_default_outputs(args.out_json, args.out_md):
-        blocker = _default_output_blocker(payload)
-        if blocker is not None:
+    blocker = _default_output_blocker(payload)
+    blocked_paths: List[str] = []
+    if blocker is not None:
+        # Per-path: protect any output that resolves to a committed
+        # default. Explicit non-default paths are always written.
+        # Asymmetric --out-md /tmp/x.md without --out-json would still
+        # clobber the default JSON otherwise.
+        if _is_default_path(args.out_json, DEFAULT_OUT_JSON):
+            blocked_paths.append(str(args.out_json))
+        if _is_default_path(args.out_md, DEFAULT_OUT_MD):
+            blocked_paths.append(str(args.out_md))
+        if blocked_paths:
             print(
-                "refusing to overwrite default committed axis-correctness "
-                f"outputs because {blocker}; pass explicit --out-json and "
-                "--out-md for exploratory partial runs",
+                f"refusing to overwrite default committed axis-correctness "
+                f"output(s) because {blocker}; pass an explicit non-default "
+                f"path for each protected output to bypass.\n"
+                f"  protected: {', '.join(blocked_paths)}",
                 file=sys.stderr,
             )
             return 2
+    # No protected defaults blocked → write everything as before.
     args.out_json.parent.mkdir(parents=True, exist_ok=True)
     args.out_json.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     args.out_md.parent.mkdir(parents=True, exist_ok=True)

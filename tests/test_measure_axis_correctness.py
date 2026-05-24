@@ -248,6 +248,143 @@ def test_default_output_blocker_rejects_empty_or_partial_trace():
     }) == "no rows were traced"
 
 
+def test_default_output_blocker_catches_hypothesis_level_errors():
+    """Codex P2 #1 on PR #268 head 808fc10: when row-level status is
+    'traced' but a hypothesis-level fit raised or returned None,
+    `evaluate_one_row` records `corr_true.error` / `corr_false.error`
+    while leaving the row status 'traced'. Default regeneration would
+    happily overwrite the committed trace with missing axis metrics for
+    the failed hypothesis. The blocker must surface this."""
+    msg = m._default_output_blocker({
+        "per_row": [
+            {
+                "key": "20_A",
+                "status": "traced",
+                "corr_true": {"axis_match": {"total_misfit_deg": 12.3}},
+                "corr_false": {"error": "fit returned None"},
+            },
+        ],
+        "skipped": [],
+    })
+    assert msg is not None
+    assert "hypothesis fit" in msg
+    assert "20_A:corr_false" in msg
+
+
+def test_default_output_blocker_accepts_clean_traced_row_both_hypotheses():
+    """Negative case: a row where BOTH hypotheses have axis_match and
+    no error must NOT trip the blocker — that's the canonical clean
+    case the diagnostic was built to produce."""
+    msg = m._default_output_blocker({
+        "per_row": [
+            {
+                "key": "20_A",
+                "status": "traced",
+                "corr_true": {"axis_match": {"total_misfit_deg": 12.3}},
+                "corr_false": {"axis_match": {"total_misfit_deg": 14.1}},
+            },
+        ],
+        "skipped": [],
+    })
+    assert msg is None
+
+
+def test_main_per_path_guard_protects_asymmetric_default(monkeypatch, tmp_path):
+    """Codex P2 #2 on PR #268 head 808fc10: if `--out-md /tmp/x.md`
+    (explicit) is passed but `--out-json` is left at default, the
+    pre-fix check `_using_default_outputs` returned False because the
+    pair isn't both defaults, and the default JSON still got clobbered.
+    The per-path guard must protect EACH default path independently."""
+    truth_path = tmp_path / "truth.json"
+    manifest_path = tmp_path / "manifest.json"
+    truth_path.write_text("{}", encoding="utf-8")
+    manifest_path.write_text('{"pairs": []}', encoding="utf-8")
+
+    default_out_json = tmp_path / "committed_trace.json"
+    default_out_md = tmp_path / "committed_report.md"
+    default_out_json.write_text('{"sentinel": "do not overwrite"}', encoding="utf-8")
+    default_out_md.write_text("sentinel report — do not overwrite", encoding="utf-8")
+    monkeypatch.setattr(m, "DEFAULT_OUT_JSON", default_out_json)
+    monkeypatch.setattr(m, "DEFAULT_OUT_MD", default_out_md)
+
+    explicit_md = tmp_path / "exploratory.md"
+    monkeypatch.setattr(
+        m,
+        "run_all",
+        lambda *a, **k: {
+            "schema": "axis_correctness_v1",
+            "source": {},
+            "per_row": [],
+            "skipped": [{"key": "20_A", "reason": "missing"}],
+        },
+    )
+
+    rc = m.main([
+        "--truth", str(truth_path),
+        "--manifest", str(manifest_path),
+        "--out-md", str(explicit_md),
+        # NOTE: --out-json LEFT AT DEFAULT
+    ])
+    # Default JSON path must be protected even though --out-md is
+    # explicit. Exit code 2.
+    assert rc == 2
+    # Sentinel must be preserved.
+    assert default_out_json.read_text(encoding="utf-8") == (
+        '{"sentinel": "do not overwrite"}'
+    )
+    # Explicit md path must NOT have been written either (we exit before
+    # writing anything when any default-path guard fires).
+    assert not explicit_md.exists()
+    assert default_out_md.read_text(encoding="utf-8") == (
+        "sentinel report — do not overwrite"
+    )
+
+
+def test_main_per_path_guard_does_not_block_fully_explicit_paths(
+    monkeypatch, tmp_path,
+):
+    """Mirror of the asymmetric case: when BOTH --out-json and --out-md
+    are explicit (non-default), the guard must let the (potentially
+    partial) write through. This is the documented exploratory escape
+    hatch."""
+    truth_path = tmp_path / "truth.json"
+    manifest_path = tmp_path / "manifest.json"
+    truth_path.write_text("{}", encoding="utf-8")
+    manifest_path.write_text('{"pairs": []}', encoding="utf-8")
+
+    # Make the defaults exist + carry sentinels, but USE explicit paths
+    # for both outputs.
+    default_out_json = tmp_path / "committed_trace.json"
+    default_out_md = tmp_path / "committed_report.md"
+    default_out_json.write_text("{}", encoding="utf-8")
+    default_out_md.write_text("", encoding="utf-8")
+    monkeypatch.setattr(m, "DEFAULT_OUT_JSON", default_out_json)
+    monkeypatch.setattr(m, "DEFAULT_OUT_MD", default_out_md)
+
+    explicit_json = tmp_path / "explore.json"
+    explicit_md = tmp_path / "explore.md"
+    monkeypatch.setattr(
+        m,
+        "run_all",
+        lambda *a, **k: {
+            "schema": "axis_correctness_v1",
+            "source": {},
+            "per_row": [],
+            "skipped": [{"key": "20_A", "reason": "missing"}],
+        },
+    )
+
+    rc = m.main([
+        "--truth", str(truth_path),
+        "--manifest", str(manifest_path),
+        "--out-json", str(explicit_json),
+        "--out-md", str(explicit_md),
+    ])
+    assert rc == 0
+    assert explicit_json.exists()
+    assert explicit_md.exists()
+
+
 def test_main_refuses_default_output_when_trace_is_incomplete(monkeypatch, tmp_path):
     truth_path = tmp_path / "truth.json"
     manifest_path = tmp_path / "manifest.json"

@@ -46,7 +46,7 @@ def test_cycle_faces_shift_three_back_to_identity():
 
 
 def test_cycle_faces_works_on_b_side_faces():
-    """B side has visible faces (D, L, B) — sanity-check the cycle works
+    """B side has visible faces (D, B, L) — sanity-check the cycle works
     independently of the specific face labels."""
     assert p._cycle_faces(("D", "B", "L"), 1) == ("B", "L", "D")
 
@@ -438,7 +438,7 @@ def test_main_exits_nonzero_when_metric_not_sound_even_if_count_matches(
     assert "NOT sound" in md
 
 
-def test_main_exits_zero_only_on_sound_or_sound_soft(tmp_path: Path):
+def test_main_exits_zero_on_sound(tmp_path: Path):
     """Positive control for the prior test: the same shape of CLI call
     with a SOUND verdict exits 0."""
     rows = [_synthetic_row("A", 0), _synthetic_row("B", 0)]
@@ -509,17 +509,8 @@ def test_classify_verdict_sound_soft_when_a_row_ties():
     SOUND_SOFT (identity ties for first place, doesn't strictly win)."""
     row = _tied_row("A", 0)
     results = [p.evaluate_row(row)]
-    # On a tie, sorted picks the alphabetically-first key; "cyclic_120"
-    # comes before "identity" so identity is NOT the winning_hypothesis.
-    # But the margin is zero either way — the relevant assertion is
-    # that this scenario does NOT classify as VERDICT_SOUND.
     verdict = p.classify_verdict(results, expected_rows=1)
-    # SOUND requires identity to win strictly. A tie produces either
-    # SOUND_SOFT (if identity wins or ties) or NOT_SOUND (if identity
-    # loses) — either way, NOT VERDICT_SOUND.
-    assert verdict != p.VERDICT_SOUND, (
-        f"a zero-margin tie must not classify as SOUND; got {verdict}"
-    )
+    assert verdict == p.VERDICT_SOUND_SOFT
 
 
 def test_main_exits_nonzero_on_sound_soft_tie(tmp_path: Path):
@@ -539,3 +530,18 @@ def test_main_exits_nonzero_on_sound_soft_tie(tmp_path: Path):
         "tied row must fail the strict-preference precondition (Codex "
         f"P2 round 3 on PR #262); got rc={rc}"
     )
+
+
+def test_extract_center_errors_with_context_when_center_missing():
+    with pytest.raises(ValueError, match="slot 'upper'.*sticker_id=5"):
+        p._extract_center({
+            "slot": "upper",
+            "wca_face": "U",
+            "stickers": [
+                {
+                    "sticker_id": 1,
+                    "rgb": [255, 255, 255],
+                    "lab": [100.0, 0.0, 0.0],
+                },
+            ],
+        })

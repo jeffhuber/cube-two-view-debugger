@@ -52,9 +52,9 @@
         "L"
       ],
       "hypothesis_scores": {
-        "identity": 68.84,
-        "cyclic_120": 239.64,
-        "cyclic_240": 234.23
+        "identity": 67.91,
+        "cyclic_120": 240.06,
+        "cyclic_240": 234.68
       },
       "hypothesis_face_assignments": {
         "identity": [
@@ -74,10 +74,10 @@
         ]
       },
       "winning_hypothesis": "identity",
-      "winning_score": 68.84,
+      "winning_score": 67.91,
       "runner_up_hypothesis": "cyclic_240",
-      "runner_up_score": 234.23,
-      "margin": 165.39
+      "runner_up_score": 234.68,
+      "margin": 166.78
     },
     {
       "key": "38_A",

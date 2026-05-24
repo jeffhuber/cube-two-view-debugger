@@ -27,7 +27,7 @@ Lower score = better match to canonical colors. The metric is sound iff `identit
 | Row | Yaw | Oracle (upper,right,front) | id | cyc120 | cyc240 | Winner | Margin |
 |---|---:|---|---:|---:|---:|---|---:|
 | `20_A` | 0 | U,R,F | 65.7 | 198.3 | 217.0 | identity | 132.7 |
-| `20_B` | 0 | D,B,L | 68.8 | 239.6 | 234.2 | identity | 165.4 |
+| `20_B` | 0 | D,B,L | 67.9 | 240.1 | 234.7 | identity | 166.8 |
 | `38_A` | 1 | U,B,R | 60.3 | 196.3 | 223.3 | identity | 135.9 |
 | `38_B` | 1 | D,L,F | 55.4 | 192.2 | 200.6 | identity | 136.8 |
 | `40_A` | 0 | U,R,F | 58.7 | 215.0 | 235.5 | identity | 156.3 |

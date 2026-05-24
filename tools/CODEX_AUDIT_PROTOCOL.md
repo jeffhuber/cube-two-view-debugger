@@ -37,9 +37,18 @@ the lane was paused — Greptile took its bake-off slot.
 
 ## Components
 
-### 1. Reviewer CLI: `tools/codex_audit_pr.py`
+### 1. Reviewer wrapper + CLI: `tools/run_codex_audit_pr.sh`
 
-Reviews ONE PR end-to-end by invoking the locally-installed Codex CLI
+Use the wrapper, not `python3 tools/codex_audit_pr.py` directly. The
+wrapper selects a controlled Python interpreter for the audit script
+itself, avoiding macOS/system-Python certificate-store failures before
+the review even starts. It uses `<repo>/.venv/bin/python` when present,
+then `CODEX_AUDIT_PYTHON`, then a venv discovered from
+`CODEX_AUDIT_REPO_PATHS`; if none exists, it refuses to run rather than
+silently falling back to ambient `python3`.
+
+The underlying CLI reviews ONE PR end-to-end by invoking the
+locally-installed Codex CLI
 (`/Applications/Codex.app/Contents/Resources/codex` by default).
 Pipeline:
 
@@ -63,14 +72,23 @@ CLI usage:
 ```bash
 CODEX_AUDIT_REPO_PATHS=jeffhuber/cube-snap:/Users/jhuber/cube-snap,jeffhuber/cube-two-view-debugger:/Users/jhuber/cube-two-view-debugger \
 GITHUB_TOKEN=<bot_pat> \
-python3 tools/codex_audit_pr.py --repo jeffhuber/cube-two-view-debugger --pr 233
+tools/run_codex_audit_pr.sh --repo jeffhuber/cube-two-view-debugger --pr 233
 ```
 
 Add `--dry-run` to print the audit comment to stdout instead of posting.
 
 Exit codes: 0 (success), 1 (error), 2 (stale head — caller may requeue).
 
-### Python venv injection (Task #97 fix)
+### Python interpreter and venv injection
+
+There are two separate Python controls:
+
+1. `tools/run_codex_audit_pr.sh` controls the interpreter that runs the
+   audit script itself. This prevents GitHub API calls from failing
+   before review due to a broken ambient Python certificate store.
+2. `--venv-path` / `CODEX_AUDIT_VENV_PATH` controls the Python PATH
+   injected into the `codex review` subprocess inside the temporary PR
+   worktree.
 
 The `codex review` subprocess inherits the parent's PATH, which on a
 typical macOS dev box resolves to a system anaconda Python instead of
@@ -179,7 +197,7 @@ The CLI is invoked manually (no polling daemon yet). To audit a PR:
 
 ```bash
 CODEX_AUDIT_REPO_PATHS=... GITHUB_TOKEN=... \
-python3 tools/codex_audit_pr.py --repo OWNER/REPO --pr N
+tools/run_codex_audit_pr.sh --repo OWNER/REPO --pr N
 ```
 
 Apply `needs-codex-audit` as a marker label when a PR is ready for

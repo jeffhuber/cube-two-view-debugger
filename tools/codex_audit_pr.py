@@ -35,7 +35,11 @@ CLI usage:
       jeffhuber/cube-snap:/Users/jhuber/cube-snap,\\
       jeffhuber/cube-two-view-debugger:/Users/jhuber/cube-two-view-debugger \\
     GITHUB_TOKEN=... \\
-    python3 tools/codex_audit_pr.py --repo jeffhuber/cube-two-view-debugger --pr 233
+    tools/run_codex_audit_pr.sh --repo jeffhuber/cube-two-view-debugger --pr 233
+
+Prefer the wrapper over direct `python3 tools/codex_audit_pr.py`: it
+selects a controlled Python interpreter for this script and refuses to
+fall back silently to ambient system Python.
 
 Module usage (called by `codex_audit_bridge.py` if/when we add a polling
 daemon analogous to qwen_audit_bridge.py):

@@ -580,8 +580,9 @@ State machine (parallels Devin):
 - `codex-audit-blocked`: Codex found P0/P1/P2 blocker findings
 
 Trigger model: **manual CLI**, not auto-fired. Run
-`python3 tools/codex_audit_pr.py --repo OWNER/REPO --pr N`
-to audit one PR; the CLI posts a comment with the
+`tools/run_codex_audit_pr.sh --repo OWNER/REPO --pr N`
+to audit one PR; the wrapper uses a controlled Python interpreter
+instead of ambient `python3`, and the CLI posts a comment with the
 authoritative `<!-- CODEX_AUDIT_STATE: ... -->` trailer, and
 `tools/codex_audit_labeler.py` (fired by
 `.github/workflows/codex-audit-labeler.yml` on `issue_comment`)
@@ -595,6 +596,7 @@ Mirror invariant — these files MUST stay byte-identical across
 `cube-two-view-debugger` and `cube-snap`:
 
 - `tools/codex_audit_pr.py`
+- `tools/run_codex_audit_pr.sh`
 - `tools/codex_audit_labeler.py`
 - `tools/CODEX_AUDIT_PROTOCOL.md`
 - `.github/workflows/codex-audit-labeler.yml`

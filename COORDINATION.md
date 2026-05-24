@@ -133,6 +133,7 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 Newest first. Each entry: date, decision, one-line why.
 
+- **2026-05-24** — **Paid review lanes are final-confirmation gates, not iterative defaults.** Codex + Claude do normal iterative cross-review; apply `needs-greptile-audit` / `needs-devin-audit` only when a PR is stable and risk justifies paid review. Greptile is repo-configured to review only PRs carrying `needs-greptile-audit`.
 - **2026-05-22** — **Phase 1 finding (#225): cv-local face-quads are not geometrically consistent on 90% of the 58-case gallery.** cv-local extrapolates each 3×3 sticker grid to a face-quad independently with no shared-corner constraint, so the 3 face-quads on most cases don't form a single coherent projected cube. Direct implication: per-axis bearing error isn't the right cross-system metric. Higher-leverage implication: **the consistency check itself is a candidate Phase 2 trust signal** ("if the 3 face-quads don't share a vertex within X px, route to retake"). Falls directly out of the snapshot in `tests/fixtures/cv_local_baseline.json`. See `tools/PHASE_1_CV_LOCAL_BASELINE.md`.
 - **2026-05-22** — **Strategic shift: first-principles geometry is scaffolding around `cv-local`, not a replacement.** Per the Codex+Devin synthesis ("a plausible cube model is cheap; a trustworthy cube model is hard"), the global cube model is no longer on a near-term path to replace production. Its role: (a) trust layer / guardrails around cv-local, (b) labeled-training-data source for a future learned ranker, (c) benchmark harness. Three policy bars now gate all first-principles work — see `tools/FIRST_PRINCIPLES_RECOGNIZER_DESIGN.md`. Phased roadmap Phase 0–5 in `tools/STATE_OF_THE_WORLD.md`. Decision spine: `tools/POST_218_BASELINE_AND_TAXONOMY.md`.
 - **2026-05-22** — Chirality → near_far_phase rename (#221) — "chirality" is a misnomer for what is actually a 60° body-diagonal rotational degeneracy. See `tools/NEAR_FAR_PHASE_REPORT.md`.
@@ -164,7 +165,7 @@ Newest first. Each entry: date, decision, one-line why.
 
 ## Pre-PR Checklist
 
-Before opening any PR or requesting Devin audit:
+Before opening any PR or requesting paid audit:
 
 - [ ] `git fetch origin main && git rebase origin/main` — guarantees `mergeable: MERGEABLE`. Force-push with `--force-with-lease` after rebase.
 - [ ] `gh pr list --state open` — check no other in-flight PR touches the same files. If overlap, coordinate via this doc.
@@ -174,6 +175,7 @@ Before opening any PR or requesting Devin audit:
 - [ ] For Claude: tools-only, no `rubik_recognizer/*` edits. For Codex: production-only, no edits to Claude-owned auto-geometry / rectify / mask-path tooling listed above unless coordinated.
 - [ ] **Geometry regression gate.** If the PR touches `tools/global_cube_model.py` or any downstream behavior (cv-local recognition pipeline, mask-path, rectify), run `tools/baseline_post_218.py --diff tests/fixtures/post_218_baseline.json /tmp/your_new_baseline.json` and paste the row-level diff into the PR body. Aggregate metrics alone are insufficient — per Devin, "some changes improve averages while worsening critical rows." A PR that regresses any case from GOOD → catastrophic without offsetting wins is a merge blocker.
 - [ ] **Stacked PRs.** If your PR depends on an unmerged PR, branch from the parent's branch (not main) and document the stack in the PR body ("Stacks on #NNN"). Merge order is then forced and reviewers can audit the diff against the parent rather than against main.
+- [ ] **Paid review gate.** Do not apply `needs-devin-audit` or `needs-greptile-audit` during normal iteration. First get the PR stable with local validation plus Codex/Claude cross-review. Then apply a paid-review label only if the PR is production-risky, behavior-changing, cross-repo infrastructure, security/privacy-sensitive, or otherwise worth a final external check. Tiny docs/comment-only PRs normally need no paid review.
 - [ ] Update **In Flight** in this doc when opening the PR.
 - [ ] Update **Recently Shipped** when the PR merges.
 

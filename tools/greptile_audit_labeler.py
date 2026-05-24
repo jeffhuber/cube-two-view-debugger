@@ -21,9 +21,10 @@ This labeler reads the review's inline comments, counts P0/P1 badges
 
 ## Four defensive gates (per Codex's tightening — see GREPTILE_AUDIT_PROTOCOL.md)
 
-1. **Opt-in gate.** Only flip labels on PRs that currently carry the
-   `needs-greptile-audit` label. Greptile auto-fires on every PR — but
-   only PRs we explicitly opt in to the bake-off get labeled.
+1. **Opt-in gate.** Only flip labels on PRs that currently carry a
+   `greptile-audit-*` label. Repo-level Greptile config should also
+   restrict paid reviews to PRs carrying `needs-greptile-audit`; this
+   labeler fail-closes if an unexpected Greptile review appears anyway.
 
 2. **Stale-HEAD gate.** Compare `review.commit_id` (the SHA Greptile
    actually reviewed) to the PR's current head SHA. If they differ,
@@ -350,9 +351,9 @@ def resolve_label_decision(
     greptile_labels = {NEEDS_LABEL, DONE_LABEL, BLOCKED_LABEL}
     if not (pr_labels_set & greptile_labels):
         return None, (
-            f"PR does not carry any greptile-audit-* label — Greptile "
-            f"auto-reviews every PR but only opted-in PRs participate in "
-            f"the bake-off. Add `{NEEDS_LABEL}` to opt in."
+            f"PR does not carry any greptile-audit-* label — ignoring this "
+            f"review because paid Greptile audits are opt-in final checks. "
+            f"Add `{NEEDS_LABEL}` to opt in."
         )
 
     # Gate 2: stale-HEAD

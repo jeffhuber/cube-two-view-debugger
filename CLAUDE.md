@@ -449,6 +449,29 @@ round-trip Codex had just completed — and I asked "Want me to run
 it now?" instead of running it. The user (correctly) called out
 that the question itself is the cost.
 
+### Paid review budget policy
+
+Codex and Claude are the default iterative reviewers. Greptile and
+Devin are paid lanes; use them as final/confirmatory checks or
+specialist help, not as automatic reviewers for every micro-commit.
+
+Default loop:
+
+1. Author agent implements and runs focused local validation.
+2. The other coding agent reviews the stable PR (`needs-codex-audit`
+   for Codex, or an explicit Claude review request in-thread).
+3. Apply a paid-review label only after that loop is stable and the
+   PR risk justifies the cost.
+
+Apply `needs-devin-audit` when the desired paid help is broad
+implementation review, CI/debug triage, or "please fix comments" work.
+Apply `needs-greptile-audit` when the desired paid help is a final
+whole-repo/code-review sanity check. Do not apply either label during
+normal iteration. Tiny docs/comment-only PRs usually need no paid
+review; production behavior, recognizer geometry/scoring, auth/CI
+automation, cross-repo mirrored tooling, and artifact-writing tools
+usually do.
+
 ### Devin PR audit routing
 
 Use labels as a current-head-SHA state machine in
@@ -460,11 +483,12 @@ Use labels as a current-head-SHA state machine in
 - `devin-audit-blocked`: Devin found blockers or could not complete
   review.
 
-When a PR is ready for Devin review, apply `needs-devin-audit`. When
-adding commits after Devin has reviewed, remove stale
+When a PR is ready for final paid Devin review, apply
+`needs-devin-audit`. When adding commits after Devin has reviewed, remove stale
 `devin-audit-done` / `devin-audit-blocked` and apply
-`needs-devin-audit` again. Do not repeatedly ping Devin; the
-automation dedupes by repo + PR + head SHA.
+`needs-devin-audit` again only if another paid review is warranted.
+Do not repeatedly ping Devin; the automation dedupes by repo + PR +
+head SHA, but each new reviewed head can still consume paid review time.
 
 Keep merge authority separate from audit authority: Devin reviews
 only. Codex may merge after Devin is clear and Codex independently
@@ -588,13 +612,13 @@ with cube-snap's).
 
 Full protocol: `tools/CODEX_AUDIT_PROTOCOL.md`.
 
-### Greptile audit lane (informational only — strictly non-gating)
+### Greptile audit lane (paid final check — informational, non-gating)
 
-Greptile runs as the 3rd audit lane (SaaS GitHub App).
-**Live on cube-snap (free OSS tier); not installed on ctvd
-yet** — privacy tradeoff for the private repo is an explicit
-open decision. **Informational only — never gates merge or
-approval.** Greptile's verdict is visible in its own inline
+Greptile runs as a paid SaaS GitHub App. The root `greptile.json`
+config restricts automatic Greptile reviews to PRs carrying
+`needs-greptile-audit`; do not add that label until the PR is stable
+and worth a paid final review. **Informational only — never gates merge
+or approval.** Greptile's verdict is visible in its own inline
 review comments on the PR; the labeler is best-effort. If
 label-application fails (e.g. PAT permission gap), the labeler
 logs the verdict to workflow output and exits 0 so the
@@ -604,18 +628,19 @@ explicitly designed so this lane can never block merge.
 State machine (parallels Devin/Codex):
 
 - `needs-greptile-audit`: opt-in marker — labeler ONLY acts
-  on PRs carrying this (or a prior `done`/`blocked`). Greptile
-  auto-reviews every PR via the GitHub App, but only opted-in
-  PRs enter the bake-off.
+  on PRs carrying this (or a prior `done`/`blocked`). The root
+  `greptile.json` also uses this label as the review trigger, so adding
+  it can spend a paid review.
 - `greptile-audit-done`: zero P0/P1 findings on current head
 - `greptile-audit-blocked`: any P0/P1 finding on current head
 
-Trigger model: **auto** on every PR via the Greptile GitHub
-App. `.github/workflows/greptile-audit-labeler.yml` fires on
-`pull_request_review` events from `greptile-apps[bot]` (not
-`issue_comment` like the others). The labeler has four
-defensive gates: opt-in, stale-HEAD, severity-parse fail-closed,
-verdict.
+Trigger model: **label-filtered** via Greptile config:
+`greptile.json` contains `"labels": ["needs-greptile-audit"]` and
+`"triggerOnUpdates": false`. `.github/workflows/greptile-audit-labeler.yml`
+fires only after Greptile posts a `pull_request_review` event from
+`greptile-apps[bot]` (not `issue_comment` like the others). The
+labeler has four defensive gates: opt-in, stale-HEAD,
+severity-parse fail-closed, verdict.
 
 If the built-in workflow token can't label the bot's reviews,
 set repo secret `GREPTILE_AUDIT_LABEL_TOKEN` to a fine-grained

@@ -1,0 +1,3383 @@
+{
+  "schema": "pipeline_phase_parity_trace_v2_multi_run",
+  "source": {
+    "diagnostic": "tools/diagnose_pipeline_phase_parity.py",
+    "truth": "tests/fixtures/full_corner_ground_truth.json",
+    "max_image_dim": 1600,
+    "n_runs_per_row": 5
+  },
+  "summary": {
+    "n_total_rows": 12,
+    "n_traced_rows": 12,
+    "n_post_category_stable_rows": 8,
+    "n_delta_class_stable_rows": 0,
+    "n_fully_stable_rows": 0,
+    "n_stable_rows": 0,
+    "n_unstable_rows": 12,
+    "post_canonical_category_modal_counts": {
+      "PHASE_SWAPPED": 7,
+      "GOOD": 4,
+      "MARGINAL": 1
+    },
+    "phase_rewound_canonical_category_modal_counts": {
+      "GOOD": 6,
+      "PHASE_SWAPPED": 6
+    },
+    "phase_check_modal_counts": {
+      "corrected_60deg_flip": 5,
+      "correct": 3,
+      "ambiguous_no_correction": 4
+    },
+    "score_delta_class_modal_counts": {
+      "flip_hurt": 3,
+      "no_flip": 7,
+      "flip_helped": 2
+    }
+  },
+  "per_row": [
+    {
+      "key": "20_A",
+      "n_runs": 5,
+      "runs": [
+        {
+          "key": "20_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_hurt",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 65.1,
+            "phase_mean_near_darkness": 217.4,
+            "phase_mean_far_darkness": 152.3,
+            "phase_near_line_darkness": [
+              247.8,
+              219.4,
+              185.0
+            ],
+            "phase_far_line_darkness": [
+              187.9,
+              117.2,
+              151.8
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              62.4,
+              59.6,
+              0.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              118.1,
+              0.0,
+              59.1
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 96.2,
+            "one_edge_mean_ang_deg": 59.18,
+            "far_mean_ang_deg": 59.32,
+            "swapped_mean_ang_deg": 2.23
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 96.2,
+            "one_edge_mean_ang_deg": 2.23,
+            "far_mean_ang_deg": 3.51,
+            "swapped_mean_ang_deg": 59.24
+          },
+          "run_index": 0
+        },
+        {
+          "key": "20_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "PHASE_SWAPPED",
+          "phase_check": "correct",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "correct",
+            "phase_darkness_separation": -31.8,
+            "phase_mean_near_darkness": 170.4,
+            "phase_mean_far_darkness": 202.3,
+            "phase_near_line_darkness": [
+              175.3,
+              204.0,
+              132.0
+            ],
+            "phase_far_line_darkness": [
+              189.8,
+              173.0,
+              244.0
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              120.4,
+              59.4
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              59.4,
+              0.0,
+              59.2
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 117.1,
+            "one_edge_mean_ang_deg": 59.62,
+            "far_mean_ang_deg": 59.72,
+            "swapped_mean_ang_deg": 3.87
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 117.1,
+            "one_edge_mean_ang_deg": 59.62,
+            "far_mean_ang_deg": 59.72,
+            "swapped_mean_ang_deg": 3.87
+          },
+          "run_index": 1
+        },
+        {
+          "key": "20_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_hurt",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 61.7,
+            "phase_mean_near_darkness": 211.4,
+            "phase_mean_far_darkness": 149.8,
+            "phase_near_line_darkness": [
+              201.1,
+              202.5,
+              230.7
+            ],
+            "phase_far_line_darkness": [
+              146.7,
+              124.0,
+              178.6
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              65.0,
+              51.1,
+              63.8
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 37.1,
+            "one_edge_mean_ang_deg": 59.23,
+            "far_mean_ang_deg": 59.28,
+            "swapped_mean_ang_deg": 8.65
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 37.1,
+            "one_edge_mean_ang_deg": 1.84,
+            "far_mean_ang_deg": 3.88,
+            "swapped_mean_ang_deg": 59.16
+          },
+          "run_index": 2
+        },
+        {
+          "key": "20_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_hurt",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 69.3,
+            "phase_mean_near_darkness": 222.2,
+            "phase_mean_far_darkness": 152.8,
+            "phase_near_line_darkness": [
+              248.4,
+              200.3,
+              217.8
+            ],
+            "phase_far_line_darkness": [
+              131.6,
+              188.4,
+              138.5
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              69.4,
+              55.1,
+              55.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 48.9,
+            "one_edge_mean_ang_deg": 59.93,
+            "far_mean_ang_deg": 58.98,
+            "swapped_mean_ang_deg": 6.74
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 48.9,
+            "one_edge_mean_ang_deg": 0.46,
+            "far_mean_ang_deg": 3.63,
+            "swapped_mean_ang_deg": 59.86
+          },
+          "run_index": 3
+        },
+        {
+          "key": "20_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_hurt",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 48.1,
+            "phase_mean_near_darkness": 206.6,
+            "phase_mean_far_darkness": 158.5,
+            "phase_near_line_darkness": [
+              222.2,
+              199.6,
+              197.9
+            ],
+            "phase_far_line_darkness": [
+              129.9,
+              182.5,
+              163.1
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              55.5,
+              65.5,
+              58.9
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 104.5,
+            "one_edge_mean_ang_deg": 59.0,
+            "far_mean_ang_deg": 58.64,
+            "swapped_mean_ang_deg": 8.82
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 104.5,
+            "one_edge_mean_ang_deg": 3.61,
+            "far_mean_ang_deg": 7.33,
+            "swapped_mean_ang_deg": 58.94
+          },
+          "run_index": 4
+        }
+      ],
+      "summary": {
+        "n_traced": 5,
+        "n_errored": 0,
+        "post_canonical_category_dist": {
+          "PHASE_SWAPPED": 5
+        },
+        "phase_rewound_canonical_category_dist": {
+          "GOOD": 4,
+          "PHASE_SWAPPED": 1
+        },
+        "phase_check_dist": {
+          "corrected_60deg_flip": 4,
+          "correct": 1
+        },
+        "score_delta_class_dist": {
+          "flip_hurt": 4,
+          "no_flip": 1
+        },
+        "post_canonical_category_modal": "PHASE_SWAPPED",
+        "phase_rewound_canonical_category_modal": "GOOD",
+        "phase_check_modal": "corrected_60deg_flip",
+        "score_delta_class_modal": "flip_hurt",
+        "post_category_stable": true,
+        "delta_class_stable": false,
+        "fully_stable": false,
+        "is_stable": false
+      }
+    },
+    {
+      "key": "20_B",
+      "n_runs": 5,
+      "runs": [
+        {
+          "key": "20_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "PHASE_SWAPPED",
+          "phase_check": "correct",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "correct",
+            "phase_darkness_separation": -39.9,
+            "phase_mean_near_darkness": 179.8,
+            "phase_mean_far_darkness": 219.7,
+            "phase_near_line_darkness": [
+              150.1,
+              204.4,
+              184.8
+            ],
+            "phase_far_line_darkness": [
+              242.5,
+              212.6,
+              203.9
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              59.1,
+              0.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              59.4,
+              61.6,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 190.0,
+            "one_edge_mean_ang_deg": 59.36,
+            "far_mean_ang_deg": 59.95,
+            "swapped_mean_ang_deg": 5.38
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 190.0,
+            "one_edge_mean_ang_deg": 59.36,
+            "far_mean_ang_deg": 59.95,
+            "swapped_mean_ang_deg": 5.38
+          },
+          "run_index": 0
+        },
+        {
+          "key": "20_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "PHASE_SWAPPED",
+          "phase_check": "correct",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "correct",
+            "phase_darkness_separation": -37.5,
+            "phase_mean_near_darkness": 180.0,
+            "phase_mean_far_darkness": 217.4,
+            "phase_near_line_darkness": [
+              148.5,
+              206.7,
+              184.7
+            ],
+            "phase_far_line_darkness": [
+              241.3,
+              211.8,
+              199.2
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              61.3,
+              0.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              58.7,
+              60.0,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 191.7,
+            "one_edge_mean_ang_deg": 59.52,
+            "far_mean_ang_deg": 59.8,
+            "swapped_mean_ang_deg": 4.98
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 191.7,
+            "one_edge_mean_ang_deg": 59.52,
+            "far_mean_ang_deg": 59.8,
+            "swapped_mean_ang_deg": 4.98
+          },
+          "run_index": 1
+        },
+        {
+          "key": "20_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_hurt",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 65.5,
+            "phase_mean_near_darkness": 218.2,
+            "phase_mean_far_darkness": 152.7,
+            "phase_near_line_darkness": [
+              240.3,
+              210.6,
+              203.8
+            ],
+            "phase_far_line_darkness": [
+              132.1,
+              180.7,
+              145.3
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              65.9,
+              58.3,
+              55.5
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 159.7,
+            "one_edge_mean_ang_deg": 59.48,
+            "far_mean_ang_deg": 59.42,
+            "swapped_mean_ang_deg": 4.07
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 159.7,
+            "one_edge_mean_ang_deg": 2.58,
+            "far_mean_ang_deg": 2.3,
+            "swapped_mean_ang_deg": 59.62
+          },
+          "run_index": 2
+        },
+        {
+          "key": "20_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "PHASE_SWAPPED",
+          "phase_check": "correct",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "correct",
+            "phase_darkness_separation": -37.4,
+            "phase_mean_near_darkness": 177.9,
+            "phase_mean_far_darkness": 215.3,
+            "phase_near_line_darkness": [
+              148.2,
+              202.7,
+              182.8
+            ],
+            "phase_far_line_darkness": [
+              238.3,
+              209.0,
+              198.8
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              60.5,
+              0.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              59.2,
+              60.2,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 180.4,
+            "one_edge_mean_ang_deg": 59.36,
+            "far_mean_ang_deg": 59.96,
+            "swapped_mean_ang_deg": 4.64
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 180.4,
+            "one_edge_mean_ang_deg": 59.36,
+            "far_mean_ang_deg": 59.96,
+            "swapped_mean_ang_deg": 4.64
+          },
+          "run_index": 3
+        },
+        {
+          "key": "20_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_hurt",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 58.4,
+            "phase_mean_near_darkness": 212.9,
+            "phase_mean_far_darkness": 154.5,
+            "phase_near_line_darkness": [
+              190.6,
+              238.1,
+              210.2
+            ],
+            "phase_far_line_darkness": [
+              191.9,
+              136.3,
+              135.3
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              69.9,
+              54.3
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              55.5,
+              0.0,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 145.3,
+            "one_edge_mean_ang_deg": 58.94,
+            "far_mean_ang_deg": 58.79,
+            "swapped_mean_ang_deg": 5.54
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 145.3,
+            "one_edge_mean_ang_deg": 1.86,
+            "far_mean_ang_deg": 2.0,
+            "swapped_mean_ang_deg": 59.23
+          },
+          "run_index": 4
+        }
+      ],
+      "summary": {
+        "n_traced": 5,
+        "n_errored": 0,
+        "post_canonical_category_dist": {
+          "PHASE_SWAPPED": 5
+        },
+        "phase_rewound_canonical_category_dist": {
+          "PHASE_SWAPPED": 3,
+          "GOOD": 2
+        },
+        "phase_check_dist": {
+          "correct": 3,
+          "corrected_60deg_flip": 2
+        },
+        "score_delta_class_dist": {
+          "no_flip": 3,
+          "flip_hurt": 2
+        },
+        "post_canonical_category_modal": "PHASE_SWAPPED",
+        "phase_rewound_canonical_category_modal": "PHASE_SWAPPED",
+        "phase_check_modal": "correct",
+        "score_delta_class_modal": "no_flip",
+        "post_category_stable": true,
+        "delta_class_stable": false,
+        "fully_stable": false,
+        "is_stable": false
+      }
+    },
+    {
+      "key": "38_A",
+      "n_runs": 5,
+      "runs": [
+        {
+          "key": "38_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_hurt",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 30.4,
+            "phase_mean_near_darkness": 186.4,
+            "phase_mean_far_darkness": 156.0,
+            "phase_near_line_darkness": [
+              169.7,
+              243.9,
+              145.5
+            ],
+            "phase_far_line_darkness": [
+              154.4,
+              153.0,
+              160.6
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              68.5,
+              48.8,
+              0.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              0.0,
+              63.4
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 123.2,
+            "one_edge_mean_ang_deg": 58.46,
+            "far_mean_ang_deg": 59.68,
+            "swapped_mean_ang_deg": 8.01
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 123.2,
+            "one_edge_mean_ang_deg": 1.27,
+            "far_mean_ang_deg": 3.36,
+            "swapped_mean_ang_deg": 58.57
+          },
+          "run_index": 0
+        },
+        {
+          "key": "38_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_hurt",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 26.3,
+            "phase_mean_near_darkness": 178.7,
+            "phase_mean_far_darkness": 152.4,
+            "phase_near_line_darkness": [
+              155.9,
+              237.3,
+              142.9
+            ],
+            "phase_far_line_darkness": [
+              156.6,
+              153.1,
+              147.7
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              69.7,
+              52.3,
+              0.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              101.6,
+              0.0,
+              61.8
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 135.2,
+            "one_edge_mean_ang_deg": 59.81,
+            "far_mean_ang_deg": 58.74,
+            "swapped_mean_ang_deg": 7.68
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 135.2,
+            "one_edge_mean_ang_deg": 0.65,
+            "far_mean_ang_deg": 3.42,
+            "swapped_mean_ang_deg": 59.89
+          },
+          "run_index": 1
+        },
+        {
+          "key": "38_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_hurt",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 30.1,
+            "phase_mean_near_darkness": 182.4,
+            "phase_mean_far_darkness": 152.3,
+            "phase_near_line_darkness": [
+              244.5,
+              145.3,
+              157.4
+            ],
+            "phase_far_line_darkness": [
+              150.1,
+              147.0,
+              159.7
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              50.0,
+              0.0,
+              67.3
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              0.0,
+              61.9
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 125.9,
+            "one_edge_mean_ang_deg": 59.56,
+            "far_mean_ang_deg": 59.35,
+            "swapped_mean_ang_deg": 8.96
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 125.9,
+            "one_edge_mean_ang_deg": 0.62,
+            "far_mean_ang_deg": 3.31,
+            "swapped_mean_ang_deg": 59.66
+          },
+          "run_index": 2
+        },
+        {
+          "key": "38_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_hurt",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 31.7,
+            "phase_mean_near_darkness": 184.4,
+            "phase_mean_far_darkness": 152.8,
+            "phase_near_line_darkness": [
+              149.2,
+              243.9,
+              160.2
+            ],
+            "phase_far_line_darkness": [
+              145.3,
+              156.1,
+              156.8
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              49.6,
+              69.8
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              0.0,
+              160.9
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 124.5,
+            "one_edge_mean_ang_deg": 59.26,
+            "far_mean_ang_deg": 57.57,
+            "swapped_mean_ang_deg": 10.27
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 124.5,
+            "one_edge_mean_ang_deg": 1.09,
+            "far_mean_ang_deg": 3.79,
+            "swapped_mean_ang_deg": 59.11
+          },
+          "run_index": 3
+        },
+        {
+          "key": "38_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "PHASE_SWAPPED",
+          "phase_check": "correct",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "correct",
+            "phase_darkness_separation": -12.9,
+            "phase_mean_near_darkness": 161.2,
+            "phase_mean_far_darkness": 174.1,
+            "phase_near_line_darkness": [
+              153.1,
+              164.8,
+              165.5
+            ],
+            "phase_far_line_darkness": [
+              244.9,
+              128.3,
+              148.9
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              59.6,
+              59.7
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              60.6,
+              0.0,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 192.4,
+            "one_edge_mean_ang_deg": 59.92,
+            "far_mean_ang_deg": 59.91,
+            "swapped_mean_ang_deg": 5.3
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 192.4,
+            "one_edge_mean_ang_deg": 59.92,
+            "far_mean_ang_deg": 59.91,
+            "swapped_mean_ang_deg": 5.3
+          },
+          "run_index": 4
+        }
+      ],
+      "summary": {
+        "n_traced": 5,
+        "n_errored": 0,
+        "post_canonical_category_dist": {
+          "PHASE_SWAPPED": 5
+        },
+        "phase_rewound_canonical_category_dist": {
+          "GOOD": 4,
+          "PHASE_SWAPPED": 1
+        },
+        "phase_check_dist": {
+          "corrected_60deg_flip": 4,
+          "correct": 1
+        },
+        "score_delta_class_dist": {
+          "flip_hurt": 4,
+          "no_flip": 1
+        },
+        "post_canonical_category_modal": "PHASE_SWAPPED",
+        "phase_rewound_canonical_category_modal": "GOOD",
+        "phase_check_modal": "corrected_60deg_flip",
+        "score_delta_class_modal": "flip_hurt",
+        "post_category_stable": true,
+        "delta_class_stable": false,
+        "fully_stable": false,
+        "is_stable": false
+      }
+    },
+    {
+      "key": "38_B",
+      "n_runs": 5,
+      "runs": [
+        {
+          "key": "38_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "GOOD",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "correct",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "correct",
+            "phase_darkness_separation": -22.8,
+            "phase_mean_near_darkness": 143.3,
+            "phase_mean_far_darkness": 166.1,
+            "phase_near_line_darkness": [
+              100.9,
+              230.7,
+              98.4
+            ],
+            "phase_far_line_darkness": [
+              150.6,
+              150.9,
+              196.9
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              61.2,
+              0.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              63.7,
+              55.4
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 347.3,
+            "one_edge_mean_ang_deg": 1.84,
+            "far_mean_ang_deg": 2.62,
+            "swapped_mean_ang_deg": 59.77
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 347.3,
+            "one_edge_mean_ang_deg": 1.84,
+            "far_mean_ang_deg": 2.62,
+            "swapped_mean_ang_deg": 59.77
+          },
+          "run_index": 0
+        },
+        {
+          "key": "38_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "GOOD",
+          "phase_rewound_canonical_category": "PHASE_SWAPPED",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_helped",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 17.4,
+            "phase_mean_near_darkness": 179.6,
+            "phase_mean_far_darkness": 162.2,
+            "phase_near_line_darkness": [
+              152.4,
+              183.4,
+              202.9
+            ],
+            "phase_far_line_darkness": [
+              121.6,
+              233.0,
+              132.0
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              60.3,
+              62.8
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              57.0,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 213.2,
+            "one_edge_mean_ang_deg": 3.33,
+            "far_mean_ang_deg": 9.54,
+            "swapped_mean_ang_deg": 59.7
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 213.2,
+            "one_edge_mean_ang_deg": 59.87,
+            "far_mean_ang_deg": 59.5,
+            "swapped_mean_ang_deg": 4.85
+          },
+          "run_index": 1
+        },
+        {
+          "key": "38_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "GOOD",
+          "phase_rewound_canonical_category": "PHASE_SWAPPED",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_helped",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 24.5,
+            "phase_mean_near_darkness": 182.5,
+            "phase_mean_far_darkness": 158.0,
+            "phase_near_line_darkness": [
+              185.2,
+              161.1,
+              201.2
+            ],
+            "phase_far_line_darkness": [
+              120.1,
+              116.8,
+              237.0
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              59.9,
+              0.0,
+              62.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              0.0,
+              58.2
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 207.5,
+            "one_edge_mean_ang_deg": 2.51,
+            "far_mean_ang_deg": 6.59,
+            "swapped_mean_ang_deg": 59.69
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 207.5,
+            "one_edge_mean_ang_deg": 59.53,
+            "far_mean_ang_deg": 59.86,
+            "swapped_mean_ang_deg": 3.92
+          },
+          "run_index": 2
+        },
+        {
+          "key": "38_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "GOOD",
+          "phase_rewound_canonical_category": "PHASE_SWAPPED",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_helped",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 22.3,
+            "phase_mean_near_darkness": 179.9,
+            "phase_mean_far_darkness": 157.6,
+            "phase_near_line_darkness": [
+              160.6,
+              203.5,
+              175.7
+            ],
+            "phase_far_line_darkness": [
+              236.6,
+              115.6,
+              120.6
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              65.1,
+              57.7
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              57.6,
+              0.0,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 213.2,
+            "one_edge_mean_ang_deg": 2.84,
+            "far_mean_ang_deg": 7.31,
+            "swapped_mean_ang_deg": 59.53
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 213.2,
+            "one_edge_mean_ang_deg": 59.37,
+            "far_mean_ang_deg": 59.83,
+            "swapped_mean_ang_deg": 4.08
+          },
+          "run_index": 3
+        },
+        {
+          "key": "38_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "GOOD",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "correct",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "correct",
+            "phase_darkness_separation": -23.4,
+            "phase_mean_near_darkness": 142.2,
+            "phase_mean_far_darkness": 165.6,
+            "phase_near_line_darkness": [
+              224.9,
+              102.1,
+              99.6
+            ],
+            "phase_far_line_darkness": [
+              195.5,
+              154.6,
+              146.7
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              116.8,
+              54.4,
+              0.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              53.0,
+              61.5,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 131.3,
+            "one_edge_mean_ang_deg": 1.93,
+            "far_mean_ang_deg": 2.26,
+            "swapped_mean_ang_deg": 59.06
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 131.3,
+            "one_edge_mean_ang_deg": 1.93,
+            "far_mean_ang_deg": 2.26,
+            "swapped_mean_ang_deg": 59.06
+          },
+          "run_index": 4
+        }
+      ],
+      "summary": {
+        "n_traced": 5,
+        "n_errored": 0,
+        "post_canonical_category_dist": {
+          "GOOD": 5
+        },
+        "phase_rewound_canonical_category_dist": {
+          "GOOD": 2,
+          "PHASE_SWAPPED": 3
+        },
+        "phase_check_dist": {
+          "correct": 2,
+          "corrected_60deg_flip": 3
+        },
+        "score_delta_class_dist": {
+          "no_flip": 2,
+          "flip_helped": 3
+        },
+        "post_canonical_category_modal": "GOOD",
+        "phase_rewound_canonical_category_modal": "PHASE_SWAPPED",
+        "phase_check_modal": "corrected_60deg_flip",
+        "score_delta_class_modal": "flip_helped",
+        "post_category_stable": true,
+        "delta_class_stable": false,
+        "fully_stable": false,
+        "is_stable": false
+      }
+    },
+    {
+      "key": "40_A",
+      "n_runs": 5,
+      "runs": [
+        {
+          "key": "40_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "GOOD",
+          "phase_rewound_canonical_category": "PHASE_SWAPPED",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_helped",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 10.9,
+            "phase_mean_near_darkness": 183.7,
+            "phase_mean_far_darkness": 172.8,
+            "phase_near_line_darkness": [
+              162.5,
+              203.7,
+              184.9
+            ],
+            "phase_far_line_darkness": [
+              190.3,
+              127.4,
+              200.7
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              58.8,
+              121.2,
+              0.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              59.7,
+              0.0,
+              59.7
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 131.6,
+            "one_edge_mean_ang_deg": 4.21,
+            "far_mean_ang_deg": 11.6,
+            "swapped_mean_ang_deg": 58.97
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 131.6,
+            "one_edge_mean_ang_deg": 59.47,
+            "far_mean_ang_deg": 58.48,
+            "swapped_mean_ang_deg": 7.9
+          },
+          "run_index": 0
+        },
+        {
+          "key": "40_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "GOOD",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "ambiguous_no_correction",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "ambiguous_no_correction",
+            "phase_darkness_separation": -0.6,
+            "phase_mean_near_darkness": 166.3,
+            "phase_mean_far_darkness": 167.0,
+            "phase_near_line_darkness": [
+              125.0,
+              176.3,
+              197.7
+            ],
+            "phase_far_line_darkness": [
+              144.3,
+              190.5,
+              166.1
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              36.5,
+              60.4
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              92.4,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 21.2,
+            "one_edge_mean_ang_deg": 4.38,
+            "far_mean_ang_deg": 9.67,
+            "swapped_mean_ang_deg": 57.95
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 21.2,
+            "one_edge_mean_ang_deg": 4.38,
+            "far_mean_ang_deg": 9.67,
+            "swapped_mean_ang_deg": 57.95
+          },
+          "run_index": 1
+        },
+        {
+          "key": "40_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "GOOD",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "ambiguous_no_correction",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "ambiguous_no_correction",
+            "phase_darkness_separation": -2.1,
+            "phase_mean_near_darkness": 179.2,
+            "phase_mean_far_darkness": 181.3,
+            "phase_near_line_darkness": [
+              199.1,
+              136.0,
+              202.5
+            ],
+            "phase_far_line_darkness": [
+              177.4,
+              205.3,
+              161.1
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              58.9,
+              0.0,
+              58.9
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              120.3,
+              59.7
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 195.7,
+            "one_edge_mean_ang_deg": 4.96,
+            "far_mean_ang_deg": 10.84,
+            "swapped_mean_ang_deg": 59.51
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 195.7,
+            "one_edge_mean_ang_deg": 4.96,
+            "far_mean_ang_deg": 10.84,
+            "swapped_mean_ang_deg": 59.51
+          },
+          "run_index": 2
+        },
+        {
+          "key": "40_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "GOOD",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "ambiguous_no_correction",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "ambiguous_no_correction",
+            "phase_darkness_separation": -3.9,
+            "phase_mean_near_darkness": 170.4,
+            "phase_mean_far_darkness": 174.3,
+            "phase_near_line_darkness": [
+              198.0,
+              130.7,
+              182.6
+            ],
+            "phase_far_line_darkness": [
+              198.4,
+              166.0,
+              158.6
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              57.7,
+              0.0,
+              35.7
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              96.0,
+              0.0,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 113.4,
+            "one_edge_mean_ang_deg": 3.97,
+            "far_mean_ang_deg": 11.17,
+            "swapped_mean_ang_deg": 57.94
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 113.4,
+            "one_edge_mean_ang_deg": 3.97,
+            "far_mean_ang_deg": 11.17,
+            "swapped_mean_ang_deg": 57.94
+          },
+          "run_index": 3
+        },
+        {
+          "key": "40_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "GOOD",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "ambiguous_no_correction",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "ambiguous_no_correction",
+            "phase_darkness_separation": -4.3,
+            "phase_mean_near_darkness": 171.1,
+            "phase_mean_far_darkness": 175.4,
+            "phase_near_line_darkness": [
+              198.2,
+              127.8,
+              187.2
+            ],
+            "phase_far_line_darkness": [
+              182.5,
+              175.5,
+              168.1
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              58.6,
+              0.0,
+              40.8
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              85.0,
+              0.0,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 149.8,
+            "one_edge_mean_ang_deg": 2.07,
+            "far_mean_ang_deg": 5.67,
+            "swapped_mean_ang_deg": 58.78
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 149.8,
+            "one_edge_mean_ang_deg": 2.07,
+            "far_mean_ang_deg": 5.67,
+            "swapped_mean_ang_deg": 58.78
+          },
+          "run_index": 4
+        }
+      ],
+      "summary": {
+        "n_traced": 5,
+        "n_errored": 0,
+        "post_canonical_category_dist": {
+          "GOOD": 5
+        },
+        "phase_rewound_canonical_category_dist": {
+          "PHASE_SWAPPED": 1,
+          "GOOD": 4
+        },
+        "phase_check_dist": {
+          "corrected_60deg_flip": 1,
+          "ambiguous_no_correction": 4
+        },
+        "score_delta_class_dist": {
+          "flip_helped": 1,
+          "no_flip": 4
+        },
+        "post_canonical_category_modal": "GOOD",
+        "phase_rewound_canonical_category_modal": "GOOD",
+        "phase_check_modal": "ambiguous_no_correction",
+        "score_delta_class_modal": "no_flip",
+        "post_category_stable": true,
+        "delta_class_stable": false,
+        "fully_stable": false,
+        "is_stable": false
+      }
+    },
+    {
+      "key": "40_B",
+      "n_runs": 5,
+      "runs": [
+        {
+          "key": "40_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_hurt",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 15.0,
+            "phase_mean_near_darkness": 175.2,
+            "phase_mean_far_darkness": 160.2,
+            "phase_near_line_darkness": [
+              174.5,
+              176.7,
+              174.5
+            ],
+            "phase_far_line_darkness": [
+              138.1,
+              161.9,
+              180.6
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              61.3,
+              72.5
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              0.0,
+              163.6
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 92.1,
+            "one_edge_mean_ang_deg": 59.24,
+            "far_mean_ang_deg": 51.28,
+            "swapped_mean_ang_deg": 20.14
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 92.1,
+            "one_edge_mean_ang_deg": 3.53,
+            "far_mean_ang_deg": 7.3,
+            "swapped_mean_ang_deg": 58.87
+          },
+          "run_index": 0
+        },
+        {
+          "key": "40_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "PHASE_SWAPPED",
+          "phase_check": "ambiguous_no_correction",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "ambiguous_no_correction",
+            "phase_darkness_separation": -5.0,
+            "phase_mean_near_darkness": 187.4,
+            "phase_mean_far_darkness": 192.4,
+            "phase_near_line_darkness": [
+              196.2,
+              182.4,
+              183.5
+            ],
+            "phase_far_line_darkness": [
+              186.4,
+              193.0,
+              197.8
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              62.1,
+              0.0,
+              0.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              61.6,
+              56.3
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 464.8,
+            "one_edge_mean_ang_deg": 59.82,
+            "far_mean_ang_deg": 59.3,
+            "swapped_mean_ang_deg": 8.75
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 464.8,
+            "one_edge_mean_ang_deg": 59.82,
+            "far_mean_ang_deg": 59.3,
+            "swapped_mean_ang_deg": 8.75
+          },
+          "run_index": 1
+        },
+        {
+          "key": "40_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "PHASE_SWAPPED",
+          "phase_check": "ambiguous_no_correction",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "ambiguous_no_correction",
+            "phase_darkness_separation": -8.5,
+            "phase_mean_near_darkness": 184.9,
+            "phase_mean_far_darkness": 193.4,
+            "phase_near_line_darkness": [
+              171.6,
+              200.7,
+              182.4
+            ],
+            "phase_far_line_darkness": [
+              187.0,
+              199.6,
+              193.6
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              63.8,
+              0.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              56.6,
+              59.6
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 470.4,
+            "one_edge_mean_ang_deg": 59.73,
+            "far_mean_ang_deg": 59.71,
+            "swapped_mean_ang_deg": 8.68
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 470.4,
+            "one_edge_mean_ang_deg": 59.73,
+            "far_mean_ang_deg": 59.71,
+            "swapped_mean_ang_deg": 8.68
+          },
+          "run_index": 2
+        },
+        {
+          "key": "40_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_hurt",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 20.5,
+            "phase_mean_near_darkness": 188.2,
+            "phase_mean_far_darkness": 167.8,
+            "phase_near_line_darkness": [
+              168.4,
+              181.2,
+              215.2
+            ],
+            "phase_far_line_darkness": [
+              147.0,
+              173.4,
+              182.9
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              51.1,
+              77.1
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              0.0,
+              156.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 124.4,
+            "one_edge_mean_ang_deg": 59.4,
+            "far_mean_ang_deg": 55.56,
+            "swapped_mean_ang_deg": 11.18
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 124.4,
+            "one_edge_mean_ang_deg": 1.12,
+            "far_mean_ang_deg": 4.3,
+            "swapped_mean_ang_deg": 59.39
+          },
+          "run_index": 3
+        },
+        {
+          "key": "40_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "PHASE_SWAPPED",
+          "phase_check": "correct",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "correct",
+            "phase_darkness_separation": -14.0,
+            "phase_mean_near_darkness": 184.0,
+            "phase_mean_far_darkness": 198.0,
+            "phase_near_line_darkness": [
+              197.7,
+              170.3,
+              184.0
+            ],
+            "phase_far_line_darkness": [
+              192.4,
+              195.2,
+              206.3
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              63.7,
+              0.0,
+              0.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              61.7,
+              54.3
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 464.8,
+            "one_edge_mean_ang_deg": 59.99,
+            "far_mean_ang_deg": 59.58,
+            "swapped_mean_ang_deg": 10.63
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 464.8,
+            "one_edge_mean_ang_deg": 59.99,
+            "far_mean_ang_deg": 59.58,
+            "swapped_mean_ang_deg": 10.63
+          },
+          "run_index": 4
+        }
+      ],
+      "summary": {
+        "n_traced": 5,
+        "n_errored": 0,
+        "post_canonical_category_dist": {
+          "PHASE_SWAPPED": 5
+        },
+        "phase_rewound_canonical_category_dist": {
+          "GOOD": 2,
+          "PHASE_SWAPPED": 3
+        },
+        "phase_check_dist": {
+          "corrected_60deg_flip": 2,
+          "ambiguous_no_correction": 2,
+          "correct": 1
+        },
+        "score_delta_class_dist": {
+          "flip_hurt": 2,
+          "no_flip": 3
+        },
+        "post_canonical_category_modal": "PHASE_SWAPPED",
+        "phase_rewound_canonical_category_modal": "PHASE_SWAPPED",
+        "phase_check_modal": "ambiguous_no_correction",
+        "score_delta_class_modal": "no_flip",
+        "post_category_stable": true,
+        "delta_class_stable": false,
+        "fully_stable": false,
+        "is_stable": false
+      }
+    },
+    {
+      "key": "41_A",
+      "n_runs": 5,
+      "runs": [
+        {
+          "key": "41_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "GOOD",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "correct",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "correct",
+            "phase_darkness_separation": -35.3,
+            "phase_mean_near_darkness": 157.1,
+            "phase_mean_far_darkness": 192.4,
+            "phase_near_line_darkness": [
+              152.2,
+              206.1,
+              112.8
+            ],
+            "phase_far_line_darkness": [
+              210.3,
+              182.0,
+              184.8
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              117.2,
+              62.8
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              57.9,
+              0.0,
+              57.9
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 254.2,
+            "one_edge_mean_ang_deg": 4.26,
+            "far_mean_ang_deg": 10.35,
+            "swapped_mean_ang_deg": 59.44
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 254.2,
+            "one_edge_mean_ang_deg": 4.26,
+            "far_mean_ang_deg": 10.35,
+            "swapped_mean_ang_deg": 59.44
+          },
+          "run_index": 0
+        },
+        {
+          "key": "41_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "GOOD",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "correct",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "correct",
+            "phase_darkness_separation": -37.8,
+            "phase_mean_near_darkness": 157.0,
+            "phase_mean_far_darkness": 194.8,
+            "phase_near_line_darkness": [
+              112.6,
+              204.6,
+              153.8
+            ],
+            "phase_far_line_darkness": [
+              185.7,
+              187.2,
+              211.3
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              59.6,
+              0.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              61.3,
+              59.1
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 236.8,
+            "one_edge_mean_ang_deg": 4.43,
+            "far_mean_ang_deg": 10.18,
+            "swapped_mean_ang_deg": 59.44
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 236.8,
+            "one_edge_mean_ang_deg": 4.43,
+            "far_mean_ang_deg": 10.18,
+            "swapped_mean_ang_deg": 59.44
+          },
+          "run_index": 1
+        },
+        {
+          "key": "41_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "GOOD",
+          "phase_rewound_canonical_category": "PHASE_SWAPPED",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_helped",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 33.3,
+            "phase_mean_near_darkness": 192.6,
+            "phase_mean_far_darkness": 159.3,
+            "phase_near_line_darkness": [
+              186.9,
+              184.0,
+              206.9
+            ],
+            "phase_far_line_darkness": [
+              115.3,
+              153.8,
+              208.7
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              60.6,
+              0.0,
+              59.5
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              0.0,
+              59.8
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 174.8,
+            "one_edge_mean_ang_deg": 4.59,
+            "far_mean_ang_deg": 10.02,
+            "swapped_mean_ang_deg": 59.44
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 174.8,
+            "one_edge_mean_ang_deg": 59.52,
+            "far_mean_ang_deg": 59.35,
+            "swapped_mean_ang_deg": 7.3
+          },
+          "run_index": 2
+        },
+        {
+          "key": "41_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "MARGINAL",
+          "phase_rewound_canonical_category": "PHASE_SWAPPED",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_helped",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 13.6,
+            "phase_mean_near_darkness": 196.8,
+            "phase_mean_far_darkness": 183.2,
+            "phase_near_line_darkness": [
+              189.7,
+              213.4,
+              187.1
+            ],
+            "phase_far_line_darkness": [
+              173.3,
+              173.6,
+              202.6
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              55.6,
+              62.1,
+              0.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              0.0,
+              62.4
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 189.4,
+            "one_edge_mean_ang_deg": 7.64,
+            "far_mean_ang_deg": 18.73,
+            "swapped_mean_ang_deg": 59.49
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 189.4,
+            "one_edge_mean_ang_deg": 59.66,
+            "far_mean_ang_deg": 59.21,
+            "swapped_mean_ang_deg": 10.17
+          },
+          "run_index": 3
+        },
+        {
+          "key": "41_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "GOOD",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "correct",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "correct",
+            "phase_darkness_separation": -30.9,
+            "phase_mean_near_darkness": 161.0,
+            "phase_mean_far_darkness": 191.9,
+            "phase_near_line_darkness": [
+              114.0,
+              213.9,
+              155.1
+            ],
+            "phase_far_line_darkness": [
+              185.3,
+              179.1,
+              211.2
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              120.8,
+              59.2
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              59.2,
+              0.0,
+              59.2
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 226.9,
+            "one_edge_mean_ang_deg": 4.84,
+            "far_mean_ang_deg": 9.77,
+            "swapped_mean_ang_deg": 59.44
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 226.9,
+            "one_edge_mean_ang_deg": 4.84,
+            "far_mean_ang_deg": 9.77,
+            "swapped_mean_ang_deg": 59.44
+          },
+          "run_index": 4
+        }
+      ],
+      "summary": {
+        "n_traced": 5,
+        "n_errored": 0,
+        "post_canonical_category_dist": {
+          "GOOD": 4,
+          "MARGINAL": 1
+        },
+        "phase_rewound_canonical_category_dist": {
+          "GOOD": 3,
+          "PHASE_SWAPPED": 2
+        },
+        "phase_check_dist": {
+          "correct": 3,
+          "corrected_60deg_flip": 2
+        },
+        "score_delta_class_dist": {
+          "no_flip": 3,
+          "flip_helped": 2
+        },
+        "post_canonical_category_modal": "GOOD",
+        "phase_rewound_canonical_category_modal": "GOOD",
+        "phase_check_modal": "correct",
+        "score_delta_class_modal": "no_flip",
+        "post_category_stable": false,
+        "delta_class_stable": false,
+        "fully_stable": false,
+        "is_stable": false
+      }
+    },
+    {
+      "key": "41_B",
+      "n_runs": 5,
+      "runs": [
+        {
+          "key": "41_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "GOOD",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "ambiguous_no_correction",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "ambiguous_no_correction",
+            "phase_darkness_separation": -8.9,
+            "phase_mean_near_darkness": 150.4,
+            "phase_mean_far_darkness": 159.3,
+            "phase_near_line_darkness": [
+              148.4,
+              156.3,
+              146.4
+            ],
+            "phase_far_line_darkness": [
+              139.2,
+              179.4,
+              159.2
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              63.0,
+              0.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              46.1,
+              72.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 68.3,
+            "one_edge_mean_ang_deg": 2.18,
+            "far_mean_ang_deg": 4.95,
+            "swapped_mean_ang_deg": 59.47
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 68.3,
+            "one_edge_mean_ang_deg": 2.18,
+            "far_mean_ang_deg": 4.95,
+            "swapped_mean_ang_deg": 59.47
+          },
+          "run_index": 0
+        },
+        {
+          "key": "41_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "GOOD",
+          "phase_rewound_canonical_category": "PHASE_SWAPPED",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_helped",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 17.0,
+            "phase_mean_near_darkness": 176.0,
+            "phase_mean_far_darkness": 159.0,
+            "phase_near_line_darkness": [
+              183.6,
+              167.8,
+              176.7
+            ],
+            "phase_far_line_darkness": [
+              170.6,
+              150.5,
+              156.1
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              59.6,
+              0.0,
+              62.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              58.3,
+              0.0,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 144.7,
+            "one_edge_mean_ang_deg": 3.68,
+            "far_mean_ang_deg": 10.56,
+            "swapped_mean_ang_deg": 59.8
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 144.7,
+            "one_edge_mean_ang_deg": 59.99,
+            "far_mean_ang_deg": 59.63,
+            "swapped_mean_ang_deg": 5.63
+          },
+          "run_index": 1
+        },
+        {
+          "key": "41_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "GOOD",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "ambiguous_no_correction",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "ambiguous_no_correction",
+            "phase_darkness_separation": 1.7,
+            "phase_mean_near_darkness": 150.7,
+            "phase_mean_far_darkness": 149.0,
+            "phase_near_line_darkness": [
+              134.6,
+              150.0,
+              167.5
+            ],
+            "phase_far_line_darkness": [
+              132.9,
+              174.7,
+              139.5
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              58.5,
+              79.7
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              43.6,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 101.1,
+            "one_edge_mean_ang_deg": 2.63,
+            "far_mean_ang_deg": 8.59,
+            "swapped_mean_ang_deg": 59.11
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 101.1,
+            "one_edge_mean_ang_deg": 2.63,
+            "far_mean_ang_deg": 8.59,
+            "swapped_mean_ang_deg": 59.11
+          },
+          "run_index": 2
+        },
+        {
+          "key": "41_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "GOOD",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "correct",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "correct",
+            "phase_darkness_separation": -14.1,
+            "phase_mean_near_darkness": 140.2,
+            "phase_mean_far_darkness": 154.3,
+            "phase_near_line_darkness": [
+              119.3,
+              154.7,
+              146.7
+            ],
+            "phase_far_line_darkness": [
+              154.3,
+              181.1,
+              127.5
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              62.5,
+              0.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              69.3,
+              48.7,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 68.2,
+            "one_edge_mean_ang_deg": 1.17,
+            "far_mean_ang_deg": 3.12,
+            "swapped_mean_ang_deg": 59.09
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 68.2,
+            "one_edge_mean_ang_deg": 1.17,
+            "far_mean_ang_deg": 3.12,
+            "swapped_mean_ang_deg": 59.09
+          },
+          "run_index": 3
+        },
+        {
+          "key": "41_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "GOOD",
+          "phase_rewound_canonical_category": "PHASE_SWAPPED",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_helped",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 17.5,
+            "phase_mean_near_darkness": 174.0,
+            "phase_mean_far_darkness": 156.6,
+            "phase_near_line_darkness": [
+              171.8,
+              184.8,
+              165.5
+            ],
+            "phase_far_line_darkness": [
+              148.5,
+              157.9,
+              163.3
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              62.5,
+              60.3,
+              56.9
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 91.4,
+            "one_edge_mean_ang_deg": 5.02,
+            "far_mean_ang_deg": 13.58,
+            "swapped_mean_ang_deg": 59.47
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 91.4,
+            "one_edge_mean_ang_deg": 59.58,
+            "far_mean_ang_deg": 59.18,
+            "swapped_mean_ang_deg": 6.73
+          },
+          "run_index": 4
+        }
+      ],
+      "summary": {
+        "n_traced": 5,
+        "n_errored": 0,
+        "post_canonical_category_dist": {
+          "GOOD": 5
+        },
+        "phase_rewound_canonical_category_dist": {
+          "GOOD": 3,
+          "PHASE_SWAPPED": 2
+        },
+        "phase_check_dist": {
+          "ambiguous_no_correction": 2,
+          "corrected_60deg_flip": 2,
+          "correct": 1
+        },
+        "score_delta_class_dist": {
+          "no_flip": 3,
+          "flip_helped": 2
+        },
+        "post_canonical_category_modal": "GOOD",
+        "phase_rewound_canonical_category_modal": "GOOD",
+        "phase_check_modal": "ambiguous_no_correction",
+        "score_delta_class_modal": "no_flip",
+        "post_category_stable": true,
+        "delta_class_stable": false,
+        "fully_stable": false,
+        "is_stable": false
+      }
+    },
+    {
+      "key": "43_A",
+      "n_runs": 5,
+      "runs": [
+        {
+          "key": "43_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "PHASE_SWAPPED",
+          "phase_check": "correct",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "correct",
+            "phase_darkness_separation": -49.7,
+            "phase_mean_near_darkness": 165.7,
+            "phase_mean_far_darkness": 215.4,
+            "phase_near_line_darkness": [
+              187.7,
+              121.1,
+              188.2
+            ],
+            "phase_far_line_darkness": [
+              203.3,
+              225.4,
+              217.5
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              57.5,
+              61.1,
+              61.4
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 129.0,
+            "one_edge_mean_ang_deg": 59.7,
+            "far_mean_ang_deg": 59.3,
+            "swapped_mean_ang_deg": 5.13
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 129.0,
+            "one_edge_mean_ang_deg": 59.7,
+            "far_mean_ang_deg": 59.3,
+            "swapped_mean_ang_deg": 5.13
+          },
+          "run_index": 0
+        },
+        {
+          "key": "43_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_hurt",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 54.9,
+            "phase_mean_near_darkness": 202.2,
+            "phase_mean_far_darkness": 147.2,
+            "phase_near_line_darkness": [
+              198.1,
+              207.9,
+              200.6
+            ],
+            "phase_far_line_darkness": [
+              162.2,
+              108.4,
+              171.1
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              60.6,
+              60.3,
+              59.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 121.3,
+            "one_edge_mean_ang_deg": 59.02,
+            "far_mean_ang_deg": 59.48,
+            "swapped_mean_ang_deg": 5.13
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 121.3,
+            "one_edge_mean_ang_deg": 2.21,
+            "far_mean_ang_deg": 6.29,
+            "swapped_mean_ang_deg": 59.23
+          },
+          "run_index": 1
+        },
+        {
+          "key": "43_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "PHASE_SWAPPED",
+          "phase_check": "correct",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "correct",
+            "phase_darkness_separation": -42.6,
+            "phase_mean_near_darkness": 168.4,
+            "phase_mean_far_darkness": 211.0,
+            "phase_near_line_darkness": [
+              127.8,
+              194.1,
+              183.3
+            ],
+            "phase_far_line_darkness": [
+              222.2,
+              203.2,
+              207.6
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              62.2,
+              56.4,
+              61.4
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 136.6,
+            "one_edge_mean_ang_deg": 59.59,
+            "far_mean_ang_deg": 59.99,
+            "swapped_mean_ang_deg": 5.61
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 136.6,
+            "one_edge_mean_ang_deg": 59.59,
+            "far_mean_ang_deg": 59.99,
+            "swapped_mean_ang_deg": 5.61
+          },
+          "run_index": 2
+        },
+        {
+          "key": "43_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "PHASE_SWAPPED",
+          "phase_check": "correct",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "correct",
+            "phase_darkness_separation": -50.7,
+            "phase_mean_near_darkness": 163.6,
+            "phase_mean_far_darkness": 214.3,
+            "phase_near_line_darkness": [
+              119.6,
+              190.8,
+              180.4
+            ],
+            "phase_far_line_darkness": [
+              222.7,
+              203.7,
+              216.5
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              61.2,
+              56.5,
+              62.3
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 136.8,
+            "one_edge_mean_ang_deg": 59.66,
+            "far_mean_ang_deg": 59.28,
+            "swapped_mean_ang_deg": 5.95
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 136.8,
+            "one_edge_mean_ang_deg": 59.66,
+            "far_mean_ang_deg": 59.28,
+            "swapped_mean_ang_deg": 5.95
+          },
+          "run_index": 3
+        },
+        {
+          "key": "43_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_hurt",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 48.8,
+            "phase_mean_near_darkness": 196.2,
+            "phase_mean_far_darkness": 147.4,
+            "phase_near_line_darkness": [
+              191.3,
+              207.7,
+              189.6
+            ],
+            "phase_far_line_darkness": [
+              176.7,
+              116.7,
+              148.9
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              65.1,
+              54.7,
+              59.7
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 81.7,
+            "one_edge_mean_ang_deg": 59.03,
+            "far_mean_ang_deg": 58.78,
+            "swapped_mean_ang_deg": 5.08
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 81.7,
+            "one_edge_mean_ang_deg": 1.12,
+            "far_mean_ang_deg": 1.04,
+            "swapped_mean_ang_deg": 59.16
+          },
+          "run_index": 4
+        }
+      ],
+      "summary": {
+        "n_traced": 5,
+        "n_errored": 0,
+        "post_canonical_category_dist": {
+          "PHASE_SWAPPED": 5
+        },
+        "phase_rewound_canonical_category_dist": {
+          "PHASE_SWAPPED": 3,
+          "GOOD": 2
+        },
+        "phase_check_dist": {
+          "correct": 3,
+          "corrected_60deg_flip": 2
+        },
+        "score_delta_class_dist": {
+          "no_flip": 3,
+          "flip_hurt": 2
+        },
+        "post_canonical_category_modal": "PHASE_SWAPPED",
+        "phase_rewound_canonical_category_modal": "PHASE_SWAPPED",
+        "phase_check_modal": "correct",
+        "score_delta_class_modal": "no_flip",
+        "post_category_stable": true,
+        "delta_class_stable": false,
+        "fully_stable": false,
+        "is_stable": false
+      }
+    },
+    {
+      "key": "43_B",
+      "n_runs": 5,
+      "runs": [
+        {
+          "key": "43_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_hurt",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 10.2,
+            "phase_mean_near_darkness": 162.2,
+            "phase_mean_far_darkness": 152.1,
+            "phase_near_line_darkness": [
+              221.1,
+              155.0,
+              110.6
+            ],
+            "phase_far_line_darkness": [
+              160.3,
+              143.6,
+              152.3
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              51.0,
+              62.1,
+              0.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              168.9,
+              0.0,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 165.7,
+            "one_edge_mean_ang_deg": 59.37,
+            "far_mean_ang_deg": 59.0,
+            "swapped_mean_ang_deg": 8.37
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 165.7,
+            "one_edge_mean_ang_deg": 2.16,
+            "far_mean_ang_deg": 4.66,
+            "swapped_mean_ang_deg": 59.41
+          },
+          "run_index": 0
+        },
+        {
+          "key": "43_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_hurt",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 11.4,
+            "phase_mean_near_darkness": 165.2,
+            "phase_mean_far_darkness": 153.8,
+            "phase_near_line_darkness": [
+              154.1,
+              105.2,
+              236.3
+            ],
+            "phase_far_line_darkness": [
+              141.8,
+              173.0,
+              146.6
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              69.3,
+              0.0,
+              55.2
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              166.1,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 137.5,
+            "one_edge_mean_ang_deg": 59.71,
+            "far_mean_ang_deg": 59.55,
+            "swapped_mean_ang_deg": 4.55
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 137.5,
+            "one_edge_mean_ang_deg": 1.9,
+            "far_mean_ang_deg": 2.37,
+            "swapped_mean_ang_deg": 59.8
+          },
+          "run_index": 1
+        },
+        {
+          "key": "43_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "PHASE_SWAPPED",
+          "phase_check": "ambiguous_no_correction",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "ambiguous_no_correction",
+            "phase_darkness_separation": 0.3,
+            "phase_mean_near_darkness": 166.2,
+            "phase_mean_far_darkness": 165.9,
+            "phase_near_line_darkness": [
+              188.0,
+              152.9,
+              157.6
+            ],
+            "phase_far_line_darkness": [
+              183.8,
+              211.0,
+              102.8
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              116.8,
+              57.9,
+              0.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              57.0,
+              62.2,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 191.0,
+            "one_edge_mean_ang_deg": 59.89,
+            "far_mean_ang_deg": 59.99,
+            "swapped_mean_ang_deg": 7.27
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 191.0,
+            "one_edge_mean_ang_deg": 59.89,
+            "far_mean_ang_deg": 59.99,
+            "swapped_mean_ang_deg": 7.27
+          },
+          "run_index": 2
+        },
+        {
+          "key": "43_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "GOOD",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "ambiguous_no_correction",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "ambiguous_no_correction",
+            "phase_darkness_separation": 7.5,
+            "phase_mean_near_darkness": 159.2,
+            "phase_mean_far_darkness": 151.8,
+            "phase_near_line_darkness": [
+              220.2,
+              107.1,
+              150.4
+            ],
+            "phase_far_line_darkness": [
+              152.1,
+              164.1,
+              139.2
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              177.8,
+              0.0,
+              0.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              64.4,
+              62.2,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 31.3,
+            "one_edge_mean_ang_deg": 3.02,
+            "far_mean_ang_deg": 3.84,
+            "swapped_mean_ang_deg": 59.91
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 31.3,
+            "one_edge_mean_ang_deg": 3.02,
+            "far_mean_ang_deg": 3.84,
+            "swapped_mean_ang_deg": 59.91
+          },
+          "run_index": 3
+        },
+        {
+          "key": "43_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_hurt",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 10.3,
+            "phase_mean_near_darkness": 160.6,
+            "phase_mean_far_darkness": 150.2,
+            "phase_near_line_darkness": [
+              111.2,
+              219.5,
+              151.0
+            ],
+            "phase_far_line_darkness": [
+              140.3,
+              141.2,
+              169.2
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              55.2,
+              64.8
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              0.0,
+              170.6
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 157.1,
+            "one_edge_mean_ang_deg": 59.58,
+            "far_mean_ang_deg": 59.96,
+            "swapped_mean_ang_deg": 3.08
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 157.1,
+            "one_edge_mean_ang_deg": 2.67,
+            "far_mean_ang_deg": 2.03,
+            "swapped_mean_ang_deg": 59.66
+          },
+          "run_index": 4
+        }
+      ],
+      "summary": {
+        "n_traced": 5,
+        "n_errored": 0,
+        "post_canonical_category_dist": {
+          "PHASE_SWAPPED": 4,
+          "GOOD": 1
+        },
+        "phase_rewound_canonical_category_dist": {
+          "GOOD": 4,
+          "PHASE_SWAPPED": 1
+        },
+        "phase_check_dist": {
+          "corrected_60deg_flip": 3,
+          "ambiguous_no_correction": 2
+        },
+        "score_delta_class_dist": {
+          "flip_hurt": 3,
+          "no_flip": 2
+        },
+        "post_canonical_category_modal": "PHASE_SWAPPED",
+        "phase_rewound_canonical_category_modal": "GOOD",
+        "phase_check_modal": "corrected_60deg_flip",
+        "score_delta_class_modal": "flip_hurt",
+        "post_category_stable": false,
+        "delta_class_stable": false,
+        "fully_stable": false,
+        "is_stable": false
+      }
+    },
+    {
+      "key": "45_A",
+      "n_runs": 5,
+      "runs": [
+        {
+          "key": "45_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "PHASE_SWAPPED",
+          "phase_check": "ambiguous_no_correction",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "ambiguous_no_correction",
+            "phase_darkness_separation": 8.5,
+            "phase_mean_near_darkness": 166.5,
+            "phase_mean_far_darkness": 158.0,
+            "phase_near_line_darkness": [
+              187.0,
+              132.0,
+              180.5
+            ],
+            "phase_far_line_darkness": [
+              124.3,
+              214.7,
+              135.0
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              58.4,
+              0.0,
+              62.1
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              60.9,
+              115.4,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 200.1,
+            "one_edge_mean_ang_deg": 59.98,
+            "far_mean_ang_deg": 59.81,
+            "swapped_mean_ang_deg": 8.66
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 200.1,
+            "one_edge_mean_ang_deg": 59.98,
+            "far_mean_ang_deg": 59.81,
+            "swapped_mean_ang_deg": 8.66
+          },
+          "run_index": 0
+        },
+        {
+          "key": "45_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "PHASE_SWAPPED",
+          "phase_check": "ambiguous_no_correction",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "ambiguous_no_correction",
+            "phase_darkness_separation": 9.1,
+            "phase_mean_near_darkness": 166.5,
+            "phase_mean_far_darkness": 157.3,
+            "phase_near_line_darkness": [
+              131.6,
+              180.1,
+              187.7
+            ],
+            "phase_far_line_darkness": [
+              139.2,
+              121.4,
+              211.4
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              61.2,
+              58.7
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              0.0,
+              177.6
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 210.3,
+            "one_edge_mean_ang_deg": 59.86,
+            "far_mean_ang_deg": 59.68,
+            "swapped_mean_ang_deg": 8.86
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 210.3,
+            "one_edge_mean_ang_deg": 59.86,
+            "far_mean_ang_deg": 59.68,
+            "swapped_mean_ang_deg": 8.86
+          },
+          "run_index": 1
+        },
+        {
+          "key": "45_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "GOOD",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "ambiguous_no_correction",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "ambiguous_no_correction",
+            "phase_darkness_separation": 7.0,
+            "phase_mean_near_darkness": 154.1,
+            "phase_mean_far_darkness": 147.2,
+            "phase_near_line_darkness": [
+              128.1,
+              207.3,
+              127.0
+            ],
+            "phase_far_line_darkness": [
+              148.8,
+              110.4,
+              182.3
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              53.0,
+              124.7,
+              0.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              44.5,
+              0.0,
+              46.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 71.2,
+            "one_edge_mean_ang_deg": 0.59,
+            "far_mean_ang_deg": 5.83,
+            "swapped_mean_ang_deg": 59.48
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 71.2,
+            "one_edge_mean_ang_deg": 0.59,
+            "far_mean_ang_deg": 5.83,
+            "swapped_mean_ang_deg": 59.48
+          },
+          "run_index": 2
+        },
+        {
+          "key": "45_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "PHASE_SWAPPED",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_hurt",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 11.1,
+            "phase_mean_near_darkness": 164.5,
+            "phase_mean_far_darkness": 153.4,
+            "phase_near_line_darkness": [
+              218.7,
+              133.7,
+              141.2
+            ],
+            "phase_far_line_darkness": [
+              188.4,
+              153.2,
+              118.6
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              173.6,
+              0.0,
+              0.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              57.3,
+              51.5,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 131.4,
+            "one_edge_mean_ang_deg": 59.72,
+            "far_mean_ang_deg": 59.15,
+            "swapped_mean_ang_deg": 5.63
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 131.4,
+            "one_edge_mean_ang_deg": 2.89,
+            "far_mean_ang_deg": 3.65,
+            "swapped_mean_ang_deg": 59.84
+          },
+          "run_index": 3
+        },
+        {
+          "key": "45_A",
+          "side": "A",
+          "status": "traced",
+          "post_canonical_category": "MARGINAL",
+          "phase_rewound_canonical_category": "PHASE_SWAPPED",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_helped",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 12.6,
+            "phase_mean_near_darkness": 163.4,
+            "phase_mean_far_darkness": 150.8,
+            "phase_near_line_darkness": [
+              177.4,
+              125.2,
+              187.5
+            ],
+            "phase_far_line_darkness": [
+              135.5,
+              202.7,
+              114.2
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              59.4,
+              0.0,
+              59.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              179.7,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 222.2,
+            "one_edge_mean_ang_deg": 7.63,
+            "far_mean_ang_deg": 16.35,
+            "swapped_mean_ang_deg": 59.05
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 222.2,
+            "one_edge_mean_ang_deg": 59.14,
+            "far_mean_ang_deg": 58.97,
+            "swapped_mean_ang_deg": 9.68
+          },
+          "run_index": 4
+        }
+      ],
+      "summary": {
+        "n_traced": 5,
+        "n_errored": 0,
+        "post_canonical_category_dist": {
+          "PHASE_SWAPPED": 3,
+          "GOOD": 1,
+          "MARGINAL": 1
+        },
+        "phase_rewound_canonical_category_dist": {
+          "PHASE_SWAPPED": 3,
+          "GOOD": 2
+        },
+        "phase_check_dist": {
+          "ambiguous_no_correction": 3,
+          "corrected_60deg_flip": 2
+        },
+        "score_delta_class_dist": {
+          "no_flip": 3,
+          "flip_hurt": 1,
+          "flip_helped": 1
+        },
+        "post_canonical_category_modal": "PHASE_SWAPPED",
+        "phase_rewound_canonical_category_modal": "PHASE_SWAPPED",
+        "phase_check_modal": "ambiguous_no_correction",
+        "score_delta_class_modal": "no_flip",
+        "post_category_stable": false,
+        "delta_class_stable": false,
+        "fully_stable": false,
+        "is_stable": false
+      }
+    },
+    {
+      "key": "45_B",
+      "n_runs": 5,
+      "runs": [
+        {
+          "key": "45_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "MARGINAL",
+          "phase_rewound_canonical_category": "PHASE_SWAPPED",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_helped",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 29.4,
+            "phase_mean_near_darkness": 155.1,
+            "phase_mean_far_darkness": 125.7,
+            "phase_near_line_darkness": [
+              192.4,
+              120.5,
+              152.3
+            ],
+            "phase_far_line_darkness": [
+              66.2,
+              217.2,
+              93.7
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              60.8,
+              0.0,
+              60.8
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              60.5,
+              119.5,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 269.1,
+            "one_edge_mean_ang_deg": 6.35,
+            "far_mean_ang_deg": 14.16,
+            "swapped_mean_ang_deg": 59.78
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 269.1,
+            "one_edge_mean_ang_deg": 59.68,
+            "far_mean_ang_deg": 59.88,
+            "swapped_mean_ang_deg": 9.54
+          },
+          "run_index": 0
+        },
+        {
+          "key": "45_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "GOOD",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "correct",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "correct",
+            "phase_darkness_separation": -14.2,
+            "phase_mean_near_darkness": 135.2,
+            "phase_mean_far_darkness": 149.4,
+            "phase_near_line_darkness": [
+              89.3,
+              87.8,
+              228.7
+            ],
+            "phase_far_line_darkness": [
+              120.6,
+              176.4,
+              151.3
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              0.0,
+              172.7
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              49.3,
+              55.6
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 205.3,
+            "one_edge_mean_ang_deg": 2.91,
+            "far_mean_ang_deg": 4.23,
+            "swapped_mean_ang_deg": 58.76
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 205.3,
+            "one_edge_mean_ang_deg": 2.91,
+            "far_mean_ang_deg": 4.23,
+            "swapped_mean_ang_deg": 58.76
+          },
+          "run_index": 1
+        },
+        {
+          "key": "45_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "MARGINAL",
+          "phase_rewound_canonical_category": "PHASE_SWAPPED",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_helped",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 36.8,
+            "phase_mean_near_darkness": 158.0,
+            "phase_mean_far_darkness": 121.2,
+            "phase_near_line_darkness": [
+              148.1,
+              129.7,
+              196.3
+            ],
+            "phase_far_line_darkness": [
+              80.3,
+              217.9,
+              65.5
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              57.7,
+              0.0,
+              60.9
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              0.0,
+              176.7,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 294.6,
+            "one_edge_mean_ang_deg": 9.88,
+            "far_mean_ang_deg": 21.98,
+            "swapped_mean_ang_deg": 59.55
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 294.6,
+            "one_edge_mean_ang_deg": 59.21,
+            "far_mean_ang_deg": 59.61,
+            "swapped_mean_ang_deg": 12.49
+          },
+          "run_index": 2
+        },
+        {
+          "key": "45_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "MARGINAL",
+          "phase_rewound_canonical_category": "PHASE_SWAPPED",
+          "phase_check": "corrected_60deg_flip",
+          "flip_applied": true,
+          "score_delta_class": "flip_helped",
+          "phase_debug": {
+            "phase_check": "corrected_60deg_flip",
+            "phase_darkness_separation": 31.1,
+            "phase_mean_near_darkness": 158.0,
+            "phase_mean_far_darkness": 126.9,
+            "phase_near_line_darkness": [
+              124.6,
+              149.1,
+              200.2
+            ],
+            "phase_far_line_darkness": [
+              84.8,
+              72.2,
+              223.6
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              0.0,
+              58.0,
+              61.5
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              62.8,
+              0.0,
+              113.7
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 274.6,
+            "one_edge_mean_ang_deg": 9.33,
+            "far_mean_ang_deg": 19.87,
+            "swapped_mean_ang_deg": 58.47
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 274.6,
+            "one_edge_mean_ang_deg": 58.18,
+            "far_mean_ang_deg": 58.62,
+            "swapped_mean_ang_deg": 11.72
+          },
+          "run_index": 3
+        },
+        {
+          "key": "45_B",
+          "side": "B",
+          "status": "traced",
+          "post_canonical_category": "GOOD",
+          "phase_rewound_canonical_category": "GOOD",
+          "phase_check": "correct",
+          "flip_applied": false,
+          "score_delta_class": "no_flip",
+          "phase_debug": {
+            "phase_check": "correct",
+            "phase_darkness_separation": -22.5,
+            "phase_mean_near_darkness": 126.4,
+            "phase_mean_far_darkness": 148.9,
+            "phase_near_line_darkness": [
+              220.0,
+              70.9,
+              88.3
+            ],
+            "phase_far_line_darkness": [
+              170.3,
+              176.5,
+              100.0
+            ],
+            "phase_axis_angle_errors_before_deg": [
+              175.5,
+              0.0,
+              0.0
+            ],
+            "phase_axis_angle_errors_after_deg": [
+              39.0,
+              37.3,
+              0.0
+            ]
+          },
+          "post_score_summary": {
+            "vertex_error_px": 213.0,
+            "one_edge_mean_ang_deg": 1.4,
+            "far_mean_ang_deg": 9.44,
+            "swapped_mean_ang_deg": 59.32
+          },
+          "phase_rewound_score_summary": {
+            "vertex_error_px": 213.0,
+            "one_edge_mean_ang_deg": 1.4,
+            "far_mean_ang_deg": 9.44,
+            "swapped_mean_ang_deg": 59.32
+          },
+          "run_index": 4
+        }
+      ],
+      "summary": {
+        "n_traced": 5,
+        "n_errored": 0,
+        "post_canonical_category_dist": {
+          "MARGINAL": 3,
+          "GOOD": 2
+        },
+        "phase_rewound_canonical_category_dist": {
+          "PHASE_SWAPPED": 3,
+          "GOOD": 2
+        },
+        "phase_check_dist": {
+          "corrected_60deg_flip": 3,
+          "correct": 2
+        },
+        "score_delta_class_dist": {
+          "flip_helped": 3,
+          "no_flip": 2
+        },
+        "post_canonical_category_modal": "MARGINAL",
+        "phase_rewound_canonical_category_modal": "PHASE_SWAPPED",
+        "phase_check_modal": "corrected_60deg_flip",
+        "score_delta_class_modal": "flip_helped",
+        "post_category_stable": false,
+        "delta_class_stable": false,
+        "fully_stable": false,
+        "is_stable": false
+      }
+    }
+  ]
+}

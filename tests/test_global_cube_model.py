@@ -97,6 +97,44 @@ def test_fit_returns_none_when_scipy_missing_for_hull(monkeypatch):
     assert model is None
 
 
+def test_hull_candidate_points_use_boundary_not_full_interior():
+    """Hull extraction should be deterministic and avoid feeding every
+    interior mask pixel to ConvexHull."""
+    from tools.global_cube_model import _deterministic_hull_candidate_points
+
+    mask = np.zeros((300, 300), dtype=bool)
+    mask[50:250, 70:230] = True
+
+    pts = _deterministic_hull_candidate_points(mask)
+    assert 0 < len(pts) < int(mask.sum())
+    assert (70.0, 50.0) in {tuple(p) for p in pts}
+    assert (229.0, 249.0) in {tuple(p) for p in pts}
+
+
+def test_hull_from_mask_does_not_use_random_subsample(monkeypatch):
+    """Large masks previously used np.random.choice before ConvexHull,
+    which made downstream diagnostics run-to-run unstable. Pin that
+    path to fail if random sampling returns."""
+    pytest.importorskip("scipy.spatial")
+    from tools.global_cube_model import _hull_from_mask
+
+    def fail_if_called(*args, **kwargs):
+        raise AssertionError("hull sampling must be deterministic")
+
+    monkeypatch.setattr(np.random, "choice", fail_if_called)
+
+    mask = np.zeros((600, 600), dtype=bool)
+    mask[::2, ::2] = True
+
+    np.random.seed(1)
+    hull_1 = _hull_from_mask(mask)
+    np.random.seed(999)
+    hull_2 = _hull_from_mask(mask)
+
+    assert hull_1
+    assert hull_1 == hull_2
+
+
 def test_fit_runs_on_synthetic_iso_silhouette():
     """End-to-end smoke: build a synthetic hexagonal silhouette and a
     detection that roughly matches, verify the fitter runs and produces

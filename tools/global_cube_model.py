@@ -68,7 +68,7 @@ import math
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 
 import numpy as np
 
@@ -85,6 +85,7 @@ from tools.interior_bezel_detection import (  # noqa: E402
 Point = Tuple[float, float]
 Point3D = Tuple[float, float, float]
 Quad = Tuple[Point, Point, Point, Point]
+_MAX_HULL_POINTS = 50000
 
 
 # ---- Cube template ----
@@ -188,6 +189,63 @@ def derive_geometry(model: GlobalCubeModel) -> None:
 # ----------------- anchor point detection -----------------
 
 
+def _deterministic_hull_candidate_points(
+    mask: np.ndarray, max_points: int = _MAX_HULL_POINTS
+) -> np.ndarray:
+    """Return deterministic candidate points for mask convex hull.
+
+    ConvexHull only needs exterior points. For normal masks, boundary
+    extraction makes the candidate set small enough to use directly.
+    For unusually large or noisy boundaries, keep deterministic row and
+    column extremes before the final hard cap so repeated runs cannot
+    drift with NumPy's random state.
+    """
+    mask_bool = np.asarray(mask).astype(bool, copy=False)
+    if mask_bool.ndim != 2 or not mask_bool.any():
+        return np.empty((0, 2), dtype=np.float64)
+
+    ndimage = _try_import_scipy_ndimage()
+    if ndimage is not None:
+        eroded = ndimage.binary_erosion(mask_bool)
+        boundary = mask_bool & ~eroded
+    else:
+        padded = np.pad(mask_bool, 1, mode="constant", constant_values=False)
+        interior = (
+            mask_bool
+            & padded[:-2, 1:-1]
+            & padded[2:, 1:-1]
+            & padded[1:-1, :-2]
+            & padded[1:-1, 2:]
+        )
+        boundary = mask_bool & ~interior
+
+    ys, xs = np.where(boundary)
+    if len(xs) < 3:
+        ys, xs = np.where(mask_bool)
+    if len(xs) < 3:
+        return np.empty((0, 2), dtype=np.float64)
+
+    if len(xs) > max_points:
+        keep: Set[int] = set()
+        by_row = np.lexsort((xs, ys))
+        _, starts, counts = np.unique(ys[by_row], return_index=True, return_counts=True)
+        keep.update(int(by_row[i]) for i in starts)
+        keep.update(int(by_row[i + c - 1]) for i, c in zip(starts, counts))
+
+        by_col = np.lexsort((ys, xs))
+        _, starts, counts = np.unique(xs[by_col], return_index=True, return_counts=True)
+        keep.update(int(by_col[i]) for i in starts)
+        keep.update(int(by_col[i + c - 1]) for i, c in zip(starts, counts))
+
+        kept = np.array(sorted(keep), dtype=np.int64)
+        if len(kept) > max_points:
+            stride_idx = np.linspace(0, len(kept) - 1, max_points, dtype=np.int64)
+            kept = kept[stride_idx]
+        xs, ys = xs[kept], ys[kept]
+
+    return np.column_stack([xs, ys]).astype(np.float64)
+
+
 def _hull_from_mask(mask: np.ndarray) -> List[Point]:
     """Convex hull of nonzero pixels in mask. Returns CCW-ordered
     list of (x, y) vertices."""
@@ -195,14 +253,9 @@ def _hull_from_mask(mask: np.ndarray) -> List[Point]:
         from scipy.spatial import ConvexHull  # type: ignore
     except ImportError:
         return []
-    ys, xs = np.where(mask)
-    if len(xs) < 3:
+    pts = _deterministic_hull_candidate_points(mask)
+    if len(pts) < 3:
         return []
-    pts = np.column_stack([xs, ys]).astype(np.float64)
-    if len(pts) > 50000:
-        # Subsample for speed; hull is unchanged by subset of interior pts
-        idx = np.random.choice(len(pts), size=50000, replace=False)
-        pts = pts[idx]
     try:
         hull = ConvexHull(pts)
     except Exception:

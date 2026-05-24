@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Diagnostic: can center-color Lab distance choose the phase hypothesis?
+"""Diagnostic: can center-color/rectification evidence choose phase?
 
 This is the production-shaped follow-up to
 `tools/probe_center_color_phase_metric.py`.
@@ -10,7 +10,11 @@ have a much lower CIELAB distance to their canonical WCA face colors
 than either 120-degree cyclic relabeling.
 
 This tool asks the production-shaped question without changing
-production behavior:
+production behavior, but with an important limitation: under production
+geometry, center-color distance is contaminated by rectification quality.
+If a model's face quads are badly fit, the "center" patch may contain
+bezel or pixels from the wrong physical face, so a color win can mean
+"less broken rectification" rather than "correct near/far phase."
 
 1. Run the recognizer on each full-corner truth row with
    `apply_phase_correction=False` to get the raw unflipped hypothesis.
@@ -599,9 +603,11 @@ def render_report(payload: Dict[str, Any]) -> str:
     lines.append(
         "Diagnostic-only. Runs the raw unflipped global model, builds a "
         "detector-independent forced-flip hypothesis, and asks whether "
-        "center-color CIELAB distance would choose the better phase "
-        "hypothesis. Today's production detector is reported separately "
-        "as the baseline."
+        "center-color CIELAB distance would choose the better hypothesis. "
+        "Today's production detector is reported separately as the "
+        "baseline. Important: under production geometry this score is "
+        "also a rectification/fit-quality signal, not a pure phase "
+        "signal."
     )
     lines.append("")
     lines.append("## Aggregate")
@@ -660,7 +666,10 @@ def render_report(payload: Dict[str, Any]) -> str:
         "`production` is today's darkness-detector behavior. "
         "`center_choice_would_help` means the lower identity Lab score "
         "picked a candidate whose canonical geometry category is better "
-        "than production on that run."
+        "than production on that run. It does not prove the win was caused "
+        "by cleaner phase labeling; visual audits show some wins are "
+        "broken-fit avoidance wins where one candidate's rectified faces "
+        "are simply less distorted."
     )
     lines.append("")
     return "\n".join(lines)

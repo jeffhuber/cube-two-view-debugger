@@ -2,6 +2,8 @@
 
 Diagnostic-only. Tests whether sum-of-CIELAB-distance from canonical Rubik's colors, computed over the 3 visible center stickers per side, reliably prefers the **correct** face labeling (per oracle / human-validated yaw + corners) over the two alternative 120°-rotated hypotheses that the chirality detector might otherwise pick.
 
+> ⚠️ **Reproducibility note (Codex P3 on PR #262).** This report's numeric scores depend on the rectified-face oracle's output, which is pinned to the canonical environment per `tests/fixtures/corpus_manifest.json` (native ARM64 macOS, Python 3.12.13, numpy 2.3.5, Pillow 12.2.0). Other architectures or library versions can produce small (~0.1-1 dE) per-row score differences from BLAS path / image decode differences. The qualitative VERDICT is robust under these perturbations (margins are 100+ dE), but downstream parsing of exact numeric values should regenerate this report on the canonical environment via `python tools/build_oracle_rectified_faces.py && python tools/probe_center_color_phase_metric.py`.
+
 Each row has 3 hypothesis scores:
 
 - `identity` — slots labeled per oracle (the correct chirality assignment)

@@ -451,3 +451,91 @@ def test_main_exits_zero_only_on_sound_or_sound_soft(tmp_path: Path):
         "--expected-rows", "2",
     ])
     assert rc == 0
+
+
+# --------------- Codex P2 round 3 on PR #262: SOUND_SOFT is not passing ---------------
+
+
+def _tied_row(side: str, yaw: int):
+    """Build a synthetic row where all 3 center stickers have the SAME
+    Lab value — chosen so that all 3 hypotheses produce IDENTICAL
+    scores (margin == 0). This is the corner case where the metric
+    cannot strictly pick a phase."""
+    # Use the same midpoint Lab for all 3 centers: average of the 6
+    # canonical Lab values. With identical centers, every hypothesis
+    # sums the same per-canonical-target distances, just permuted —
+    # so totals are equal => 3-way tie.
+    from tools.corner_conventions import wca_face_by_slot
+    face_by_slot = wca_face_by_slot(side, yaw)
+    avg_lab = tuple(
+        sum(p._CANONICAL_LAB_BY_FACE[f][ch] for f in face_by_slot.values()) / 3
+        for ch in range(3)
+    )
+    faces = []
+    for slot in ("upper", "right", "front"):
+        face = face_by_slot[slot]
+        stickers = []
+        for sid in range(1, 10):
+            stickers.append({
+                "row": (sid - 1) // 3,
+                "col": (sid - 1) % 3,
+                "sticker_id": sid,
+                "facelet_id": f"{face}{sid}",
+                "rgb": [0, 0, 0],
+                "lab": list(avg_lab if sid == 5 else (0.0, 0.0, 0.0)),
+            })
+        faces.append({
+            "slot": slot, "wca_face": face, "stickers": stickers,
+        })
+    return {
+        "key": f"99_{side}",
+        "side": side,
+        "yaw_quarter_turns": yaw,
+        "faces": faces,
+    }
+
+
+def test_sound_soft_is_not_in_passing_verdicts():
+    """Codex P2 round 3 on PR #262: SOUND_SOFT (zero-margin tie on at
+    least one row) must NOT be in _VERDICTS_PASSING. A tie means the
+    metric cannot strictly pick a phase, which is the probe's whole
+    purpose. Passing CI on ties would validate a broken metric."""
+    assert p.VERDICT_SOUND_SOFT not in p._VERDICTS_PASSING
+    assert p.VERDICT_SOUND in p._VERDICTS_PASSING
+
+
+def test_classify_verdict_sound_soft_when_a_row_ties():
+    """A row where all 3 hypotheses score equally classifies as
+    SOUND_SOFT (identity ties for first place, doesn't strictly win)."""
+    row = _tied_row("A", 0)
+    results = [p.evaluate_row(row)]
+    # On a tie, sorted picks the alphabetically-first key; "cyclic_120"
+    # comes before "identity" so identity is NOT the winning_hypothesis.
+    # But the margin is zero either way — the relevant assertion is
+    # that this scenario does NOT classify as VERDICT_SOUND.
+    verdict = p.classify_verdict(results, expected_rows=1)
+    # SOUND requires identity to win strictly. A tie produces either
+    # SOUND_SOFT (if identity wins or ties) or NOT_SOUND (if identity
+    # loses) — either way, NOT VERDICT_SOUND.
+    assert verdict != p.VERDICT_SOUND, (
+        f"a zero-margin tie must not classify as SOUND; got {verdict}"
+    )
+
+
+def test_main_exits_nonzero_on_sound_soft_tie(tmp_path: Path):
+    """End-to-end: a row with all-tied hypotheses must exit non-zero.
+    The probe's documented precondition is strict preference; ties
+    fail that precondition."""
+    rows = [_tied_row("A", 0)]
+    index_path = tmp_path / "index.json"
+    index_path.write_text(json.dumps({"rows": rows}))
+    rc = p.main([
+        "--index", str(index_path),
+        "--out-json", str(tmp_path / "trace.json"),
+        "--out-md", str(tmp_path / "report.md"),
+        "--expected-rows", "1",
+    ])
+    assert rc == 2, (
+        "tied row must fail the strict-preference precondition (Codex "
+        f"P2 round 3 on PR #262); got rc={rc}"
+    )

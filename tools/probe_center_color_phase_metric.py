@@ -275,11 +275,14 @@ _MOSTLY_SOUND_MIN_SAMPLE = 5
 
 
 # Verdict classifications surfaced to callers. The CLI's exit code is
-# derived from these (only SOUND / SOUND_SOFT exit 0; everything else
-# is non-zero so shell pipelines fail closed). Codex P2 round 2 on
-# PR #262: previously the CLI exited 0 whenever the row-count
-# precondition was met, even if the verdict was MOSTLY_SOUND or
-# NOT_SOUND, letting CI think validation passed.
+# derived from these — ONLY VERDICT_SOUND exits 0. Anything else
+# (including SOUND_SOFT, where identity ties on at least one row)
+# exits non-zero so shell pipelines fail closed. Codex P2 round 3 on
+# PR #262: previously SOUND_SOFT was in _VERDICTS_PASSING, but a
+# zero-margin tie means the metric CANNOT strictly pick a phase on
+# that row — which is the documented precondition the probe exists
+# to validate. Passing CI on tied rows would validate a metric that
+# can't actually choose.
 VERDICT_SOUND = "sound"
 VERDICT_SOUND_SOFT = "sound_soft"
 VERDICT_MOSTLY_SOUND = "mostly_sound"
@@ -287,7 +290,7 @@ VERDICT_NOT_SOUND = "not_sound"
 VERDICT_INCOMPLETE_EMPTY = "incomplete_empty"
 VERDICT_INCOMPLETE_PARTIAL = "incomplete_partial"
 
-_VERDICTS_PASSING = frozenset({VERDICT_SOUND, VERDICT_SOUND_SOFT})
+_VERDICTS_PASSING = frozenset({VERDICT_SOUND})
 
 
 def classify_verdict(
@@ -345,6 +348,22 @@ def render_report(
         "labeling (per oracle / human-validated yaw + corners) over "
         "the two alternative 120°-rotated hypotheses that the chirality "
         "detector might otherwise pick."
+    )
+    lines.append("")
+    lines.append(
+        "> ⚠️ **Reproducibility note (Codex P3 on PR #262).** This "
+        "report's numeric scores depend on the rectified-face oracle's "
+        "output, which is pinned to the canonical environment per "
+        "`tests/fixtures/corpus_manifest.json` (native ARM64 macOS, "
+        "Python 3.12.13, numpy 2.3.5, Pillow 12.2.0). Other "
+        "architectures or library versions can produce small (~0.1-1 "
+        "dE) per-row score differences from BLAS path / image decode "
+        "differences. The qualitative VERDICT is robust under these "
+        "perturbations (margins are 100+ dE), but downstream parsing "
+        "of exact numeric values should regenerate this report on the "
+        "canonical environment via "
+        "`python tools/build_oracle_rectified_faces.py && "
+        "python tools/probe_center_color_phase_metric.py`."
     )
     lines.append("")
     lines.append("Each row has 3 hypothesis scores:")
@@ -440,9 +459,15 @@ def render_report(
             "phase-correction gate."
         ),
         VERDICT_SOUND_SOFT: (
-            "**Metric is sound but soft.** Identity wins (or ties) on "
-            "all rows, but some margins are zero. Production use is "
-            "viable but a tie-breaker secondary signal may be needed."
+            "**Metric is NOT strictly sound (soft pass).** Identity "
+            "wins or ties on all rows, but at least one row has a "
+            "zero margin — the metric cannot strictly pick a phase "
+            "on that row. The CLI exit code treats this as failing "
+            "(non-zero) because the documented precondition is "
+            "STRICT preference, not weak preference. To unblock: "
+            "investigate the tied row(s) and add a tie-breaker "
+            "secondary signal, OR if zero margins are acceptable for "
+            "your downstream use, run with weaker assertions."
         ),
         VERDICT_MOSTLY_SOUND: (
             "**Metric is mostly sound.** Identity wins on all but "

@@ -368,3 +368,126 @@ def test_row_yaw_uses_override_in_preference_to_fixture():
 def test_row_yaw_uses_fixture_when_no_override():
     yaw, assumed = orf._row_yaw({"yaw_quarter_turns": 3}, "20", {})
     assert (yaw, assumed) == (3, False)
+
+
+# --------------- Codex P2 follow-ups on PR #259 ---------------
+
+
+def test_sticker_png_is_full_cell_crop_not_central_patch(tmp_path: Path):
+    """by_observation/{key}/{facelet_id}.png must be the FULL sticker
+    cell (cell-sized, with surrounding bezel context), NOT the central
+    sampling patch. Conflating them — as the first version of this
+    tool did — leaves consumers following `sticker_png` without the
+    per-sticker context the field name implies. Codex P2 on PR #259.
+
+    Test strategy: at face_size=120 and patch_fraction=0.40, the cell
+    is 40px square and the central patch is ~16px square. The two
+    sizes are far enough apart that a typo regression would be obvious.
+    """
+    truth_path, manifest_path = _make_synthetic_truth_and_image(tmp_path)
+    out_dir = tmp_path / "out"
+    orf.build_all(
+        truth_path=truth_path,
+        manifest_path=manifest_path,
+        out_root=out_dir,
+        face_size=120,
+        patch_fraction=0.4,
+        yaw_overrides={},
+        save_patches=True,
+        rows_glob="99_A",
+    )
+    sticker_png = out_dir / "by_observation" / "99_A" / "U1.png"
+    patch_png = out_dir / "patch_png" / "99_A_U1.png"
+    assert sticker_png.exists()
+    assert patch_png.exists()
+    with Image.open(sticker_png) as img:
+        sticker_size = img.size
+    with Image.open(patch_png) as img:
+        patch_size = img.size
+    # Cell is face_size/3 = 40 px; sticker_png must be ~that size.
+    assert sticker_size[0] >= 35, (
+        f"sticker_png should be the full cell (~40 px at face_size=120); "
+        f"got {sticker_size}. Regression: are by_observation and "
+        f"patch_png both using the central patch?"
+    )
+    # Patch is patch_fraction * cell = 16 px; patch_png must be smaller.
+    assert patch_size[0] < sticker_size[0], (
+        f"patch_png ({patch_size}) must be SMALLER than sticker_png "
+        f"({sticker_size}); they should not be the same image."
+    )
+
+
+def test_clean_output_root_removes_owned_subdirs_only(tmp_path: Path):
+    """clean_output_root should wipe by_row, by_observation, by_facelet,
+    patch_png, index.json, gallery.html — and leave any unrelated
+    sibling content alone (so the default /tmp/<...>/ root is safe to
+    wipe without nuking unrelated directories someone might have left
+    there). Codex P2 on PR #259."""
+    out_root = tmp_path / "out"
+    out_root.mkdir()
+    # Owned content the tool wrote on a previous run.
+    for sub in ("by_row", "by_observation", "by_facelet", "patch_png"):
+        (out_root / sub).mkdir()
+        (out_root / sub / "stale.png").write_bytes(b"stale")
+    (out_root / "index.json").write_text("{}")
+    (out_root / "gallery.html").write_text("<html></html>")
+    # Unrelated sibling content the tool must NOT touch.
+    (out_root / "notes.md").write_text("hand-written notes")
+    (out_root / "sibling").mkdir()
+    (out_root / "sibling" / "important.txt").write_text("important")
+    orf.clean_output_root(out_root)
+    # Owned content gone.
+    for sub in ("by_row", "by_observation", "by_facelet", "patch_png"):
+        assert not (out_root / sub).exists(), (
+            f"{sub}/ should have been removed but still exists"
+        )
+    assert not (out_root / "index.json").exists()
+    assert not (out_root / "gallery.html").exists()
+    # Unrelated content preserved.
+    assert (out_root / "notes.md").exists()
+    assert (out_root / "sibling" / "important.txt").exists()
+
+
+def test_clean_output_root_is_idempotent_when_root_does_not_exist(tmp_path: Path):
+    """Calling clean_output_root on a non-existent root must not raise."""
+    nowhere = tmp_path / "does-not-exist"
+    orf.clean_output_root(nowhere)  # no error
+    assert not nowhere.exists()
+
+
+def test_build_all_does_not_leave_stale_artifacts_from_prior_wider_run(
+    tmp_path: Path,
+):
+    """End-to-end: run with --rows-glob '*', then rerun with a narrower
+    glob; the narrower run must not leave stale by_row/ entries from
+    the wider run. Codex P2 on PR #259."""
+    truth_path, manifest_path = _make_synthetic_truth_and_image(tmp_path)
+    # Add a 2nd row to the truth so the "wider" run has something the
+    # "narrower" run won't include.
+    truth = json.loads(truth_path.read_text())
+    # 99_B at the same coordinates (synthetic).
+    truth["99_B"] = dict(truth["99_A"])
+    truth_path.write_text(json.dumps(truth))
+    manifest = json.loads(manifest_path.read_text())
+    manifest["pairs"][0]["imageBPath"] = manifest["pairs"][0]["imageAPath"]
+    manifest_path.write_text(json.dumps(manifest))
+    out_dir = tmp_path / "out"
+    # Wider first run: both rows.
+    orf.build_all(
+        truth_path=truth_path, manifest_path=manifest_path,
+        out_root=out_dir, face_size=60, patch_fraction=0.4,
+        yaw_overrides={}, save_patches=True, rows_glob="*",
+    )
+    assert (out_dir / "by_row" / "99_A").exists()
+    assert (out_dir / "by_row" / "99_B").exists()
+    # Narrower rerun: only 99_A. 99_B's stale artifacts MUST be gone.
+    orf.build_all(
+        truth_path=truth_path, manifest_path=manifest_path,
+        out_root=out_dir, face_size=60, patch_fraction=0.4,
+        yaw_overrides={}, save_patches=True, rows_glob="99_A",
+    )
+    assert (out_dir / "by_row" / "99_A").exists()
+    assert not (out_dir / "by_row" / "99_B").exists(), (
+        "99_B/ from the wider run should have been wiped before the "
+        "narrower rerun wrote 99_A."
+    )

@@ -226,7 +226,16 @@ class StickerSampleOracle:
     classify_color: str
     classify_confidence: float
     patch_pixel_center_in_face: Tuple[int, int]
-    patch_image: Image.Image  # raw cropped patch (PIL), already a copy
+    cell_image: Image.Image   # full sticker cell crop (cell-sized, with
+                              # surrounding bezel context); used for
+                              # by_observation/{key}/{facelet_id}.png so
+                              # consumers can see each sticker plus its
+                              # immediate context. (Codex P2 on #259.)
+    patch_image: Image.Image  # central patch_fraction crop used for
+                              # color sampling; written to
+                              # patch_png/{key}_{facelet_id}.png so
+                              # downstream tools can re-derive any
+                              # color statistic without re-rectifying.
 
 
 def sample_stickers_oracle(
@@ -250,13 +259,22 @@ def sample_stickers_oracle(
     samples: List[StickerSampleOracle] = []
     for row in range(3):
         cy = int((row + 0.5) * cell)
+        # Full cell bounds (the whole sticker square, including
+        # surrounding bezel context). Written to by_observation/
+        # so consumers can see each sticker in its rectified context.
+        cell_y0 = int(row * cell)
+        cell_y1 = int((row + 1) * cell)
         for col in range(3):
             cx = int((col + 0.5) * cell)
+            cell_x0 = int(col * cell)
+            cell_x1 = int((col + 1) * cell)
+            # Central patch (default 40% of cell) — for the color sample.
             y0 = max(0, cy - patch_half)
             y1 = cy + patch_half + 1
             x0 = max(0, cx - patch_half)
             x1 = cx + patch_half + 1
             patch_arr = arr[y0:y1, x0:x1]
+            cell_arr = arr[cell_y0:cell_y1, cell_x0:cell_x1]
             if patch_arr.size == 0:
                 rgb_tuple = (0, 0, 0)
             else:
@@ -269,12 +287,14 @@ def sample_stickers_oracle(
             verdict = classify_rgb(rgb_tuple)
             sticker_id = sticker_id_from_row_col(row, col)
             facelet_id = facelet_ids[sticker_id - 1]
-            # Use the raw patch crop (RGB, already an inset of the
-            # face image so it survives the face_img going out of
-            # scope on the caller side).
             patch_image = (
                 Image.fromarray(patch_arr).copy()
                 if patch_arr.size > 0
+                else Image.new("RGB", (1, 1), (0, 0, 0))
+            )
+            cell_image = (
+                Image.fromarray(cell_arr).copy()
+                if cell_arr.size > 0
                 else Image.new("RGB", (1, 1), (0, 0, 0))
             )
             samples.append(
@@ -289,6 +309,7 @@ def sample_stickers_oracle(
                     classify_color=verdict.color,
                     classify_confidence=verdict.confidence,
                     patch_pixel_center_in_face=(cx, cy),
+                    cell_image=cell_image,
                     patch_image=patch_image,
                 )
             )
@@ -451,7 +472,12 @@ def process_row(
             sticker_png_rel = (
                 f"by_observation/{key}/{sample.facelet_id}.png"
             )
-            sample.patch_image.save(
+            # by_observation/{key}/{facelet_id}.png is the FULL sticker
+            # cell crop (cell-sized, including surrounding bezel
+            # context) — Codex P2 on #259. Consumers following the
+            # documented `sticker_png` field need the per-sticker crop
+            # with context, not just the central sampling patch.
+            sample.cell_image.save(
                 by_obs_dir / f"{sample.facelet_id}.png"
             )
             if save_patches:
@@ -464,10 +490,12 @@ def process_row(
                 patch_rel = None
             # Grouped comparison view: same observation re-saved under
             # by_facelet/{facelet_id}/{key}.png so a downstream viewer
-            # can compare the same facelet ID across observations.
+            # can compare the same facelet ID across observations. Uses
+            # the full cell crop so the comparison shows sticker
+            # context, not isolated central patches.
             grouped_dir = by_facelet_dir / sample.facelet_id
             grouped_dir.mkdir(parents=True, exist_ok=True)
-            sample.patch_image.save(grouped_dir / f"{key}.png")
+            sample.cell_image.save(grouped_dir / f"{key}.png")
             stickers.append({
                 "row": sample.row,
                 "col": sample.col,
@@ -656,6 +684,39 @@ def select_rows(
     return selected
 
 
+#: Subdirectories this tool writes into. `clean_output_root` clears
+#: exactly these (and the top-level index.json + gallery.html) so a
+#: rerun with a narrower `--rows-glob`, different `--yaw-overrides`,
+#: or `--no-patches` cannot leave stale files indistinguishable from
+#: the current run's outputs. Codex P2 on #259.
+_OWNED_SUBDIRS: Tuple[str, ...] = (
+    "by_row",
+    "by_observation",
+    "by_facelet",
+    "patch_png",
+)
+_OWNED_TOP_FILES: Tuple[str, ...] = ("index.json", "gallery.html")
+
+
+def clean_output_root(out_root: Path) -> None:
+    """Remove the subdirectories and top-level files this tool writes,
+    leaving any unrelated content in `out_root` alone (so the
+    default `/tmp/oracle_rectified_faces_v1/` is safely wiped without
+    nuking sibling directories if the user pointed `--out` somewhere
+    shared)."""
+    import shutil
+    if not out_root.exists():
+        return
+    for subdir in _OWNED_SUBDIRS:
+        candidate = out_root / subdir
+        if candidate.is_dir():
+            shutil.rmtree(candidate)
+    for top in _OWNED_TOP_FILES:
+        candidate = out_root / top
+        if candidate.is_file():
+            candidate.unlink()
+
+
 def build_all(
     *,
     truth_path: Path,
@@ -670,6 +731,12 @@ def build_all(
     truth = _load_truth(truth_path)
     manifest = _load_manifest(manifest_path)
     keys = select_rows(truth, rows_glob)
+    # Wipe the owned subdirs + top-level artifacts BEFORE writing. Without
+    # this, a narrower rerun (different --rows-glob, different
+    # --yaw-overrides, --no-patches, etc.) leaves stale files mixed in
+    # with current ones, contaminating grouped comparisons and the
+    # gallery view. Codex P2 on #259.
+    clean_output_root(out_root)
     out_root.mkdir(parents=True, exist_ok=True)
     row_records: List[RowRecord] = []
     skipped: List[Dict[str, str]] = []

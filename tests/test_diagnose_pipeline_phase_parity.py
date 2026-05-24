@@ -157,18 +157,22 @@ def test_set_id_from_key():
 
 
 def test_render_report_empty_payload_is_well_formed():
+    """v2 multi-run schema with no per-row data still renders all
+    section headers cleanly."""
     payload = {
-        "schema": "pipeline_phase_parity_trace_v1",
-        "source": {},
+        "schema": "pipeline_phase_parity_trace_v2_multi_run",
+        "source": {"n_runs_per_row": 5},
         "summary": {
-            "n_total": 0,
-            "n_traced": 0,
-            "post_canonical_category_counts": {},
-            "pre_canonical_category_counts": {},
-            "phase_check_counts": {},
-            "score_delta_class_counts": {},
+            "n_total_rows": 0,
+            "n_traced_rows": 0,
+            "n_stable_rows": 0,
+            "n_unstable_rows": 0,
+            "post_canonical_category_modal_counts": {},
+            "phase_rewound_canonical_category_modal_counts": {},
+            "phase_check_modal_counts": {},
+            "score_delta_class_modal_counts": {},
         },
-        "rows": [],
+        "per_row": [],
     }
     report = render_report(payload)
     assert "# Pipeline phase-parity failure modes" in report
@@ -176,54 +180,239 @@ def test_render_report_empty_payload_is_well_formed():
     assert "## Per-row trace" in report
     assert "## Q4: Which evidence would have selected the right parity?" in report
     assert "## Findings & implications" in report
+    # P1 + P2 caveats are surfaced in the report header
+    assert "Pipeline non-determinism note" in report
+    assert "phase_rewound" in report.lower() or "Phase-rewound" in report
 
 
-def test_render_report_includes_row_table_with_traced_status():
+def test_render_report_includes_per_row_distribution_table():
+    """Distributions across N runs per row are surfaced in the per-row
+    table — including the stability marker."""
     payload = {
-        "schema": "pipeline_phase_parity_trace_v1",
-        "source": {},
+        "schema": "pipeline_phase_parity_trace_v2_multi_run",
+        "source": {"n_runs_per_row": 5},
         "summary": {
-            "n_total": 1,
-            "n_traced": 1,
-            "post_canonical_category_counts": {"GOOD": 1},
-            "pre_canonical_category_counts": {"GOOD": 1},
-            "phase_check_counts": {"correct": 1},
-            "score_delta_class_counts": {"no_flip": 1},
+            "n_total_rows": 1,
+            "n_traced_rows": 1,
+            "n_stable_rows": 1,
+            "n_unstable_rows": 0,
+            "post_canonical_category_modal_counts": {"GOOD": 1},
+            "phase_rewound_canonical_category_modal_counts": {"GOOD": 1},
+            "phase_check_modal_counts": {"correct": 1},
+            "score_delta_class_modal_counts": {"no_flip": 1},
         },
-        "rows": [{
+        "per_row": [{
             "key": "20_A",
-            "status": "traced",
-            "pre_canonical_category": "GOOD",
-            "post_canonical_category": "GOOD",
-            "phase_check": "correct",
-            "score_delta_class": "no_flip",
-            "flip_applied": False,
-            "phase_debug": {"phase_darkness_separation": -15.0},
+            "n_runs": 5,
+            "runs": [
+                {
+                    "status": "traced",
+                    "post_canonical_category": "GOOD",
+                    "phase_rewound_canonical_category": "GOOD",
+                    "phase_check": "correct",
+                    "score_delta_class": "no_flip",
+                    "phase_debug": {"phase_darkness_separation": -15.0},
+                }
+            ] * 5,
+            "summary": {
+                "n_traced": 5,
+                "n_errored": 0,
+                "post_canonical_category_dist": {"GOOD": 5},
+                "phase_rewound_canonical_category_dist": {"GOOD": 5},
+                "phase_check_dist": {"correct": 5},
+                "score_delta_class_dist": {"no_flip": 5},
+                "post_canonical_category_modal": "GOOD",
+                "phase_rewound_canonical_category_modal": "GOOD",
+                "phase_check_modal": "correct",
+                "score_delta_class_modal": "no_flip",
+                "post_category_stable": True,
+                "delta_class_stable": True,
+                "fully_stable": True,
+                "is_stable": True,  # backwards-compat alias
+            },
         }],
     }
     report = render_report(payload)
     assert "`20_A`" in report
-    assert "ONE_EDGE ✓" in report  # Q1 column for GOOD pre
+    assert "GOOD:5" in report  # distribution-formatted post-category
+    assert "✓✓" in report  # fully-stable marker
 
 
 def test_render_report_handles_error_rows_gracefully():
-    """If a row's status is 'error', it should still show in the table."""
+    """If all of a row's N runs errored, the row still shows in the
+    table with an `all_runs_errored` marker (not a hard exception)."""
     payload = {
-        "schema": "pipeline_phase_parity_trace_v1",
-        "source": {},
+        "schema": "pipeline_phase_parity_trace_v2_multi_run",
+        "source": {"n_runs_per_row": 5},
         "summary": {
-            "n_total": 1, "n_traced": 0,
-            "post_canonical_category_counts": {},
-            "pre_canonical_category_counts": {},
-            "phase_check_counts": {},
-            "score_delta_class_counts": {},
+            "n_total_rows": 1, "n_traced_rows": 0,
+            "n_stable_rows": 0, "n_unstable_rows": 0,
+            "post_canonical_category_modal_counts": {},
+            "phase_rewound_canonical_category_modal_counts": {},
+            "phase_check_modal_counts": {},
+            "score_delta_class_modal_counts": {},
         },
-        "rows": [{
+        "per_row": [{
             "key": "99_A",
-            "status": "error",
-            "error": "rembg failed: ConnectionError: timed out",
+            "n_runs": 5,
+            "runs": [],
+            "summary": {
+                "status": "all_runs_errored",
+                "errors": ["rembg failed: ConnectionError: timed out"] * 5,
+            },
         }],
     }
     report = render_report(payload)
     assert "`99_A`" in report
-    assert "status=error" in report
+    assert "all runs errored" in report
+
+
+def test_aggregate_runs_partial_errors_not_marked_stable():
+    """If any of the N runs errors but the surviving runs all agree,
+    we must NOT mark the row fully stable — that would hide partial
+    failures behind the modal value. Codex P2 round-2 on PR #255."""
+    from tools.diagnose_pipeline_phase_parity import _aggregate_runs
+
+    runs = [
+        {
+            "status": "traced",
+            "post_canonical_category": "GOOD",
+            "phase_rewound_canonical_category": "GOOD",
+            "phase_check": "correct",
+            "score_delta_class": "no_flip",
+            "phase_debug": {},
+        },
+        {
+            "status": "traced",
+            "post_canonical_category": "GOOD",
+            "phase_rewound_canonical_category": "GOOD",
+            "phase_check": "correct",
+            "score_delta_class": "no_flip",
+            "phase_debug": {},
+        },
+        # One errored run — surviving runs unanimous but we should NOT
+        # claim stability.
+        {"status": "error", "error": "rembg failed"},
+    ]
+    s = _aggregate_runs(runs)
+    assert s["n_traced"] == 2
+    assert s["n_errored"] == 1
+    assert s["fully_stable"] is False
+    assert s["post_category_stable"] is False
+    assert s["delta_class_stable"] is False
+
+
+def test_aggregate_runs_modal_tie_breaks_deterministically():
+    """When a row's runs produce tied distributions (e.g. 2 GOOD + 2
+    PHASE_SWAPPED in 4 runs), the modal value should be the
+    sort-smaller key regardless of run order. Codex P3 round-2 on
+    PR #255: `Counter.most_common(1)` is INSERT-order-dependent on
+    ties, which would let aggregate modal counts shift run-to-run."""
+    from tools.diagnose_pipeline_phase_parity import _aggregate_runs
+
+    base_run = {
+        "status": "traced",
+        "phase_rewound_canonical_category": "GOOD",
+        "phase_check": "correct",
+        "score_delta_class": "no_flip",
+        "phase_debug": {},
+    }
+    # 4 runs: 2 GOOD then 2 PHASE_SWAPPED — Counter.most_common would
+    # return GOOD (first-seen on tie), but we want sort-stable.
+    runs_a = [dict(base_run, post_canonical_category=c) for c in
+              ["GOOD", "GOOD", "PHASE_SWAPPED", "PHASE_SWAPPED"]]
+    # Same 4 outcomes in opposite order. Sort-stable tie-breaking must
+    # yield the SAME modal value regardless of insertion order.
+    runs_b = [dict(base_run, post_canonical_category=c) for c in
+              ["PHASE_SWAPPED", "PHASE_SWAPPED", "GOOD", "GOOD"]]
+    a = _aggregate_runs(runs_a)
+    b = _aggregate_runs(runs_b)
+    assert a["post_canonical_category_modal"] == b["post_canonical_category_modal"]
+    # And it should be "GOOD" (alphabetically first of the tied pair).
+    assert a["post_canonical_category_modal"] == "GOOD"
+
+
+def test_render_report_marks_partial_errors_distinctly():
+    """When N-1 runs all agree but 1 errored, the per-row stability
+    marker should say `partial-errors`, NOT `post-varies` — those mean
+    different things and merging them hides intermittent failures
+    (Codex P2 round-4 on PR #255)."""
+    payload = {
+        "schema": "pipeline_phase_parity_trace_v2_multi_run",
+        "source": {"n_runs_per_row": 5},
+        "summary": {
+            "n_total_rows": 1, "n_traced_rows": 1,
+            "n_post_category_stable_rows": 0,
+            "n_delta_class_stable_rows": 0,
+            "n_fully_stable_rows": 0,
+            "n_stable_rows": 0, "n_unstable_rows": 1,
+            "post_canonical_category_modal_counts": {"GOOD": 1},
+            "phase_rewound_canonical_category_modal_counts": {"GOOD": 1},
+            "phase_check_modal_counts": {"correct": 1},
+            "score_delta_class_modal_counts": {"no_flip": 1},
+        },
+        "per_row": [{
+            "key": "20_A", "n_runs": 5, "runs": [],
+            "summary": {
+                "n_traced": 4, "n_errored": 1,
+                "post_canonical_category_dist": {"GOOD": 4},
+                "phase_rewound_canonical_category_dist": {"GOOD": 4},
+                "phase_check_dist": {"correct": 4},
+                "score_delta_class_dist": {"no_flip": 4},
+                "post_canonical_category_modal": "GOOD",
+                "phase_rewound_canonical_category_modal": "GOOD",
+                "phase_check_modal": "correct",
+                "score_delta_class_modal": "no_flip",
+                "post_category_stable": False,
+                "delta_class_stable": False,
+                "fully_stable": False,
+                "is_stable": False,
+            },
+        }],
+    }
+    report = render_report(payload)
+    assert "`20_A`" in report
+    assert "partial-errors" in report
+    assert "post-varies" not in report.split("Per-row trace")[1]
+
+
+def test_render_report_marks_unstable_rows():
+    """Rows where the N runs disagree on post-category should show
+    `UNSTABLE` (so a reader doesn't take the modal value as gospel)."""
+    payload = {
+        "schema": "pipeline_phase_parity_trace_v2_multi_run",
+        "source": {"n_runs_per_row": 5},
+        "summary": {
+            "n_total_rows": 1, "n_traced_rows": 1,
+            "n_stable_rows": 0, "n_unstable_rows": 1,
+            "post_canonical_category_modal_counts": {"PHASE_SWAPPED": 1},
+            "phase_rewound_canonical_category_modal_counts": {"GOOD": 1},
+            "phase_check_modal_counts": {"corrected_60deg_flip": 1},
+            "score_delta_class_modal_counts": {"flip_hurt": 1},
+        },
+        "per_row": [{
+            "key": "38_A",
+            "n_runs": 5,
+            "runs": [],
+            "summary": {
+                "n_traced": 5,
+                "n_errored": 0,
+                "post_canonical_category_dist": {"PHASE_SWAPPED": 3, "GOOD": 2},
+                "phase_rewound_canonical_category_dist": {"GOOD": 5},
+                "phase_check_dist": {"corrected_60deg_flip": 3, "correct": 2},
+                "score_delta_class_dist": {"flip_hurt": 3, "no_flip": 2},
+                "post_canonical_category_modal": "PHASE_SWAPPED",
+                "phase_rewound_canonical_category_modal": "GOOD",
+                "phase_check_modal": "corrected_60deg_flip",
+                "score_delta_class_modal": "flip_hurt",
+                "post_category_stable": False,
+                "delta_class_stable": False,
+                "fully_stable": False,
+                "is_stable": False,  # backwards-compat alias
+            },
+        }],
+    }
+    report = render_report(payload)
+    assert "`38_A`" in report
+    # Post-category varies across runs → "post-varies" marker
+    assert "post-varies" in report

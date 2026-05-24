@@ -168,9 +168,18 @@ def _extract_center(face_record: Dict[str, Any]) -> CenterSample:
     """Pull the center sticker (sticker_id=5) out of an oracle FaceRecord
     JSON entry."""
     center = next(
-        s for s in face_record["stickers"]
-        if s["sticker_id"] == CENTER_STICKER_ID
+        (
+            s for s in face_record["stickers"]
+            if s["sticker_id"] == CENTER_STICKER_ID
+        ),
+        None,
     )
+    if center is None:
+        raise ValueError(
+            f"face record for slot {face_record.get('slot')!r}, "
+            f"wca_face {face_record.get('wca_face')!r} has no "
+            f"sticker_id={CENTER_STICKER_ID} center sticker"
+        )
     lab = tuple(float(v) for v in center["lab"])
     rgb = tuple(int(v) for v in center["rgb"])
     return CenterSample(
@@ -604,8 +613,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     # previously a complete-but-failing run (e.g. 11/12 wins) would
     # exit 0 because the count check passed, letting CI think the
     # validation was successful when the report clearly said it
-    # wasn't. SOUND and SOUND_SOFT both exit 0 (the metric works for
-    # the documented purpose); anything else exits 2.
+    # wasn't. Only VERDICT_SOUND exits 0; SOUND_SOFT, MOSTLY_SOUND,
+    # NOT_SOUND, and INCOMPLETE all exit 2.
     verdict_class = classify_verdict(results, expected_rows=expected_rows)
     is_passing = verdict_class in _VERDICTS_PASSING
     print(

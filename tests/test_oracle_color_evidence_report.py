@@ -175,3 +175,18 @@ def test_render_markdown_report_contains_core_sections(tmp_path: Path):
     assert "## Canonical confusion matrix" in md
     assert "## Lowest-confidence canonical observations" in md
     assert "Expected colors are read from canonical ground truth" in md
+
+
+def test_render_markdown_report_sorts_mixed_set_ids(tmp_path: Path):
+    manifest_path = _write_manifest(tmp_path)
+    payload = report.analyze_oracle_color_evidence(
+        _oracle_index([_sticker("U1", (245, 245, 245))]),
+        manifest_path=manifest_path,
+    )
+    for mode in report.MODE_ORDER:
+        payload["modes"][mode]["per_set_accuracy"]["calibration"] = 1.0
+
+    md = report.render_markdown_report(payload)
+
+    assert "| 99 |" in md
+    assert "| calibration |" in md

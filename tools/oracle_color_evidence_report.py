@@ -516,7 +516,7 @@ def render_markdown_report(report: Mapping[str, Any]) -> str:
         set_id
         for mode in MODE_ORDER
         for set_id in report["modes"][mode]["per_set_accuracy"].keys()
-    }, key=lambda value: int(value) if value.isdigit() else value)
+    }, key=lambda value: (0, int(value)) if value.isdigit() else (1, value))
     set_rows = []
     for set_id in set_ids:
         set_rows.append([

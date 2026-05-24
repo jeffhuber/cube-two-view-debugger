@@ -66,7 +66,7 @@ def _resolve_pair_paths(manifests: List[Dict[str, Any]], set_id: str) -> Optiona
     for manifest in manifests:
         for entry in manifest["pairs"]:
             if str(entry["setId"]) == str(set_id):
-                return Path(entry["imageAPath"]), Path(entry["imageBPath"])
+                return Path(entry["imageAPath"]).expanduser(), Path(entry["imageBPath"]).expanduser()
 
     for root in _candidate_corpus_roots(manifests):
         path_a = _find_corpus_side(root, set_id, "A")
@@ -147,7 +147,7 @@ def _build_case_data(
     img = _exif_correct(img_path)
     crop_box, scale, (display_w, display_h) = _full_image_display(img.size)
     out_png = out_dir / f"set_{set_id}_{side}.png"
-    img.crop(crop_box).save(out_png, optimize=True)
+    img.crop(crop_box).save(out_png, compress_level=1)
     key = f"{set_id}_{side}"
     if key in truth_prefill:
         prefill = truth_prefill[key]

@@ -8,6 +8,7 @@ from tools.build_full_corner_labeling_gallery import (
     _extract_cases_json,
     _full_image_display,
     _initial_full_corner_prefill,
+    _resolve_pair_paths,
 )
 from tools.corner_conventions import (
     CAPTURE_FACE_BY_SLOT_BY_SIDE,
@@ -122,6 +123,25 @@ def test_initial_prefill_contains_all_points_inside_image():
     for point in prefill.values():
         assert 0 <= point[0] <= 3000
         assert 0 <= point[1] <= 4000
+
+
+def test_resolve_pair_paths_expands_user_home_from_manifest():
+    manifests = [
+        {
+            "pairs": [
+                {
+                    "setId": 999,
+                    "imageAPath": "~/cube-corpus/Set 999 - A - white up.JPG",
+                    "imageBPath": "~/cube-corpus/Set 999 - B - yellow up.JPG",
+                }
+            ]
+        }
+    ]
+
+    path_a, path_b = _resolve_pair_paths(manifests, "999")
+
+    assert str(path_a).startswith(str(Path.home()))
+    assert str(path_b).startswith(str(Path.home()))
 
 
 def test_html_template_uses_full_corner_export_schema():

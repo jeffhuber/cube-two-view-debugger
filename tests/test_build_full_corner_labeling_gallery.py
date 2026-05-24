@@ -209,3 +209,53 @@ def test_full_corner_truth_fixture_is_schema_clean():
             assert name in row
             assert len(row[name]) == 2
             assert all(isinstance(value, (int, float)) for value in row[name])
+        # Per-row yaw_quarter_turns is OPTIONAL in the schema (the
+        # labeling gallery does not yet emit it; regeneration would
+        # produce rows without yaw — see Codex P2 on the yaw-fixture
+        # PR). When present it must be a valid quarter-turn value.
+        if "yaw_quarter_turns" in row:
+            assert isinstance(row["yaw_quarter_turns"], int)
+            assert row["yaw_quarter_turns"] in (0, 1, 2, 3)
+
+
+def test_yaw_is_consistent_per_set_across_A_and_B():
+    """Per-set yaw should match across A and B sides — the user yaws
+    the cube once and takes both captures at that orientation.
+
+    Schema: yaw_quarter_turns is OPTIONAL. This test only enforces the
+    consistency invariant for rows where both sides record a yaw.
+    """
+    data = json.loads(FULL_CORNER_FIXTURE.read_text(encoding="utf-8"))
+    set_yaws: dict = {}
+    for key, row in data.items():
+        if "yaw_quarter_turns" not in row:
+            continue
+        set_id, _ = key.rsplit("_", 1)
+        yaw = row["yaw_quarter_turns"]
+        if set_id in set_yaws:
+            assert set_yaws[set_id] == yaw, (
+                f"Set {set_id}: yaw mismatch — A and B captures should "
+                f"share the same yaw. Got A/B = "
+                f"{set_yaws[set_id]} / {yaw}."
+            )
+        else:
+            set_yaws[set_id] = yaw
+
+
+def test_currently_labeled_full_corner_rows_all_have_yaw():
+    """Pin: every row currently in `full_corner_ground_truth.json` has a
+    yaw_quarter_turns value (added in this PR after visual probe). New
+    rows added later via the labeling gallery may temporarily lack yaw
+    until the gallery is updated to emit it; this test guards against
+    REGRESSING the 12 currently-labeled rows."""
+    data = json.loads(FULL_CORNER_FIXTURE.read_text(encoding="utf-8"))
+    expected_keys = {
+        "20_A", "20_B", "38_A", "38_B", "40_A", "40_B",
+        "41_A", "41_B", "43_A", "43_B", "45_A", "45_B",
+    }
+    for key in expected_keys:
+        assert key in data, f"expected row {key} not in fixture"
+        assert "yaw_quarter_turns" in data[key], (
+            f"{key} missing yaw_quarter_turns — was added in the yaw "
+            f"fixture PR; do not regress."
+        )

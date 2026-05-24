@@ -123,17 +123,27 @@ def _initial_full_corner_prefill(img_size: Tuple[int, int]) -> Dict[str, List[fl
     }
 
 
-def _load_truth_prefill(path: Optional[Path]) -> Dict[str, Dict[str, List[float]]]:
+def _load_truth_prefill(path: Optional[Path]) -> Dict[str, Dict[str, Any]]:
+    """Load existing full-corner truth as prefill, preserving point
+    coordinates AND yaw_quarter_turns when present.
+
+    The yaw field is OPTIONAL in the schema (Codex P2 on the yaw-fixture
+    PR) but if a row carries it on disk we must round-trip it through
+    the gallery so an edit-and-redownload cycle doesn't drop the value.
+    """
     if path is None:
         return {}
     data = json.loads(path.read_text(encoding="utf-8"))
-    out: Dict[str, Dict[str, List[float]]] = {}
+    out: Dict[str, Dict[str, Any]] = {}
     for key, item in data.items():
         if all(name in item for name in POINT_NAMES):
-            out[str(key)] = {
+            row: Dict[str, Any] = {
                 name: [float(item[name][0]), float(item[name][1])]
                 for name in POINT_NAMES
             }
+            if "yaw_quarter_turns" in item:
+                row["yaw_quarter_turns"] = int(item["yaw_quarter_turns"])
+            out[str(key)] = row
     return out
 
 
@@ -270,6 +280,13 @@ function init() {
   CASES.forEach(c => {
     const j = { approved: false, lastTouched: 'vertex' };
     POINT_NAMES.forEach(name => { j[name] = c.prefill[name].slice(); });
+    // Optional yaw_quarter_turns: load from prefill if present, else
+    // null (= unspecified; will be omitted from export). Codex P2 on
+    // the yaw-fixture PR: gallery must round-trip yaw so an edit-and-
+    // redownload cycle doesn't drop the value on rows that have it.
+    j.yaw_quarter_turns = (c.prefill.yaw_quarter_turns !== undefined)
+      ? c.prefill.yaw_quarter_turns
+      : null;
     judgments[c.key] = j;
   });
   const select = document.getElementById('caseSelect');
@@ -328,6 +345,15 @@ function renderCase() {
         <button class="btn-approve" onclick="approveAndNext()">Approve & next</button>
         <button class="btn-reset" onclick="resetToPrefill('${c.key}')">Reset</button>
         ${pointButtons(c)}
+        <label style="margin-left:8px;">yaw_quarter_turns:
+          <select onchange="setYaw('${c.key}', this.value)">
+            <option value="">(unset)</option>
+            <option value="0" ${j.yaw_quarter_turns === 0 ? 'selected' : ''}>0</option>
+            <option value="1" ${j.yaw_quarter_turns === 1 ? 'selected' : ''}>1</option>
+            <option value="2" ${j.yaw_quarter_turns === 2 ? 'selected' : ''}>2</option>
+            <option value="3" ${j.yaw_quarter_turns === 3 ? 'selected' : ''}>3</option>
+          </select>
+        </label>
         <span class="point-readout" id="readout-${c.key}"></span>
       </div>
     </div>
@@ -473,6 +499,13 @@ function resetToPrefill(key) {
   POINT_NAMES.forEach(name => { judgments[key][name] = c.prefill[name].slice(); });
   judgments[key].approved = false;
   judgments[key].lastTouched = 'vertex';
+  // Restore yaw from prefill too — otherwise a stale user-edited yaw
+  // survives the reset and gets exported as if it were the truth value
+  // (Codex P3 on the yaw-fixture PR, round-3). Match the init() logic:
+  // load from prefill if present, else null (= unset).
+  judgments[key].yaw_quarter_turns = (c.prefill.yaw_quarter_turns !== undefined)
+    ? c.prefill.yaw_quarter_turns
+    : null;
   renderCase();
 }
 function approveAll() {
@@ -496,6 +529,16 @@ function updateStats() {
   if (prev) prev.disabled = currentIndex <= 0;
   if (next) next.disabled = currentIndex >= CASES.length - 1;
 }
+function setYaw(key, value) {
+  // Persist yaw_quarter_turns to the judgment for `key`. Empty string
+  // means "unset" (not exported). Integer string in {0..3} stored as
+  // int so the JSON output matches the canonical schema.
+  if (value === '' || value == null) {
+    judgments[key].yaw_quarter_turns = null;
+  } else {
+    judgments[key].yaw_quarter_turns = parseInt(value, 10);
+  }
+}
 function buildExport() {
   const out = {};
   CASES.forEach(c => {
@@ -505,6 +548,12 @@ function buildExport() {
       POINT_NAMES.forEach(name => {
         out[c.key][name] = [Math.round(j[name][0] * 10) / 10, Math.round(j[name][1] * 10) / 10];
       });
+      // Emit yaw_quarter_turns only when set, so the schema stays
+      // optional. Round-trips values loaded from existing truth (Codex
+      // P2 on the yaw-fixture PR).
+      if (j.yaw_quarter_turns !== null && j.yaw_quarter_turns !== undefined) {
+        out[c.key].yaw_quarter_turns = j.yaw_quarter_turns;
+      }
     }
   });
   return out;

@@ -46,6 +46,7 @@ jobs:
 
       - name: Apply Codex audit labels
         env:
-          GITHUB_TOKEN: ${{ secrets.CODEX_AUDIT_LABEL_TOKEN || github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
+          CODEX_AUDIT_LABEL_TOKEN: ${{ secrets.CODEX_AUDIT_LABEL_TOKEN }}
           CODEX_BOT_AUTHORS: ${{ vars.CODEX_BOT_AUTHORS }}
         run: python3 tools/codex_audit_labeler.py

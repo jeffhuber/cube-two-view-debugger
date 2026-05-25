@@ -85,7 +85,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from rubik_recognizer.colors import classify_rgb  # noqa: E402
+from rubik_recognizer.colors import CLASSIFIER_CANONICAL, classify_rgb_with_mode  # noqa: E402
 from tools.corner_conventions import FACE_DEFS_BY_SIDE  # noqa: E402
 from tools.diagnose_pipeline_phase_parity import _processing_image  # noqa: E402
 from tools.global_cube_model import detect_hexagon_anchors  # noqa: E402
@@ -283,7 +283,7 @@ def _score_rectified_faces(faces: Dict[str, Image.Image]) -> Dict[str, Any]:
         face_total = 0.0
         for row in extract_stickers_from_rectified(face_img):
             for s in row:
-                face_total += classify_rgb(s.rgb).distance
+                face_total += classify_rgb_with_mode(s.rgb, CLASSIFIER_CANONICAL).distance
         per_face[slot] = round(face_total, 2)
         total += face_total
     return {

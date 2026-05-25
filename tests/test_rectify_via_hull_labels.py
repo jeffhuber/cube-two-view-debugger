@@ -15,6 +15,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from PIL import Image
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
@@ -24,6 +25,7 @@ from tools.rectify_via_hull_labels import (  # noqa: E402
     SILHOUETTE_TO_CORNER,
     _derive_vertex_from_corners,
     _label_corners_by_position,
+    _score_rectified_faces,
 )
 
 
@@ -242,3 +244,20 @@ def test_silhouette_to_corner_consistent_with_face_defs():
                 f"side {side} face {slot} corners {corner_nums} → positions "
                 f"{positions} → not 3-consecutive in CCW order"
             )
+
+
+def test_score_rectified_faces_ignores_classifier_env(monkeypatch):
+    """The diagnostic report says its score is canonical CIELAB distance.
+    Keep that stable even when production classifier experiments are selected
+    through CUBE_RECOGNIZER_CLASSIFIER.
+    """
+    from rubik_recognizer.colors import CLASSIFIER_CANONICAL, classify_rgb_with_mode
+
+    rgb = (144, 72, 49)
+    expected = round(classify_rgb_with_mode(rgb, CLASSIFIER_CANONICAL).distance * 27, 2)
+    monkeypatch.setenv("CUBE_RECOGNIZER_CLASSIFIER", "knn5_lab_full")
+
+    face = Image.new("RGB", (300, 300), rgb)
+    score = _score_rectified_faces({"upper": face, "right": face, "front": face})
+
+    assert score["total_distance"] == expected

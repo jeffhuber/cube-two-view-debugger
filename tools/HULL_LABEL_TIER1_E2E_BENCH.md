@@ -104,6 +104,44 @@ Frequent failed checks:
 | `image_b_D_anchor_missing` | 5 |
 | `no_legal_state` | 1 |
 
+## Candidate Diagnostic Follow-Up
+
+After PR #299 added `candidateDiagnostics` under `hullLabelTier1Prefer`, the
+prefer bench was rerun on merged main at `b1f4b2a`:
+
+```bash
+npm run bench -- \
+  --corpus /tmp/cube-snap-e2e-corpus \
+  --providers cv-local \
+  --cv-api http://localhost:8085/api/recognize \
+  --cv-hull-label-tier1 prefer \
+  --concurrency 2 \
+  --out /tmp/cube-snap-e2e-results/prefer-diagnostics-main.json
+```
+
+The headline result was unchanged: 41 pairs, 35.8/54 mean stickers, 11
+failures, and the same 4 selected hull-label candidates.
+
+The new diagnostic payload changed the interpretation of the low selection
+rate:
+
+- Per-image hull geometry was accepted for both images on 40/41 pairs.
+- The only per-image geometry rejection was `set-30` image A, rejected by the
+  projective-residual hard gate.
+- Most fallbacks therefore happen after geometry, during face identity and
+  pair-level recognition checks.
+- In fallback rows, candidate face assignments often collapse to too few
+  distinct center-face labels. For example, candidate assignment keys contain
+  `B` on image A in 36/37 fallback rows, while `R`, `F`, and `L` appear far
+  less often.
+- `missing_side_face_coverage` appears on 30/37 fallback rows because the
+  candidate grids often do not expose all four side center labels after
+  center-color classification.
+
+This argues against simply loosening the hull geometry gates. The bottleneck is
+now face-slot to WCA-face identity under the hull-label grids, especially U/D
+anchor recognition and side-face coverage after center color classification.
+
 ## Interpretation
 
 This is a good first production-shaped result, but not enough to default to
@@ -128,3 +166,9 @@ The caution:
 Recommended next step: keep the API hidden/default-off, leave shadow mode
 available, and run one focused gate-coverage follow-up before considering any
 cube-snap-facing prefer-mode wiring.
+
+Post-diagnostics refinement: that follow-up should focus on assigning WCA faces
+from known capture slots, yaw, and color evidence rather than treating
+center-sticker color classification as the only face-identity authority. The
+hull-label geometry is usually passing; the face identity layer is where the
+coverage collapses.

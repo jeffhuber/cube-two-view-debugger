@@ -35,6 +35,14 @@ def _result(
                 "imageB": {"status": "accepted", "selected": selected_b},
             },
         },
+        "selectedGridQuality": {
+            "imageA": {"U": {"matchedCount": 9}},
+            "imageB": {"D": {"matchedCount": 9}},
+        },
+        "topVisibleTripleQuality": {
+            "imageA": {"available": True},
+            "imageB": {"available": True},
+        },
     }
     return RecognitionResult(
         status=status,
@@ -85,6 +93,8 @@ def test_prefer_mode_falls_back_to_legacy_when_candidate_not_selected(monkeypatc
     assert decision["fallbackToLegacy"] is True
     assert decision["candidateHullLabelTier1"]["images"]["imageA"]["selected"] is True
     assert decision["candidateHullLabelTier1"]["images"]["imageB"]["selected"] is False
+    assert decision["candidateDiagnostics"]["selectedGridQuality"]["imageA"]["U"]["matchedCount"] == 9
+    assert decision["candidateDiagnostics"]["topVisibleTripleQuality"]["imageB"]["available"] is True
 
 
 def test_recognize_and_persist_forwards_hull_label_tier1_mode(tmp_path, monkeypatch):

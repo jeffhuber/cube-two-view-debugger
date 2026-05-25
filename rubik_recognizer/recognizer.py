@@ -2196,7 +2196,7 @@ def _attach_hull_label_tier1_prefer_decision(
 ) -> None:
     signals = dict(result.recognition_signals or {})
     candidate_signals = candidate.recognition_signals or {}
-    signals["hullLabelTier1Prefer"] = {
+    decision = {
         "selected": selected,
         "fallbackToLegacy": not selected,
         "candidateStatus": candidate.status,
@@ -2205,7 +2205,34 @@ def _attach_hull_label_tier1_prefer_decision(
         "candidateCategory": _recognition_category_payload(candidate)["category"],
         "candidateHullLabelTier1": candidate_signals.get("hullLabelTier1"),
     }
+    candidate_diagnostics = _hull_label_tier1_candidate_diagnostics(candidate)
+    if candidate_diagnostics:
+        decision["candidateDiagnostics"] = candidate_diagnostics
+    signals["hullLabelTier1Prefer"] = decision
     result.recognition_signals = signals
+
+
+def _hull_label_tier1_candidate_diagnostics(candidate: RecognitionResult) -> Dict[str, Any]:
+    signals = candidate.recognition_signals or {}
+    diagnostic_keys = (
+        "selectedGridQuality",
+        "topVisibleTripleQuality",
+        "topVisibleBalancedColorAssignment",
+        "twoViewGeometryConsistency",
+        "perStickerConfidence",
+        "backgroundStickerNoise",
+        "pairColorCalibration",
+    )
+    diagnostics = {
+        key: signals[key]
+        for key in diagnostic_keys
+        if key in signals
+    }
+    if candidate.image_a is not None:
+        diagnostics["imageAAssignments"] = _assignment_summary(candidate.image_a, "U")
+    if candidate.image_b is not None:
+        diagnostics["imageBAssignments"] = _assignment_summary(candidate.image_b, "D")
+    return diagnostics
 
 
 def _attach_failed_pair_color_calibration_signal(

@@ -459,7 +459,8 @@ Default loop:
 
 1. Author agent implements and runs focused local validation.
 2. The other coding agent reviews the stable PR (`needs-codex-audit`
-   for Codex, or an explicit Claude review request in-thread).
+   for Codex review of Claude-owned PRs, or `needs-claude-review`
+   for Claude review of Codex-owned PRs).
 3. Apply a paid-review label only after that loop is stable and the
    PR risk justifies the cost.
 
@@ -471,6 +472,40 @@ normal iteration. Tiny docs/comment-only PRs usually need no paid
 review; production behavior, recognizer geometry/scoring, auth/CI
 automation, cross-repo mirrored tooling, and artifact-writing tools
 usually do.
+
+### Claude cross-review lane (no-cost iterative review)
+
+Claude cross-review is the no-cost counterpart to the Codex audit lane
+for Codex-owned PRs. It is manual and lightweight; it does not require
+a bridge or labeler.
+
+State:
+
+- `needs-claude-review`: current PR head SHA needs Claude review.
+
+Protocol:
+
+1. When a Codex-owned PR is stable enough for peer review, apply
+   `needs-claude-review` and leave a short PR comment naming the review
+   scope and expected output (PASS or blockers). Do not apply paid
+   review labels for this step.
+2. If the request is made via CLI/chat instead of only GitHub, the
+   sender must also acknowledge it in the sender's chat, e.g. "Asked
+   Claude via CLI to review PR #N for X; expecting PASS/blockers."
+   The durable PR label/comment is still required so queue state is
+   visible outside chat.
+3. Claude reviews the current head, posts a PR comment with
+   "Claude cross-review" plus PASS or blocker findings, and removes
+   `needs-claude-review` only when no blockers remain. If blockers
+   remain, keep the label until a new head is ready.
+4. Claude should briefly summarize received CLI review requests and
+   review outcomes in Claude's chat. Codex should do the same in Codex
+   chat for review requests received via Codex CLI. This keeps the
+   human aware of cross-agent work that happened outside the visible
+   chat thread.
+
+Tiny docs/comment-only PRs usually need only this cross-agent review
+and no paid final-review pass.
 
 ### Devin PR audit routing
 
@@ -614,7 +649,7 @@ with cube-snap's).
 
 Full protocol: `tools/CODEX_AUDIT_PROTOCOL.md`.
 
-### Greptile audit lane (paid final check — informational, non-gating)
+### Paid final-review lane (currently Greptile — informational, non-gating)
 
 Greptile runs as a paid SaaS GitHub App. The root `greptile.json`
 config restricts automatic Greptile reviews to PRs carrying

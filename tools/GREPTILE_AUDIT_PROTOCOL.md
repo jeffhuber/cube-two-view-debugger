@@ -1,4 +1,4 @@
-# Greptile audit protocol (paid final check — informational only)
+# Paid final-review provider protocol (Greptile adapter — informational only)
 
 ## Status
 

@@ -264,6 +264,7 @@ def _hull_label_trace_payload(
     decision: Optional[Any] = None,
     score: Optional[Dict[str, Any]] = None,
     fit: Optional[Any] = None,
+    slot_center_faces: Optional[Dict[str, Any]] = None,
     vertex_estimates: Optional[Sequence[Point]] = None,
     error: Optional[str] = None,
 ) -> Dict[str, Any]:
@@ -286,6 +287,8 @@ def _hull_label_trace_payload(
         payload["sticker_score_total"] = score.get("total_distance")
         payload["sticker_score_per_face"] = score.get("per_face")
         payload["mean_sticker_distance"] = score.get("mean_sticker_distance")
+    if slot_center_faces is not None:
+        payload["slot_center_faces"] = slot_center_faces
     if fit is not None:
         payload["vertex_source"] = fit.vertex_source
         payload["vertex"] = _point_list(fit.vertex)
@@ -311,6 +314,23 @@ def _hull_label_trace_payload(
     if vertex_estimates is not None:
         payload["vertex_estimates"] = [_point_list(point) for point in vertex_estimates]
     return payload
+
+
+def _slot_center_faces_from_rectified(faces: Dict[str, Any]) -> Dict[str, Any]:
+    """Classify each hull-label slot's rectified center sticker."""
+    from rubik_recognizer.colors import COLOR_TO_FACE
+    from tools.rectify_faces import extract_stickers_from_rectified
+
+    out: Dict[str, Any] = {}
+    for slot, face_img in faces.items():
+        samples = extract_stickers_from_rectified(face_img)
+        center = samples[1][1]
+        out[slot] = {
+            "color": center.classified_color,
+            "face": COLOR_TO_FACE[center.classified_color],
+            "rgb": [int(channel) for channel in center.rgb],
+        }
+    return out
 
 
 _HULL_LABEL_SLOT_TO_LEGACY_FACE = {
@@ -437,6 +457,7 @@ def _fit_hull_label_tier1_model(
             fit.corners_by_num, side,
         )
         score = _score_rectified_faces(fit.rectified_faces)
+        slot_center_faces = _slot_center_faces_from_rectified(fit.rectified_faces)
         decision = evaluate_hull_label_acceptance(
             side=side,
             hexagon_corner_count=6,
@@ -455,6 +476,7 @@ def _fit_hull_label_tier1_model(
             decision=decision,
             score=score,
             fit=fit,
+            slot_center_faces=slot_center_faces,
             vertex_estimates=vertex_estimates,
         )
         if not decision.accepted:

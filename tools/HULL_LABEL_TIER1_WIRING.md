@@ -44,9 +44,20 @@ When enabled, `model.debug["hull_label_tier1"]` records:
 - selected vertex plus affine/projective candidates
 - raw vertex estimates
 - hexagon diameter, spread, normalized spread, and projective residual
+- `slot_center_faces` with the classified center color/face for each
+  `upper` / `right` / `front` slot
 - `corner_0..corner_5` and face quads by slot
 
 This is the handoff surface for shadow-mode audits and cube-snap capture UX:
 bad-hull rows should show projective residual or sticker-score failures, while
 perspective-heavy rows should show high vertex spread and a projective vertex
 selection.
+
+When both image traces include slot-center observations, recognition signals
+also include `hullLabelTier1Yaw`. This is the center-color yaw inference from
+`tools/hull_label_yaw.py`: score yaw candidates 0..3 by the six visible center
+faces, accept only with at least 5/6 matches and margin >= 2, and expose the
+winning `yawQuarterTurns` plus candidate scores. It is diagnostic/hidden-path
+metadata today; the next production step can use it to assemble the hull-label
+candidate directly through `corner_conventions` rather than relying on legacy
+`captureYaw`.

@@ -6,7 +6,7 @@ import os
 from collections import Counter
 from dataclasses import dataclass, field
 from itertools import product
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 from .colors import COLOR_TO_FACE, build_adaptive_palette, classify_rgb, rgb_to_hsv
 from .geometry import TRANSFORMS, closest_edge, possible_transforms
@@ -966,6 +966,9 @@ def _base_recognition_signals(analysis_a: ImageAnalysis, analysis_b: ImageAnalys
     tier1 = _hull_label_tier1_signal(analysis_a, analysis_b)
     if tier1 is not None:
         signals["hullLabelTier1"] = tier1
+        yaw = _hull_label_tier1_yaw_signal(tier1)
+        if yaw is not None:
+            signals["hullLabelTier1Yaw"] = yaw
     return signals
 
 
@@ -988,6 +991,27 @@ def _hull_label_tier1_signal(
             "imageB": trace_b,
         },
     }
+
+
+def _hull_label_tier1_yaw_signal(tier1: Mapping[str, Any]) -> Optional[Dict[str, Any]]:
+    images = tier1.get("images")
+    if not isinstance(images, Mapping):
+        return None
+    image_a = images.get("imageA")
+    image_b = images.get("imageB")
+    if not isinstance(image_a, Mapping) or not isinstance(image_b, Mapping):
+        return None
+    try:
+        from tools.hull_label_yaw import infer_yaw_from_side_traces
+    except ImportError:
+        return {
+            "source": "hull_label_center_colors",
+            "status": "unavailable",
+            "accepted": False,
+            "yawQuarterTurns": None,
+            "reason": "tools.hull_label_yaw import failed",
+        }
+    return infer_yaw_from_side_traces(image_a, image_b)
 
 
 def _first_str(*values: object) -> str:

@@ -101,3 +101,77 @@ def test_status_filters_active_locks(tmp_path, monkeypatch, capsys):
 
     assert log.main(["status", "--repo", "owner/repo", "--pr", "999"]) == 0
     assert "no active audit locks" in capsys.readouterr().out
+
+
+def test_record_appends_event_without_lock(tmp_path, monkeypatch):
+    """`record` writes a single event with no lock side-effects."""
+    monkeypatch.setenv("AUDIT_HANDOFF_LOG_DIR", str(tmp_path))
+    assert log.main([
+        "record",
+        "--lane", "claude-review",
+        "--repo", "owner/repo",
+        "--pr", "172",
+        "--head", "6abe1c7abcdef",
+        "--event", "finished",
+        "--verdict", "pass",
+        "--actor", "claude",
+        "--notes", "PR PASS via post_review.sh",
+    ]) == 0
+
+    events = _events(tmp_path)
+    assert len(events) == 1
+    ev = events[0]
+    assert ev["event"] == "finished"
+    assert ev["lane"] == "claude-review"
+    assert ev["repo"] == "owner/repo"
+    assert ev["pr"] == 172
+    assert ev["head"] == "6abe1c7abcdef"
+    assert ev["verdict"] == "pass"
+    assert ev["actor"] == "claude"
+    assert ev["notes"] == "PR PASS via post_review.sh"
+    # No lock should have been created — record is lock-free.
+    locks_dir = tmp_path / log.LOCKS_DIR
+    assert not locks_dir.exists() or not list(locks_dir.glob("*.json"))
+
+
+def test_record_omits_optional_fields_when_not_supplied(tmp_path, monkeypatch):
+    """Optional fields (verdict, notes) are absent from the event when not set,
+    keeping the JSONL minimal for the common case."""
+    monkeypatch.setenv("AUDIT_HANDOFF_LOG_DIR", str(tmp_path))
+    assert log.main([
+        "record",
+        "--lane", "codex-review",
+        "--repo", "owner/repo",
+        "--pr", "200",
+        "--head", "deadbeef1234",
+        "--event", "started",
+    ]) == 0
+
+    events = _events(tmp_path)
+    ev = events[0]
+    assert ev["event"] == "started"
+    assert "verdict" not in ev
+    assert "notes" not in ev
+
+
+def test_record_finished_event_matches_monitor_filter_shape(tmp_path, monkeypatch):
+    """The on-disk JSON for a `record --event finished` line must contain the
+    literal substring `"event": "finished"` so that the Monitor filter used in
+    practice (`grep -E '"event": ?"(finished|duplicate_refused)"'`) catches it
+    transparently — same shape as `finish_lock`'s output."""
+    monkeypatch.setenv("AUDIT_HANDOFF_LOG_DIR", str(tmp_path))
+    assert log.main([
+        "record",
+        "--lane", "claude-review",
+        "--repo", "owner/repo",
+        "--pr", "1",
+        "--head", "abcdef",
+        "--event", "finished",
+    ]) == 0
+
+    raw = (tmp_path / log.EVENTS_FILE).read_text(encoding="utf-8")
+    assert '"event": "finished"' in raw, (
+        "Monitor grep pattern depends on this exact substring; if you "
+        "change the serializer format, update the filter in the queue-sweep "
+        "protocol section of CLAUDE.md."
+    )

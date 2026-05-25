@@ -22,6 +22,44 @@ those reviews and applies `greptile-audit-{done,blocked,needs}` labels.
 Until Greptile reviews a PR, the labeler workflow doesn't fire (no
 events to react to).
 
+## Trigger discipline — explicit authorization comment required
+
+Adding `needs-greptile-audit` must be paired with an explicit
+authorization PR comment posted in the same turn. The label-only
+path is the silent-spend failure mode; the comment makes the spend
+decision auditable in the PR record and forces a "why now" reason
+at the moment of the click.
+
+Required comment shape:
+
+> Greptile paid final review requested for current head `<sha>`.
+>
+> Reason: `<short reason this PR is material enough to spend a paid review>`.
+
+If the PR head changes after Greptile reviews and a new paid pass
+is justified, post a NEW comment naming the new head SHA + reason
+BEFORE re-applying / re-triggering the `needs-greptile-audit`
+label. Don't reuse the prior comment — each spend event needs its
+own authorization.
+
+Helper: `tools/safe_gh_comment.py --pr <N> --body-file <path>`
+posts the comment without shell-interpreting Markdown (backticks,
+`$()`); follow with `gh pr edit <N> --add-label needs-greptile-audit`
+in the same turn. There is no atomic label+comment helper yet, so
+the discipline is: comment first, label second, both in the same
+turn.
+
+Drafts, docs-only micro PRs, protocol mirrors, and trivial
+diagnostic/report edits should NOT carry `needs-greptile-audit`
+unless the user explicitly requests the paid review.
+
+Auto-messages from Greptile like "Required label not found" or
+"PR not labeled — skipping" are NOT spend events; they just
+acknowledge that the opt-in label gate (set in the root
+`greptile.json` `labels` config) worked. The spend event is the
+label + authorization-comment pair we apply. Same discipline applies
+to the Devin paid lane (see `CLAUDE.md` Paid Review Budget Policy).
+
 ## Why
 
 Cost vs. quality trade-off:

@@ -500,6 +500,40 @@ elapsed 5m; merging.` If a paid lane is triggered, explicitly say that
 the action may spend a review. If a labeler fails to flip labels, report
 the manual correction and whether a follow-up bug is needed.
 
+Explicit authorization comment for paid labels: adding
+`needs-devin-audit` or `needs-greptile-audit` MUST be paired with an
+explicit authorization PR comment posted in the same turn. The
+label-only path is the silent-spend failure mode; the comment makes
+the spend decision auditable in the PR record and forces a "why now"
+reason at the moment of the click. Required shape (one or the other):
+
+> Greptile paid final review requested for current head `<sha>`.
+>
+> Reason: `<short reason this PR is material enough to spend a paid review>`.
+
+> Devin paid final review requested for current head `<sha>`.
+>
+> Reason: `<short reason>`.
+
+If the PR head changes after a paid review lands and another paid
+pass is justified, post a NEW comment naming the new head SHA +
+reason BEFORE re-applying / re-triggering the paid label. Don't
+reuse the prior comment — each spend event needs its own
+authorization. Cross-review labels (`needs-codex-audit`,
+`needs-claude-review`) imply no paid spend and do NOT require this
+comment. Auto-messages from paid providers like "Required label not
+found" or "PR not labeled — skipping" are NOT spend events; they
+just acknowledge the opt-in gate worked. The spend event is the
+label + authorization-comment pair we apply. Drafts, docs-only
+micro PRs, protocol mirrors, and trivial diagnostic/report edits
+should NOT carry these labels unless the user explicitly requests
+the paid review. Helper:
+`tools/safe_gh_comment.py --pr <N> --body-file <path>` posts the
+comment without shell-interpreting Markdown (backticks, `$()`);
+follow with `gh pr edit <N> --add-label <name>` in the same turn.
+There is no atomic label+comment helper yet, so the discipline is
+comment first, label second, both in the same turn.
+
 ### Claude cross-review lane (no-cost iterative review)
 
 Claude cross-review is the no-cost counterpart to the Codex audit lane

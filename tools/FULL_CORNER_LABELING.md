@@ -76,6 +76,37 @@ The numbering is a human visual convention. It does not change when the cube
 has capture yaw. Downstream code may convert these points into model-axis names
 or WCA face names, but that conversion must be explicit and tested.
 
+## Vertex Parallelogram Check
+
+Each visible face is a projected quadrilateral with the visible trihedral
+vertex opposite one labeled hull corner. In an affine/orthographic view,
+opposite diagonals share a midpoint. That gives a simple geometric check and a
+strong vertex estimate from the six labeled corners:
+
+![Visual rule: complete the face parallelogram to estimate Va](assets/va_vertex_parallelogram.svg)
+
+For image A:
+
+```text
+upper slot: Va = corner_1 + corner_5 - corner_0
+right slot: Va = corner_1 + corner_3 - corner_2
+front slot: Va = corner_5 + corner_3 - corner_4
+```
+
+For image B, the same rule applies with the B slot definitions:
+
+```text
+upper slot: Vb = corner_2 + corner_4 - corner_3
+right slot: Vb = corner_0 + corner_2 - corner_1
+front slot: Vb = corner_4 + corner_0 - corner_5
+```
+
+In real phone images these formulas are not exact because of perspective,
+lens effects, rounded cube plastic, and mask noise. Treat the three estimates
+as a vertex cloud: if they cluster tightly, the corner labels imply a reliable
+`Va`/`Vb`; if they spread out, the hull/corner ordering or projection
+assumptions need review before downstream rectification uses the result.
+
 ## Capture Yaw
 
 The slot labels above are view-local. Canonical WCA face names depend on

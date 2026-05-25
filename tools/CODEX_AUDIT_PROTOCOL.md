@@ -190,6 +190,73 @@ gh label create codex-audit-done   --color 0E8A16 --description "Codex reviewed 
 gh label create codex-audit-blocked --color B60205 --description "Codex found P0/P1/P2 blocker findings"
 ```
 
+## Shared event schema (audit + review log)
+
+The shared local audit log at `~/.cache/cube-agent-audits/events.jsonl`
+is a JSONL stream that BOTH agents (Claude and Codex) read and
+write. Without a documented schema, each agent invents its own
+verbs and the other agent's Monitor filter silently misses events
+— this happened on 2026-05-25 when Claude's Monitor missed a
+Codex audit because Codex's direct-write code path emitted
+`"event": "review_requested"` while Claude's filter only matched
+`"event": "finished"`. This section is the contract that prevents
+that drift.
+
+### Top-level fields (all events)
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `event` | string | **yes** | One of the canonical verbs below. New verbs require a docs PR + Monitor-filter update on both sides. |
+| `lane` | string | **yes** | One of the canonical lane values below. |
+| `repo` | string | **yes** | `owner/name`, e.g. `jeffhuber/cube-snap`. |
+| `pr` | int | **yes** | PR number. |
+| `head` | string | **yes** | PR head SHA at the time of the event. `"unknown"` if not resolvable. |
+| `actor` | string | recommended | `claude`, `codex`, or shell `$USER`. Helps disambiguate when the same agent runs under multiple identities. |
+| `time` | object | auto | `{"utc": ISO8601, "pt": "YYYY-MM-DD HH:MM:SS PT"}` — added by `append_event` automatically. |
+| `schemaVersion` | int | optional today, required at v2 | Reserved for breaking changes. Currently implicit v1; add `"schemaVersion": 2` when shape changes. |
+
+### Canonical event verbs
+
+| Verb | Fires when | Required extra fields | Optional extra fields |
+|---|---|---|---|
+| `started` | Audit run begins (wrapper creates a lock) | `lockId`, `pid`, `trigger`, `cwd`, `command`, `started` | — |
+| `finished` | Audit or review completes | `lockId` (audits) OR `verdict` (reviews) | `status`, `exitCode`, `lock`, `notes` |
+| `duplicate_refused` | Wrapper rejected a duplicate audit attempt (exit code 20) | `lockId`, `active` | — |
+| `stale_lock_reaped` | Helper cleaned up an orphaned lock (process dead) | `lockId`, `stale` | — |
+| `review_requested` | An agent has accepted a review request and is about to start (pre-audit signal Codex currently emits) | — | `trigger` |
+
+**Adding a new verb**: docs PR to this file with the trigger + field requirements, mirrored in both repos. Monitor filters on both sides need to be updated to match — otherwise the new verb is invisible to the other agent. If you're writing a brand-new event type and want symmetric pickup, ALSO widen the canonical Monitor filter (`grep -E '"event": ?"(finished|duplicate_refused|review_requested)"'`) on both agents' setups.
+
+### Canonical lane values
+
+| Lane | Used by | Means |
+|---|---|---|
+| `codex-audit` | Codex via `tools/run_codex_audit_pr.sh` | Wrapper-driven automated `codex review` |
+| `codex-review` | Codex via `tools/post_review.sh --lane codex-review` | Manual Codex cross-review of a Claude PR |
+| `claude-review` | Claude via `tools/post_review.sh --lane claude-review` | Manual Claude cross-review of a Codex PR |
+| `claude-audit` (reserved) | — | Reserved for a future Claude-side automated audit lane; not in use today |
+| `devin-audit`, `greptile-audit` (reserved) | — | Paid lanes; events not currently written from local. Reserved so a future polling helper can record them without conflict. |
+
+### Canonical verdict values
+
+For events that carry a `verdict` field (currently `finished` from reviews):
+
+| Verdict | Means | Side effect in `post_review.sh` |
+|---|---|---|
+| `pass` | No P0/P1/P2 findings | Routing label is removed |
+| `blocked` | At least one P0/P1/P2 finding | Routing label is kept for follow-up |
+
+Any value other than literal lowercase `pass` is treated as "keep the label" by `post_review.sh` (defense in depth — covers `concerns`, `deferred`, typos, etc.). See the verdict-gated label-removal regression tests in `tests/test_post_review.py` (ctvd) which pin this behavior.
+
+### Recommended Monitor filter (catches all relevant events)
+
+```bash
+tail -F ~/.cache/cube-agent-audits/events.jsonl 2>/dev/null \
+  | grep --line-buffered -E '"event": ?"(finished|duplicate_refused|review_requested)"'
+```
+
+This catches everything an agent on the other side typically wants to react to: audit completions (`finished` from `codex-audit` lane), review completions (`finished` from `*-review` lanes), duplicate-prevention notices, and pre-audit signals. The `started`/`stale_lock_reaped` verbs intentionally fall through — they're informational only.
+
 ## Trailer protocol (authoritative)
 
 The labeler treats one of these final-line trailers as authoritative

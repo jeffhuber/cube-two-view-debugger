@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Iterable, Mapping, Sequence, Tuple
+from typing import Iterable, Mapping, Optional, Sequence, Tuple
 
 from tools.corner_conventions import FACE_DEFS_BY_SIDE
 from tools.rectify_via_hull_labels import SILHOUETTE_TO_CORNER
@@ -46,6 +46,17 @@ class HullLabelGateThresholds:
     warn_sticker_score_total: float = 700.0
     max_sticker_score_per_face: float = 450.0
     warn_sticker_score_per_face: float = 350.0
+    # Projective residual gate — surfaces bad-hull-input rows that
+    # don't trip the spread/sticker gates. Per the 70-row probe in
+    # `tools/PROJECTIVE_VERTEX_REPORT.md`, residual_norm > 0.025 is a
+    # strong bad-input signal (30_A's 0.0315 is the corpus max,
+    # correctly flagging the wall-edge artifact case that everyone
+    # else's gates missed). `warn` at 0.018 catches the borderline
+    # row 30_B (residual 0.0199) for shadow-mode review — the gate
+    # comparison is strict `>`, so the warn threshold has to sit
+    # below 0.0199 to fire on it. Codex P3 on PR #289 head 540d891.
+    max_projective_residual_norm: float = 0.025
+    warn_projective_residual_norm: float = 0.018
 
 
 DEFAULT_THRESHOLDS = HullLabelGateThresholds()
@@ -131,6 +142,7 @@ def evaluate_hull_label_acceptance(
     rectified_face_slots: Iterable[str],
     sticker_score_total: float,
     sticker_score_per_face: Mapping[str, float],
+    projective_residual_norm: Optional[float] = None,
     thresholds: HullLabelGateThresholds = DEFAULT_THRESHOLDS,
 ) -> HullLabelGateDecision:
     """Evaluate production-available gates for one hull-label fit.
@@ -208,6 +220,33 @@ def evaluate_hull_label_acceptance(
             f"{worst_face_score:.1f}; warning "
             f"{thresholds.warn_sticker_score_per_face:.1f}"
         )
+
+    # Projective residual gate — bad-input-hull detector. When
+    # provided by the caller (computed in
+    # `tools/rectify_via_hull_labels.py::_choose_hybrid_vertex`),
+    # surfaces rows where the 3 vanishing-point lines don't meet
+    # cleanly. Strongly correlates with the 30_A-class bad-hull
+    # failure mode that spread/sticker gates miss.
+    # See `tools/PROJECTIVE_VERTEX_REPORT.md`.
+    if projective_residual_norm is not None:
+        metrics["projective_residual_norm"] = round(
+            float(projective_residual_norm), 4,
+        )
+        if (
+            not math.isfinite(projective_residual_norm)
+            or projective_residual_norm > thresholds.max_projective_residual_norm
+        ):
+            hard.append(
+                "projective_residual_norm="
+                f"{projective_residual_norm:.4f}; max "
+                f"{thresholds.max_projective_residual_norm:.4f}"
+            )
+        elif projective_residual_norm > thresholds.warn_projective_residual_norm:
+            warnings.append(
+                "projective_residual_norm="
+                f"{projective_residual_norm:.4f}; warning "
+                f"{thresholds.warn_projective_residual_norm:.4f}"
+            )
 
     return HullLabelGateDecision(
         accepted=not hard,

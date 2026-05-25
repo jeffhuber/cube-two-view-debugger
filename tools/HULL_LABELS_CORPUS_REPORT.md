@@ -1,5 +1,32 @@
 # Hull-labels rectification: 70-row corpus validation
 
+> **2026-05-25 update — hybrid vertex strategy.** Original stats
+> below are for pure affine (parallelogram-completion) vertex. After
+> PR #288 added projective (vanishing-point) vertex as a diagnostic,
+> a follow-up PR landed the hybrid switch: **use projective when
+> `vertex_cloud_spread_px / hexagon_diameter_px > 0.26`; affine
+> otherwise**. Empirical effect on this same 70-row corpus:
+>
+> | metric | pure affine | hybrid switch |
+> |---|---:|---:|
+> | rectified_clean | 68/70 | **69/70** |
+> | axis_misfit_high | 2 (30_A, 37_B) | **1 (only 30_A)** |
+> | vertex_err median | 34.4 px | **32.1 px** |
+> | vertex_err max | 79.7 px | **78.6 px** |
+> | axis_total_misfit median | 11.0° | **10.6°** |
+>
+> 37_B (the rate-limiting non-bad-hull row) is now under the gate.
+> 30_A remains flagged because it's bad hull input (rembg fooled by
+> wall-edge contrast); a NEW gate signal
+> (`projective_residual_norm > 0.025`) in
+> `tools/hull_label_acceptance.py` surfaces it specifically.
+>
+> The switch threshold (0.26) is normalized against hexagon diameter
+> so behavior is stable across processing scales (Codex P2 on PR #289
+> head 48f5a66: a raw-px threshold would silently miss perspective-
+> heavy rows on smaller processing resolutions). Pinned by
+> `test_hybrid_projective_threshold_is_resolution_independent`.
+
 **Question this answers:** does the `tools/rectify_via_hull_labels.py`
 approach (12/12 essentially-oracle-quality on the 12-row full-corner
 corpus per `tools/RECTIFY_VIA_HULL_LABELS_REPORT.md`) hold up at

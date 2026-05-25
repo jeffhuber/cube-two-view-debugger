@@ -908,7 +908,7 @@ def prepare_llm_rectified_input(
             row, col = divmod(index, 3)
             draw.text(
                 (round(col * cell + 8), round(34 + row * cell + 6)),
-                str(index + 1),
+                f"{face}{index + 1}",
                 fill=(20, 20, 20),
                 font=number_font,
                 stroke_width=2,
@@ -928,7 +928,7 @@ def prepare_llm_rectified_input(
             font = ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial Bold.ttf", 22)
         except Exception:
             font = ImageFont.load_default()
-        draw.text((0, 4), f"{group_name}: read WCA panels by cell numbers 1-9", fill=(30, 30, 30), font=font)
+        draw.text((0, 4), f"{group_name}: read each WCA facelet label exactly", fill=(30, 30, 30), font=font)
         x = 0
         for panel in panels:
             sheet.paste(panel, (x, title_h))

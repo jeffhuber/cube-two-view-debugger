@@ -438,7 +438,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     set_index = {str(p["setId"]): p for p in manifest.get("pairs", [])}
     args.gallery_dir.mkdir(parents=True, exist_ok=True)
     from rembg import new_session  # noqa: E402
-    sess = new_session()
+    # Explicit "u2net" — matches `tools/measure_axis_correctness.py` and
+    # production (`rubik_recognizer/image_pipeline.py`). The default is
+    # already u2net, but pinning explicitly avoids the silent drift bug
+    # if rembg ever changes its default model. (Codex polish on PR #279.)
+    sess = new_session("u2net")
     records: List[Dict[str, Any]] = []
     for key in sorted(truth):
         row = truth[key]

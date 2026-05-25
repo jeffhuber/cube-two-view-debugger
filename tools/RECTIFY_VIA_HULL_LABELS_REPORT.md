@@ -17,7 +17,7 @@ This tool answers that question. The empirical result on the 12 approved full-co
 
 ## Per-row results
 
-Score = sum of CIELAB distance from each of 27 sampled stickers (9 per face × 3 faces) to its nearest canonical cube color. Lower = better cluster (each face's stickers cleanly match canonical cube colors).
+Score = sum of the **production sticker classifier's distance metric** from each of 27 sampled stickers (9 per face × 3 faces) to its assigned canonical cube color. Lower = better cluster (each face's stickers cleanly match canonical cube colors). The default classifier mode (`CLASSIFIER_CANONICAL`) returns CIELAB Lab-distance to the nearest of the 6 canonical RGB prototypes; under `CLASSIFIER_KNN5_LAB` / `CLASSIFIER_KNN5_LAB_FULL` modes (selected via the `RUBIK_RECOGNIZER_COLOR_CLASSIFIER_MODE` env var) the underlying distance changes shape, so absolute score numbers in this report are only comparable to oracle scores generated under the same classifier mode. The diagnostic conclusion (12/12 essentially-oracle quality) holds across all 3 modes since we always score this tool's output and the oracle's output through the same `classify_rgb` call.
 
 | Row | Labeling mean corner err | Derived vertex err | Hull-labels score | Oracle score | Δ vs oracle |
 |---|---:|---:|---:|---:|---:|

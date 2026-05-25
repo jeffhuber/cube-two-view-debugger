@@ -251,8 +251,9 @@ def github_request_with_fallback(
     otherwise-valid built-in token unreachable. Only auth/permission failures
     fall through; semantic API failures such as a missing label still fail fast.
     """
+    token_list = tuple(tokens)
     last_error: Optional[GitHubRequestError] = None
-    for token in tokens:
+    for index, token in enumerate(token_list):
         try:
             return github_request(
                 method,
@@ -265,9 +266,14 @@ def github_request_with_fallback(
             last_error = exc
             if exc.code not in {401, 403}:
                 raise
+            suffix = (
+                "; trying next token"
+                if index < len(token_list) - 1
+                else "; no more tokens"
+            )
             print(
                 f"warning: {method} {path} failed with HTTP {exc.code} using "
-                f"{token.name}; trying next token",
+                f"{token.name}{suffix}",
                 file=sys.stderr,
             )
     if last_error is not None:

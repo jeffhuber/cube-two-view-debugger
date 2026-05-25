@@ -11,6 +11,8 @@ import importlib
 import os
 from typing import Any, Dict
 
+import pytest
+
 
 def test_default_authors_used_when_env_var_unset(monkeypatch):
     """Direct unset env: defaults apply."""
@@ -158,7 +160,8 @@ def test_main_does_fetch_pr_head_on_pr_comment(monkeypatch, tmp_path):
 
     def track_fetch(repo, issue_number, *, token=None, tokens=None):
         fetch_calls.append((repo, issue_number))
-        assert token == "test-token" or tokens is not None
+        assert token is None
+        assert tokens == (codex_audit_labeler.GitHubToken("GITHUB_TOKEN", "test-token"),)
         return {"head": {"sha": "deadbeef"}}
 
     monkeypatch.setattr(codex_audit_labeler, "fetch_pull_request", track_fetch)
@@ -219,6 +222,26 @@ def test_apply_label_decision_falls_back_when_label_pat_is_forbidden(monkeypatch
             False,
         ),
     ]
+
+
+def test_fallback_warning_says_when_no_tokens_remain(monkeypatch, capsys):
+    from tools import codex_audit_labeler
+
+    def fake_request(method, path, *, token, body=None, allow_missing=False):
+        raise codex_audit_labeler.GitHubRequestError(method, path, 403, "forbidden")
+
+    monkeypatch.setattr(codex_audit_labeler, "github_request", fake_request)
+
+    with pytest.raises(codex_audit_labeler.GitHubRequestError):
+        codex_audit_labeler.github_request_with_fallback(
+            "GET",
+            "/repos/owner/repo/pulls/1",
+            tokens=(codex_audit_labeler.GitHubToken("GITHUB_TOKEN", "bad"),),
+        )
+
+    stderr = capsys.readouterr().err
+    assert "GITHUB_TOKEN; no more tokens" in stderr
+    assert "GITHUB_TOKEN; trying next token" not in stderr
 
 
 def test_env_tokens_prefer_label_pat_then_github_token(monkeypatch):

@@ -46,3 +46,18 @@ def test_infer_yaw_from_rectified_slot_center_faces():
     assert result["bestScore"] == 6
     assert result["margin"] == 4
     assert {item["centerFace"] for item in result["observedCenters"]} == set("URFDLB")
+
+
+def test_infer_yaw_falls_back_to_side_faces_when_ud_centers_are_noisy():
+    fits = _fits_for_yaw(0)
+    fits["A"].rectified_faces["upper"] = _solid_face("B")
+    fits["B"].rectified_faces["upper"] = _solid_face("F")
+
+    result = _infer_yaw_from_rectified_fits(fits)
+
+    assert result["accepted"] is True
+    assert result["status"] == "accepted_side_faces_only"
+    assert result["yawQuarterTurns"] == 0
+    assert result["bestScore"] == 4
+    assert result["secondScore"] == 0
+    assert result["allCenterBestScore"] == 4

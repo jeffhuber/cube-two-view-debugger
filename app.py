@@ -55,6 +55,12 @@ _ALLOWED_ORIGIN_PATTERNS = (
 )
 
 
+class LlmRectifiedYawInferenceError(RuntimeError):
+    def __init__(self, message: str, yaw_inference: Dict[str, Any]):
+        super().__init__(message)
+        self.yaw_inference = yaw_inference
+
+
 def _origin_is_allowed(origin: Optional[str]) -> bool:
     if not origin:
         return False
@@ -233,6 +239,16 @@ class RubikHandler(BaseHTTPRequestHandler):
                 yaw_quarter_turns=yaw_quarter_turns,
             )
             self._send_json(payload)
+        except LlmRectifiedYawInferenceError as exc:
+            self._send_json(
+                {
+                    "status": "rejected",
+                    "reason": str(exc),
+                    "failedChecks": ["yaw_inference_ambiguous"],
+                    "yawInference": exc.yaw_inference,
+                },
+                HTTPStatus.UNPROCESSABLE_ENTITY,
+            )
         except ValueError as exc:
             self._send_json(
                 {
@@ -878,11 +894,26 @@ def prepare_llm_rectified_input(
         draw.text((6, 4), face, fill=(30, 30, 30), font=font)
         resized = img.resize((panel_size, panel_size), Image.Resampling.BICUBIC)
         panel.paste(resized, (0, 34))
+        try:
+            number_font = ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial Bold.ttf", 18)
+        except Exception:
+            number_font = ImageFont.load_default()
         for i in (1, 2):
             x = round(i * panel_size / 3)
             y = 34 + round(i * panel_size / 3)
             draw.line([(x, 34), (x, 34 + panel_size)], fill=(255, 255, 255), width=2)
             draw.line([(0, y), (panel_size, y)], fill=(255, 255, 255), width=2)
+        cell = panel_size / 3.0
+        for index in range(9):
+            row, col = divmod(index, 3)
+            draw.text(
+                (round(col * cell + 8), round(34 + row * cell + 6)),
+                str(index + 1),
+                fill=(20, 20, 20),
+                font=number_font,
+                stroke_width=2,
+                stroke_fill=(255, 255, 255),
+            )
         draw.rectangle((0, 34, panel_size - 1, 34 + panel_size - 1), outline=(40, 40, 40), width=2)
         return panel
 
@@ -897,7 +928,7 @@ def prepare_llm_rectified_input(
             font = ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial Bold.ttf", 22)
         except Exception:
             font = ImageFont.load_default()
-        draw.text((0, 4), f"{group_name}: read labeled WCA panels row-major", fill=(30, 30, 30), font=font)
+        draw.text((0, 4), f"{group_name}: read WCA panels by cell numbers 1-9", fill=(30, 30, 30), font=font)
         x = 0
         for panel in panels:
             sheet.paste(panel, (x, title_h))
@@ -925,11 +956,13 @@ def prepare_llm_rectified_input(
     yaw_inference = _infer_yaw_from_rectified_fits(fits_by_side)
     if yaw_quarter_turns is None:
         if not yaw_inference.get("accepted"):
-            raise RuntimeError(
+            raise LlmRectifiedYawInferenceError(
                 "could not infer capture yaw from rectified center colors "
                 f"(best={yaw_inference.get('bestYawQuarterTurns')}, "
                 f"score={yaw_inference.get('bestScore')}, "
-                f"margin={yaw_inference.get('margin')})"
+                f"second={yaw_inference.get('secondScore')}, "
+                f"margin={yaw_inference.get('margin')})",
+                yaw_inference,
             )
         selected_yaw = int(yaw_inference["yawQuarterTurns"])
         yaw_source = "center-inference"
@@ -1024,9 +1057,23 @@ def _infer_yaw_from_rectified_fits(fits_by_side: Dict[str, Any]) -> Dict[str, An
         }
 
     result = score_yaw_candidates(observed)
+    if not result.get("accepted"):
+        side_observed = tuple(item for item in observed if item[1] != "upper")
+        side_result = score_yaw_candidates(
+            side_observed,
+            min_matches=4,
+            min_margin=4,
+        )
+        if side_result.get("accepted"):
+            side_result["status"] = "accepted_side_faces_only"
+            side_result["allCenterBestYawQuarterTurns"] = result.get("bestYawQuarterTurns")
+            side_result["allCenterBestScore"] = result.get("bestScore")
+            side_result["allCenterSecondScore"] = result.get("secondScore")
+            side_result["allCenterMargin"] = result.get("margin")
+            result = side_result
     result.update({
         "source": "hull_label_center_colors",
-        "status": "accepted" if result["accepted"] else "ambiguous",
+        "status": result.get("status") or ("accepted" if result["accepted"] else "ambiguous"),
         "observedCenters": observations,
     })
     return result

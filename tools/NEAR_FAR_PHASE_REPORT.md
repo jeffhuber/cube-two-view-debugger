@@ -49,10 +49,12 @@ B one-edge = 0,2,4; B far = 1,3,5
 ```
 
 Initial audit against `tests/fixtures/full_corner_ground_truth.json` shows
-the legacy `near_x/near_y/near_z` labels match the far/double-axis triplet on
-the 12 seed photos (`A -> 0,2,4`, `B -> 1,3,5`). Treat row-level
-`CHIRALITY_MISS` / `CHIRALITY_FALSE_FLIP` evidence as provisional until the
-legacy baseline is regenerated from full-corner labels.
+the `axis_x/y/z` labels in the 70-row truth (formerly `near_x/y/z`; both
+names accepted) match the far/double-axis triplet on the 12 seed photos
+(`A -> 0,2,4`, `B -> 1,3,5`). See `FULL_CORNER_LABELING.md` "Axis-truth
+schema convention". Treat row-level `CHIRALITY_MISS` /
+`CHIRALITY_FALSE_FLIP` evidence as provisional until the baseline is
+regenerated from full-corner labels.
 
 ## Bug
 

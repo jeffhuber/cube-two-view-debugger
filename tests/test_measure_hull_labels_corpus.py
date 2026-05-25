@@ -40,9 +40,9 @@ from tools.measure_hull_labels_corpus import (  # noqa: E402
 def test_ground_truth_axes_returns_three_vectors_at_processing_scale():
     truth_row = {
         "vertex": [1500.0, 1800.0],
-        "near_x": [2300.0, 2500.0],  # ≈ side A corner_2 area (FAR)
-        "near_y": [500.0, 2500.0],   # ≈ corner_4 area (FAR)
-        "near_z": [1500.0, 950.0],   # ≈ corner_0 area (FAR)
+        "axis_x": [2300.0, 2500.0],  # ≈ side A corner_2 area (FAR)
+        "axis_y": [500.0, 2500.0],   # ≈ corner_4 area (FAR)
+        "axis_z": [1500.0, 950.0],   # ≈ corner_0 area (FAR)
     }
     scale = 0.5
     vertex_proc, axes = _ground_truth_axes_from_axis_truth(truth_row, scale)
@@ -50,27 +50,52 @@ def test_ground_truth_axes_returns_three_vectors_at_processing_scale():
     assert vertex_proc == (750.0, 900.0)
     # 3 axis vectors, each from scaled vertex to scaled axis-endpoint
     assert len(axes) == 3
-    # First axis: scaled near_x − scaled vertex
+    # First axis: scaled axis_x − scaled vertex
     expected_ax0 = (2300.0 * 0.5 - 750.0, 2500.0 * 0.5 - 900.0)
     assert axes[0] == expected_ax0
 
 
-def test_ground_truth_axes_order_matches_near_xyz_order():
-    """The order of returned axes must be (near_x, near_y, near_z) —
+def test_ground_truth_axes_order_matches_axis_xyz_order():
+    """The order of returned axes must be (axis_x, axis_y, axis_z) —
     callers rely on this ordering to interpret which world axis each
     vector represents (though _match_axes_to_ground_truth recovers the
     permutation anyway). Pin the order so future refactors don't shuffle.
     """
     truth_row = {
         "vertex": [0.0, 0.0],
-        "near_x": [10.0, 0.0],
-        "near_y": [0.0, 20.0],
-        "near_z": [0.0, 0.0],  # zero axis (degenerate but valid for test)
+        "axis_x": [10.0, 0.0],
+        "axis_y": [0.0, 20.0],
+        "axis_z": [0.0, 0.0],  # zero axis (degenerate but valid for test)
     }
     _vertex, axes = _ground_truth_axes_from_axis_truth(truth_row, 1.0)
-    assert axes[0] == (10.0, 0.0), "first axis must be near_x"
-    assert axes[1] == (0.0, 20.0), "second axis must be near_y"
-    assert axes[2] == (0.0, 0.0),  "third axis must be near_z"
+    assert axes[0] == (10.0, 0.0), "first axis must be axis_x"
+    assert axes[1] == (0.0, 20.0), "second axis must be axis_y"
+    assert axes[2] == (0.0, 0.0),  "third axis must be axis_z"
+
+
+def test_ground_truth_axes_backward_compat_reads_legacy_near_keys():
+    """Legacy fixtures still keyed by ``near_x/y/z`` must read identically
+    to the canonical ``axis_x/y/z`` form. Both spellings point at the
+    same FAR-corner positions — only the key differs. The shim in
+    ``_ground_truth_axes_from_axis_truth`` uses
+    ``truth_row.get(new, truth_row.get(old))``.
+    """
+    legacy_row = {
+        "vertex": [100.0, 100.0],
+        "near_x": [200.0, 150.0],
+        "near_y": [50.0, 250.0],
+        "near_z": [100.0, 50.0],
+    }
+    canonical_row = {
+        "vertex": [100.0, 100.0],
+        "axis_x": [200.0, 150.0],
+        "axis_y": [50.0, 250.0],
+        "axis_z": [100.0, 50.0],
+    }
+    v_legacy, axes_legacy = _ground_truth_axes_from_axis_truth(legacy_row, 1.0)
+    v_canon, axes_canon = _ground_truth_axes_from_axis_truth(canonical_row, 1.0)
+    assert v_legacy == v_canon
+    assert axes_legacy == axes_canon
 
 
 # ---------------- _classify_row buckets ----------------

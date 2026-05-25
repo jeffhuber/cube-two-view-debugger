@@ -532,7 +532,15 @@ def main() -> int:
             print(f"  [{i}/{len(keys)}] {key}: gallery PNG missing", file=sys.stderr)
             continue
         user_v = tuple(L["vertex"])
-        user_near = [tuple(L["near_x"]), tuple(L["near_y"]), tuple(L["near_z"])]
+        # Canonical schema uses axis_x/y/z (see FULL_CORNER_LABELING.md
+        # "Axis-truth schema convention"). Legacy fixtures still in the
+        # wild may use the old near_x/y/z key set — both name the same 3
+        # FAR-corner positions; only the spelling differs. Read either.
+        user_near = [
+            tuple(L.get("axis_x", L.get("near_x"))),
+            tuple(L.get("axis_y", L.get("near_y"))),
+            tuple(L.get("axis_z", L.get("near_z"))),
+        ]
         try:
             run = _run_one_case(path, side, user_v, user_near)
         except Exception as e:  # noqa: BLE001

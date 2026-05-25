@@ -213,23 +213,59 @@ The gallery is file-based. It copies EXIF-corrected full images into the output
 directory and lets the browser fit them to the viewport. It does not run rembg,
 global-model prefill, or any geometry model.
 
-## Do Not Conflate With Older Fixtures
+## Axis-truth schema convention
 
-Older axis fixtures may contain fields named `near_x`, `near_y`, and `near_z`.
-Those names are now known to be ambiguous in practice. Do not assume they mean
-the one-edge triplet unless a conversion against full-corner truth proves it.
+`tests/fixtures/gcm_axis_ground_truth.json` (the 70-row axis-labeled
+gallery) uses a smaller per-row schema than the full-corner truth above:
+just `vertex` plus 3 axis-endpoint corners.
 
-Initial audit result on the 12 full-corner seed rows: the legacy
-`tests/fixtures/gcm_axis_ground_truth.json` `near_*` points match the
-full-corner **far/double-axis** triplet, not the one-edge triplet:
-
-```text
-Image A: legacy near_* -> 0,2,4
-Image B: legacy near_* -> 1,3,5
+```json
+{
+  "20_A": {
+    "vertex": [1495.9, 1870.8],
+    "axis_x": [2336.8, 2500.1],
+    "axis_y": [537.6, 2488.6],
+    "axis_z": [1451.5, 947.4],
+    "approved": true
+  }
+}
 ```
 
-The median nearest-corner offset in that audit is about 20 px, so the legacy
-labels are usable as historical pixel annotations, but their field names are
-not safe as semantic truth.
+**What `axis_x/y/z` actually labels:** the silhouette corner that
+visually marks each world-axis direction from the vertex. In iso
+projection these land at the **FAR / double-axis** corners (the
+two-cube-edge corner of each visible face), NOT at the one-edge
+triplet. By side, per the full-corner numbering above:
 
-Use full-corner labels to audit and migrate those older fixtures.
+```text
+Image A: axis_x/y/z -> some permutation of {corner_0, corner_2, corner_4}
+Image B: axis_x/y/z -> some permutation of {corner_1, corner_3, corner_5}
+```
+
+Verified empirically on all 12 rows that overlap with the full-corner
+truth (median nearest-corner offset ~20 px).
+
+**Why FAR not NEAR:** the labeling tool prefills these positions from
+the global cube model's `visible_corners["h_x" / "h_y" / "h_z"]`, which
+despite the `h_` naming output FAR-corner positions. The convention is
+internally consistent — readers compare predicted axes against these
+endpoints permutation-invariantly via `_match_axes_to_ground_truth`,
+so the FAR-vs-NEAR distinction doesn't break the metric — but
+producers of predicted axes must use `FAR_CORNERS_BY_SIDE` from
+`tools/corner_conventions.py` to get the right direction. See
+`tools/measure_hull_labels_corpus.py:_ground_truth_axes_from_axis_truth`
+for an example.
+
+**Backward-compat:** the legacy `near_x/y/z` key set is still accepted
+by all readers via `entry.get("axis_x", entry.get("near_x"))` shims.
+Both names point at the same FAR-corner positions — only the spelling
+differs. New fixtures should use `axis_x/y/z`. The legacy `near_*`
+naming was renamed in this PR to remove the misleading "near" prefix
+(the points sit at the FAR-corner positions, not the NEAR-set).
+
+## Do Not Conflate With Older Fixtures
+
+Some pre-rename fixtures may still use the `near_x`, `near_y`, and
+`near_z` field names. They name the same physical positions as
+`axis_x/y/z`, just spelled differently. Readers accept both. Do not
+assume `near_*` means the one-edge triplet — see the section above.

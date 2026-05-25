@@ -24,6 +24,12 @@ def test_render_markdown_preserves_legacy_convention_warning():
 
     assert "legacy decision spine" in report
     assert "2026-05-23 convention caution" in report
-    assert "far/double-axis triplet (`A -> 0,2,4`,\n`B -> 1,3,5`)" in report
+    # Wording updated when axis_x/y/z became the canonical schema name
+    # (legacy near_x/y/z still accepted by readers); the FAR/double-axis
+    # finding the warning preserves is what matters, not the verbatim
+    # wording.
+    assert "FAR / double-axis" in report
+    assert "`A -> 0,2,4`" in report
+    assert "`B -> 1,3,5`" in report
     assert "canonical until the baseline is regenerated from full-corner truth" in report
     assert "The `near_*` target semantics are provisional" in report

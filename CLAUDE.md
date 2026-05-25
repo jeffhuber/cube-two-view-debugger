@@ -559,7 +559,10 @@ falls back to `github.token` when the secret is absent.
   events (open / synchronize / reopen / labeled `needs-devin-audit`),
   on `issue_comment` containing `@devin audit` from trusted
   commenters, and on a 5-minute `schedule` watchdog (plus
-  `workflow_dispatch` for manual runs). The scheduled path calls
+  `workflow_dispatch` for manual runs). The workflow has a job-level
+  prefilter so unrelated labels/comments (for example Codex or Claude
+  audit labels) skip before checkout and do not create no-op Devin
+  dispatch jobs. The scheduled path calls
   `scheduled_pull_requests()` to scan open PRs with the
   `needs-devin-audit` label and dispatches each through the same
   helper; `devin_already_reviewed_sha()` dedupe ensures Devin isn't

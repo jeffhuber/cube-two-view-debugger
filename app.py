@@ -126,6 +126,9 @@ class RubikHandler(BaseHTTPRequestHandler):
         if path == "/api/recognize":
             self._handle_recognize()
             return
+        if path == "/api/llm-rectified-input":
+            self._handle_llm_rectified_input()
+            return
         if path == "/api/recognize-batch":
             self._handle_batch()
             return
@@ -198,6 +201,58 @@ class RubikHandler(BaseHTTPRequestHandler):
                 {
                     "status": "rejected",
                     "reason": "Recognizer failed before producing a cube state.",
+                    "failedChecks": ["internal_error"],
+                    "detail": str(exc),
+                },
+                HTTPStatus.INTERNAL_SERVER_ERROR,
+            )
+
+    def _handle_llm_rectified_input(self) -> None:
+        try:
+            fields = self._read_multipart()
+            image_a = _first_field(fields, "imageA")
+            image_b = _first_field(fields, "imageB")
+            yaw_raw = (
+                self._query_param("yawQuarterTurns")
+                or _text_field(fields, "yawQuarterTurns")
+                or "0"
+            )
+            try:
+                yaw_quarter_turns = int(yaw_raw) % 4
+            except ValueError:
+                raise ValueError("yawQuarterTurns must be an integer 0..3")
+            if not image_a or not image_b:
+                self._send_json(
+                    {
+                        "status": "rejected",
+                        "reason": "Upload both image A and image B.",
+                        "failedChecks": ["missing_upload"],
+                    },
+                    HTTPStatus.BAD_REQUEST,
+                )
+                return
+
+            payload = prepare_llm_rectified_input(
+                image_a[1],
+                image_b[1],
+                yaw_quarter_turns=yaw_quarter_turns,
+            )
+            self._send_json(payload)
+        except ValueError as exc:
+            self._send_json(
+                {
+                    "status": "rejected",
+                    "reason": str(exc),
+                    "failedChecks": ["invalid_rectified_input_request"],
+                },
+                HTTPStatus.BAD_REQUEST,
+            )
+        except Exception as exc:
+            traceback.print_exc(file=sys.stderr)
+            self._send_json(
+                {
+                    "status": "rejected",
+                    "reason": "Rectified LLM input preparation failed.",
                     "failedChecks": ["internal_error"],
                     "detail": str(exc),
                 },
@@ -734,9 +789,169 @@ def _api_routes() -> List[Dict[str, str]]:
         {"method": "GET",  "path": "/runs/pairs/<id>/...", "brief": "Static access to a saved run's files (result.json, debug.json, overlays, samples.csv, original photos)."},
         {"method": "GET",  "path": "/runs/labels/<id>.json", "brief": "Static access to saved cube-geometry label JSON."},
         {"method": "POST", "path": "/api/recognize",       "brief": "Recognize one pair. Multipart fields: imageA, imageB; optional setId, expectedState. Query: ?slim=1 to omit overlays/diagnostics; ?hullLabelTier1=shadow|prefer for the hidden hull-label Tier 1 candidate path. Persists a run under /runs/pairs/<id>/."},
+        {"method": "POST", "path": "/api/llm-rectified-input", "brief": "Prepare two Claude/GPT-ready rectified WCA contact-sheet JPEGs from imageA/imageB. Multipart fields: imageA, imageB; optional yawQuarterTurns. Does not call an LLM or persist a run."},
         {"method": "POST", "path": "/api/recognize-batch", "brief": "Recognize multiple pairs in one call. Multipart field: images (multi-file); optional groundTruth (.csv/.tsv/.json). Pairs files by filename A/B markers or by drop order. Persists a batch under /runs/batches/<id>/."},
         {"method": "POST", "path": "/api/labels",          "brief": "Persist one cube-geometry label JSON document under /runs/labels/."},
     ]
+
+
+_LLM_RECTIFIED_WCA_GROUPS = {
+    "imageA": ("U", "F", "R"),
+    "imageB": ("D", "L", "B"),
+}
+_LLM_RECTIFIED_SESSION: Any = None
+_LLM_RECTIFIED_SESSION_LOCK = threading.Lock()
+
+
+def _llm_rectified_session() -> Any:
+    global _LLM_RECTIFIED_SESSION
+    with _LLM_RECTIFIED_SESSION_LOCK:
+        if _LLM_RECTIFIED_SESSION is None:
+            from rembg import new_session
+
+            _LLM_RECTIFIED_SESSION = new_session("u2net")
+        return _LLM_RECTIFIED_SESSION
+
+
+def prepare_llm_rectified_input(
+    image_a_bytes: bytes,
+    image_b_bytes: bytes,
+    *,
+    yaw_quarter_turns: int = 0,
+    max_side: int = 1600,
+    panel_size: int = 300,
+) -> Dict[str, Any]:
+    """Create labeled WCA face contact sheets for LLM color reading.
+
+    This is intentionally preparation-only: it does not call any LLM and it
+    does not persist a recognizer run. CubeSnap's Fixer uses it as a local
+    geometry-cleanup step before sending the resulting JPEGs to its normal
+    cloud LLM endpoint with the rectified-face prompt.
+    """
+
+    from PIL import Image, ImageDraw, ImageFont, ImageOps
+    from rembg import remove
+
+    from tools.corner_conventions import wca_face_by_slot
+    from tools.hull_label_assembly import convention_orientation_for_slot
+    from tools.rectify_via_hull_labels import rectify_via_hull_labels
+
+    def load_image(payload: bytes) -> Image.Image:
+        with Image.open(io.BytesIO(payload)) as img:
+            rgb = ImageOps.exif_transpose(img).convert("RGB")
+        side = max(rgb.size)
+        if side > max_side:
+            scale = max_side / side
+            rgb = rgb.resize(
+                (round(rgb.width * scale), round(rgb.height * scale)),
+                Image.Resampling.LANCZOS,
+            )
+        return rgb
+
+    def apply_orientation(face: Image.Image, mirror: bool, rot_quarter: int) -> Image.Image:
+        out = face
+        if mirror:
+            out = ImageOps.mirror(out)
+        if rot_quarter % 4:
+            out = out.rotate(90 * (rot_quarter % 4), expand=True)
+        if out.size[0] != out.size[1]:
+            side = min(out.size)
+            out = ImageOps.fit(out, (side, side), method=Image.Resampling.BICUBIC)
+        return out
+
+    def label_panel(face: str, img: Image.Image) -> Image.Image:
+        panel = Image.new("RGB", (panel_size, panel_size + 34), "white")
+        draw = ImageDraw.Draw(panel)
+        try:
+            font = ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial Bold.ttf", 24)
+        except Exception:
+            font = ImageFont.load_default()
+        draw.text((6, 4), face, fill=(30, 30, 30), font=font)
+        resized = img.resize((panel_size, panel_size), Image.Resampling.BICUBIC)
+        panel.paste(resized, (0, 34))
+        for i in (1, 2):
+            x = round(i * panel_size / 3)
+            y = 34 + round(i * panel_size / 3)
+            draw.line([(x, 34), (x, 34 + panel_size)], fill=(255, 255, 255), width=2)
+            draw.line([(0, y), (panel_size, y)], fill=(255, 255, 255), width=2)
+        draw.rectangle((0, 34, panel_size - 1, 34 + panel_size - 1), outline=(40, 40, 40), width=2)
+        return panel
+
+    def make_face_sheet(group_name: str, faces: Iterable[str]) -> Image.Image:
+        panels = [label_panel(face, panels_by_face[face]) for face in faces]
+        margin = 14
+        title_h = 36
+        width = len(panels) * panel_size + (len(panels) - 1) * margin
+        sheet = Image.new("RGB", (width, title_h + panel_size + 34), "white")
+        draw = ImageDraw.Draw(sheet)
+        try:
+            font = ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial Bold.ttf", 22)
+        except Exception:
+            font = ImageFont.load_default()
+        draw.text((0, 4), f"{group_name}: read labeled WCA panels row-major", fill=(30, 30, 30), font=font)
+        x = 0
+        for panel in panels:
+            sheet.paste(panel, (x, title_h))
+            x += panel_size + margin
+        return sheet
+
+    def jpeg_base64(image: Image.Image) -> Tuple[str, int]:
+        out = io.BytesIO()
+        image.convert("RGB").save(out, "JPEG", quality=90, optimize=True)
+        data = out.getvalue()
+        return base64.b64encode(data).decode("ascii"), len(data)
+
+    image_a = load_image(image_a_bytes)
+    image_b = load_image(image_b_bytes)
+    session = _llm_rectified_session()
+    panels_by_face: Dict[str, Image.Image] = {}
+    panel_metadata: List[Dict[str, Any]] = []
+    for side, image in (("A", image_a), ("B", image_b)):
+        rgba = remove(image, session=session).convert("RGBA")
+        mask = _np.asarray(rgba.split()[-1]) > 128
+        fit = rectify_via_hull_labels(image, mask, side, face_size_px=panel_size)
+        if fit is None:
+            raise RuntimeError(f"hull-label rectification failed for side {side}")
+        assignments = wca_face_by_slot(side, yaw_quarter_turns % 4)
+        for slot, wca_face in assignments.items():
+            orientation = convention_orientation_for_slot(
+                side=side,
+                slot=slot,
+                yaw_quarter_turns=yaw_quarter_turns % 4,
+                wca_face=wca_face,
+                quad=fit.face_quads[slot],
+            )
+            if orientation is None:
+                raise RuntimeError(f"could not orient side {side} slot {slot} as WCA face {wca_face}")
+            panels_by_face[wca_face] = apply_orientation(fit.rectified_faces[slot], *orientation)
+            panel_metadata.append({
+                "side": side,
+                "image": "imageA" if side == "A" else "imageB",
+                "slot": slot,
+                "wcaFace": wca_face,
+                "yawQuarterTurns": yaw_quarter_turns % 4,
+                "mirror": orientation[0],
+                "rotQuarter": orientation[1],
+            })
+
+    missing = sorted(set("URFDLB") - set(panels_by_face))
+    if missing:
+        raise RuntimeError(f"rectified panels missing WCA faces: {', '.join(missing)}")
+    image_a_sheet = make_face_sheet("Image 1", _LLM_RECTIFIED_WCA_GROUPS["imageA"])
+    image_b_sheet = make_face_sheet("Image 2", _LLM_RECTIFIED_WCA_GROUPS["imageB"])
+    image_a_b64, image_a_size = jpeg_base64(image_a_sheet)
+    image_b_b64, image_b_size = jpeg_base64(image_b_sheet)
+    panel_metadata.sort(key=lambda item: "URFDLB".index(str(item["wcaFace"])))
+    return {
+        "status": "success",
+        "prompt": "rectified",
+        "imageA": image_a_b64,
+        "imageB": image_b_b64,
+        "imageABytes": image_a_size,
+        "imageBBytes": image_b_size,
+        "yawQuarterTurns": yaw_quarter_turns % 4,
+        "panels": panel_metadata,
+    }
 
 
 def _image_fingerprint(image_bytes: bytes) -> Dict[str, Any]:

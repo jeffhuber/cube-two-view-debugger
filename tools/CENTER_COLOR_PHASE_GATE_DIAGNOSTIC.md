@@ -37,36 +37,41 @@ Command:
 ```bash
 PYTHONPATH=. .venv/bin/python tools/diagnose_center_color_phase_gate.py \
   --n-runs 3 \
-  --out-json /tmp/center_color_phase_gate_trace_n3.json \
-  --out-md /tmp/center_color_phase_gate_report_n3.md
+  --out-json /tmp/center_color_phase_gate_trace_n3_alpha.json \
+  --out-md /tmp/center_color_phase_gate_report_n3_alpha.md
 ```
 
 Summary from that run:
 
 - Rows: 12 traced / 12 total
-- Fully stable rows: 3 / 12
-- Center-choice modal counts: `forced_flip:5`, `unflipped:7`
+- Mask path: `rembg.remove(...).alpha channel`, matching production baselines
+- Fully stable rows: 12 / 12
+- Center-choice modal counts: `forced_flip:7`, `unflipped:5`
 - Effect vs production modal counts:
-  `center_choice_would_help:3`, `center_choice_would_hurt:4`,
-  `same_as_production:4`, `center_choice_tie:1`
-- Production geometry modal counts: `GOOD:4`, `MARGINAL:2`,
-  `PHASE_SWAPPED:6`
-- Selected geometry modal counts: `GOOD:6`, `MARGINAL:1`,
-  `PHASE_SWAPPED:5`
+  `center_choice_would_help:7`, `same_as_production:5`
+- Production geometry modal counts: `GOOD:2`, `MARGINAL:1`,
+  `PHASE_SWAPPED:9`
+- Selected geometry modal counts: `GOOD:8`, `MARGINAL:2`,
+  `PHASE_SWAPPED:2`
 
 ## Interpretation
 
 Center color is useful evidence, but not yet a standalone phase gate.
 
-The good news: it can rescue real phase-swapped rows. In the 3-run diagnostic,
-the modal center-color choice improved rows such as `20_B`, `38_A`, and `43_B`
-from production `PHASE_SWAPPED` to selected `GOOD`.
+The good news: using the production-equivalent rembg alpha-mask path, the 3-run
+diagnostic was stable on all 12 rows and produced no modal hurt rows. The modal
+center-color choice improved rows such as `20_B`, `38_A`, `41_B`, `43_A`,
+`43_B`, and `45_A` from production `PHASE_SWAPPED` to selected `GOOD`; it also
+improved `40_B` from production `PHASE_SWAPPED` to selected `MARGINAL`.
 
-The bad news: it also hurts some rows where production was already good
-or marginal, and the per-row choice is unstable on most rows. That means
-absolute center-color identity score is not enough by itself under recognizer
-geometry. Model quads can sample the wrong part of a sticker or face when the
-geometry is noisy, so the center-color score is contaminated by geometry error.
+The caution: this still does not prove absolute center-color identity score is
+safe as a standalone production override. Model quads can sample the wrong part
+of a sticker or face when the geometry is noisy, so the center-color score is
+contaminated by geometry error. The follow-up affine tie-breaker audit also
+showed that residual and simple geometric tie-breakers leave a 12-way exact
+phase tie; color is one of the few available signals that can break that
+symmetry, but it needs a rectification-quality/geometry gate before production
+use.
 
 Claude's visual rectification audit sharpened this interpretation:
 
@@ -96,8 +101,8 @@ Likely next useful probes:
   face grids.
 - Combine center-color evidence with full-corner geometry proxies rather than
   letting color act alone.
-- Inspect hurt rows (`40_A`, `41_A`, `41_B`, `45_A`, `45_B`) visually to see
-  whether the sampled center patches are off-center, on bezel, or correctly
-  sampled but color-ambiguous.
-- Reduce upstream nondeterminism in `detect_hexagon_anchors` / model fitting
-  before treating repeated diagnostics as stable measurements.
+- Re-check any future hurt rows visually to see whether the sampled center
+  patches are off-center, on bezel, or correctly sampled but color-ambiguous.
+- Keep diagnostics on the production-equivalent rembg alpha-mask path; the
+  earlier `only_mask=True` path made the center-color run look less stable than
+  this production-faithful rerun.

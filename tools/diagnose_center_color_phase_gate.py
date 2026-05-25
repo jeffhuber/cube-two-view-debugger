@@ -319,10 +319,8 @@ def trace_one_run(
         image, scale = _processing_image(image_path, max_image_dim)
         rgb_array = np.array(image)
         try:
-            mask_array = (
-                np.array(remove(image, session=sess, only_mask=True))
-                > 128
-            )
+            rgba = remove(image, session=sess)
+            mask_array = np.array(rgba.split()[-1], dtype=np.uint8) > 128
         except Exception as exc:  # noqa: BLE001
             record["status"] = "error"
             record["error"] = f"rembg failed: {type(exc).__name__}: {exc}"
@@ -600,6 +598,7 @@ def run_diagnostic(
             "max_image_dim": max_image_dim,
             "face_size": face_size,
             "min_margin": min_margin,
+            "mask_path": "rembg.remove(...).alpha channel, matching production baselines",
         },
         "summary": _summarize(per_row),
         "per_row": per_row,
@@ -631,6 +630,8 @@ def render_report(payload: Dict[str, Any]) -> str:
     lines.append("")
     source = payload.get("source", {})
     lines.append(f"- Runs per row: {source.get('n_runs_per_row', '?')}")
+    if source.get("mask_path"):
+        lines.append(f"- Mask path: {source.get('mask_path')}")
     lines.append(f"- Rows: {summary.get('n_traced_rows', 0)} traced / {summary.get('n_total_rows', 0)} total")
     lines.append(f"- Fully stable rows: {summary.get('n_fully_stable_rows', 0)}")
     lines.append(

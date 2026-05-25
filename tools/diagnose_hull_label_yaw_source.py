@@ -31,19 +31,19 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from tools.corner_conventions import wca_face_by_slot  # noqa: E402
 from tools.diagnose_slot_yaw_assignment import _manifest_by_set, manifest_yaw_source  # noqa: E402
+from tools.hull_label_yaw import (  # noqa: E402
+    MIN_ACCEPTED_CENTER_MARGIN,
+    MIN_ACCEPTED_CENTER_MATCHES,
+    ObservedCenter,
+    score_yaw_candidates,
+)
 
 
 DEFAULT_TRACE = REPO_ROOT / "tests" / "fixtures" / "hull_label_slot_yaw_assignment.json"
 DEFAULT_MANIFEST = REPO_ROOT / "tests" / "fixtures" / "corpus_manifest.json"
 DEFAULT_OUT = REPO_ROOT / "tests" / "fixtures" / "hull_label_center_yaw_source.json"
 DEFAULT_REPORT = REPO_ROOT / "tools" / "HULL_LABEL_CENTER_YAW_SOURCE.md"
-
-MIN_ACCEPTED_CENTER_MATCHES = 5
-MIN_ACCEPTED_CENTER_MARGIN = 2
-
-ObservedCenter = Tuple[str, str, str]
 
 
 def _git_head_sha() -> str:
@@ -84,57 +84,6 @@ def _observed_slot_centers(row: Mapping[str, Any]) -> Tuple[List[ObservedCenter]
     if len(centers) != 6:
         return centers, "incomplete_center_observations"
     return centers, None
-
-
-def score_yaw_candidates(
-    observed_centers: Sequence[ObservedCenter],
-    *,
-    min_matches: int = MIN_ACCEPTED_CENTER_MATCHES,
-    min_margin: int = MIN_ACCEPTED_CENTER_MARGIN,
-) -> Dict[str, Any]:
-    """Score yaw 0..3 by center-face agreement with the slot convention."""
-    candidates: List[Dict[str, Any]] = []
-    for yaw in range(4):
-        assignments = {
-            "A": wca_face_by_slot("A", yaw),
-            "B": wca_face_by_slot("B", yaw),
-        }
-        matches = []
-        mismatches = []
-        for side, slot, observed in observed_centers:
-            expected = assignments[side][slot]
-            item = {
-                "side": side,
-                "slot": slot,
-                "observed": observed,
-                "expected": expected,
-            }
-            if observed == expected:
-                matches.append(item)
-            else:
-                mismatches.append(item)
-        candidates.append({
-            "yawQuarterTurns": yaw,
-            "score": len(matches),
-            "matches": matches,
-            "mismatches": mismatches,
-        })
-    candidates.sort(key=lambda item: (-int(item["score"]), int(item["yawQuarterTurns"])))
-    best = candidates[0]
-    second = candidates[1]
-    margin = int(best["score"]) - int(second["score"])
-    accepted = int(best["score"]) >= min_matches and margin >= min_margin
-    return {
-        "accepted": accepted,
-        "yawQuarterTurns": int(best["yawQuarterTurns"]) if accepted else None,
-        "bestYawQuarterTurns": int(best["yawQuarterTurns"]),
-        "bestScore": int(best["score"]),
-        "secondScore": int(second["score"]),
-        "margin": margin,
-        "minMatches": min_matches,
-        "minMargin": min_margin,
-        "candidates": candidates,
-    }
 
 
 def _known_manifest_yaw(pair: Optional[Mapping[str, Any]]) -> Optional[int]:

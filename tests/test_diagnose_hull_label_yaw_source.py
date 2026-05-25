@@ -4,12 +4,13 @@ import json
 from pathlib import Path
 
 from tools import diagnose_hull_label_yaw_source as diag
+from tools.corner_conventions import wca_face_by_slot
 
 
 def _observed_for_yaw(yaw: int):
     assignments = {
-        "A": diag.wca_face_by_slot("A", yaw),
-        "B": diag.wca_face_by_slot("B", yaw),
+        "A": wca_face_by_slot("A", yaw),
+        "B": wca_face_by_slot("B", yaw),
     }
     return [
         (side, slot, assignments[side][slot])

@@ -41,6 +41,7 @@ def test_api_routes_lists_known_endpoints():
     assert "/api/runs" in paths
     assert "/api/labels" in paths
     assert "/api/recognize" in paths
+    assert "/api/llm-rectified-input" in paths
     assert "/api/recognize-batch" in paths
     assert "/runs/pairs/<id>/..." in paths
     assert "/runs/labels/<id>.json" in paths

@@ -232,10 +232,11 @@ def _render_markdown(summary: Dict[str, Any], by_case: Dict[str, List[Dict[str, 
     lines.append("  just aggregate pass rates (see `--diff` mode below).")
     lines.append("")
     lines.append("**2026-05-23 convention caution:** this report was computed against")
-    lines.append("`tests/fixtures/gcm_axis_ground_truth.json`, whose `near_x/near_y/near_z`")
-    lines.append("semantics are legacy. Initial audit against the 12-row full-corner seed")
-    lines.append("fixture shows those fields match the far/double-axis triplet (`A -> 0,2,4`,")
-    lines.append("`B -> 1,3,5`), not canonical one-edge labels. The canonical corner convention is")
+    lines.append("`tests/fixtures/gcm_axis_ground_truth.json`, whose 3 axis-endpoint")
+    lines.append("fields (canonical name `axis_x/axis_y/axis_z`; legacy alias")
+    lines.append("`near_x/near_y/near_z` still accepted) sit at the FAR / double-axis")
+    lines.append("triplet (`A -> 0,2,4`, `B -> 1,3,5`), not canonical one-edge labels.")
+    lines.append("The canonical corner convention is")
     lines.append("[`FULL_CORNER_LABELING.md`](FULL_CORNER_LABELING.md):")
     lines.append("`A slots: upper=Va+1,0,5; right=Va+3,2,1; front=Va+5,4,3` and")
     lines.append("`B slots: upper=Vb+2,3,4; right=Vb+0,1,2; front=Vb+4,5,0`. Canonical WCA")
@@ -624,7 +625,15 @@ def main() -> int:
             print(f"  [{i}/{len(keys)}] {key}: gallery PNG missing", file=sys.stderr)
             continue
         user_v = tuple(L["vertex"])
-        user_near = [tuple(L["near_x"]), tuple(L["near_y"]), tuple(L["near_z"])]
+        # Canonical schema uses axis_x/y/z (see FULL_CORNER_LABELING.md
+        # "Axis-truth schema convention"). Legacy fixtures may use the
+        # old near_x/y/z key set — both name the same 3 FAR-corner
+        # positions; only the spelling differs. Read either.
+        user_near = [
+            tuple(L.get("axis_x", L.get("near_x"))),
+            tuple(L.get("axis_y", L.get("near_y"))),
+            tuple(L.get("axis_z", L.get("near_z"))),
+        ]
         try:
             by_case[key] = _run_one_case(sess, path, user_v, user_near, args.runs)
         except Exception as e:  # noqa: BLE001

@@ -139,29 +139,17 @@ report on:
 | Side / yaw assumptions | per-side `SILHOUETTE_TO_CORNER` works for A/B | **0** failures, both sides 34/35 clean | sides other than A/B (e.g. CC/DD captures) need additional mapping entries |
 | Axis misfit | 3 predicted axes vs 3 GT axes | **2** above 30° (3% of rows) | both correlated with high vertex_err + high spread |
 
-## Axis-convention note (caught during this PR)
+## Axis-convention note
 
-The 70-row `gcm_axis_ground_truth.json` labels `near_x/near_y/near_z`
-sit at FAR-corner positions ({0, 2, 4} for side A; {1, 3, 5} for
-side B), NOT at the NEAR-set {1, 3, 5}/{0, 2, 4} the naming suggests.
-Verified against all 12 overlap rows.
-
-The labeling-tool UI calls them "near" because the user clicks the
-silhouette corner along each world axis direction (e.g. side A
-white-up: +Z = TOP = corner_0). That corner is two cube-edges from
-the vertex — the FAR set in `FAR_CORNERS_BY_SIDE`.
-
-Initial run computed predicted axes as `(NEAR_corner − vertex)` and
-reported ~180° axis misfit on all 70 rows — visibly broken. Fix was
-to compute predicted axes as `(FAR_corner − vertex)` to match the GT
-convention. After the fix, axis misfit drops to median 11° (the real
-quality signal).
-
-This is a one-shot caveat for downstream tools that read this
-fixture: use `FAR_CORNERS_BY_SIDE` to compute predicted axes for
-comparison against the 70-row truth. `measure_axis_correctness.py`
-uses `full_corner_ground_truth.json` (12-row) instead, which has
-per-corner labels and avoids this ambiguity.
+The 70-row `gcm_axis_ground_truth.json` schema labels its 3 axis
+endpoints `axis_x/y/z` (canonical; legacy alias `near_x/y/z` still
+accepted by all readers). These sit at the **FAR-corner** positions —
+the corner along each world-axis direction from the vertex, which in
+iso projection is the two-cube-edge corner of each visible face. See
+`tools/FULL_CORNER_LABELING.md` "Axis-truth schema convention" for
+the full discussion. Predicted axes must be computed from
+`FAR_CORNERS_BY_SIDE` (not the NEAR / one-edge set) to match the GT
+direction — see `measure_hull_labels_corpus.py`.
 
 ## What this PR does NOT include
 

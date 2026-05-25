@@ -32,15 +32,19 @@ Candidate JSON schema (per pair key like "12_A"):
   {
     "vertex": [x, y],
     "axes": [[ax_dx, ax_dy], [ay_dx, ay_dy], [az_dx, az_dy]],
-    // axes are DISPLACEMENT VECTORS from vertex to each near corner
+    // axes are DISPLACEMENT VECTORS from vertex to each axis-end corner
   }
   OR alternatively:
   {
     "vertex": [x, y],
-    "near_x": [x, y],
-    "near_y": [x, y],
-    "near_z": [x, y],
+    "axis_x": [x, y],
+    "axis_y": [x, y],
+    "axis_z": [x, y],
   }
+
+(The legacy ``near_x/y/z`` key set is also accepted as backward-compat —
+same FAR-corner positions, different spelling. See
+``tools/FULL_CORNER_LABELING.md`` "Axis-truth schema convention".)
 """
 from __future__ import annotations
 
@@ -63,11 +67,15 @@ def _parse_candidate(entry: Dict[str, Any]) -> Optional[Tuple[Tuple[float, float
         if len(axes) != 3:
             return None
         return vertex, axes
-    near_keys = ["near_x", "near_y", "near_z"]
-    if all(k in entry for k in near_keys):
+    # Canonical schema is axis_x/y/z; legacy near_x/y/z is accepted
+    # as backward-compat — same FAR-corner positions, different
+    # spelling. See FULL_CORNER_LABELING.md "Axis-truth schema
+    # convention".
+    key_pairs = [("axis_x", "near_x"), ("axis_y", "near_y"), ("axis_z", "near_z")]
+    if all((new in entry) or (old in entry) for new, old in key_pairs):
         axes = []
-        for k in near_keys:
-            n = entry[k]
+        for new, old in key_pairs:
+            n = entry.get(new, entry.get(old))
             axes.append((float(n[0]) - vertex[0], float(n[1]) - vertex[1]))
         return vertex, axes
     return None

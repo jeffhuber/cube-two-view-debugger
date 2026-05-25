@@ -41,10 +41,16 @@ GROUND_TRUTH_PATH = (
 
 def _axes_from_label(rec):
     vx, vy = rec["vertex"]
+    # Canonical schema is axis_x/y/z; legacy near_x/y/z accepted as
+    # backward-compat (same FAR-corner positions, different spelling).
+    # See tools/FULL_CORNER_LABELING.md "Axis-truth schema convention".
+    ax = rec.get("axis_x", rec.get("near_x"))
+    ay = rec.get("axis_y", rec.get("near_y"))
+    az = rec.get("axis_z", rec.get("near_z"))
     return (
-        (rec["near_x"][0] - vx, rec["near_x"][1] - vy),
-        (rec["near_y"][0] - vx, rec["near_y"][1] - vy),
-        (rec["near_z"][0] - vx, rec["near_z"][1] - vy),
+        (ax[0] - vx, ax[1] - vy),
+        (ay[0] - vx, ay[1] - vy),
+        (az[0] - vx, az[1] - vy),
     )
 
 

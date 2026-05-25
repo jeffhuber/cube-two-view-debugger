@@ -11,7 +11,9 @@ downstream sticker sampling.
 This tool is retained for historical reproducibility. New canonical geometry
 labels should use `tools/build_full_corner_labeling_gallery.py`, which records
 `Va/Vb + 0..5` and derives one-edge vs far triplets side-specifically. Do not
-create new canonical `near_*` labels with this tool.
+create new canonical `axis_*` labels with this tool (legacy fixtures may
+still use the older `near_*` key set — readers accept both; see
+``tools/FULL_CORNER_LABELING.md`` "Axis-truth schema convention").
 
 Workflow:
 1. Run this tool to produce a static HTML + per-photo full-image PNGs in --out.
@@ -121,7 +123,7 @@ def _global_model_prefill(
 ) -> Optional[Dict[str, Any]]:
     """Run the legacy global model prefill in original-image coordinates.
 
-    The returned fields are the historical vertex + 3 `near_*` schema. Those
+    The returned fields are the canonical vertex + 3 `axis_*` schema. Those
     labels are not canonical human one-edge labels; see FULL_CORNER_LABELING.
     """
     try:
@@ -143,9 +145,16 @@ def _global_model_prefill(
         return None
     return {
         "vertex": [round(corners["front"][0], 1), round(corners["front"][1], 1)],
-        "near_x": [round(corners["h_x"][0], 1), round(corners["h_x"][1], 1)],
-        "near_y": [round(corners["h_y"][0], 1), round(corners["h_y"][1], 1)],
-        "near_z": [round(corners["h_z"][0], 1), round(corners["h_z"][1], 1)],
+        # axis_x/y/z labels the 3 FAR silhouette corners (the corner
+        # along each world axis direction from the vertex; in iso
+        # projection this is the two-cube-edge corner of each visible
+        # face). See FULL_CORNER_LABELING.md "Axis-truth schema
+        # convention". The model's h_x/h_y/h_z output happens to sit
+        # at the FAR positions despite the "h_" name (legacy from
+        # before the convention was nailed down).
+        "axis_x": [round(corners["h_x"][0], 1), round(corners["h_x"][1], 1)],
+        "axis_y": [round(corners["h_y"][0], 1), round(corners["h_y"][1], 1)],
+        "axis_z": [round(corners["h_z"][0], 1), round(corners["h_z"][1], 1)],
     }
 
 
@@ -180,9 +189,9 @@ def _build_case_data(
         cx, cy = img.size[0] / 2, img.size[1] / 2
         prefill = {
             "vertex": [cx, cy],
-            "near_x": [cx + 200, cy],
-            "near_y": [cx - 100, cy - 200],
-            "near_z": [cx - 100, cy + 200],
+            "axis_x": [cx + 200, cy],
+            "axis_y": [cx - 100, cy - 200],
+            "axis_z": [cx - 100, cy + 200],
         }
 
     crop_box, scale, (nw, nh) = _full_image_display(img.size)
@@ -262,16 +271,16 @@ HTML_TEMPLATE = """<!doctype html>
     <button onclick="approveAll()">Approve all</button>
     <span class="legend">
       <span><span class="swatch" style="background:#fff"></span> vertex</span>
-      <span><span class="swatch" style="background:#f55"></span> near_x</span>
-      <span><span class="swatch" style="background:#5a5"></span> near_y</span>
-      <span><span class="swatch" style="background:#55f"></span> near_z</span>
+      <span><span class="swatch" style="background:#f55"></span> axis_x</span>
+      <span><span class="swatch" style="background:#5a5"></span> axis_y</span>
+      <span><span class="swatch" style="background:#55f"></span> axis_z</span>
     </span>
     <span class="stats" id="stats"></span>
   </div>
 
   <div class="intro">
     <h2>Cube axis labeling</h2>
-    <p>Place WHITE at the trihedral vertex and RED/GREEN/BLUE at the three one-edge-away visible corners. Drag a marker, or choose a marker button and click the photo.</p>
+    <p>Place WHITE at the trihedral vertex and RED/GREEN/BLUE at the three <strong>FAR / silhouette-axis-endpoint</strong> corners (the silhouette corner that visually marks each world-axis direction from the vertex — in iso projection these are the two-cube-edge corners of each visible face, NOT the one-edge-away neighbors of the vertex). See <code>tools/FULL_CORNER_LABELING.md</code> "Axis-truth schema convention". Drag a marker, or choose a marker button and click the photo.</p>
   </div>
 
   <div class="viewer" id="case-host"></div>
@@ -279,7 +288,7 @@ HTML_TEMPLATE = """<!doctype html>
 
 <script>
 const CASES = __CASES_JSON__;
-const judgments = {};  // key → { vertex, near_x, near_y, near_z, approved }
+const judgments = {};  // key → { vertex, axis_x, axis_y, axis_z, approved }
 let currentIndex = 0;
 
 function deepCopy(o) { return JSON.parse(JSON.stringify(o)); }
@@ -288,9 +297,9 @@ function init() {
   CASES.forEach(c => {
     judgments[c.key] = {
       vertex: c.prefill.vertex.slice(),
-      near_x: c.prefill.near_x.slice(),
-      near_y: c.prefill.near_y.slice(),
-      near_z: c.prefill.near_z.slice(),
+      axis_x: c.prefill.axis_x.slice(),
+      axis_y: c.prefill.axis_y.slice(),
+      axis_z: c.prefill.axis_z.slice(),
       approved: false,
       lastTouched: 'vertex',
     };
@@ -312,12 +321,12 @@ function displayToOrig(c, dx, dy) {
 }
 
 const MARKER_RADIUS = 9;
-const POINT_NAMES = ['vertex', 'near_x', 'near_y', 'near_z'];
+const POINT_NAMES = ['vertex', 'axis_x', 'axis_y', 'axis_z'];
 const POINT_COLORS = {
   vertex: '#ffffff',
-  near_x: '#ff5050',
-  near_y: '#50aa50',
-  near_z: '#5050ff',
+  axis_x: '#ff5050',
+  axis_y: '#50aa50',
+  axis_z: '#5050ff',
 };
 
 function canvasToCssScale(cv) {
@@ -348,7 +357,7 @@ function pointAt(c, dx, dy, cv) {
 function pointButtons(c) {
   const active = judgments[c.key].lastTouched || 'vertex';
   return POINT_NAMES.map(name => {
-    const label = name.replace('near_', '');
+    const label = name.replace('axis_', '');
     return `<button class="btn-point ${active === name ? 'active' : ''}" onclick="selectPoint('${name}')">${label}</button>`;
   }).join('');
 }
@@ -409,7 +418,7 @@ function drawMarkers(c, ctx) {
   }
   // Draw axis lines from vertex
   const [vx, vy] = origToDisplay(c, j.vertex);
-  for (const name of ['near_x', 'near_y', 'near_z']) {
+  for (const name of ['axis_x', 'axis_y', 'axis_z']) {
     const [nx, ny] = origToDisplay(c, j[name]);
     ctx.beginPath();
     ctx.moveTo(vx, vy);
@@ -475,7 +484,7 @@ function updateReadout(c) {
   if (!el) return;
   const j = judgments[c.key];
   const fmt = (p) => `(${p[0].toFixed(0)},${p[1].toFixed(0)})`;
-  el.textContent = `vertex=${fmt(j.vertex)} near_x=${fmt(j.near_x)} near_y=${fmt(j.near_y)} near_z=${fmt(j.near_z)}`;
+  el.textContent = `vertex=${fmt(j.vertex)} axis_x=${fmt(j.axis_x)} axis_y=${fmt(j.axis_y)} axis_z=${fmt(j.axis_z)}`;
 }
 
 function toggleApprove(key) {
@@ -491,9 +500,9 @@ function approveAndNext() {
 function resetToPrefill(key) {
   const c = CASES.find(c => c.key === key);
   judgments[key].vertex = c.prefill.vertex.slice();
-  judgments[key].near_x = c.prefill.near_x.slice();
-  judgments[key].near_y = c.prefill.near_y.slice();
-  judgments[key].near_z = c.prefill.near_z.slice();
+  judgments[key].axis_x = c.prefill.axis_x.slice();
+  judgments[key].axis_y = c.prefill.axis_y.slice();
+  judgments[key].axis_z = c.prefill.axis_z.slice();
   judgments[key].approved = false;
   judgments[key].lastTouched = 'vertex';
   renderCase();
@@ -529,9 +538,9 @@ function buildExport() {
     if (j.approved) {
       out[c.key] = {
         vertex: [Math.round(j.vertex[0]*10)/10, Math.round(j.vertex[1]*10)/10],
-        near_x: [Math.round(j.near_x[0]*10)/10, Math.round(j.near_x[1]*10)/10],
-        near_y: [Math.round(j.near_y[0]*10)/10, Math.round(j.near_y[1]*10)/10],
-        near_z: [Math.round(j.near_z[0]*10)/10, Math.round(j.near_z[1]*10)/10],
+        axis_x: [Math.round(j.axis_x[0]*10)/10, Math.round(j.axis_x[1]*10)/10],
+        axis_y: [Math.round(j.axis_y[0]*10)/10, Math.round(j.axis_y[1]*10)/10],
+        axis_z: [Math.round(j.axis_z[0]*10)/10, Math.round(j.axis_z[1]*10)/10],
         approved: true,
       };
     }

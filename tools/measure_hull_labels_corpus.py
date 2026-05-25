@@ -143,30 +143,32 @@ def _ground_truth_axes_from_axis_truth(
 ) -> Tuple[Point, List[Point]]:
     """Read GT vertex + 3 axis endpoints from
     ``gcm_axis_ground_truth.json``-schema row. The 3 endpoints are
-    labeled ``near_x``/``near_y``/``near_z`` (world axes), NOT corner
+    labeled ``axis_x``/``axis_y``/``axis_z`` (world axes), NOT corner
     indices — so the predicted-to-GT matching has to be permutation-
     invariant. That's what ``_match_axes_to_ground_truth`` does.
 
-    Empirical note (verified on all 12 overlap rows with
-    ``full_corner_ground_truth.json``): the ``near_x/y/z`` points
-    consistently sit at FAR-corner positions ({0,2,4} for side A;
-    {1,3,5} for side B), NOT at the NEAR-set {1,3,5}/{0,2,4}.
-    Despite the "near_" prefix in the labeling-tool UI, the user
-    clicked the silhouette corner that visually marks each world axis
-    direction (e.g. for side A white-up: +Z = TOP corner = corner_0).
-    That corner is two cube-edges from the vertex, i.e. the FAR set.
-    The downstream metric uses these as axis endpoints, so what
-    matters is direction-from-vertex, and both NEAR and FAR endpoints
-    along a given world-axis direction project to one of the 6
-    silhouette corners — they just sit 60° apart in iso. So the
-    convention is internally consistent as long as the PREDICTED
-    axes are computed using the same set (FAR) — see ``evaluate_row``.
+    The 3 axis points sit at FAR-corner positions ({0,2,4} for side A;
+    {1,3,5} for side B): the labeler clicks the silhouette corner
+    that visually marks each world-axis direction from the vertex,
+    which in iso projection lands at the two-cube-edge corner of each
+    visible face. See ``tools/FULL_CORNER_LABELING.md``
+    "Axis-truth schema convention" for the full discussion. The
+    predicted axes in ``evaluate_row`` must use the same set
+    (``FAR_CORNERS_BY_SIDE``) — NEAR predictions would be 60° offset
+    in iso, giving ~180° total misfit summed over 3 axes.
+
+    Backward-compat: legacy fixtures still keyed by ``near_x/y/z``
+    are read via the ``.get(new, old)`` chain. Both name the same
+    FAR-corner positions — only the spelling differs.
     """
     vertex_full = (float(truth_row["vertex"][0]), float(truth_row["vertex"][1]))
     vertex_proc = _scale_point(vertex_full, scale)
     axes: List[Point] = []
-    for name in ("near_x", "near_y", "near_z"):
-        p_full = (float(truth_row[name][0]), float(truth_row[name][1]))
+    for new_name, old_name in (
+        ("axis_x", "near_x"), ("axis_y", "near_y"), ("axis_z", "near_z"),
+    ):
+        raw = truth_row.get(new_name, truth_row.get(old_name))
+        p_full = (float(raw[0]), float(raw[1]))
         p_proc = _scale_point(p_full, scale)
         axes.append((p_proc[0] - vertex_proc[0], p_proc[1] - vertex_proc[1]))
     return vertex_proc, axes

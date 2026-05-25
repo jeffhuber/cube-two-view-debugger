@@ -336,6 +336,7 @@ def _global_model_from_hull_label_fit(
     hull-label quadrilaterals rather than recomputing parallelogram corners.
     """
     from tools.corner_conventions import FACE_DEFS_BY_SIDE
+    from tools.hull_label_acceptance import DEFAULT_THRESHOLDS
 
     visible: Dict[str, Point] = {}
     conflicts: List[str] = []
@@ -371,7 +372,9 @@ def _global_model_from_hull_label_fit(
         fit_loss=float(score.get("total_distance", 0.0)),
         fit_quality=max(
             0.0,
-            1.0 - float(score.get("total_distance", 0.0)) / max(1.0, 900.0),
+            1.0
+            - float(score.get("total_distance", 0.0))
+            / DEFAULT_THRESHOLDS.max_sticker_score_total,
         ),
         debug={
             "approach": "hull_label_tier1",

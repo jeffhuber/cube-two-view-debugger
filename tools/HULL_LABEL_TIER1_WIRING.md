@@ -58,6 +58,11 @@ also include `hullLabelTier1Yaw`. This is the center-color yaw inference from
 `tools/hull_label_yaw.py`: score yaw candidates 0..3 by the six visible center
 faces, accept only with at least 5/6 matches and margin >= 2, and expose the
 winning `yawQuarterTurns` plus candidate scores. It is diagnostic/hidden-path
-metadata today; the next production step can use it to assemble the hull-label
-candidate directly through `corner_conventions` rather than relying on legacy
-`captureYaw`.
+metadata today.
+
+In hidden `prefer` mode, accepted center-color yaw now also enables a direct
+slot/yaw candidate assembled through `tools/hull_label_assembly.py` and
+`corner_conventions`, bypassing the legacy visible-face identity search for
+that candidate. The normal legality checks, pair fallback, and default-off
+feature flag still apply: if the direct candidate does not produce a legal
+state, `prefer` falls back to the legacy recognizer result.

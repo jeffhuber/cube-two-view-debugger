@@ -16,6 +16,7 @@ from __future__ import annotations
 import importlib
 import json
 import math
+from types import SimpleNamespace
 from pathlib import Path
 
 import numpy as np
@@ -133,6 +134,192 @@ def test_hull_from_mask_does_not_use_random_subsample(monkeypatch):
 
     assert hull_1
     assert hull_1 == hull_2
+
+
+def test_hull_label_mode_normalizes_explicit_and_env(monkeypatch):
+    from tools.global_cube_model import HULL_LABEL_TIER1_ENV, _hull_label_mode
+
+    monkeypatch.delenv(HULL_LABEL_TIER1_ENV, raising=False)
+    assert _hull_label_mode(None) == "off"
+    assert _hull_label_mode("shadow") == "shadow"
+    assert _hull_label_mode("1") == "prefer"
+    assert _hull_label_mode("prefer") == "prefer"
+    assert _hull_label_mode("definitely-not-a-mode") == "off"
+
+    monkeypatch.setenv(HULL_LABEL_TIER1_ENV, "trace")
+    assert _hull_label_mode(None) == "shadow"
+
+
+def test_hull_label_subdivide_quad_preserves_all_four_corners():
+    from tools.global_cube_model import _subdivide_quad_cells
+
+    cells_by_face = _subdivide_quad_cells({
+        "face_xy": [(0.0, 0.0), (9.0, 0.0), (12.0, 9.0), (0.0, 9.0)],
+    })
+
+    cells = cells_by_face["face_xy"]
+    assert len(cells) == 9
+    assert cells[0][0] == (0.0, 0.0)
+    assert cells[2][1] == (9.0, 0.0)
+    assert cells[8][2] == (12.0, 9.0)
+    assert cells[6][3] == (0.0, 9.0)
+
+
+def test_hull_label_fit_converts_to_legacy_global_model_shape():
+    from tools.corner_conventions import FACE_DEFS_BY_SIDE
+    from tools.global_cube_model import _global_model_from_hull_label_fit
+
+    vertex = (100.0, 100.0)
+    corners_by_num = {
+        0: (100.0, 0.0),
+        1: (200.0, 50.0),
+        2: (200.0, 150.0),
+        3: (100.0, 200.0),
+        4: (0.0, 150.0),
+        5: (0.0, 50.0),
+    }
+    face_quads = {}
+    for slot, names in FACE_DEFS_BY_SIDE["A"].items():
+        quad = []
+        for name in names:
+            quad.append(vertex if name == "vertex" else corners_by_num[int(name.split("_")[1])])
+        face_quads[slot] = quad
+
+    fit = SimpleNamespace(
+        vertex=vertex,
+        vertex_source="affine",
+        corners_by_num=corners_by_num,
+        face_quads=face_quads,
+    )
+    decision = SimpleNamespace(warnings=("sticker_score_total=701.0; warning 700.0",))
+    trace = {"status": "accepted", "selected": True}
+    model = _global_model_from_hull_label_fit(
+        fit,
+        "A",
+        score={"total_distance": 500.0},
+        decision=decision,
+        trace=trace,
+    )
+
+    assert model.debug["approach"] == "hull_label_tier1"
+    assert model.debug["phase_check"] == "skipped_hull_label_tier1"
+    assert model.debug["hull_label_tier1"]["status"] == "accepted"
+    assert set(model.face_quads) == {"face_yz", "face_xz", "face_xy"}
+    assert set(model.sticker_cells) == {"face_yz", "face_xz", "face_xy"}
+    assert all(len(cells) == 9 for cells in model.sticker_cells.values())
+    assert model.visible_corners["h_z"] == corners_by_num[1]
+    assert model.visible_corners["h_y"] == corners_by_num[3]
+    assert model.visible_corners["h_x"] == corners_by_num[5]
+
+
+def test_hull_label_prefer_bypasses_missing_legacy_detection(monkeypatch):
+    from tools import global_cube_model as mod
+    from tools.interior_bezel_detection import InteriorBezelDetection
+
+    expected = mod.GlobalCubeModel(
+        cube_center_screen=(10.0, 10.0),
+        axis_x_2d=(1.0, 0.0),
+        axis_y_2d=(0.0, 1.0),
+        axis_z_2d=(-1.0, 0.0),
+        debug={"approach": "hull_label_tier1"},
+    )
+    calls = []
+
+    def fake_fit(image_rgb, silhouette_mask, *, side, mode):
+        calls.append((side, mode, image_rgb.shape, silhouette_mask.shape))
+        return expected, {"status": "accepted", "selected": True}
+
+    monkeypatch.setattr(mod, "_fit_hull_label_tier1_model", fake_fit)
+    detection = InteriorBezelDetection(cube_center=None)
+    rgb = np.zeros((20, 30, 3), dtype=np.uint8)
+    mask = np.ones((20, 30), dtype=bool)
+
+    model = mod.fit_global_cube_model(
+        detection,
+        rgb,
+        mask,
+        hull_label_side="A",
+        hull_label_mode="prefer",
+    )
+
+    assert model is expected
+    assert calls == [("A", "prefer", (20, 30, 3), (20, 30))]
+
+
+def test_hull_label_shadow_keeps_legacy_model_and_attaches_trace(monkeypatch):
+    from tools import global_cube_model as mod
+    from tools.interior_bezel_detection import InteriorBezelDetection
+
+    hull_model = mod.GlobalCubeModel(
+        cube_center_screen=(10.0, 10.0),
+        axis_x_2d=(1.0, 0.0),
+        axis_y_2d=(0.0, 1.0),
+        axis_z_2d=(-1.0, 0.0),
+    )
+    legacy_model = mod.GlobalCubeModel(
+        cube_center_screen=(50.0, 50.0),
+        axis_x_2d=(10.0, 0.0),
+        axis_y_2d=(0.0, 10.0),
+        axis_z_2d=(-10.0, 0.0),
+        visible_corners={},
+        face_quads={},
+        sticker_cells={},
+        debug={"approach": "legacy"},
+    )
+
+    monkeypatch.setattr(
+        mod,
+        "_fit_hull_label_tier1_model",
+        lambda image_rgb, silhouette_mask, *, side, mode: (
+            hull_model,
+            {"status": "accepted", "selected": False, "accepted": True},
+        ),
+    )
+    monkeypatch.setattr(mod, "_try_import_scipy_ndimage", lambda: object())
+    monkeypatch.setattr(
+        mod,
+        "detect_hexagon_anchors",
+        lambda _mask: [(0.0, 0.0), (1.0, 0.0), (2.0, 1.0), (2.0, 2.0), (1.0, 3.0), (0.0, 2.0)],
+    )
+    monkeypatch.setattr(
+        mod,
+        "fit_cube_template_to_anchors",
+        lambda cube_center, hexagon, boundary_angles, image_size=None: legacy_model,
+    )
+    monkeypatch.setattr(
+        mod,
+        "_resolve_near_far_phase",
+        lambda model, detection, image_rgb, apply_correction=True: (
+            model,
+            {"phase_check": "test_skipped"},
+        ),
+    )
+    monkeypatch.setattr(
+        mod,
+        "_refine_vertex_via_image_junction",
+        lambda image_rgb, vertex, axes: (vertex, {"vertex_refinement": "test_skipped"}),
+    )
+
+    detection = InteriorBezelDetection(
+        cube_center=(50.0, 50.0),
+        boundary_angles=[math.radians(90), math.radians(210), math.radians(330)],
+    )
+    rgb = np.zeros((20, 30, 3), dtype=np.uint8)
+    mask = np.ones((20, 30), dtype=bool)
+
+    model = mod.fit_global_cube_model(
+        detection,
+        rgb,
+        mask,
+        hull_label_side="A",
+        hull_label_mode="shadow",
+    )
+
+    assert model is legacy_model
+    assert model.debug["approach"] == "procrustes_template_fit+mean3_vertex"
+    assert model.debug["hull_label_tier1"]["status"] == "accepted"
+    assert model.debug["hull_label_tier1"]["selected"] is False
+    assert model.debug["hull_label_tier1"]["shadow_returned_legacy"] is True
 
 
 def test_fit_runs_on_synthetic_iso_silhouette():

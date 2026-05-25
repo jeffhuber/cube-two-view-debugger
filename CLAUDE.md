@@ -416,6 +416,87 @@ not after. Rule #1 covers staging; this rule covers the analogous
 step at branch-creation time. Either misstep silently includes
 someone else's pending work in your commit.
 
+## Worktrees — pre-flight before any Edit/Write/Bash (read once per session)
+
+This repo uses git worktrees under `.claude/worktrees/<name>/`.
+The primary checkout (`/Users/jhuber/cube-two-view-debugger`) and
+any worktree are **separate working trees**: same `.git/` but
+**divergent files on disk**. The primary is typically on Codex's
+WIP branch (e.g. `codex/hull-label-post305-validation`,
+`codex/hull-label-slot-color-diagnostic`) while a worktree is on
+the branch you're actually building. Editing the wrong copy
+silently splits your work AND stomps on Codex's checkout.
+
+### Protocol — every session, before the first Edit/Write:
+
+1. **Detect**. Run `pwd`. If the path contains `.claude/worktrees/`,
+   you're in a worktree. The primary is at
+   `/Users/jhuber/cube-two-view-debugger`.
+2. **Root every path generator at `pwd` or a repo-relative path,
+   never at the primary absolute path.** Concretely:
+   - `grep -rn "..." tools/ tests/` ✅ (relative — auto-rooted at pwd)
+   - `find . -name "*.py"` ✅
+   - `grep -rn "..." /Users/jhuber/cube-two-view-debugger/tools` ❌
+   - `find /Users/jhuber/cube-two-view-debugger -name "*.py"` ❌
+3. **Before every Edit/Write, the `file_path` argument must start
+   with the worktree root** (`$(pwd)` or the explicit
+   `/Users/jhuber/cube-two-view-debugger/.claude/worktrees/<name>/`
+   prefix). If it starts with
+   `/Users/jhuber/cube-two-view-debugger/<other>` (no worktrees
+   component), you're about to edit Codex's primary working tree
+   — typically on Codex's WIP branch. Stop, rewrite the path,
+   retry.
+4. **If you must touch the primary** (rare — usually for cleaning
+   up an accidental write):
+   - `cd /Users/jhuber/cube-two-view-debugger` in a single Bash
+     call.
+   - Run `git diff -- <paths>` FIRST. Codex may have uncommitted
+     work at the same paths. If the diff shows hunks that are NOT
+     your accidental edit, do NOT run `git restore` — it would
+     silently discard Codex's work.
+   - If the diff is *only* your accidental edit, `git restore
+     <paths>` is safe (or `git rm -f` for files added via
+     `git checkout origin/codex/... -- <path>`).
+   - Otherwise: revert only your hunk manually
+     (`git checkout -p`, or `git apply -R` of a hand-extracted
+     patch), or ask the user before touching anything.
+   The rule of thumb: `git restore` in a primary you don't own is
+   destructive by default; treat it like `rm -rf` on a directory
+   whose contents you haven't audited.
+
+### This caused real bugs TWICE on 2026-05-25
+
+In the same session, while landing protocol mirror PRs:
+
+- **cube-snap#169 / ctvd#307** (audit-handoff-log): ran
+  `git checkout origin/codex/audit-handoff-log -- tests/...
+  tools/...` into the ctvd PRIMARY (which was on
+  `codex/hull-label-post305-validation`) instead of the worktree.
+  Remediated via `git rm -f tests/test_audit_handoff_log.py
+  tools/audit_handoff_log.py` once the user explicitly authorized.
+- **cube-snap#173 / ctvd#311** (review-log-events): `Edit` call
+  with `file_path=/Users/jhuber/cube-two-view-debugger/tests/
+  test_audit_handoff_log.py` when the worktree path was
+  `/Users/jhuber/cube-two-view-debugger/.claude/worktrees/
+  review-log-events/tests/test_audit_handoff_log.py`. Same root
+  cause: default-completed to the primary path. Remediated by
+  copying the edits to the worktree and `git restore` in the
+  primary.
+
+Pattern: when editing files in ctvd from a session whose primary
+mental model is cube-snap, hands default to the ctvd primary
+path. The fix is rule 3 above — verify the prefix includes the
+`.claude/worktrees/` component before passing the file_path to
+Edit/Write.
+
+### Why the existing `pwd && git branch --show-current` pre-flight
+### wasn't enough
+
+That check answers *"where am I?"* — it does not answer *"do the
+file paths I'm about to pass to Edit live under here?"* Those are
+different questions. The path-origin check (rule 3) is the one
+that actually catches this failure mode.
+
 ## Default to acting on non-destructive next steps
 
 The `.claude/settings.json` allow list exists so routine operations

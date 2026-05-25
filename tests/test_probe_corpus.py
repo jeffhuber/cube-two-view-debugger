@@ -288,6 +288,28 @@ def test_probe_manifest_records_hashes_observed_baselines_and_contracts():
         assert "currentScoreObserved" in row
 
 
+def test_probe_manifest_covers_approved_axis_truth_sets():
+    """Every approved two-view axis-truth set must be runnable from the
+    corpus manifest.
+
+    The hull-label shadow analyzers use the axis-truth fixture as their
+    row list and the corpus manifest as their image resolver. If these
+    drift apart, diagnostics silently skip rows before reaching the
+    actual acceptance gate.
+    """
+    manifest = load_manifest(Path(__file__).parent / "fixtures" / "corpus_manifest.json")
+    manifest_ids = {row["setId"] for row in manifest}
+    axis_truth_path = Path(__file__).parent / "fixtures" / "gcm_axis_ground_truth.json"
+    axis_truth = json.loads(axis_truth_path.read_text(encoding="utf-8"))
+    approved_ids = {
+        key.rsplit("_", 1)[0]
+        for key, row in axis_truth.items()
+        if isinstance(row, dict) and row.get("approved")
+    }
+
+    assert approved_ids <= manifest_ids
+
+
 def test_probe_manifest_records_primary_supported_architecture():
     document = load_manifest_document(Path(__file__).parent / "fixtures" / "corpus_manifest.json")
     primary = document["supportedArchitectures"]["primary"]

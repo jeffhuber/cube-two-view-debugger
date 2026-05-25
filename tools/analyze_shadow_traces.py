@@ -521,9 +521,20 @@ def main(argv: Optional[List[str]] = None) -> int:
         sid = p.get("setId")
         if sid is not None:
             set_index.setdefault(str(sid), p)
-    # image_roots from corpus_manifest alone — the hard-case manifest
-    # uses the same root scheme. Merging would duplicate paths.
-    image_roots = _candidate_image_roots(manifest_doc)
+    # Build image_roots from BOTH manifests' pair paths so the
+    # resolver's pattern-search fallback searches directories
+    # contributed by either manifest. Codex P2 on PR #292 fix head
+    # f0734db: if --hard-case-manifest contributes a pair whose
+    # image path lives under a root that --manifest doesn't already
+    # cover, _resolve_image_path's pattern search wouldn't find it
+    # if the hard-case absolute path is stale or fails SHA. Merge
+    # both manifests' pairs into a synthetic doc for the root
+    # extractor.
+    merged_for_roots = {
+        "pairs": list((manifest_doc.get("pairs") or [])
+                      + (hard_case_doc.get("pairs") or []))
+    }
+    image_roots = _candidate_image_roots(merged_for_roots)
     # axis_truth is a dict mapping key (e.g. "17_A") → row record.
     # Only iterate "approved" rows — matches measure_hull_labels_corpus.
     rows = []
@@ -603,9 +614,16 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     summary = _summarize(per_row)
     head_sha = _git_head_sha()
+    # Codex P3 on PR #292 fix head f0734db: a tz-aware datetime's
+    # isoformat() already includes the offset (e.g. "+00:00").
+    # Appending "Z" would produce "...+00:00Z" which is invalid
+    # ISO/RFC3339 and fails datetime.fromisoformat. Convert to UTC
+    # and strip the offset, then append a single "Z" so the value
+    # parses by both the strict parser and common consumers.
     artifact = {
         "head_sha": head_sha,
-        "generated_at": _dt.datetime.now(_dt.timezone.utc).isoformat() + "Z",
+        "generated_at": _dt.datetime.now(_dt.timezone.utc)
+            .replace(tzinfo=None).isoformat() + "Z",
         "axis_truth_path": str(args.axis_truth),
         "manifest_path": str(args.manifest),
         "max_image_dim": args.max_image_dim,

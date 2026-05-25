@@ -1,6 +1,6 @@
 {
-  "head_sha": "dfac4ad089b39bfcef244ec5f011170c0613256a",
-  "generated_at": "2026-05-25T06:35:25.949769+00:00Z",
+  "head_sha": "f0734db3548bd88e0fb4e2461a348a8bb427aa0f",
+  "generated_at": "2026-05-25T06:47:25.677975Z",
   "axis_truth_path": "/Users/jhuber/cube-two-view-debugger/.claude/worktrees/shadow-trace-analyzer/tests/fixtures/gcm_axis_ground_truth.json",
   "manifest_path": "/Users/jhuber/cube-two-view-debugger/.claude/worktrees/shadow-trace-analyzer/tests/fixtures/corpus_manifest.json",
   "max_image_dim": 1600,

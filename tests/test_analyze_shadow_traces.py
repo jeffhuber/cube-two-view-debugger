@@ -399,6 +399,149 @@ def test_main_end_to_end_with_synthetic_inputs(
     assert "**3/3" in md  # all 3 accept (77_A no longer skipped)
 
 
+def test_main_generated_at_timestamp_is_valid_rfc3339(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Codex P3 on PR #292 fix head f0734db: appending 'Z' to a
+    tz-aware UTC isoformat() produced '...+00:00Z' which is not
+    valid ISO/RFC3339 and fails common parsers (datetime.fromisoformat).
+    Pin that the generated_at field round-trips through both
+    datetime.fromisoformat (strict) AND common ISO parsers.
+    """
+    axis_truth = {
+        "1_A": {"vertex": [0, 0], "axis_x": [0, 0], "axis_y": [0, 0],
+                 "axis_z": [0, 0], "approved": True},
+    }
+    manifest = {"pairs": [
+        {"setId": "1", "imageAPath": "/tmp/1a.jpg", "imageBPath": "/tmp/1b.jpg"}
+    ]}
+    axis_truth_path = tmp_path / "axis.json"
+    manifest_path = tmp_path / "manifest.json"
+    axis_truth_path.write_text(json.dumps(axis_truth))
+    manifest_path.write_text(json.dumps(manifest))
+
+    monkeypatch.setattr(
+        ast, "_resolve_image_path",
+        lambda raw, sid, side, roots, expected_sha256=None: Path(raw),
+    )
+    monkeypatch.setattr(
+        ast, "analyze_row",
+        lambda s, k, p, *, max_image_dim: {
+            "key": k, "side": "A", "trace_status": "accepted",
+            "accepted": True, "selected": False, "mode": "shadow",
+            "hard_failures": [], "warnings": [],
+            "sticker_score_total": 400.0, "mean_sticker_distance": 14.8,
+            "vertex_source": "affine",
+            "vertex_cloud_spread_px": 150.0,
+            "vertex_cloud_spread_norm": 0.18,
+            "projective_residual_norm": 0.008,
+            "hexagon_diameter_px": 900.0,
+            "projective_degeneracy": "none",
+            "full_trace": {},
+        },
+    )
+    monkeypatch.setattr(ast, "_get_rembg_session", lambda: object())
+
+    trace_out = tmp_path / "trace.json"
+    ast.main([
+        "--axis-truth", str(axis_truth_path),
+        "--manifest", str(manifest_path),
+        "--hard-case-manifest", str(tmp_path / "no_hard.json"),
+        "--trace-out", str(trace_out),
+        "--report-out", str(tmp_path / "report.md"),
+    ])
+    artifact = json.loads(trace_out.read_text())
+    ts = artifact["generated_at"]
+    # Must end with exactly one trailing Z (not "...+00:00Z")
+    assert ts.endswith("Z")
+    assert "+00:00Z" not in ts
+    # Must round-trip through strict fromisoformat after stripping Z
+    import datetime as _dt
+    parsed = _dt.datetime.fromisoformat(ts.rstrip("Z"))
+    assert parsed.year >= 2026
+
+
+def test_main_image_roots_built_from_both_manifests(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Codex P2 on PR #292 fix head f0734db: image_roots was built
+    only from --manifest, so if --hard-case-manifest contributed a
+    pair whose path lives under an otherwise-unknown root, the
+    resolver's pattern-search fallback would never search that
+    directory. Pin that _candidate_image_roots is called with the
+    UNION of both manifests' pairs.
+    """
+    axis_truth = {
+        "1_A": {"vertex": [0, 0], "axis_x": [0, 0], "axis_y": [0, 0],
+                 "axis_z": [0, 0], "approved": True},
+    }
+    main_manifest = {"pairs": [
+        {"setId": "9", "imageAPath": "/tmp/main_root/9a.jpg",
+         "imageBPath": "/tmp/main_root/9b.jpg"}
+    ]}
+    hard_case = {"pairs": [
+        # Different root than the main manifest — must reach the
+        # roots passed to _resolve_image_path
+        {"setId": "1", "imageAPath": "/tmp/hard_root/1a.jpg",
+         "imageBPath": "/tmp/hard_root/1b.jpg"}
+    ]}
+    axis_truth_path = tmp_path / "axis.json"
+    main_path = tmp_path / "main.json"
+    hard_path = tmp_path / "hard.json"
+    axis_truth_path.write_text(json.dumps(axis_truth))
+    main_path.write_text(json.dumps(main_manifest))
+    hard_path.write_text(json.dumps(hard_case))
+
+    captured_roots: list = []
+
+    def real_candidate_roots(doc):
+        # Track the doc passed in so we can verify pairs from BOTH
+        # manifests are present.
+        pairs = doc.get("pairs", []) if isinstance(doc, dict) else []
+        set_ids = sorted(p.get("setId") for p in pairs)
+        captured_roots.append(set_ids)
+        # Return empty list — the fake_resolve below doesn't use roots
+        return []
+
+    monkeypatch.setattr(ast, "_candidate_image_roots", real_candidate_roots)
+    monkeypatch.setattr(
+        ast, "_resolve_image_path",
+        lambda raw, sid, side, roots, expected_sha256=None: Path(raw),
+    )
+    monkeypatch.setattr(
+        ast, "analyze_row",
+        lambda s, k, p, *, max_image_dim: {
+            "key": k, "side": "A", "trace_status": "accepted",
+            "accepted": True, "selected": False, "mode": "shadow",
+            "hard_failures": [], "warnings": [],
+            "sticker_score_total": 400.0, "mean_sticker_distance": 14.8,
+            "vertex_source": "affine",
+            "vertex_cloud_spread_px": 150.0,
+            "vertex_cloud_spread_norm": 0.18,
+            "projective_residual_norm": 0.008,
+            "hexagon_diameter_px": 900.0,
+            "projective_degeneracy": "none",
+            "full_trace": {},
+        },
+    )
+    monkeypatch.setattr(ast, "_get_rembg_session", lambda: object())
+
+    ast.main([
+        "--axis-truth", str(axis_truth_path),
+        "--manifest", str(main_path),
+        "--hard-case-manifest", str(hard_path),
+        "--trace-out", str(tmp_path / "trace.json"),
+        "--report-out", str(tmp_path / "report.md"),
+    ])
+    # _candidate_image_roots was called once with the merged doc;
+    # it must contain pairs from BOTH manifests (setIds 1 and 9).
+    assert captured_roots, "_candidate_image_roots was never called"
+    merged_ids = captured_roots[0]
+    assert "1" in merged_ids and "9" in merged_ids, (
+        f"merged manifest pairs should include both setIds; got {merged_ids}"
+    )
+
+
 def test_main_with_limit_truncates_rows(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:

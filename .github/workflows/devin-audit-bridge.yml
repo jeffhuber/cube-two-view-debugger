@@ -33,7 +33,34 @@ jobs:
   dispatch:
     if: >
       github.actor != 'devin-ai-integration[bot]' &&
-      github.actor != 'vercel[bot]'
+      github.actor != 'vercel[bot]' &&
+      (
+        github.event_name == 'schedule' ||
+        github.event_name == 'workflow_dispatch' ||
+        (
+          github.event_name == 'pull_request_target' &&
+          (
+            (
+              github.event.action == 'labeled' &&
+              github.event.label.name == 'needs-devin-audit'
+            ) ||
+            (
+              github.event.action != 'labeled' &&
+              contains(github.event.pull_request.labels.*.name, 'needs-devin-audit')
+            )
+          )
+        ) ||
+        (
+          github.event_name == 'issue_comment' &&
+          github.event.issue.pull_request &&
+          contains(github.event.comment.body, '@devin audit') &&
+          (
+            github.event.comment.author_association == 'OWNER' ||
+            github.event.comment.author_association == 'MEMBER' ||
+            github.event.comment.author_association == 'COLLABORATOR'
+          )
+        )
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

@@ -54,6 +54,7 @@ from tools.corner_conventions import FACE_DEFS_BY_SIDE, wca_face_by_slot, wca_fa
 from tools.evaluate_hybrid_pipeline import DEFAULT_FACE_SIZE, _load_processing_image  # noqa: E402
 from tools.extract_color_samples import PairTask, face_colors_from_state, load_corpus_tasks  # noqa: E402
 from tools.global_cube_model import _fit_hull_label_tier1_model  # noqa: E402
+from tools.hull_label_yaw import infer_yaw_from_side_traces  # noqa: E402
 from tools.rectify_faces import extract_stickers_from_rectified, rectify_face  # noqa: E402
 from tools.sample_stickers_from_hull import apply_orientation, canonical_corner_order, discover_orientation  # noqa: E402
 
@@ -185,11 +186,22 @@ def _compact_trace(model: Optional[Any], trace: Optional[Mapping[str, Any]]) -> 
         "projective_residual_norm",
         "sticker_score_total",
         "mean_sticker_distance",
+        "slot_center_faces",
     )
     out = {key: trace.get(key) for key in keys if key in trace}
     if model is None and "status" not in out:
         out["status"] = "fit_failed"
     return out
+
+
+def _hull_label_center_yaw_source(
+    side_fits: Mapping[str, Mapping[str, Any]],
+) -> Dict[str, Any]:
+    result = infer_yaw_from_side_traces(
+        side_fits["A"].get("trace") or {},
+        side_fits["B"].get("trace") or {},
+    )
+    return dict(result)
 
 
 def _fit_hull_side(image_path: Path, side: str, sess: Any) -> Dict[str, Any]:
@@ -419,6 +431,7 @@ def _evaluate_slot_yaw_source(
 def _yaw_sources_for_pair(
     pair: Mapping[str, Any],
     detected: Optional[Mapping[str, Any]],
+    hull_label_center_yaw: Optional[Mapping[str, Any]],
 ) -> List[Dict[str, Any]]:
     sources = [{
         "source": "assumed_zero",
@@ -428,6 +441,8 @@ def _yaw_sources_for_pair(
     manifest = manifest_yaw_source(pair)
     if manifest is not None:
         sources.append(manifest)
+    if hull_label_center_yaw is not None:
+        sources.append(dict(hull_label_center_yaw))
     if detected is not None:
         sources.append(dict(detected))
     return sources
@@ -445,8 +460,9 @@ def _evaluate_pair(
         "A": _fit_hull_side(task.image_a, "A", sess),
         "B": _fit_hull_side(task.image_b, "B", sess),
     }
+    hull_label_center_yaw = _hull_label_center_yaw_source(side_fits)
     detected = _detected_yaw_source(task) if include_detected_yaw else None
-    yaw_sources = _yaw_sources_for_pair(manifest_pair, detected)
+    yaw_sources = _yaw_sources_for_pair(manifest_pair, detected, hull_label_center_yaw)
     evaluations = [
         _evaluate_slot_yaw_source(
             source=str(source["source"]),
@@ -566,23 +582,29 @@ def render_report(payload: Mapping[str, Any]) -> str:
             f"{row['gtAligned']['exact']} | {row['gtAligned']['meanStickersCorrect']} |"
         )
 
-    detected = summary["byYawSource"].get("detected", {})
-    detected_conv = detected.get("convention", {})
-    detected_oracle = detected.get("gtAligned", {})
+    preferred_yaw_source = "hull_label_center_colors"
+    preferred = summary["byYawSource"].get(preferred_yaw_source, {})
+    if not preferred:
+        preferred_yaw_source = "detected"
+        preferred = summary["byYawSource"].get(preferred_yaw_source, {})
+    preferred_conv = preferred.get("convention", {})
+    preferred_oracle = preferred.get("gtAligned", {})
     lines.extend([
         "",
         "## Key Findings",
         "",
         "- Convention-derived in-plane orientation tracks the oracle orientation",
-        "  closely when yaw is right. In this run, `detected` yaw produced",
-        f"  {detected_conv.get('exact', 0)} convention-exact rows versus",
-        f"  {detected_oracle.get('exact', 0)} oracle-exact rows under `gt_aligned`.",
+        "  closely when yaw is right. In this run, the preferred yaw source produced",
+        f"  {preferred_conv.get('exact', 0)} convention-exact rows versus",
+        f"  {preferred_oracle.get('exact', 0)} oracle-exact rows under `gt_aligned`",
+        f"  for `{preferred_yaw_source}`.",
         "- Capture yaw is load-bearing. `assumed_zero` exact rows are much lower",
         "  than detected/manifest yaw on non-zero-yaw captures, and wrong yaw",
         "  commonly produces about 40+ sticker errors.",
-        "- Current detected yaw is useful when present, but unavailable on many",
-        "  reject/retake rows. A production slot/yaw path needs a yaw source that",
-        "  survives rows where the legacy recognizer cannot emit `captureYaw`.",
+        "- Hull-label center-color yaw is the production-shaped fallback source:",
+        "  it comes from the same rectified slot centers the hull-label path already",
+        "  computes, so it can survive rows where the legacy recognizer cannot emit",
+        "  `captureYaw`.",
         "- Remaining small hamming counts under correct yaw are not face-identity",
         "  failures; they point at sticker color sampling/classification quality.",
     ])

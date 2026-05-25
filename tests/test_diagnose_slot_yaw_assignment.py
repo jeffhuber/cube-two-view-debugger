@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from tools.diagnose_slot_yaw_assignment import (
     _assembled_state,
+    _hull_label_center_yaw_source,
     _note_yaw_quarter_turns,
     _orientation_from_corner_map,
+    _yaw_sources_for_pair,
     build_summary,
     manifest_yaw_source,
     slot_face_assignments,
@@ -41,6 +43,55 @@ def test_manifest_yaw_source_falls_back_to_notes():
         "status": "documented",
         "normalizationApplied": None,
     }
+
+
+def test_yaw_sources_include_hull_label_center_color_source():
+    sources = _yaw_sources_for_pair(
+        {"notes": "Human-labeled capture yaw=1 (+90)."},
+        {"source": "detected", "yawQuarterTurns": None, "status": "unavailable"},
+        {
+            "source": "hull_label_center_colors",
+            "yawQuarterTurns": 1,
+            "status": "accepted",
+            "accepted": True,
+        },
+    )
+
+    assert [source["source"] for source in sources] == [
+        "assumed_zero",
+        "manifest_notes",
+        "hull_label_center_colors",
+        "detected",
+    ]
+
+
+def test_hull_label_center_yaw_source_uses_slot_center_faces():
+    side_fits = {
+        "A": {
+            "trace": {
+                "slot_center_faces": {
+                    "upper": {"face": "U"},
+                    "right": {"face": "B"},
+                    "front": {"face": "R"},
+                }
+            }
+        },
+        "B": {
+            "trace": {
+                "slot_center_faces": {
+                    "upper": {"face": "D"},
+                    "right": {"face": "L"},
+                    "front": {"face": "F"},
+                }
+            }
+        },
+    }
+
+    result = _hull_label_center_yaw_source(side_fits)
+
+    assert result["source"] == "hull_label_center_colors"
+    assert result["status"] == "accepted"
+    assert result["yawQuarterTurns"] == 1
 
 
 def test_slot_face_assignments_follow_shared_convention():

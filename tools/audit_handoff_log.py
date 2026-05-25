@@ -200,6 +200,38 @@ def finish_lock(args: argparse.Namespace) -> int:
     return 0
 
 
+def record_event(args: argparse.Namespace) -> int:
+    """Append a single event to the shared log without acquiring a lock.
+
+    Use case: post-hoc recording of work that's already done — e.g. Claude
+    or Codex finishing a manual cross-review and wanting the other agent's
+    Monitor on the log to notice in real time. Reviews aren't long-running
+    operations that need duplicate-prevention locking like audits do, so we
+    skip the lock dance and just write the event.
+
+    The event shape mirrors what `finish_lock` writes (`"event": "finished"`)
+    so a Monitor filter like `grep '"event": "finished"'` catches both
+    audit-finished and review-finished events transparently. The `lane`
+    field disambiguates (`codex-audit` vs `claude-review` vs
+    `codex-review`).
+    """
+    head = args.head or resolve_pr_head(args.repo, args.pr)
+    event: Dict[str, Any] = {
+        "event": args.event,
+        "lane": args.lane,
+        "repo": args.repo,
+        "pr": args.pr,
+        "head": head,
+        "actor": args.actor,
+    }
+    if args.verdict is not None:
+        event["verdict"] = args.verdict
+    if args.notes:
+        event["notes"] = args.notes
+    append_event(event)
+    return 0
+
+
 def active_locks() -> Iterable[Dict[str, Any]]:
     locks_dir = audit_dir() / LOCKS_DIR
     if not locks_dir.exists():
@@ -269,6 +301,31 @@ def _parser() -> argparse.ArgumentParser:
     stat.add_argument("--pr", type=int)
     stat.add_argument("--json", action="store_true")
     stat.set_defaults(func=status)
+
+    rec = sub.add_parser(
+        "record",
+        help="Append a single event (no lock). For lock-free, post-hoc "
+             "recording of completed work like manual reviews.",
+    )
+    rec.add_argument("--lane", required=True,
+                     help="e.g. claude-review, codex-review, codex-audit")
+    rec.add_argument("--repo", required=True)
+    rec.add_argument("--pr", type=int, required=True)
+    rec.add_argument("--head",
+                     help="Head SHA at the time of the event. If omitted, "
+                          "fetched from gh api.")
+    rec.add_argument("--event", required=True,
+                     help="Event kind, typically 'finished'. Monitor filters "
+                          "match on this field.")
+    rec.add_argument("--verdict",
+                     help="e.g. pass, blocked. Free-form; not interpreted.")
+    rec.add_argument("--notes",
+                     help="Free-form note to attach to the event.")
+    rec.add_argument("--actor",
+                     default=os.environ.get("AUDIT_ACTOR")
+                             or os.environ.get("USER") or "unknown")
+    rec.set_defaults(func=record_event)
+
     return parser
 
 

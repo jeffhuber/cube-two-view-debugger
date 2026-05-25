@@ -617,10 +617,38 @@ Protocol:
    Claude via CLI to review PR #N for X; expecting PASS/blockers."
    The durable PR label/comment is still required so queue state is
    visible outside chat.
-3. Claude reviews the current head, posts a PR comment with
-   "Claude cross-review" plus PASS or blocker findings, and removes
-   `needs-claude-review` only when no blockers remain. If blockers
-   remain, keep the label until a new head is ready.
+3. Claude reviews the current head and finalizes the review via
+   `tools/post_review.sh`, which bundles three required steps in
+   the right order:
+     (a) post the PR comment with "Claude cross-review" + PASS or
+         blocker findings via `tools/safe_gh_comment.py` (no shell
+         interpretation of Markdown);
+     (b) remove `needs-claude-review` only when no blockers remain
+         (if blockers remain, keep the label until a new head is
+         ready, and skip this step);
+     (c) append a `finished` event to the shared local audit log
+         (`~/.cache/cube-agent-audits/events.jsonl`) so the other
+         agent's Monitor on that log catches the verdict in real
+         time.
+   Step (c) is what makes review-side pickup symmetric with
+   audit-side pickup — without it, audits flow through the shared
+   log but reviews don't, leaving the other agent's Monitor blind to
+   reviews. The same helper and discipline apply symmetrically to
+   Codex when manually cross-reviewing a Claude-owned PR (use
+   `--lane codex-review`). Example invocation:
+   ```
+   tools/post_review.sh \
+     --lane claude-review \
+     --repo jeffhuber/cube-snap --pr 172 \
+     --head 6abe1c7 \
+     --verdict pass \
+     --label needs-claude-review \
+     --body-file /tmp/claude-review-snap172.md
+   ```
+   The three calls are independent (no atomic guarantee). If the
+   first succeeds but later steps fail, the comment is on the PR
+   but the label/log is inconsistent — re-run the remaining steps
+   manually.
 4. Claude should briefly summarize received CLI review requests and
    review outcomes in Claude's chat. Codex should do the same in Codex
    chat for review requests received via Codex CLI. This keeps the
@@ -767,6 +795,8 @@ Mirror invariant — these files MUST stay byte-identical across
 - `tools/audit_handoff_log.py`
 - `tools/run_codex_audit_pr.sh`
 - `tools/codex_audit_labeler.py`
+- `tools/post_review.sh`
+- `tools/safe_gh_comment.py`
 - `tools/CODEX_AUDIT_PROTOCOL.md`
 - `.github/workflows/codex-audit-labeler.yml`
 

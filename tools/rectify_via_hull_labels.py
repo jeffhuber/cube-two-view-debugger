@@ -166,9 +166,16 @@ class RectifiedFit:
     projective_vertex: Optional[Point] = None
     vertex_cloud_spread_px: Optional[float] = None
     """Max pairwise distance across the 3 affine parallelogram-
-    completion vertex estimates. Proxy for how non-iso the projection
-    is — high spread → perspective is breaking the iso parallelogram
-    assumption → projective math is preferred."""
+    completion vertex estimates, in raw pixels. Backward-compat with
+    PR #285's `hull_label_acceptance.py` raw-px gates."""
+    vertex_cloud_spread_norm: Optional[float] = None
+    """``vertex_cloud_spread_px / hexagon_diameter_px``. Resolution-
+    independent — the hybrid vertex switch gates on THIS field, not
+    raw px, so behavior is stable across processing scales (Codex P2
+    on #289 head 48f5a66)."""
+    hexagon_diameter_px: Optional[float] = None
+    """Longest pairwise distance among the 6 silhouette hexagon
+    corners. The scale reference for all the normalized signals."""
     projective_residual_norm: Optional[float] = None
     """Projective 3-line LSQ residual ÷ hexagon diameter. Resolution-
     independent. High → projective fit is poorly conditioned (likely
@@ -252,23 +259,35 @@ def _derive_vertex_from_corners(
 
 
 # Hybrid-vertex switch threshold. When the affine 3-estimate cloud
-# spreads beyond this many pixels, the iso parallelogram assumption is
-# breaking — use the projective (vanishing-point) vertex instead.
-# Empirical sweet spot from the 70-row corpus probe (see
-# `tools/HULL_LABELS_CORPUS_REPORT.md`):
-#   - spread <= 240 px (66 rows): affine 3-estimate mean wins by lower
-#     variance from corner-detection noise (iso assumption is close
-#     enough that the mean denoises better than projective's exact-but-
-#     noisy line intersection)
-#   - spread >  240 px (4 rows in the corpus): projective wins because
-#     the systematic bias from non-iso projection dominates the noise
-#     improvement (e.g. 37_B: vertex_err 80→38 px with projective)
-# Net: hybrid<>240 gives strictly better median/mean/max vertex_err
-# than pure affine, and one more row clears the 30 px threshold.
-# Same threshold as `warn_vertex_cloud_spread_px` in
-# `tools/hull_label_acceptance.py`, so the same signal that warns
-# downstream also drives the switch.
-HYBRID_PROJECTIVE_SPREAD_THRESHOLD_PX = 240.0
+# spreads beyond this fraction of the hexagon diameter, the iso
+# parallelogram assumption is breaking — use the projective
+# (vanishing-point) vertex instead.
+#
+# Codex P2 on PR #289 head 48f5a66: the original 240 px raw threshold
+# was calibrated against `max_image_dim=1600` and would silently miss
+# the rows it was added to recover on smaller processing resolutions.
+# Normalizing against hexagon diameter (same pattern as
+# `projective_residual_norm`) gives a resolution-independent signal.
+#
+# Empirical sweet spot from the 70-row corpus probe at
+# `max_image_dim=1600` (see `tools/HULL_LABELS_CORPUS_REPORT.md`):
+#   - spread/diameter <= 0.26 (64 rows): affine 3-estimate mean wins
+#     by lower variance from corner-detection noise (iso assumption
+#     is close enough that the mean denoises better than projective's
+#     exact-but-noisy line intersection)
+#   - spread/diameter >  0.26 (6 rows): projective wins for the rows
+#     where systematic non-iso bias dominates the noise improvement.
+#     Includes 37_B (vertex_err 80→38 px), 44_A (+23 px improvement),
+#     45_B (+50 px improvement), 30_B (+16 px), and 2 mild regressions
+#     (23_B -29 px, 30_A -10 px; the latter is bad-hull anyway and
+#     caught by the projective_residual_norm gate).
+# Net: hybrid > 0.26 gives strictly better median/mean/≤30-px-count
+# vertex_err than pure affine on the corpus.
+#
+# Note: `hull_label_acceptance.HullLabelGateThresholds.warn_vertex_cloud_spread_px`
+# is still in raw px (240 at max_image_dim=1600). Normalizing that gate
+# too would be a parallel improvement but is out of scope for this PR.
+HYBRID_PROJECTIVE_SPREAD_NORM_THRESHOLD = 0.26
 
 
 def _max_pairwise_distance(points: Sequence[Point]) -> float:
@@ -286,30 +305,42 @@ def _max_pairwise_distance(points: Sequence[Point]) -> float:
 def _choose_hybrid_vertex(
     corners_by_num: Dict[int, Point], side: str,
     *,
-    spread_threshold_px: float = HYBRID_PROJECTIVE_SPREAD_THRESHOLD_PX,
+    spread_norm_threshold: float = HYBRID_PROJECTIVE_SPREAD_NORM_THRESHOLD,
 ) -> Tuple[Point, Dict[str, Any]]:
     """Hybrid affine/projective vertex selection. Returns
     ``(vertex, telemetry)`` where telemetry carries both candidates
     and the decision metadata (for surfacing in RectifiedFit).
 
-    The switch uses ``vertex_cloud_spread`` (the affine 3-estimate
-    max pairwise distance) — high spread → iso assumption is breaking
-    → use the projective vanishing-point vertex.
+    The switch uses ``vertex_cloud_spread / hexagon_diameter`` — a
+    resolution-independent ratio. High normalized spread → iso
+    assumption is breaking → use the projective vanishing-point
+    vertex. Per Codex P2 on #289 head 48f5a66, this normalization
+    keeps behavior stable across processing scales (the original
+    raw-px threshold would silently miss perspective-heavy rows on
+    smaller processing resolutions).
 
     Empirical basis: `tools/HULL_LABELS_CORPUS_REPORT.md`
     "Hybrid vertex strategy" section.
     """
     # Affine candidate (current default — parallelogram completion mean)
     affine_vx, estimates = _derive_vertex_from_corners(corners_by_num, side)
-    spread = _max_pairwise_distance(estimates)
+    spread_px = _max_pairwise_distance(estimates)
 
-    # Projective candidate (vanishing-point construction)
-    # Import locally to keep this module loadable without the heavier
-    # projective_vertex module being imported up front.
+    # Projective candidate (vanishing-point construction). Import locally
+    # to keep this module loadable without the heavier projective_vertex
+    # module being imported up front.
     from tools.projective_vertex import projective_vertex
     prj = projective_vertex(corners_by_num, side)
+    hexagon_diameter = prj.hexagon_diameter_px
 
-    if spread > spread_threshold_px:
+    if hexagon_diameter <= 0.0:
+        # Degenerate input — fall back to affine (projective would
+        # have raised earlier, so this is defensive only).
+        spread_norm = 0.0
+    else:
+        spread_norm = spread_px / hexagon_diameter
+
+    if spread_norm > spread_norm_threshold:
         chosen = prj.vertex
         source = "projective"
     else:
@@ -319,7 +350,9 @@ def _choose_hybrid_vertex(
     telemetry = {
         "affine_vertex": affine_vx,
         "projective_vertex": prj.vertex,
-        "vertex_cloud_spread_px": round(spread, 1),
+        "vertex_cloud_spread_px": round(spread_px, 1),
+        "vertex_cloud_spread_norm": round(spread_norm, 4),
+        "hexagon_diameter_px": round(hexagon_diameter, 1),
         "projective_residual_norm": round(prj.residual_norm, 4),
         "projective_degeneracy": prj.degeneracy,
         "vertex_source": source,
@@ -378,6 +411,8 @@ def rectify_via_hull_labels(
         affine_vertex=telemetry["affine_vertex"],
         projective_vertex=telemetry["projective_vertex"],
         vertex_cloud_spread_px=telemetry["vertex_cloud_spread_px"],
+        vertex_cloud_spread_norm=telemetry["vertex_cloud_spread_norm"],
+        hexagon_diameter_px=telemetry["hexagon_diameter_px"],
         projective_residual_norm=telemetry["projective_residual_norm"],
         projective_degeneracy=telemetry["projective_degeneracy"],
         vertex_source=telemetry["vertex_source"],

@@ -252,24 +252,28 @@ def test_silhouette_to_corner_consistent_with_face_defs():
 # default), otherwise affine wins by lower variance from corner noise.
 
 
-def test_hybrid_projective_threshold_matches_acceptance_warn():
-    """The 240 px default must match `warn_vertex_cloud_spread_px` in
-    `tools/hull_label_acceptance.py` — they're intentionally the
-    SAME signal (when affine-gate says 'perspective heavy, warn',
-    we ALSO switch to projective). Changing one without the other
-    would silently break the gate↔switch consistency the corpus
-    probe relied on."""
-    from tools.rectify_via_hull_labels import HYBRID_PROJECTIVE_SPREAD_THRESHOLD_PX
-    from tools.hull_label_acceptance import DEFAULT_THRESHOLDS
-    assert HYBRID_PROJECTIVE_SPREAD_THRESHOLD_PX == DEFAULT_THRESHOLDS.warn_vertex_cloud_spread_px
+def test_hybrid_projective_threshold_is_resolution_independent():
+    """Codex P2 on PR #289 head 48f5a66: the hybrid switch must gate
+    on a normalized (resolution-independent) signal so it stays
+    stable across processing scales. Pin both the constant name and
+    a sensible value range so an accidental revert to raw-px would
+    fail this test."""
+    from tools.rectify_via_hull_labels import (
+        HYBRID_PROJECTIVE_SPREAD_NORM_THRESHOLD,
+    )
+    # Normalized signal — should be a fraction in (0, 1].
+    assert 0.0 < HYBRID_PROJECTIVE_SPREAD_NORM_THRESHOLD <= 1.0
+    # Empirically calibrated at 0.26; allow some drift but don't
+    # let it silently become a raw-px-shaped number again.
+    assert 0.15 <= HYBRID_PROJECTIVE_SPREAD_NORM_THRESHOLD <= 0.35
 
 
 def test_choose_hybrid_vertex_returns_affine_on_iso_input():
     """On a perfect iso hexagon the 3 affine estimates are tightly
-    clustered (spread ≈ 0). Switch stays on affine."""
+    clustered (spread/diameter ≈ 0). Switch stays on affine."""
     from tools.rectify_via_hull_labels import (
         _choose_hybrid_vertex, _label_corners_by_position,
-        HYBRID_PROJECTIVE_SPREAD_THRESHOLD_PX,
+        HYBRID_PROJECTIVE_SPREAD_NORM_THRESHOLD,
     )
     import math as _m
     pts = [(500 + 200 * _m.cos(_m.radians(d)),
@@ -278,7 +282,7 @@ def test_choose_hybrid_vertex_returns_affine_on_iso_input():
     corners = _label_corners_by_position(pts, "A")
     vertex, tel = _choose_hybrid_vertex(corners, "A")
     assert tel["vertex_source"] == "affine"
-    assert tel["vertex_cloud_spread_px"] < HYBRID_PROJECTIVE_SPREAD_THRESHOLD_PX
+    assert tel["vertex_cloud_spread_norm"] < HYBRID_PROJECTIVE_SPREAD_NORM_THRESHOLD
     assert vertex == tel["affine_vertex"]
 
 
@@ -313,16 +317,16 @@ def test_choose_hybrid_vertex_switches_to_projective_under_strong_perspective():
 
     corners = {cn: project(cube_3d[side_a_map[cn]]) for cn in range(6)}
     from tools.rectify_via_hull_labels import _choose_hybrid_vertex
-    # Use a lower threshold for unit test — the production 240 px
-    # default is calibrated to real iPhone shots (largest corpus
-    # spread 268 px), but a synthetic unit-cube + close pinhole
-    # camera produces ~50 px spread. The SWITCH BEHAVIOR is what
-    # this test pins; the threshold value itself is empirically
-    # calibrated and pinned separately by the corpus run.
-    vertex, tel = _choose_hybrid_vertex(corners, "A", spread_threshold_px=30.0)
-    assert tel["vertex_cloud_spread_px"] > 30.0, (
-        f"test camera produces only {tel['vertex_cloud_spread_px']:.1f}px "
-        f"spread — tune cam_pos so perspective is stronger"
+    # Use a lower normalized threshold for the unit test — the
+    # production 0.26 default is calibrated to real iPhone shots,
+    # but a synthetic unit-cube + close pinhole camera produces a
+    # smaller normalized spread. The SWITCH BEHAVIOR is what this
+    # test pins; the threshold value itself is empirically
+    # calibrated and pinned separately.
+    vertex, tel = _choose_hybrid_vertex(corners, "A", spread_norm_threshold=0.05)
+    assert tel["vertex_cloud_spread_norm"] > 0.05, (
+        f"test camera produces only {tel['vertex_cloud_spread_norm']:.4f} "
+        f"normalized spread — tune cam_pos so perspective is stronger"
     )
     assert tel["vertex_source"] == "projective"
     assert vertex == tel["projective_vertex"]
@@ -347,7 +351,8 @@ def test_choose_hybrid_vertex_telemetry_carries_both_candidates():
     corners = _label_corners_by_position(pts, "A")
     _vertex, tel = _choose_hybrid_vertex(corners, "A")
     for key in ("affine_vertex", "projective_vertex",
-                "vertex_cloud_spread_px", "projective_residual_norm",
+                "vertex_cloud_spread_px", "vertex_cloud_spread_norm",
+                "hexagon_diameter_px", "projective_residual_norm",
                 "projective_degeneracy", "vertex_source"):
         assert key in tel, f"telemetry missing {key}"
 

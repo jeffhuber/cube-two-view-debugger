@@ -1,61 +1,79 @@
 {
-  "head_sha": "a2079114dae9f6786feaca9e52b1453443451c9d",
-  "generated_at": "2026-05-25T06:18:10.304050+00:00Z",
+  "head_sha": "dfac4ad089b39bfcef244ec5f011170c0613256a",
+  "generated_at": "2026-05-25T06:35:25.949769+00:00Z",
   "axis_truth_path": "/Users/jhuber/cube-two-view-debugger/.claude/worktrees/shadow-trace-analyzer/tests/fixtures/gcm_axis_ground_truth.json",
   "manifest_path": "/Users/jhuber/cube-two-view-debugger/.claude/worktrees/shadow-trace-analyzer/tests/fixtures/corpus_manifest.json",
   "max_image_dim": 1600,
   "summary": {
     "total_rows": 70,
     "by_status": {
-      "accepted": 42,
-      "null": 28
+      "accepted": 69,
+      "rejected": 1
     },
     "by_acceptance": {
-      "accepted": 42,
-      "no_decision": 28
+      "accepted": 69,
+      "rejected": 1
     },
     "by_side": {
       "A": 35,
       "B": 35
     },
     "by_side_acceptance": {
-      "A_accepted": 21,
-      "A_no_decision": 14,
-      "B_accepted": 21,
-      "B_no_decision": 14
+      "A_accepted": 34,
+      "A_rejected": 1,
+      "B_accepted": 35
     },
-    "hard_failure_tokens": {},
-    "warning_tokens": {
+    "hard_failure_gates": {
+      "projective_residual_norm": 1
+    },
+    "warning_gates": {
+      "sticker_score_total": 2,
+      "sticker_score_worst_face": 6,
+      "vertex_cloud_spread_px": 4,
+      "projective_residual_norm": 1
+    },
+    "hard_failure_messages": {
+      "projective_residual_norm=0.0315; max 0.0250": 1
+    },
+    "warning_messages": {
       "sticker_score_total=730.3; warning 700.0": 1,
       "sticker_score_worst_face=359.2; warning 350.0": 1,
+      "sticker_score_total=709.0; warning 700.0": 1,
+      "sticker_score_worst_face=353.1; warning 350.0": 1,
+      "sticker_score_worst_face=359.5; warning 350.0": 1,
+      "vertex_cloud_spread_px=251.6; warning 240.0": 1,
+      "sticker_score_worst_face=374.6; warning 350.0": 1,
+      "projective_residual_norm=0.0199; warning 0.0180": 1,
       "vertex_cloud_spread_px=252.4; warning 240.0": 1,
       "vertex_cloud_spread_px=265.7; warning 240.0": 1,
-      "vertex_cloud_spread_px=267.6; warning 240.0": 1
+      "vertex_cloud_spread_px=267.6; warning 240.0": 1,
+      "sticker_score_worst_face=414.7; warning 350.0": 1,
+      "sticker_score_worst_face=382.1; warning 350.0": 1
     },
     "vertex_source_accepted": {
-      "affine": 38,
-      "projective": 4
+      "affine": 64,
+      "projective": 5
     },
     "spread_norm_accepted_stats": {
-      "n": 42,
+      "n": 69,
       "min": 0.097,
       "max": 0.2818,
-      "median": 0.2362,
-      "mean": 0.2223
+      "median": 0.2284,
+      "mean": 0.2205
     },
     "sticker_score_accepted_stats": {
-      "n": 42,
-      "min": 311.96,
+      "n": 69,
+      "min": 309.03,
       "max": 730.3,
-      "median": 499.49,
-      "mean": 513.2636
+      "median": 491.7,
+      "mean": 514.9823
     },
     "projective_residual_accepted_stats": {
-      "n": 42,
+      "n": 69,
       "min": 0.0002,
-      "max": 0.0128,
-      "median": 0.0038,
-      "mean": 0.005
+      "max": 0.0199,
+      "median": 0.0041,
+      "mean": 0.0054
     }
   },
   "per_row": [
@@ -1004,14 +1022,314 @@
     {
       "key": "17_A",
       "side": "A",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 17 side A"
+      "image_path": "/Users/jhuber/Downloads/Set 17 - A - white up.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [],
+      "sticker_score_total": 478.99,
+      "mean_sticker_distance": 17.74,
+      "vertex_source": "affine",
+      "vertex_cloud_spread_px": 224.26992665089986,
+      "vertex_cloud_spread_norm": 0.2482329588061833,
+      "projective_residual_norm": 0.008742334258285418,
+      "hexagon_diameter_px": 903.4655499796326,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "A",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [],
+        "metrics": {
+          "vertex_cloud_spread_px": 224.27,
+          "sticker_score_total": 478.99,
+          "sticker_score_worst_face": 266.7,
+          "projective_residual_norm": 0.0087
+        },
+        "sticker_score_total": 478.99,
+        "sticker_score_per_face": {
+          "upper": 63.09,
+          "right": 149.21,
+          "front": 266.7
+        },
+        "mean_sticker_distance": 17.74,
+        "vertex_source": "affine",
+        "vertex": [
+          573.0,
+          835.3
+        ],
+        "affine_vertex": [
+          573.0,
+          835.3
+        ],
+        "projective_vertex": [
+          565.2,
+          798.1
+        ],
+        "hexagon_diameter_px": 903.4655499796326,
+        "vertex_cloud_spread_px": 224.26992665089986,
+        "vertex_cloud_spread_norm": 0.2482329588061833,
+        "projective_residual_norm": 0.008742334258285418,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            543.0,
+            481.0
+          ],
+          "corner_1": [
+            979.0,
+            586.0
+          ],
+          "corner_2": [
+            911.0,
+            1064.0
+          ],
+          "corner_3": [
+            572.0,
+            1384.0
+          ],
+          "corner_4": [
+            245.0,
+            1083.0
+          ],
+          "corner_5": [
+            158.0,
+            597.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              573.0,
+              835.3
+            ],
+            [
+              158.0,
+              597.0
+            ],
+            [
+              245.0,
+              1083.0
+            ],
+            [
+              572.0,
+              1384.0
+            ]
+          ],
+          "right": [
+            [
+              573.0,
+              835.3
+            ],
+            [
+              572.0,
+              1384.0
+            ],
+            [
+              911.0,
+              1064.0
+            ],
+            [
+              979.0,
+              586.0
+            ]
+          ],
+          "upper": [
+            [
+              573.0,
+              835.3
+            ],
+            [
+              979.0,
+              586.0
+            ],
+            [
+              543.0,
+              481.0
+            ],
+            [
+              158.0,
+              597.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            594.0,
+            702.0
+          ],
+          [
+            640.0,
+            906.0
+          ],
+          [
+            485.0,
+            898.0
+          ]
+        ]
+      }
     },
     {
       "key": "17_B",
       "side": "B",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 17 side B"
+      "image_path": "/Users/jhuber/Downloads/Set 17 - B - white up.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [],
+      "sticker_score_total": 435.94,
+      "mean_sticker_distance": 16.15,
+      "vertex_source": "affine",
+      "vertex_cloud_spread_px": 208.84922791334424,
+      "vertex_cloud_spread_norm": 0.23231684736610092,
+      "projective_residual_norm": 0.001656103415047074,
+      "hexagon_diameter_px": 898.9844270063859,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "B",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [],
+        "metrics": {
+          "vertex_cloud_spread_px": 208.849,
+          "sticker_score_total": 435.94,
+          "sticker_score_worst_face": 228.6,
+          "projective_residual_norm": 0.0017
+        },
+        "sticker_score_total": 435.94,
+        "sticker_score_per_face": {
+          "upper": 63.17,
+          "right": 144.17,
+          "front": 228.6
+        },
+        "mean_sticker_distance": 16.15,
+        "vertex_source": "affine",
+        "vertex": [
+          594.0,
+          736.7
+        ],
+        "affine_vertex": [
+          594.0,
+          736.7
+        ],
+        "projective_vertex": [
+          591.0,
+          701.9
+        ],
+        "hexagon_diameter_px": 898.9844270063859,
+        "vertex_cloud_spread_px": 208.84922791334424,
+        "vertex_cloud_spread_norm": 0.23231684736610092,
+        "projective_residual_norm": 0.001656103415047074,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            601.0,
+            1278.0
+          ],
+          "corner_1": [
+            929.0,
+            988.0
+          ],
+          "corner_2": [
+            1007.0,
+            507.0
+          ],
+          "corner_3": [
+            576.0,
+            405.0
+          ],
+          "corner_4": [
+            167.0,
+            511.0
+          ],
+          "corner_5": [
+            263.0,
+            989.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              594.0,
+              736.7
+            ],
+            [
+              167.0,
+              511.0
+            ],
+            [
+              263.0,
+              989.0
+            ],
+            [
+              601.0,
+              1278.0
+            ]
+          ],
+          "right": [
+            [
+              594.0,
+              736.7
+            ],
+            [
+              601.0,
+              1278.0
+            ],
+            [
+              929.0,
+              988.0
+            ],
+            [
+              1007.0,
+              507.0
+            ]
+          ],
+          "upper": [
+            [
+              594.0,
+              736.7
+            ],
+            [
+              1007.0,
+              507.0
+            ],
+            [
+              576.0,
+              405.0
+            ],
+            [
+              167.0,
+              511.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            598.0,
+            613.0
+          ],
+          [
+            679.0,
+            797.0
+          ],
+          [
+            505.0,
+            800.0
+          ]
+        ]
+      }
     },
     {
       "key": "20_A",
@@ -1328,26 +1646,632 @@
     {
       "key": "21_A",
       "side": "A",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 21 side A"
+      "image_path": "/Users/jhuber/Downloads/Set 21 - A - white up.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [],
+      "sticker_score_total": 667.98,
+      "mean_sticker_distance": 24.74,
+      "vertex_source": "affine",
+      "vertex_cloud_spread_px": 227.437903613272,
+      "vertex_cloud_spread_norm": 0.24876100571287468,
+      "projective_residual_norm": 0.0017947830392137205,
+      "hexagon_diameter_px": 914.2827790131454,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "A",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [],
+        "metrics": {
+          "vertex_cloud_spread_px": 227.438,
+          "sticker_score_total": 667.98,
+          "sticker_score_worst_face": 263.32,
+          "projective_residual_norm": 0.0018
+        },
+        "sticker_score_total": 667.98,
+        "sticker_score_per_face": {
+          "upper": 205.54,
+          "right": 263.32,
+          "front": 199.12
+        },
+        "mean_sticker_distance": 24.74,
+        "vertex_source": "affine",
+        "vertex": [
+          548.3,
+          806.7
+        ],
+        "affine_vertex": [
+          548.3,
+          806.7
+        ],
+        "projective_vertex": [
+          518.0,
+          820.0
+        ],
+        "hexagon_diameter_px": 914.2827790131454,
+        "vertex_cloud_spread_px": 227.437903613272,
+        "vertex_cloud_spread_norm": 0.24876100571287468,
+        "projective_residual_norm": 0.0017947830392137205,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            572.0,
+            381.0
+          ],
+          "corner_1": [
+            1018.0,
+            538.0
+          ],
+          "corner_2": [
+            918.0,
+            983.0
+          ],
+          "corner_3": [
+            539.0,
+            1293.0
+          ],
+          "corner_4": [
+            221.0,
+            948.0
+          ],
+          "corner_5": [
+            121.0,
+            535.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              548.3,
+              806.7
+            ],
+            [
+              121.0,
+              535.0
+            ],
+            [
+              221.0,
+              948.0
+            ],
+            [
+              539.0,
+              1293.0
+            ]
+          ],
+          "right": [
+            [
+              548.3,
+              806.7
+            ],
+            [
+              539.0,
+              1293.0
+            ],
+            [
+              918.0,
+              983.0
+            ],
+            [
+              1018.0,
+              538.0
+            ]
+          ],
+          "upper": [
+            [
+              548.3,
+              806.7
+            ],
+            [
+              1018.0,
+              538.0
+            ],
+            [
+              572.0,
+              381.0
+            ],
+            [
+              121.0,
+              535.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            567.0,
+            692.0
+          ],
+          [
+            639.0,
+            848.0
+          ],
+          [
+            439.0,
+            880.0
+          ]
+        ]
+      }
     },
     {
       "key": "21_B",
       "side": "B",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 21 side B"
+      "image_path": "/Users/jhuber/Downloads/Set 21 - B - white up.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [],
+      "sticker_score_total": 666.81,
+      "mean_sticker_distance": 24.7,
+      "vertex_source": "affine",
+      "vertex_cloud_spread_px": 213.78493866500511,
+      "vertex_cloud_spread_norm": 0.22938284936220169,
+      "projective_residual_norm": 0.0018082333169325364,
+      "hexagon_diameter_px": 932.0005364805323,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "B",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [],
+        "metrics": {
+          "vertex_cloud_spread_px": 213.785,
+          "sticker_score_total": 666.81,
+          "sticker_score_worst_face": 329.35,
+          "projective_residual_norm": 0.0018
+        },
+        "sticker_score_total": 666.81,
+        "sticker_score_per_face": {
+          "upper": 191.56,
+          "right": 329.35,
+          "front": 145.89
+        },
+        "mean_sticker_distance": 24.7,
+        "vertex_source": "affine",
+        "vertex": [
+          603.7,
+          791.7
+        ],
+        "affine_vertex": [
+          603.7,
+          791.7
+        ],
+        "projective_vertex": [
+          601.5,
+          786.5
+        ],
+        "hexagon_diameter_px": 932.0005364805323,
+        "vertex_cloud_spread_px": 213.78493866500511,
+        "vertex_cloud_spread_norm": 0.22938284936220169,
+        "projective_residual_norm": 0.0018082333169325364,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            603.0,
+            1324.0
+          ],
+          "corner_1": [
+            943.0,
+            1002.0
+          ],
+          "corner_2": [
+            1043.0,
+            525.0
+          ],
+          "corner_3": [
+            602.0,
+            392.0
+          ],
+          "corner_4": [
+            162.0,
+            536.0
+          ],
+          "corner_5": [
+            260.0,
+            1001.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              603.7,
+              791.7
+            ],
+            [
+              162.0,
+              536.0
+            ],
+            [
+              260.0,
+              1001.0
+            ],
+            [
+              603.0,
+              1324.0
+            ]
+          ],
+          "right": [
+            [
+              603.7,
+              791.7
+            ],
+            [
+              603.0,
+              1324.0
+            ],
+            [
+              943.0,
+              1002.0
+            ],
+            [
+              1043.0,
+              525.0
+            ]
+          ],
+          "upper": [
+            [
+              603.7,
+              791.7
+            ],
+            [
+              1043.0,
+              525.0
+            ],
+            [
+              602.0,
+              392.0
+            ],
+            [
+              162.0,
+              536.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            603.0,
+            669.0
+          ],
+          [
+            703.0,
+            847.0
+          ],
+          [
+            505.0,
+            859.0
+          ]
+        ]
+      }
     },
     {
       "key": "22_A",
       "side": "A",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 22 side A"
+      "image_path": "/Users/jhuber/Downloads/Set 22 - A - white up.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [],
+      "sticker_score_total": 644.01,
+      "mean_sticker_distance": 23.85,
+      "vertex_source": "affine",
+      "vertex_cloud_spread_px": 190.8821626030049,
+      "vertex_cloud_spread_norm": 0.21865024248193166,
+      "projective_residual_norm": 0.0041916380261851766,
+      "hexagon_diameter_px": 873.0022909477386,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "A",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [],
+        "metrics": {
+          "vertex_cloud_spread_px": 190.882,
+          "sticker_score_total": 644.01,
+          "sticker_score_worst_face": 305.98,
+          "projective_residual_norm": 0.0042
+        },
+        "sticker_score_total": 644.01,
+        "sticker_score_per_face": {
+          "upper": 222.54,
+          "right": 305.98,
+          "front": 115.5
+        },
+        "mean_sticker_distance": 23.85,
+        "vertex_source": "affine",
+        "vertex": [
+          585.3,
+          787.7
+        ],
+        "affine_vertex": [
+          585.3,
+          787.7
+        ],
+        "projective_vertex": [
+          575.6,
+          798.7
+        ],
+        "hexagon_diameter_px": 873.0022909477386,
+        "vertex_cloud_spread_px": 190.8821626030049,
+        "vertex_cloud_spread_norm": 0.21865024248193166,
+        "projective_residual_norm": 0.0041916380261851766,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            580.0,
+            385.0
+          ],
+          "corner_1": [
+            990.0,
+            534.0
+          ],
+          "corner_2": [
+            906.0,
+            953.0
+          ],
+          "corner_3": [
+            582.0,
+            1258.0
+          ],
+          "corner_4": [
+            282.0,
+            953.0
+          ],
+          "corner_5": [
+            190.0,
+            535.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              585.3,
+              787.7
+            ],
+            [
+              190.0,
+              535.0
+            ],
+            [
+              282.0,
+              953.0
+            ],
+            [
+              582.0,
+              1258.0
+            ]
+          ],
+          "right": [
+            [
+              585.3,
+              787.7
+            ],
+            [
+              582.0,
+              1258.0
+            ],
+            [
+              906.0,
+              953.0
+            ],
+            [
+              990.0,
+              534.0
+            ]
+          ],
+          "upper": [
+            [
+              585.3,
+              787.7
+            ],
+            [
+              990.0,
+              534.0
+            ],
+            [
+              580.0,
+              385.0
+            ],
+            [
+              190.0,
+              535.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            600.0,
+            684.0
+          ],
+          [
+            666.0,
+            839.0
+          ],
+          [
+            490.0,
+            840.0
+          ]
+        ]
+      }
     },
     {
       "key": "22_B",
       "side": "B",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 22 side B"
+      "image_path": "/Users/jhuber/Downloads/Set 22 - B - white up.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [
+        "sticker_score_total=709.0; warning 700.0",
+        "sticker_score_worst_face=353.1; warning 350.0"
+      ],
+      "sticker_score_total": 708.99,
+      "mean_sticker_distance": 26.26,
+      "vertex_source": "affine",
+      "vertex_cloud_spread_px": 197.18519214180358,
+      "vertex_cloud_spread_norm": 0.22844879672054083,
+      "projective_residual_norm": 0.00840252484106255,
+      "hexagon_diameter_px": 863.1483070712703,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "B",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [
+          "sticker_score_total=709.0; warning 700.0",
+          "sticker_score_worst_face=353.1; warning 350.0"
+        ],
+        "metrics": {
+          "vertex_cloud_spread_px": 197.185,
+          "sticker_score_total": 708.99,
+          "sticker_score_worst_face": 353.11,
+          "projective_residual_norm": 0.0084
+        },
+        "sticker_score_total": 708.99,
+        "sticker_score_per_face": {
+          "upper": 212.27,
+          "right": 353.11,
+          "front": 143.61
+        },
+        "mean_sticker_distance": 26.26,
+        "vertex_source": "affine",
+        "vertex": [
+          518.0,
+          749.3
+        ],
+        "affine_vertex": [
+          518.0,
+          749.3
+        ],
+        "projective_vertex": [
+          504.5,
+          736.0
+        ],
+        "hexagon_diameter_px": 863.1483070712703,
+        "vertex_cloud_spread_px": 197.18519214180358,
+        "vertex_cloud_spread_norm": 0.22844879672054083,
+        "projective_residual_norm": 0.00840252484106255,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            533.0,
+            1229.0
+          ],
+          "corner_1": [
+            887.0,
+            904.0
+          ],
+          "corner_2": [
+            935.0,
+            496.0
+          ],
+          "corner_3": [
+            549.0,
+            366.0
+          ],
+          "corner_4": [
+            146.0,
+            500.0
+          ],
+          "corner_5": [
+            238.0,
+            932.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              518.0,
+              749.3
+            ],
+            [
+              146.0,
+              500.0
+            ],
+            [
+              238.0,
+              932.0
+            ],
+            [
+              533.0,
+              1229.0
+            ]
+          ],
+          "right": [
+            [
+              518.0,
+              749.3
+            ],
+            [
+              533.0,
+              1229.0
+            ],
+            [
+              887.0,
+              904.0
+            ],
+            [
+              935.0,
+              496.0
+            ]
+          ],
+          "upper": [
+            [
+              518.0,
+              749.3
+            ],
+            [
+              935.0,
+              496.0
+            ],
+            [
+              549.0,
+              366.0
+            ],
+            [
+              146.0,
+              500.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            532.0,
+            630.0
+          ],
+          [
+            581.0,
+            821.0
+          ],
+          [
+            441.0,
+            797.0
+          ]
+        ]
+      }
     },
     {
       "key": "23_A",
@@ -1976,14 +2900,322 @@
     {
       "key": "25_A",
       "side": "A",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 25 side A"
+      "image_path": "/Users/jhuber/Downloads/Set 25 - A - white up IMG_6771.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [
+        "sticker_score_worst_face=359.5; warning 350.0"
+      ],
+      "sticker_score_total": 627.18,
+      "mean_sticker_distance": 23.23,
+      "vertex_source": "affine",
+      "vertex_cloud_spread_px": 238.8723508487326,
+      "vertex_cloud_spread_norm": 0.24648476358177102,
+      "projective_residual_norm": 0.016347697443925654,
+      "hexagon_diameter_px": 969.1160921169352,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "A",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [
+          "sticker_score_worst_face=359.5; warning 350.0"
+        ],
+        "metrics": {
+          "vertex_cloud_spread_px": 238.872,
+          "sticker_score_total": 627.18,
+          "sticker_score_worst_face": 359.54,
+          "projective_residual_norm": 0.0163
+        },
+        "sticker_score_total": 627.18,
+        "sticker_score_per_face": {
+          "upper": 114.49,
+          "right": 153.15,
+          "front": 359.54
+        },
+        "mean_sticker_distance": 23.23,
+        "vertex_source": "affine",
+        "vertex": [
+          604.7,
+          782.0
+        ],
+        "affine_vertex": [
+          604.7,
+          782.0
+        ],
+        "projective_vertex": [
+          610.7,
+          779.1
+        ],
+        "hexagon_diameter_px": 969.1160921169352,
+        "vertex_cloud_spread_px": 238.8723508487326,
+        "vertex_cloud_spread_norm": 0.24648476358177102,
+        "projective_residual_norm": 0.016347697443925654,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            599.0,
+            346.0
+          ],
+          "corner_1": [
+            1055.0,
+            524.0
+          ],
+          "corner_2": [
+            958.0,
+            956.0
+          ],
+          "corner_3": [
+            584.0,
+            1315.0
+          ],
+          "corner_4": [
+            261.0,
+            972.0
+          ],
+          "corner_5": [
+            177.0,
+            471.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              604.7,
+              782.0
+            ],
+            [
+              177.0,
+              471.0
+            ],
+            [
+              261.0,
+              972.0
+            ],
+            [
+              584.0,
+              1315.0
+            ]
+          ],
+          "right": [
+            [
+              604.7,
+              782.0
+            ],
+            [
+              584.0,
+              1315.0
+            ],
+            [
+              958.0,
+              956.0
+            ],
+            [
+              1055.0,
+              524.0
+            ]
+          ],
+          "upper": [
+            [
+              604.7,
+              782.0
+            ],
+            [
+              1055.0,
+              524.0
+            ],
+            [
+              599.0,
+              346.0
+            ],
+            [
+              177.0,
+              471.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            633.0,
+            649.0
+          ],
+          [
+            681.0,
+            883.0
+          ],
+          [
+            500.0,
+            814.0
+          ]
+        ]
+      }
     },
     {
       "key": "25_B",
       "side": "B",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 25 side B"
+      "image_path": "/Users/jhuber/Downloads/Set 25 - B - white up IMG_6772.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [
+        "vertex_cloud_spread_px=251.6; warning 240.0"
+      ],
+      "sticker_score_total": 309.03,
+      "mean_sticker_distance": 11.45,
+      "vertex_source": "affine",
+      "vertex_cloud_spread_px": 251.60286166894048,
+      "vertex_cloud_spread_norm": 0.2551732163352283,
+      "projective_residual_norm": 0.009545826134798137,
+      "hexagon_diameter_px": 986.0081135568814,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "B",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [
+          "vertex_cloud_spread_px=251.6; warning 240.0"
+        ],
+        "metrics": {
+          "vertex_cloud_spread_px": 251.603,
+          "sticker_score_total": 309.03,
+          "sticker_score_worst_face": 107.66,
+          "projective_residual_norm": 0.0095
+        },
+        "sticker_score_total": 309.03,
+        "sticker_score_per_face": {
+          "upper": 95.47,
+          "right": 105.91,
+          "front": 107.66
+        },
+        "mean_sticker_distance": 11.45,
+        "vertex_source": "affine",
+        "vertex": [
+          619.0,
+          760.0
+        ],
+        "affine_vertex": [
+          619.0,
+          760.0
+        ],
+        "projective_vertex": [
+          635.0,
+          762.2
+        ],
+        "hexagon_diameter_px": 986.0081135568814,
+        "vertex_cloud_spread_px": 251.60286166894048,
+        "vertex_cloud_spread_norm": 0.2551732163352283,
+        "projective_residual_norm": 0.009545826134798137,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            610.0,
+            1317.0
+          ],
+          "corner_1": [
+            977.0,
+            963.0
+          ],
+          "corner_2": [
+            1097.0,
+            501.0
+          ],
+          "corner_3": [
+            606.0,
+            331.0
+          ],
+          "corner_4": [
+            137.0,
+            455.0
+          ],
+          "corner_5": [
+            248.0,
+            972.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              619.0,
+              760.0
+            ],
+            [
+              137.0,
+              455.0
+            ],
+            [
+              248.0,
+              972.0
+            ],
+            [
+              610.0,
+              1317.0
+            ]
+          ],
+          "right": [
+            [
+              619.0,
+              760.0
+            ],
+            [
+              610.0,
+              1317.0
+            ],
+            [
+              977.0,
+              963.0
+            ],
+            [
+              1097.0,
+              501.0
+            ]
+          ],
+          "upper": [
+            [
+              619.0,
+              760.0
+            ],
+            [
+              1097.0,
+              501.0
+            ],
+            [
+              606.0,
+              331.0
+            ],
+            [
+              137.0,
+              455.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            628.0,
+            625.0
+          ],
+          [
+            730.0,
+            855.0
+          ],
+          [
+            499.0,
+            800.0
+          ]
+        ]
+      }
     },
     {
       "key": "26_A",
@@ -3236,14 +4468,326 @@
     {
       "key": "30_A",
       "side": "A",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 30 side A"
+      "image_path": "/Users/jhuber/Downloads/Set 30 - A - white up IMG_7100.JPG",
+      "trace_status": "rejected",
+      "accepted": false,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [
+        "projective_residual_norm=0.0315; max 0.0250"
+      ],
+      "warnings": [
+        "sticker_score_worst_face=374.6; warning 350.0"
+      ],
+      "sticker_score_total": 624.62,
+      "mean_sticker_distance": 23.13,
+      "vertex_source": "projective",
+      "vertex_cloud_spread_px": 224.3680012836055,
+      "vertex_cloud_spread_norm": 0.30205868161154914,
+      "projective_residual_norm": 0.03151108750428641,
+      "hexagon_diameter_px": 742.796068917977,
+      "projective_degeneracy": "near_affine",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "A",
+        "status": "rejected",
+        "selected": false,
+        "accepted": false,
+        "hard_failures": [
+          "projective_residual_norm=0.0315; max 0.0250"
+        ],
+        "warnings": [
+          "sticker_score_worst_face=374.6; warning 350.0"
+        ],
+        "metrics": {
+          "vertex_cloud_spread_px": 224.368,
+          "sticker_score_total": 624.62,
+          "sticker_score_worst_face": 374.62,
+          "projective_residual_norm": 0.0315
+        },
+        "sticker_score_total": 624.62,
+        "sticker_score_per_face": {
+          "upper": 374.62,
+          "right": 168.62,
+          "front": 81.38
+        },
+        "mean_sticker_distance": 23.13,
+        "vertex_source": "projective",
+        "vertex": [
+          575.9,
+          944.3
+        ],
+        "affine_vertex": [
+          611.7,
+          917.3
+        ],
+        "projective_vertex": [
+          575.9,
+          944.3
+        ],
+        "hexagon_diameter_px": 742.796068917977,
+        "vertex_cloud_spread_px": 224.3680012836055,
+        "vertex_cloud_spread_norm": 0.30205868161154914,
+        "projective_residual_norm": 0.03151108750428641,
+        "projective_degeneracy": "near_affine",
+        "corners_by_num": {
+          "corner_0": [
+            488.0,
+            532.0
+          ],
+          "corner_1": [
+            931.0,
+            702.0
+          ],
+          "corner_2": [
+            875.0,
+            1034.0
+          ],
+          "corner_3": [
+            563.0,
+            1271.0
+          ],
+          "corner_4": [
+            330.0,
+            1022.0
+          ],
+          "corner_5": [
+            270.0,
+            697.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              575.9,
+              944.3
+            ],
+            [
+              270.0,
+              697.0
+            ],
+            [
+              330.0,
+              1022.0
+            ],
+            [
+              563.0,
+              1271.0
+            ]
+          ],
+          "right": [
+            [
+              575.9,
+              944.3
+            ],
+            [
+              563.0,
+              1271.0
+            ],
+            [
+              875.0,
+              1034.0
+            ],
+            [
+              931.0,
+              702.0
+            ]
+          ],
+          "upper": [
+            [
+              575.9,
+              944.3
+            ],
+            [
+              931.0,
+              702.0
+            ],
+            [
+              488.0,
+              532.0
+            ],
+            [
+              270.0,
+              697.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            713.0,
+            867.0
+          ],
+          [
+            619.0,
+            939.0
+          ],
+          [
+            503.0,
+            946.0
+          ]
+        ]
+      }
     },
     {
       "key": "30_B",
       "side": "B",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 30 side B"
+      "image_path": "/Users/jhuber/Downloads/Set 30 - B - white up IMG_7101.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [
+        "projective_residual_norm=0.0199; warning 0.0180"
+      ],
+      "sticker_score_total": 435.32,
+      "mean_sticker_distance": 16.12,
+      "vertex_source": "projective",
+      "vertex_cloud_spread_px": 196.22945752358385,
+      "vertex_cloud_spread_norm": 0.2629786186948285,
+      "projective_residual_norm": 0.019859225423315138,
+      "hexagon_diameter_px": 746.1802731243972,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "B",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [
+          "projective_residual_norm=0.0199; warning 0.0180"
+        ],
+        "metrics": {
+          "vertex_cloud_spread_px": 196.229,
+          "sticker_score_total": 435.32,
+          "sticker_score_worst_face": 210.92,
+          "projective_residual_norm": 0.0199
+        },
+        "sticker_score_total": 435.32,
+        "sticker_score_per_face": {
+          "upper": 210.92,
+          "right": 147.97,
+          "front": 76.43
+        },
+        "mean_sticker_distance": 16.12,
+        "vertex_source": "projective",
+        "vertex": [
+          666.9,
+          754.0
+        ],
+        "affine_vertex": [
+          682.7,
+          750.7
+        ],
+        "projective_vertex": [
+          666.9,
+          754.0
+        ],
+        "hexagon_diameter_px": 746.1802731243972,
+        "vertex_cloud_spread_px": 196.22945752358385,
+        "vertex_cloud_spread_norm": 0.2629786186948285,
+        "projective_residual_norm": 0.019859225423315138,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            639.0,
+            1165.0
+          ],
+          "corner_1": [
+            920.0,
+            934.0
+          ],
+          "corner_2": [
+            1002.0,
+            552.0
+          ],
+          "corner_3": [
+            582.0,
+            421.0
+          ],
+          "corner_4": [
+            323.0,
+            546.0
+          ],
+          "corner_5": [
+            378.0,
+            919.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              666.9,
+              754.0
+            ],
+            [
+              323.0,
+              546.0
+            ],
+            [
+              378.0,
+              919.0
+            ],
+            [
+              639.0,
+              1165.0
+            ]
+          ],
+          "right": [
+            [
+              666.9,
+              754.0
+            ],
+            [
+              639.0,
+              1165.0
+            ],
+            [
+              920.0,
+              934.0
+            ],
+            [
+              1002.0,
+              552.0
+            ]
+          ],
+          "upper": [
+            [
+              666.9,
+              754.0
+            ],
+            [
+              1002.0,
+              552.0
+            ],
+            [
+              582.0,
+              421.0
+            ],
+            [
+              323.0,
+              546.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            743.0,
+            677.0
+          ],
+          [
+            721.0,
+            783.0
+          ],
+          [
+            584.0,
+            792.0
+          ]
+        ]
+      }
     },
     {
       "key": "31_A",
@@ -4812,14 +6356,314 @@
     {
       "key": "39_A",
       "side": "A",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 39 side A"
+      "image_path": "/Users/jhuber/Downloads/Set 39 - A - white up IMG_7157.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [],
+      "sticker_score_total": 382.62,
+      "mean_sticker_distance": 14.17,
+      "vertex_source": "affine",
+      "vertex_cloud_spread_px": 180.36074961032958,
+      "vertex_cloud_spread_norm": 0.18544938085639848,
+      "projective_residual_norm": 0.0013153863323206324,
+      "hexagon_diameter_px": 972.5605379615193,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "A",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [],
+        "metrics": {
+          "vertex_cloud_spread_px": 180.361,
+          "sticker_score_total": 382.62,
+          "sticker_score_worst_face": 151.21,
+          "projective_residual_norm": 0.0013
+        },
+        "sticker_score_total": 382.62,
+        "sticker_score_per_face": {
+          "upper": 93.04,
+          "right": 151.21,
+          "front": 138.37
+        },
+        "mean_sticker_distance": 14.17,
+        "vertex_source": "affine",
+        "vertex": [
+          531.0,
+          726.0
+        ],
+        "affine_vertex": [
+          531.0,
+          726.0
+        ],
+        "projective_vertex": [
+          506.2,
+          689.8
+        ],
+        "hexagon_diameter_px": 972.5605379615193,
+        "vertex_cloud_spread_px": 180.36074961032958,
+        "vertex_cloud_spread_norm": 0.18544938085639848,
+        "projective_residual_norm": 0.0013153863323206324,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            586.0,
+            371.0
+          ],
+          "corner_1": [
+            991.0,
+            481.0
+          ],
+          "corner_2": [
+            985.0,
+            1001.0
+          ],
+          "corner_3": [
+            556.0,
+            1277.0
+          ],
+          "corner_4": [
+            214.0,
+            998.0
+          ],
+          "corner_5": [
+            142.0,
+            516.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              531.0,
+              726.0
+            ],
+            [
+              142.0,
+              516.0
+            ],
+            [
+              214.0,
+              998.0
+            ],
+            [
+              556.0,
+              1277.0
+            ]
+          ],
+          "right": [
+            [
+              531.0,
+              726.0
+            ],
+            [
+              556.0,
+              1277.0
+            ],
+            [
+              985.0,
+              1001.0
+            ],
+            [
+              991.0,
+              481.0
+            ]
+          ],
+          "upper": [
+            [
+              531.0,
+              726.0
+            ],
+            [
+              991.0,
+              481.0
+            ],
+            [
+              586.0,
+              371.0
+            ],
+            [
+              142.0,
+              516.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            547.0,
+            626.0
+          ],
+          [
+            562.0,
+            757.0
+          ],
+          [
+            484.0,
+            795.0
+          ]
+        ]
+      }
     },
     {
       "key": "39_B",
       "side": "B",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 39 side B"
+      "image_path": "/Users/jhuber/Downloads/Set 39 - B - white up IMG_7158.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [],
+      "sticker_score_total": 396.37,
+      "mean_sticker_distance": 14.68,
+      "vertex_source": "affine",
+      "vertex_cloud_spread_px": 146.99659860010368,
+      "vertex_cloud_spread_norm": 0.15132447548333144,
+      "projective_residual_norm": 0.002308922371911782,
+      "hexagon_diameter_px": 971.4000205888407,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "B",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [],
+        "metrics": {
+          "vertex_cloud_spread_px": 146.997,
+          "sticker_score_total": 396.37,
+          "sticker_score_worst_face": 211.98,
+          "projective_residual_norm": 0.0023
+        },
+        "sticker_score_total": 396.37,
+        "sticker_score_per_face": {
+          "upper": 99.1,
+          "right": 211.98,
+          "front": 85.3
+        },
+        "mean_sticker_distance": 14.68,
+        "vertex_source": "affine",
+        "vertex": [
+          586.7,
+          757.0
+        ],
+        "affine_vertex": [
+          586.7,
+          757.0
+        ],
+        "projective_vertex": [
+          581.6,
+          752.7
+        ],
+        "hexagon_diameter_px": 971.4000205888407,
+        "vertex_cloud_spread_px": 146.99659860010368,
+        "vertex_cloud_spread_norm": 0.15132447548333144,
+        "projective_residual_norm": 0.002308922371911782,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            587.0,
+            1284.0
+          ],
+          "corner_1": [
+            978.0,
+            994.0
+          ],
+          "corner_2": [
+            1043.0,
+            509.0
+          ],
+          "corner_3": [
+            589.0,
+            335.0
+          ],
+          "corner_4": [
+            141.0,
+            501.0
+          ],
+          "corner_5": [
+            215.0,
+            988.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              586.7,
+              757.0
+            ],
+            [
+              141.0,
+              501.0
+            ],
+            [
+              215.0,
+              988.0
+            ],
+            [
+              587.0,
+              1284.0
+            ]
+          ],
+          "right": [
+            [
+              586.7,
+              757.0
+            ],
+            [
+              587.0,
+              1284.0
+            ],
+            [
+              978.0,
+              994.0
+            ],
+            [
+              1043.0,
+              509.0
+            ]
+          ],
+          "upper": [
+            [
+              586.7,
+              757.0
+            ],
+            [
+              1043.0,
+              509.0
+            ],
+            [
+              589.0,
+              335.0
+            ],
+            [
+              141.0,
+              501.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            595.0,
+            675.0
+          ],
+          [
+            652.0,
+            799.0
+          ],
+          [
+            513.0,
+            797.0
+          ]
+        ]
+      }
     },
     {
       "key": "40_A",
@@ -6704,98 +8548,2506 @@
     {
       "key": "46_A",
       "side": "A",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 46 side A"
+      "image_path": "/Users/jhuber/Downloads/Set 46 - A - white up WCA IMG_7379.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [],
+      "sticker_score_total": 431.98,
+      "mean_sticker_distance": 16.0,
+      "vertex_source": "affine",
+      "vertex_cloud_spread_px": 183.5755975068582,
+      "vertex_cloud_spread_norm": 0.21123232686746626,
+      "projective_residual_norm": 0.006164223199571931,
+      "hexagon_diameter_px": 869.0696174645619,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "A",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [],
+        "metrics": {
+          "vertex_cloud_spread_px": 183.576,
+          "sticker_score_total": 431.98,
+          "sticker_score_worst_face": 236.87,
+          "projective_residual_norm": 0.0062
+        },
+        "sticker_score_total": 431.98,
+        "sticker_score_per_face": {
+          "upper": 108.74,
+          "right": 236.87,
+          "front": 86.37
+        },
+        "mean_sticker_distance": 16.0,
+        "vertex_source": "affine",
+        "vertex": [
+          526.0,
+          791.7
+        ],
+        "affine_vertex": [
+          526.0,
+          791.7
+        ],
+        "projective_vertex": [
+          525.3,
+          812.0
+        ],
+        "hexagon_diameter_px": 869.0696174645619,
+        "vertex_cloud_spread_px": 183.5755975068582,
+        "vertex_cloud_spread_norm": 0.21123232686746626,
+        "projective_residual_norm": 0.006164223199571931,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            524.0,
+            359.0
+          ],
+          "corner_1": [
+            940.0,
+            520.0
+          ],
+          "corner_2": [
+            868.0,
+            894.0
+          ],
+          "corner_3": [
+            535.0,
+            1228.0
+          ],
+          "corner_4": [
+            214.0,
+            918.0
+          ],
+          "corner_5": [
+            117.0,
+            525.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              526.0,
+              791.7
+            ],
+            [
+              117.0,
+              525.0
+            ],
+            [
+              214.0,
+              918.0
+            ],
+            [
+              535.0,
+              1228.0
+            ]
+          ],
+          "right": [
+            [
+              526.0,
+              791.7
+            ],
+            [
+              535.0,
+              1228.0
+            ],
+            [
+              868.0,
+              894.0
+            ],
+            [
+              940.0,
+              520.0
+            ]
+          ],
+          "upper": [
+            [
+              526.0,
+              791.7
+            ],
+            [
+              940.0,
+              520.0
+            ],
+            [
+              524.0,
+              359.0
+            ],
+            [
+              117.0,
+              525.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            533.0,
+            686.0
+          ],
+          [
+            607.0,
+            854.0
+          ],
+          [
+            438.0,
+            835.0
+          ]
+        ]
+      }
     },
     {
       "key": "46_B",
       "side": "B",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 46 side B"
+      "image_path": "/Users/jhuber/Downloads/Set 46 - B - white up WCA IMG_7380.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [],
+      "sticker_score_total": 479.2,
+      "mean_sticker_distance": 17.75,
+      "vertex_source": "affine",
+      "vertex_cloud_spread_px": 200.21238722916223,
+      "vertex_cloud_spread_norm": 0.22420186080206583,
+      "projective_residual_norm": 0.004108039150842137,
+      "hexagon_diameter_px": 893.0005599102388,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "B",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [],
+        "metrics": {
+          "vertex_cloud_spread_px": 200.212,
+          "sticker_score_total": 479.2,
+          "sticker_score_worst_face": 212.32,
+          "projective_residual_norm": 0.0041
+        },
+        "sticker_score_total": 479.2,
+        "sticker_score_per_face": {
+          "upper": 103.57,
+          "right": 212.32,
+          "front": 163.31
+        },
+        "mean_sticker_distance": 17.75,
+        "vertex_source": "affine",
+        "vertex": [
+          584.0,
+          820.7
+        ],
+        "affine_vertex": [
+          584.0,
+          820.7
+        ],
+        "projective_vertex": [
+          573.4,
+          862.3
+        ],
+        "hexagon_diameter_px": 893.0005599102388,
+        "vertex_cloud_spread_px": 200.21238722916223,
+        "vertex_cloud_spread_norm": 0.22420186080206583,
+        "projective_residual_norm": 0.004108039150842137,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            584.0,
+            1249.0
+          ],
+          "corner_1": [
+            914.0,
+            937.0
+          ],
+          "corner_2": [
+            1013.0,
+            545.0
+          ],
+          "corner_3": [
+            583.0,
+            356.0
+          ],
+          "corner_4": [
+            155.0,
+            537.0
+          ],
+          "corner_5": [
+            255.0,
+            907.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              584.0,
+              820.7
+            ],
+            [
+              155.0,
+              537.0
+            ],
+            [
+              255.0,
+              907.0
+            ],
+            [
+              584.0,
+              1249.0
+            ]
+          ],
+          "right": [
+            [
+              584.0,
+              820.7
+            ],
+            [
+              584.0,
+              1249.0
+            ],
+            [
+              914.0,
+              937.0
+            ],
+            [
+              1013.0,
+              545.0
+            ]
+          ],
+          "upper": [
+            [
+              584.0,
+              820.7
+            ],
+            [
+              1013.0,
+              545.0
+            ],
+            [
+              583.0,
+              356.0
+            ],
+            [
+              155.0,
+              537.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            585.0,
+            726.0
+          ],
+          [
+            683.0,
+            857.0
+          ],
+          [
+            484.0,
+            879.0
+          ]
+        ]
+      }
     },
     {
       "key": "47_A",
       "side": "A",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 47 side A"
+      "image_path": "/Users/jhuber/Downloads/Set 47 - A - white up +90 IMG_7381.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [],
+      "sticker_score_total": 523.98,
+      "mean_sticker_distance": 19.41,
+      "vertex_source": "affine",
+      "vertex_cloud_spread_px": 199.12307751739877,
+      "vertex_cloud_spread_norm": 0.22781469687244066,
+      "projective_residual_norm": 0.005988723898588367,
+      "hexagon_diameter_px": 874.0572063658076,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "A",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [],
+        "metrics": {
+          "vertex_cloud_spread_px": 199.123,
+          "sticker_score_total": 523.98,
+          "sticker_score_worst_face": 217.53,
+          "projective_residual_norm": 0.006
+        },
+        "sticker_score_total": 523.98,
+        "sticker_score_per_face": {
+          "upper": 110.07,
+          "right": 217.53,
+          "front": 196.38
+        },
+        "mean_sticker_distance": 19.41,
+        "vertex_source": "affine",
+        "vertex": [
+          524.7,
+          764.0
+        ],
+        "affine_vertex": [
+          524.7,
+          764.0
+        ],
+        "projective_vertex": [
+          513.0,
+          787.3
+        ],
+        "hexagon_diameter_px": 874.0572063658076,
+        "vertex_cloud_spread_px": 199.12307751739877,
+        "vertex_cloud_spread_norm": 0.22781469687244066,
+        "projective_residual_norm": 0.005988723898588367,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            533.0,
+            356.0
+          ],
+          "corner_1": [
+            944.0,
+            502.0
+          ],
+          "corner_2": [
+            868.0,
+            918.0
+          ],
+          "corner_3": [
+            543.0,
+            1230.0
+          ],
+          "corner_4": [
+            247.0,
+            948.0
+          ],
+          "corner_5": [
+            124.0,
+            525.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              524.7,
+              764.0
+            ],
+            [
+              124.0,
+              525.0
+            ],
+            [
+              247.0,
+              948.0
+            ],
+            [
+              543.0,
+              1230.0
+            ]
+          ],
+          "right": [
+            [
+              524.7,
+              764.0
+            ],
+            [
+              543.0,
+              1230.0
+            ],
+            [
+              868.0,
+              918.0
+            ],
+            [
+              944.0,
+              502.0
+            ]
+          ],
+          "upper": [
+            [
+              524.7,
+              764.0
+            ],
+            [
+              944.0,
+              502.0
+            ],
+            [
+              533.0,
+              356.0
+            ],
+            [
+              124.0,
+              525.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            535.0,
+            671.0
+          ],
+          [
+            619.0,
+            814.0
+          ],
+          [
+            420.0,
+            807.0
+          ]
+        ]
+      }
     },
     {
       "key": "47_B",
       "side": "B",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 47 side B"
+      "image_path": "/Users/jhuber/Downloads/Set 47 - B - white up +90 IMG_7382.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [],
+      "sticker_score_total": 399.31,
+      "mean_sticker_distance": 14.79,
+      "vertex_source": "affine",
+      "vertex_cloud_spread_px": 182.91528093628483,
+      "vertex_cloud_spread_norm": 0.21042795713920195,
+      "projective_residual_norm": 0.0008259715399173049,
+      "hexagon_diameter_px": 869.253702896916,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "B",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [],
+        "metrics": {
+          "vertex_cloud_spread_px": 182.915,
+          "sticker_score_total": 399.31,
+          "sticker_score_worst_face": 187.77,
+          "projective_residual_norm": 0.0008
+        },
+        "sticker_score_total": 399.31,
+        "sticker_score_per_face": {
+          "upper": 92.3,
+          "right": 187.77,
+          "front": 119.24
+        },
+        "mean_sticker_distance": 14.79,
+        "vertex_source": "affine",
+        "vertex": [
+          561.7,
+          819.0
+        ],
+        "affine_vertex": [
+          561.7,
+          819.0
+        ],
+        "projective_vertex": [
+          560.8,
+          839.4
+        ],
+        "hexagon_diameter_px": 869.253702896916,
+        "vertex_cloud_spread_px": 182.91528093628483,
+        "vertex_cloud_spread_norm": 0.21042795713920195,
+        "projective_residual_norm": 0.0008259715399173049,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            562.0,
+            1254.0
+          ],
+          "corner_1": [
+            895.0,
+            941.0
+          ],
+          "corner_2": [
+            977.0,
+            565.0
+          ],
+          "corner_3": [
+            583.0,
+            385.0
+          ],
+          "corner_4": [
+            167.0,
+            535.0
+          ],
+          "corner_5": [
+            249.0,
+            925.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              561.7,
+              819.0
+            ],
+            [
+              167.0,
+              535.0
+            ],
+            [
+              249.0,
+              925.0
+            ],
+            [
+              562.0,
+              1254.0
+            ]
+          ],
+          "right": [
+            [
+              561.7,
+              819.0
+            ],
+            [
+              562.0,
+              1254.0
+            ],
+            [
+              895.0,
+              941.0
+            ],
+            [
+              977.0,
+              565.0
+            ]
+          ],
+          "upper": [
+            [
+              561.7,
+              819.0
+            ],
+            [
+              977.0,
+              565.0
+            ],
+            [
+              583.0,
+              385.0
+            ],
+            [
+              167.0,
+              535.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            561.0,
+            715.0
+          ],
+          [
+            644.0,
+            878.0
+          ],
+          [
+            480.0,
+            864.0
+          ]
+        ]
+      }
     },
     {
       "key": "48_A",
       "side": "A",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 48 side A"
+      "image_path": "/Users/jhuber/Downloads/Set 48 - A - white up +180 IMG_7383.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [],
+      "sticker_score_total": 449.21,
+      "mean_sticker_distance": 16.64,
+      "vertex_source": "affine",
+      "vertex_cloud_spread_px": 180.42727066604982,
+      "vertex_cloud_spread_norm": 0.2181349448225112,
+      "projective_residual_norm": 0.007436004745920157,
+      "hexagon_diameter_px": 827.1360226709994,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "A",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [],
+        "metrics": {
+          "vertex_cloud_spread_px": 180.427,
+          "sticker_score_total": 449.21,
+          "sticker_score_worst_face": 190.75,
+          "projective_residual_norm": 0.0074
+        },
+        "sticker_score_total": 449.21,
+        "sticker_score_per_face": {
+          "upper": 101.37,
+          "right": 190.75,
+          "front": 157.08
+        },
+        "mean_sticker_distance": 16.64,
+        "vertex_source": "affine",
+        "vertex": [
+          554.0,
+          781.7
+        ],
+        "affine_vertex": [
+          554.0,
+          781.7
+        ],
+        "projective_vertex": [
+          540.3,
+          794.7
+        ],
+        "hexagon_diameter_px": 827.1360226709994,
+        "vertex_cloud_spread_px": 180.42727066604982,
+        "vertex_cloud_spread_norm": 0.2181349448225112,
+        "projective_residual_norm": 0.007436004745920157,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            549.0,
+            382.0
+          ],
+          "corner_1": [
+            935.0,
+            514.0
+          ],
+          "corner_2": [
+            868.0,
+            917.0
+          ],
+          "corner_3": [
+            564.0,
+            1209.0
+          ],
+          "corner_4": [
+            251.0,
+            912.0
+          ],
+          "corner_5": [
+            166.0,
+            555.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              554.0,
+              781.7
+            ],
+            [
+              166.0,
+              555.0
+            ],
+            [
+              251.0,
+              912.0
+            ],
+            [
+              564.0,
+              1209.0
+            ]
+          ],
+          "right": [
+            [
+              554.0,
+              781.7
+            ],
+            [
+              564.0,
+              1209.0
+            ],
+            [
+              868.0,
+              917.0
+            ],
+            [
+              935.0,
+              514.0
+            ]
+          ],
+          "upper": [
+            [
+              554.0,
+              781.7
+            ],
+            [
+              935.0,
+              514.0
+            ],
+            [
+              549.0,
+              382.0
+            ],
+            [
+              166.0,
+              555.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            552.0,
+            687.0
+          ],
+          [
+            631.0,
+            806.0
+          ],
+          [
+            479.0,
+            852.0
+          ]
+        ]
+      }
     },
     {
       "key": "48_B",
       "side": "B",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 48 side B"
+      "image_path": "/Users/jhuber/Downloads/Set 48 - B - white up +180 IMG_7384.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [],
+      "sticker_score_total": 450.63,
+      "mean_sticker_distance": 16.69,
+      "vertex_source": "affine",
+      "vertex_cloud_spread_px": 170.10584939971935,
+      "vertex_cloud_spread_norm": 0.20507708627488302,
+      "projective_residual_norm": 0.0043185091203381,
+      "hexagon_diameter_px": 829.4727240844029,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "B",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [],
+        "metrics": {
+          "vertex_cloud_spread_px": 170.106,
+          "sticker_score_total": 450.63,
+          "sticker_score_worst_face": 185.6,
+          "projective_residual_norm": 0.0043
+        },
+        "sticker_score_total": 450.63,
+        "sticker_score_per_face": {
+          "upper": 93.66,
+          "right": 171.37,
+          "front": 185.6
+        },
+        "mean_sticker_distance": 16.69,
+        "vertex_source": "affine",
+        "vertex": [
+          538.7,
+          749.7
+        ],
+        "affine_vertex": [
+          538.7,
+          749.7
+        ],
+        "projective_vertex": [
+          524.1,
+          760.9
+        ],
+        "hexagon_diameter_px": 829.4727240844029,
+        "vertex_cloud_spread_px": 170.10584939971935,
+        "vertex_cloud_spread_norm": 0.20507708627488302,
+        "projective_residual_norm": 0.0043185091203381,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            538.0,
+            1200.0
+          ],
+          "corner_1": [
+            865.0,
+            924.0
+          ],
+          "corner_2": [
+            944.0,
+            521.0
+          ],
+          "corner_3": [
+            566.0,
+            371.0
+          ],
+          "corner_4": [
+            174.0,
+            511.0
+          ],
+          "corner_5": [
+            265.0,
+            920.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              538.7,
+              749.7
+            ],
+            [
+              174.0,
+              511.0
+            ],
+            [
+              265.0,
+              920.0
+            ],
+            [
+              538.0,
+              1200.0
+            ]
+          ],
+          "right": [
+            [
+              538.7,
+              749.7
+            ],
+            [
+              538.0,
+              1200.0
+            ],
+            [
+              865.0,
+              924.0
+            ],
+            [
+              944.0,
+              521.0
+            ]
+          ],
+          "upper": [
+            [
+              538.7,
+              749.7
+            ],
+            [
+              944.0,
+              521.0
+            ],
+            [
+              566.0,
+              371.0
+            ],
+            [
+              174.0,
+              511.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            552.0,
+            661.0
+          ],
+          [
+            617.0,
+            797.0
+          ],
+          [
+            447.0,
+            791.0
+          ]
+        ]
+      }
     },
     {
       "key": "49_A",
       "side": "A",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 49 side A"
+      "image_path": "/Users/jhuber/Downloads/Set 49 - A - white up +270 IMG_7385.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [],
+      "sticker_score_total": 491.7,
+      "mean_sticker_distance": 18.21,
+      "vertex_source": "affine",
+      "vertex_cloud_spread_px": 203.29781110479277,
+      "vertex_cloud_spread_norm": 0.22528469345263913,
+      "projective_residual_norm": 0.003428997431686387,
+      "hexagon_diameter_px": 902.4040115159063,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "A",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [],
+        "metrics": {
+          "vertex_cloud_spread_px": 203.298,
+          "sticker_score_total": 491.7,
+          "sticker_score_worst_face": 213.58,
+          "projective_residual_norm": 0.0034
+        },
+        "sticker_score_total": 491.7,
+        "sticker_score_per_face": {
+          "upper": 109.93,
+          "right": 168.2,
+          "front": 213.58
+        },
+        "mean_sticker_distance": 18.21,
+        "vertex_source": "affine",
+        "vertex": [
+          573.3,
+          811.7
+        ],
+        "affine_vertex": [
+          573.3,
+          811.7
+        ],
+        "projective_vertex": [
+          583.4,
+          830.5
+        ],
+        "hexagon_diameter_px": 902.4040115159063,
+        "vertex_cloud_spread_px": 203.29781110479277,
+        "vertex_cloud_spread_norm": 0.22528469345263913,
+        "projective_residual_norm": 0.003428997431686387,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            568.0,
+            365.0
+          ],
+          "corner_1": [
+            975.0,
+            530.0
+          ],
+          "corner_2": [
+            903.0,
+            928.0
+          ],
+          "corner_3": [
+            595.0,
+            1267.0
+          ],
+          "corner_4": [
+            243.0,
+            936.0
+          ],
+          "corner_5": [
+            147.0,
+            535.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              573.3,
+              811.7
+            ],
+            [
+              147.0,
+              535.0
+            ],
+            [
+              243.0,
+              936.0
+            ],
+            [
+              595.0,
+              1267.0
+            ]
+          ],
+          "right": [
+            [
+              573.3,
+              811.7
+            ],
+            [
+              595.0,
+              1267.0
+            ],
+            [
+              903.0,
+              928.0
+            ],
+            [
+              975.0,
+              530.0
+            ]
+          ],
+          "upper": [
+            [
+              573.3,
+              811.7
+            ],
+            [
+              975.0,
+              530.0
+            ],
+            [
+              568.0,
+              365.0
+            ],
+            [
+              147.0,
+              535.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            554.0,
+            700.0
+          ],
+          [
+            667.0,
+            869.0
+          ],
+          [
+            499.0,
+            866.0
+          ]
+        ]
+      }
     },
     {
       "key": "49_B",
       "side": "B",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 49 side B"
+      "image_path": "/Users/jhuber/Downloads/Set 49 - B - white up +270 IMG_7386.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [
+        "sticker_score_worst_face=414.7; warning 350.0"
+      ],
+      "sticker_score_total": 686.59,
+      "mean_sticker_distance": 25.43,
+      "vertex_source": "affine",
+      "vertex_cloud_spread_px": 210.2974084481309,
+      "vertex_cloud_spread_norm": 0.22331034144850145,
+      "projective_residual_norm": 0.009420616311496181,
+      "hexagon_diameter_px": 941.727136701497,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "B",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [
+          "sticker_score_worst_face=414.7; warning 350.0"
+        ],
+        "metrics": {
+          "vertex_cloud_spread_px": 210.297,
+          "sticker_score_total": 686.59,
+          "sticker_score_worst_face": 414.69,
+          "projective_residual_norm": 0.0094
+        },
+        "sticker_score_total": 686.59,
+        "sticker_score_per_face": {
+          "upper": 107.38,
+          "right": 414.69,
+          "front": 164.52
+        },
+        "mean_sticker_distance": 25.43,
+        "vertex_source": "affine",
+        "vertex": [
+          582.0,
+          805.3
+        ],
+        "affine_vertex": [
+          582.0,
+          805.3
+        ],
+        "projective_vertex": [
+          590.5,
+          832.1
+        ],
+        "hexagon_diameter_px": 941.727136701497,
+        "vertex_cloud_spread_px": 210.2974084481309,
+        "vertex_cloud_spread_norm": 0.22331034144850145,
+        "projective_residual_norm": 0.009420616311496181,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            599.0,
+            1282.0
+          ],
+          "corner_1": [
+            929.0,
+            903.0
+          ],
+          "corner_2": [
+            1006.0,
+            501.0
+          ],
+          "corner_3": [
+            562.0,
+            341.0
+          ],
+          "corner_4": [
+            144.0,
+            529.0
+          ],
+          "corner_5": [
+            261.0,
+            964.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              582.0,
+              805.3
+            ],
+            [
+              144.0,
+              529.0
+            ],
+            [
+              261.0,
+              964.0
+            ],
+            [
+              599.0,
+              1282.0
+            ]
+          ],
+          "right": [
+            [
+              582.0,
+              805.3
+            ],
+            [
+              599.0,
+              1282.0
+            ],
+            [
+              929.0,
+              903.0
+            ],
+            [
+              1006.0,
+              501.0
+            ]
+          ],
+          "upper": [
+            [
+              582.0,
+              805.3
+            ],
+            [
+              1006.0,
+              501.0
+            ],
+            [
+              562.0,
+              341.0
+            ],
+            [
+              144.0,
+              529.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            588.0,
+            689.0
+          ],
+          [
+            676.0,
+            880.0
+          ],
+          [
+            482.0,
+            847.0
+          ]
+        ]
+      }
     },
     {
       "key": "57_A",
       "side": "A",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 57 side A"
+      "image_path": "/Users/jhuber/Downloads/Set 57 - A - white-up IMG_7510.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [],
+      "sticker_score_total": 390.0,
+      "mean_sticker_distance": 14.44,
+      "vertex_source": "affine",
+      "vertex_cloud_spread_px": 191.44189719076647,
+      "vertex_cloud_spread_norm": 0.2183566680605174,
+      "projective_residual_norm": 0.001165608585037943,
+      "hexagon_diameter_px": 876.7394139651759,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "A",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [],
+        "metrics": {
+          "vertex_cloud_spread_px": 191.442,
+          "sticker_score_total": 390.0,
+          "sticker_score_worst_face": 182.61,
+          "projective_residual_norm": 0.0012
+        },
+        "sticker_score_total": 390.0,
+        "sticker_score_per_face": {
+          "upper": 141.68,
+          "right": 65.71,
+          "front": 182.61
+        },
+        "mean_sticker_distance": 14.44,
+        "vertex_source": "affine",
+        "vertex": [
+          578.0,
+          848.7
+        ],
+        "affine_vertex": [
+          578.0,
+          848.7
+        ],
+        "projective_vertex": [
+          575.0,
+          869.0
+        ],
+        "hexagon_diameter_px": 876.7394139651759,
+        "vertex_cloud_spread_px": 191.44189719076647,
+        "vertex_cloud_spread_norm": 0.2183566680605174,
+        "projective_residual_norm": 0.001165608585037943,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            561.0,
+            432.0
+          ],
+          "corner_1": [
+            989.0,
+            580.0
+          ],
+          "corner_2": [
+            911.0,
+            997.0
+          ],
+          "corner_3": [
+            597.0,
+            1308.0
+          ],
+          "corner_4": [
+            260.0,
+            1007.0
+          ],
+          "corner_5": [
+            147.0,
+            603.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              578.0,
+              848.7
+            ],
+            [
+              147.0,
+              603.0
+            ],
+            [
+              260.0,
+              1007.0
+            ],
+            [
+              597.0,
+              1308.0
+            ]
+          ],
+          "right": [
+            [
+              578.0,
+              848.7
+            ],
+            [
+              597.0,
+              1308.0
+            ],
+            [
+              911.0,
+              997.0
+            ],
+            [
+              989.0,
+              580.0
+            ]
+          ],
+          "upper": [
+            [
+              578.0,
+              848.7
+            ],
+            [
+              989.0,
+              580.0
+            ],
+            [
+              561.0,
+              432.0
+            ],
+            [
+              147.0,
+              603.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            575.0,
+            751.0
+          ],
+          [
+            675.0,
+            891.0
+          ],
+          [
+            484.0,
+            904.0
+          ]
+        ]
+      }
     },
     {
       "key": "57_B",
       "side": "B",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 57 side B"
+      "image_path": "/Users/jhuber/Downloads/Set 57 - B - white-up IMG_7511.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [],
+      "sticker_score_total": 587.88,
+      "mean_sticker_distance": 21.77,
+      "vertex_source": "affine",
+      "vertex_cloud_spread_px": 173.34935823359717,
+      "vertex_cloud_spread_norm": 0.20037763927861085,
+      "projective_residual_norm": 0.00494728877031796,
+      "hexagon_diameter_px": 865.1132873791732,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "B",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [],
+        "metrics": {
+          "vertex_cloud_spread_px": 173.349,
+          "sticker_score_total": 587.88,
+          "sticker_score_worst_face": 318.6,
+          "projective_residual_norm": 0.0049
+        },
+        "sticker_score_total": 587.88,
+        "sticker_score_per_face": {
+          "upper": 100.77,
+          "right": 318.6,
+          "front": 168.51
+        },
+        "mean_sticker_distance": 21.77,
+        "vertex_source": "affine",
+        "vertex": [
+          603.3,
+          804.7
+        ],
+        "affine_vertex": [
+          603.3,
+          804.7
+        ],
+        "projective_vertex": [
+          593.6,
+          815.5
+        ],
+        "hexagon_diameter_px": 865.1132873791732,
+        "vertex_cloud_spread_px": 173.34935823359717,
+        "vertex_cloud_spread_norm": 0.20037763927861085,
+        "projective_residual_norm": 0.00494728877031796,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            626.0,
+            1266.0
+          ],
+          "corner_1": [
+            958.0,
+            944.0
+          ],
+          "corner_2": [
+            1017.0,
+            533.0
+          ],
+          "corner_3": [
+            612.0,
+            401.0
+          ],
+          "corner_4": [
+            205.0,
+            575.0
+          ],
+          "corner_5": [
+            316.0,
+            989.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              603.3,
+              804.7
+            ],
+            [
+              205.0,
+              575.0
+            ],
+            [
+              316.0,
+              989.0
+            ],
+            [
+              626.0,
+              1266.0
+            ]
+          ],
+          "right": [
+            [
+              603.3,
+              804.7
+            ],
+            [
+              626.0,
+              1266.0
+            ],
+            [
+              958.0,
+              944.0
+            ],
+            [
+              1017.0,
+              533.0
+            ]
+          ],
+          "upper": [
+            [
+              603.3,
+              804.7
+            ],
+            [
+              1017.0,
+              533.0
+            ],
+            [
+              612.0,
+              401.0
+            ],
+            [
+              205.0,
+              575.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            610.0,
+            707.0
+          ],
+          [
+            685.0,
+            855.0
+          ],
+          [
+            515.0,
+            852.0
+          ]
+        ]
+      }
     },
     {
       "key": "58_A",
       "side": "A",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 58 side A"
+      "image_path": "/Users/jhuber/Downloads/Set 58 - A - white-up IMG_7512.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [],
+      "sticker_score_total": 458.38,
+      "mean_sticker_distance": 16.98,
+      "vertex_source": "affine",
+      "vertex_cloud_spread_px": 175.0,
+      "vertex_cloud_spread_norm": 0.2073314191516924,
+      "projective_residual_norm": 0.0031148680847518065,
+      "hexagon_diameter_px": 844.0592396271721,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "A",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [],
+        "metrics": {
+          "vertex_cloud_spread_px": 175.0,
+          "sticker_score_total": 458.38,
+          "sticker_score_worst_face": 178.6,
+          "projective_residual_norm": 0.0031
+        },
+        "sticker_score_total": 458.38,
+        "sticker_score_per_face": {
+          "upper": 116.02,
+          "right": 178.6,
+          "front": 163.76
+        },
+        "mean_sticker_distance": 16.98,
+        "vertex_source": "affine",
+        "vertex": [
+          583.3,
+          709.0
+        ],
+        "affine_vertex": [
+          583.3,
+          709.0
+        ],
+        "projective_vertex": [
+          581.2,
+          714.8
+        ],
+        "hexagon_diameter_px": 844.0592396271721,
+        "vertex_cloud_spread_px": 175.0,
+        "vertex_cloud_spread_norm": 0.2073314191516924,
+        "projective_residual_norm": 0.0031148680847518065,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            567.0,
+            331.0
+          ],
+          "corner_1": [
+            987.0,
+            473.0
+          ],
+          "corner_2": [
+            898.0,
+            893.0
+          ],
+          "corner_3": [
+            577.0,
+            1175.0
+          ],
+          "corner_4": [
+            259.0,
+            895.0
+          ],
+          "corner_5": [
+            173.0,
+            475.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              583.3,
+              709.0
+            ],
+            [
+              173.0,
+              475.0
+            ],
+            [
+              259.0,
+              895.0
+            ],
+            [
+              577.0,
+              1175.0
+            ]
+          ],
+          "right": [
+            [
+              583.3,
+              709.0
+            ],
+            [
+              577.0,
+              1175.0
+            ],
+            [
+              898.0,
+              893.0
+            ],
+            [
+              987.0,
+              473.0
+            ]
+          ],
+          "upper": [
+            [
+              583.3,
+              709.0
+            ],
+            [
+              987.0,
+              473.0
+            ],
+            [
+              567.0,
+              331.0
+            ],
+            [
+              173.0,
+              475.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            593.0,
+            617.0
+          ],
+          [
+            666.0,
+            755.0
+          ],
+          [
+            491.0,
+            755.0
+          ]
+        ]
+      }
     },
     {
       "key": "58_B",
       "side": "B",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 58 side B"
+      "image_path": "/Users/jhuber/Downloads/Set 58 - B - white-up IMG_7513.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [],
+      "sticker_score_total": 388.62,
+      "mean_sticker_distance": 14.39,
+      "vertex_source": "affine",
+      "vertex_cloud_spread_px": 221.72054483064937,
+      "vertex_cloud_spread_norm": 0.25726471304659115,
+      "projective_residual_norm": 0.010466270991635529,
+      "hexagon_diameter_px": 861.8381518591527,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "B",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [],
+        "metrics": {
+          "vertex_cloud_spread_px": 221.721,
+          "sticker_score_total": 388.62,
+          "sticker_score_worst_face": 165.87,
+          "projective_residual_norm": 0.0105
+        },
+        "sticker_score_total": 388.62,
+        "sticker_score_per_face": {
+          "upper": 139.79,
+          "right": 82.96,
+          "front": 165.87
+        },
+        "mean_sticker_distance": 14.39,
+        "vertex_source": "affine",
+        "vertex": [
+          557.0,
+          784.7
+        ],
+        "affine_vertex": [
+          557.0,
+          784.7
+        ],
+        "projective_vertex": [
+          562.8,
+          832.7
+        ],
+        "hexagon_diameter_px": 861.8381518591527,
+        "vertex_cloud_spread_px": 221.72054483064937,
+        "vertex_cloud_spread_norm": 0.25726471304659115,
+        "projective_residual_norm": 0.010466270991635529,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            537.0,
+            1204.0
+          ],
+          "corner_1": [
+            868.0,
+            928.0
+          ],
+          "corner_2": [
+            988.0,
+            569.0
+          ],
+          "corner_3": [
+            575.0,
+            343.0
+          ],
+          "corner_4": [
+            158.0,
+            496.0
+          ],
+          "corner_5": [
+            252.0,
+            913.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              557.0,
+              784.7
+            ],
+            [
+              158.0,
+              496.0
+            ],
+            [
+              252.0,
+              913.0
+            ],
+            [
+              537.0,
+              1204.0
+            ]
+          ],
+          "right": [
+            [
+              557.0,
+              784.7
+            ],
+            [
+              537.0,
+              1204.0
+            ],
+            [
+              868.0,
+              928.0
+            ],
+            [
+              988.0,
+              569.0
+            ]
+          ],
+          "upper": [
+            [
+              557.0,
+              784.7
+            ],
+            [
+              988.0,
+              569.0
+            ],
+            [
+              575.0,
+              343.0
+            ],
+            [
+              158.0,
+              496.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            571.0,
+            722.0
+          ],
+          [
+            657.0,
+            845.0
+          ],
+          [
+            443.0,
+            787.0
+          ]
+        ]
+      }
     },
     {
       "key": "61_A",
       "side": "A",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 61 side A"
+      "image_path": "/Users/jhuber/Downloads/Set 61 - A - white-up IMG_7518.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [],
+      "sticker_score_total": 657.1,
+      "mean_sticker_distance": 24.34,
+      "vertex_source": "affine",
+      "vertex_cloud_spread_px": 171.1286066091815,
+      "vertex_cloud_spread_norm": 0.18501168347607994,
+      "projective_residual_norm": 0.0005029590074593224,
+      "hexagon_diameter_px": 924.9610802622994,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "A",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [],
+        "metrics": {
+          "vertex_cloud_spread_px": 171.129,
+          "sticker_score_total": 657.1,
+          "sticker_score_worst_face": 327.98,
+          "projective_residual_norm": 0.0005
+        },
+        "sticker_score_total": 657.1,
+        "sticker_score_per_face": {
+          "upper": 176.55,
+          "right": 327.98,
+          "front": 152.57
+        },
+        "mean_sticker_distance": 24.34,
+        "vertex_source": "affine",
+        "vertex": [
+          561.0,
+          792.7
+        ],
+        "affine_vertex": [
+          561.0,
+          792.7
+        ],
+        "projective_vertex": [
+          532.8,
+          785.6
+        ],
+        "hexagon_diameter_px": 924.9610802622994,
+        "vertex_cloud_spread_px": 171.1286066091815,
+        "vertex_cloud_spread_norm": 0.18501168347607994,
+        "projective_residual_norm": 0.0005029590074593224,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            616.0,
+            395.0
+          ],
+          "corner_1": [
+            1023.0,
+            536.0
+          ],
+          "corner_2": [
+            981.0,
+            1019.0
+          ],
+          "corner_3": [
+            573.0,
+            1302.0
+          ],
+          "corner_4": [
+            260.0,
+            1018.0
+          ],
+          "corner_5": [
+            174.0,
+            567.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              561.0,
+              792.7
+            ],
+            [
+              174.0,
+              567.0
+            ],
+            [
+              260.0,
+              1018.0
+            ],
+            [
+              573.0,
+              1302.0
+            ]
+          ],
+          "right": [
+            [
+              561.0,
+              792.7
+            ],
+            [
+              573.0,
+              1302.0
+            ],
+            [
+              981.0,
+              1019.0
+            ],
+            [
+              1023.0,
+              536.0
+            ]
+          ],
+          "upper": [
+            [
+              561.0,
+              792.7
+            ],
+            [
+              1023.0,
+              536.0
+            ],
+            [
+              616.0,
+              395.0
+            ],
+            [
+              174.0,
+              567.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            581.0,
+            708.0
+          ],
+          [
+            615.0,
+            819.0
+          ],
+          [
+            487.0,
+            851.0
+          ]
+        ]
+      }
     },
     {
       "key": "61_B",
       "side": "B",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 61 side B"
+      "image_path": "/Users/jhuber/Downloads/Set 61 - B - white-up IMG_7519.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [],
+      "sticker_score_total": 588.55,
+      "mean_sticker_distance": 21.8,
+      "vertex_source": "affine",
+      "vertex_cloud_spread_px": 160.96272860510285,
+      "vertex_cloud_spread_norm": 0.18122917380290104,
+      "projective_residual_norm": 0.010615871847488773,
+      "hexagon_diameter_px": 888.1722805852477,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "B",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [],
+        "metrics": {
+          "vertex_cloud_spread_px": 160.963,
+          "sticker_score_total": 588.55,
+          "sticker_score_worst_face": 323.62,
+          "projective_residual_norm": 0.0106
+        },
+        "sticker_score_total": 588.55,
+        "sticker_score_per_face": {
+          "upper": 130.94,
+          "right": 323.62,
+          "front": 133.99
+        },
+        "mean_sticker_distance": 21.8,
+        "vertex_source": "affine",
+        "vertex": [
+          544.3,
+          746.7
+        ],
+        "affine_vertex": [
+          544.3,
+          746.7
+        ],
+        "projective_vertex": [
+          525.0,
+          724.3
+        ],
+        "hexagon_diameter_px": 888.1722805852477,
+        "vertex_cloud_spread_px": 160.96272860510285,
+        "vertex_cloud_spread_norm": 0.18122917380290104,
+        "projective_residual_norm": 0.010615871847488773,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            537.0,
+            1253.0
+          ],
+          "corner_1": [
+            928.0,
+            1001.0
+          ],
+          "corner_2": [
+            971.0,
+            542.0
+          ],
+          "corner_3": [
+            567.0,
+            410.0
+          ],
+          "corner_4": [
+            175.0,
+            530.0
+          ],
+          "corner_5": [
+            238.0,
+            999.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              544.3,
+              746.7
+            ],
+            [
+              175.0,
+              530.0
+            ],
+            [
+              238.0,
+              999.0
+            ],
+            [
+              537.0,
+              1253.0
+            ]
+          ],
+          "right": [
+            [
+              544.3,
+              746.7
+            ],
+            [
+              537.0,
+              1253.0
+            ],
+            [
+              928.0,
+              1001.0
+            ],
+            [
+              971.0,
+              542.0
+            ]
+          ],
+          "upper": [
+            [
+              544.3,
+              746.7
+            ],
+            [
+              971.0,
+              542.0
+            ],
+            [
+              567.0,
+              410.0
+            ],
+            [
+              175.0,
+              530.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            579.0,
+            662.0
+          ],
+          [
+            580.0,
+            794.0
+          ],
+          [
+            474.0,
+            784.0
+          ]
+        ]
+      }
     },
     {
       "key": "62_A",
       "side": "A",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 62 side A"
+      "image_path": "/Users/jhuber/Downloads/Set 62 - A - white-up IMG_7521.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [
+        "sticker_score_worst_face=382.1; warning 350.0"
+      ],
+      "sticker_score_total": 659.45,
+      "mean_sticker_distance": 24.42,
+      "vertex_source": "affine",
+      "vertex_cloud_spread_px": 189.40168953839878,
+      "vertex_cloud_spread_norm": 0.18902326571539624,
+      "projective_residual_norm": 0.0042748254715425146,
+      "hexagon_diameter_px": 1002.001996005996,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "A",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [
+          "sticker_score_worst_face=382.1; warning 350.0"
+        ],
+        "metrics": {
+          "vertex_cloud_spread_px": 189.402,
+          "sticker_score_total": 659.45,
+          "sticker_score_worst_face": 382.05,
+          "projective_residual_norm": 0.0043
+        },
+        "sticker_score_total": 659.45,
+        "sticker_score_per_face": {
+          "upper": 109.46,
+          "right": 382.05,
+          "front": 167.94
+        },
+        "mean_sticker_distance": 24.42,
+        "vertex_source": "affine",
+        "vertex": [
+          554.7,
+          786.0
+        ],
+        "affine_vertex": [
+          554.7,
+          786.0
+        ],
+        "projective_vertex": [
+          537.5,
+          797.0
+        ],
+        "hexagon_diameter_px": 1002.001996005996,
+        "vertex_cloud_spread_px": 189.40168953839878,
+        "vertex_cloud_spread_norm": 0.18902326571539624,
+        "projective_residual_norm": 0.0042748254715425146,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            557.0,
+            302.0
+          ],
+          "corner_1": [
+            1035.0,
+            478.0
+          ],
+          "corner_2": [
+            969.0,
+            954.0
+          ],
+          "corner_3": [
+            559.0,
+            1304.0
+          ],
+          "corner_4": [
+            194.0,
+            976.0
+          ],
+          "corner_5": [
+            98.0,
+            513.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              554.7,
+              786.0
+            ],
+            [
+              98.0,
+              513.0
+            ],
+            [
+              194.0,
+              976.0
+            ],
+            [
+              559.0,
+              1304.0
+            ]
+          ],
+          "right": [
+            [
+              554.7,
+              786.0
+            ],
+            [
+              559.0,
+              1304.0
+            ],
+            [
+              969.0,
+              954.0
+            ],
+            [
+              1035.0,
+              478.0
+            ]
+          ],
+          "upper": [
+            [
+              554.7,
+              786.0
+            ],
+            [
+              1035.0,
+              478.0
+            ],
+            [
+              557.0,
+              302.0
+            ],
+            [
+              98.0,
+              513.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            576.0,
+            689.0
+          ],
+          [
+            625.0,
+            828.0
+          ],
+          [
+            463.0,
+            841.0
+          ]
+        ]
+      }
     },
     {
       "key": "62_B",
       "side": "B",
-      "status": "skipped_no_image_path",
-      "error": "no manifest entry for set 62 side B"
+      "image_path": "/Users/jhuber/Downloads/Set 62 - B - white-up IMG_7522.JPG",
+      "trace_status": "accepted",
+      "accepted": true,
+      "selected": false,
+      "mode": "shadow",
+      "hard_failures": [],
+      "warnings": [],
+      "sticker_score_total": 580.89,
+      "mean_sticker_distance": 21.51,
+      "vertex_source": "affine",
+      "vertex_cloud_spread_px": 186.57438194993438,
+      "vertex_cloud_spread_norm": 0.18682676856360864,
+      "projective_residual_norm": 0.009924878392404848,
+      "hexagon_diameter_px": 998.6490875177326,
+      "projective_degeneracy": "finite_projective",
+      "full_trace": {
+        "enabled": true,
+        "mode": "shadow",
+        "side": "B",
+        "status": "accepted",
+        "selected": false,
+        "accepted": true,
+        "hard_failures": [],
+        "warnings": [],
+        "metrics": {
+          "vertex_cloud_spread_px": 186.574,
+          "sticker_score_total": 580.89,
+          "sticker_score_worst_face": 237.76,
+          "projective_residual_norm": 0.0099
+        },
+        "sticker_score_total": 580.89,
+        "sticker_score_per_face": {
+          "upper": 149.96,
+          "right": 237.76,
+          "front": 193.17
+        },
+        "mean_sticker_distance": 21.51,
+        "vertex_source": "affine",
+        "vertex": [
+          583.7,
+          762.0
+        ],
+        "affine_vertex": [
+          583.7,
+          762.0
+        ],
+        "projective_vertex": [
+          612.3,
+          779.5
+        ],
+        "hexagon_diameter_px": 998.6490875177326,
+        "vertex_cloud_spread_px": 186.57438194993438,
+        "vertex_cloud_spread_norm": 0.18682676856360864,
+        "projective_residual_norm": 0.009924878392404848,
+        "projective_degeneracy": "finite_projective",
+        "corners_by_num": {
+          "corner_0": [
+            558.0,
+            1279.0
+          ],
+          "corner_1": [
+            904.0,
+            941.0
+          ],
+          "corner_2": [
+            1015.0,
+            493.0
+          ],
+          "corner_3": [
+            522.0,
+            281.0
+          ],
+          "corner_4": [
+            97.0,
+            471.0
+          ],
+          "corner_5": [
+            163.0,
+            978.0
+          ]
+        },
+        "face_quads_by_slot": {
+          "front": [
+            [
+              583.7,
+              762.0
+            ],
+            [
+              97.0,
+              471.0
+            ],
+            [
+              163.0,
+              978.0
+            ],
+            [
+              558.0,
+              1279.0
+            ]
+          ],
+          "right": [
+            [
+              583.7,
+              762.0
+            ],
+            [
+              558.0,
+              1279.0
+            ],
+            [
+              904.0,
+              941.0
+            ],
+            [
+              1015.0,
+              493.0
+            ]
+          ],
+          "upper": [
+            [
+              583.7,
+              762.0
+            ],
+            [
+              1015.0,
+              493.0
+            ],
+            [
+              522.0,
+              281.0
+            ],
+            [
+              97.0,
+              471.0
+            ]
+          ]
+        },
+        "vertex_estimates": [
+          [
+            590.0,
+            683.0
+          ],
+          [
+            669.0,
+            831.0
+          ],
+          [
+            492.0,
+            772.0
+          ]
+        ]
+      }
     }
   ]
 }

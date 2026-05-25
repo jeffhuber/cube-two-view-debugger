@@ -85,34 +85,55 @@ def test_summarize_counts_acceptance_split() -> None:
     }
 
 
-def test_summarize_hard_failure_histogram() -> None:
+def test_summarize_hard_failure_histogram_aggregates_by_gate() -> None:
+    """Codex P2 on PR #292: messages like 'vertex_cloud_spread_px=
+    252.4; warning 240.0' carry the measured value, so the raw
+    string is unique per row. The histogram should aggregate by
+    GATE NAME (prefix), not by full message — otherwise 3 hits of
+    the same gate fragment into 3 count-1 buckets.
+    """
     rows = [
-        _row("a_A", accepted=False, hard_failures=["sticker_score_total_above_hard"]),
-        _row("b_A", accepted=False, hard_failures=["sticker_score_total_above_hard"]),
+        _row("a_A", accepted=False, hard_failures=[
+            "sticker_score_total=950; hard 900",
+        ]),
+        _row("b_A", accepted=False, hard_failures=[
+            "sticker_score_total=1020; hard 900",  # SAME gate, diff value
+        ]),
         _row("c_B", accepted=False, hard_failures=[
-            "vertex_cloud_spread_above_hard",
-            "projective_residual_above_hard",
+            "vertex_cloud_spread_px=350; hard 320",
+            "projective_residual_norm=0.030; hard 0.025",
         ]),
         _row("d_A", accepted=True),
     ]
     s = ast._summarize(rows)
-    assert s["hard_failure_tokens"] == {
-        "sticker_score_total_above_hard": 2,
-        "vertex_cloud_spread_above_hard": 1,
-        "projective_residual_above_hard": 1,
+    # By-gate aggregation: 2 hits of sticker_score, 1 each of others
+    assert s["hard_failure_gates"] == {
+        "sticker_score_total": 2,
+        "vertex_cloud_spread_px": 1,
+        "projective_residual_norm": 1,
     }
+    # By-message also preserved so the report can show specific values
+    assert s["hard_failure_messages"]["sticker_score_total=950; hard 900"] == 1
+    assert s["hard_failure_messages"]["sticker_score_total=1020; hard 900"] == 1
 
 
-def test_summarize_warning_histogram() -> None:
+def test_summarize_warning_histogram_aggregates_by_gate() -> None:
+    """Same shape as hard_failure but on warnings — three hits of
+    the vertex_cloud_spread warning at three different measured
+    values should report '3' once, not '1' three times.
+    """
     rows = [
-        _row("a_A", warnings=["sticker_score_total=730; warning 700"]),
-        _row("b_A", warnings=["sticker_score_total=730; warning 700"]),
-        _row("c_B"),
+        _row("a_A", warnings=["vertex_cloud_spread_px=252.4; warning 240.0"]),
+        _row("b_A", warnings=["vertex_cloud_spread_px=265.7; warning 240.0"]),
+        _row("c_A", warnings=["vertex_cloud_spread_px=267.6; warning 240.0"]),
+        _row("d_B"),  # no warnings
     ]
     s = ast._summarize(rows)
-    assert s["warning_tokens"] == {
-        "sticker_score_total=730; warning 700": 2,
-    }
+    assert s["warning_gates"] == {"vertex_cloud_spread_px": 3}
+    # All 3 individual messages also recorded (count 1 each — they're
+    # genuinely distinct strings even though the gate is the same)
+    assert len(s["warning_messages"]) == 3
+    assert all(v == 1 for v in s["warning_messages"].values())
 
 
 def test_summarize_vertex_source_breakdown_accepted_only() -> None:
@@ -166,13 +187,54 @@ def test_summarize_empty_corpus_does_not_crash() -> None:
     assert s["spread_norm_accepted_stats"] == {"n": 0}
 
 
+def test_summarize_by_status_includes_skip_and_error_reasons() -> None:
+    """Codex P2 on PR #292: rows that error before hitting the gate
+    only have `status` (no `trace_status`). The by_status histogram
+    must surface those reasons individually, not collapse them into
+    a None bucket.
+    """
+    rows = [
+        {"key": "a_A", "side": "A", "trace_status": "accepted",
+         "accepted": True, "hard_failures": [], "warnings": []},
+        {"key": "b_A", "side": "A", "status": "skipped_no_image_path",
+         "error": "...", "hard_failures": [], "warnings": []},
+        {"key": "c_A", "side": "A", "status": "skipped_unresolved_image",
+         "error": "...", "hard_failures": [], "warnings": []},
+        {"key": "d_B", "side": "B", "status": "harness_error",
+         "error": "...", "hard_failures": [], "warnings": []},
+    ]
+    s = ast._summarize(rows)
+    # All 4 distinct kinds of row surface separately — no None bucket
+    assert s["by_status"] == {
+        "accepted": 1,
+        "skipped_no_image_path": 1,
+        "skipped_unresolved_image": 1,
+        "harness_error": 1,
+    }
+    assert None not in s["by_status"]
+
+
+def test_normalize_gate_token_extracts_prefix() -> None:
+    """Direct test of the message → gate-name reducer."""
+    assert ast._normalize_gate_token(
+        "vertex_cloud_spread_px=252.4; warning 240.0"
+    ) == "vertex_cloud_spread_px"
+    assert ast._normalize_gate_token(
+        "sticker_score_total=950; hard 900"
+    ) == "sticker_score_total"
+    # Falls back to the raw message if no recognizable prefix
+    assert ast._normalize_gate_token(
+        "=== unrecognizable ==="
+    ) == "=== unrecognizable ==="
+
+
 # --- render_report ---------------------------------------------------
 
 
 def test_render_report_includes_headline_counts() -> None:
     rows = [
         _row("a_A", accepted=True),
-        _row("b_A", accepted=False, hard_failures=["sticker_score_total_above_hard"]),
+        _row("b_A", accepted=False, hard_failures=["sticker_score_total=950; hard 900"]),
     ]
     s = ast._summarize(rows)
     md = ast.render_report(
@@ -184,12 +246,12 @@ def test_render_report_includes_headline_counts() -> None:
     assert "**1/2 (50.0%)" in md  # accept headline
     assert "**1/2 (50.0%)" in md  # reject headline
     assert "abc123" in md
-    assert "sticker_score_total_above_hard" in md
+    assert "sticker_score_total" in md
 
 
 def test_render_report_rejected_punch_list() -> None:
     rows = [
-        _row("a_A", accepted=False, hard_failures=["sticker_score_total_above_hard"]),
+        _row("a_A", accepted=False, hard_failures=["sticker_score_total=950; hard 900"]),
         _row("b_B", accepted=True),
     ]
     md = ast.render_report(
@@ -302,6 +364,10 @@ def test_main_end_to_end_with_synthetic_inputs(
     rc = ast.main([
         "--axis-truth", str(axis_truth_path),
         "--manifest", str(manifest_path),
+        # Force an empty hard-case manifest so the test exercises
+        # only the primary manifest path; the manifest-miss row (77_A)
+        # then takes the sentinel-path → fake_resolve route.
+        "--hard-case-manifest", str(tmp_path / "no_hard.json"),
         "--trace-out", str(trace_out),
         "--report-out", str(report_out),
     ])
@@ -313,17 +379,24 @@ def test_main_end_to_end_with_synthetic_inputs(
     keys = [r["key"] for r in artifact["per_row"]]
     # Unapproved 99_A must be filtered out at iteration time.
     assert "99_A" not in keys
-    # 12_A + 12_B processed; 77_A skipped on manifest miss.
+    # Codex P2 #1 on PR #292: 77_A is NOT in either manifest, but
+    # the analyzer now hands a sentinel path to _resolve_image_path
+    # so the pattern-search fallback runs. fake_resolve returns
+    # Path(raw_path) unconditionally, so 77_A now gets "analyzed"
+    # rather than skipped at the manifest stage — exactly the
+    # behavior measure_hull_labels_corpus uses.
     assert sorted(keys) == ["12_A", "12_B", "77_A"]
     by_status = {r["key"]: (r.get("trace_status") or r.get("status"))
                  for r in artifact["per_row"]}
     assert by_status["12_A"] == "accepted"
     assert by_status["12_B"] == "accepted"
-    assert by_status["77_A"] == "skipped_no_image_path"
+    # 77_A now reaches the gate via sentinel path → fake_resolve →
+    # fake_analyze_row → accepted (since the stub always accepts)
+    assert by_status["77_A"] == "accepted"
 
     md = report_out.read_text()
     assert "12_A" in md or "## Headline" in md  # rendered report
-    assert "**2/3" in md  # accept count
+    assert "**3/3" in md  # all 3 accept (77_A no longer skipped)
 
 
 def test_main_with_limit_truncates_rows(

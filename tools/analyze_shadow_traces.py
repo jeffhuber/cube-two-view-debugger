@@ -50,6 +50,7 @@ from __future__ import annotations
 import argparse
 import datetime as _dt
 import json
+import re
 import statistics
 import subprocess
 import sys
@@ -73,9 +74,36 @@ from tools.measure_axis_correctness import (  # noqa: E402
 
 DEFAULT_AXIS_TRUTH = REPO_ROOT / "tests" / "fixtures" / "gcm_axis_ground_truth.json"
 DEFAULT_MANIFEST = REPO_ROOT / "tests" / "fixtures" / "corpus_manifest.json"
+DEFAULT_HARD_CASE_MANIFEST = (
+    REPO_ROOT / "tests" / "fixtures" / "hard_case_manifest.json"
+)
 DEFAULT_TRACE = REPO_ROOT / "tests" / "fixtures" / "shadow_trace_corpus.json"
 DEFAULT_REPORT = REPO_ROOT / "tools" / "SHADOW_TRACE_ANALYSIS.md"
 DEFAULT_MAX_IMAGE_DIM = 1600
+
+
+_GATE_PREFIX_RE = re.compile(r"^([a-zA-Z_]+)")
+
+
+def _normalize_gate_token(message: str) -> str:
+    """Reduce a gate message to the gate name for histogram aggregation.
+
+    `evaluate_hull_label_acceptance` emits messages like
+    "vertex_cloud_spread_px=252.4; warning 240.0" — using the whole
+    string as a counter key splits multiple hits of the same gate
+    into separate one-off rows. Strip the measured-value tail and
+    keep just the gate prefix so that 3 hits of vertex_cloud_spread
+    aggregate to {vertex_cloud_spread_px: 3} not three count-1
+    entries. (Codex P2 on PR #292.)
+
+    Fall back to the original message if we can't recognize a prefix
+    (no underscore-or-letter run at the start) so we never silently
+    lose information.
+    """
+    m = _GATE_PREFIX_RE.match(message.strip())
+    if not m:
+        return message
+    return m.group(1)
 
 
 def _git_head_sha() -> Optional[str]:
@@ -158,7 +186,17 @@ def analyze_row(
 def _summarize(per_row: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Aggregate per-row records into the report payload."""
     total = len(per_row)
-    by_status = Counter(r.get("trace_status") for r in per_row)
+    # Codex P2 on PR #292: rows that error before hitting the gate
+    # only have `status` (skipped_no_image_path / skipped_unresolved_image
+    # / harness_error), not `trace_status`. Counting only `trace_status`
+    # collapses them all into a None bucket and hides whether they
+    # were unresolved images, missing manifest entries, or harness
+    # errors. Use `trace_status or status` so each kind of row
+    # surfaces with its true label.
+    by_status = Counter(
+        (r.get("trace_status") or r.get("status"))
+        for r in per_row
+    )
     by_acceptance = Counter(
         ("accepted" if r.get("accepted") else "rejected")
         if r.get("accepted") is not None
@@ -175,15 +213,26 @@ def _summarize(per_row: List[Dict[str, Any]]) -> Dict[str, Any]:
         else:
             by_side_accept[(r.get("side"), "no_decision")] += 1
 
-    # Hard-failure histogram: each row may contribute 0..N failure
-    # tokens. Counter on the flattened list.
-    failure_tokens = Counter()
-    warning_tokens = Counter()
+    # Hard-failure + warning histograms. Each row may contribute
+    # 0..N tokens. We track TWO separate views per failure mode:
+    #   - by_gate: aggregates by gate name (stripped of measured
+    #     value) so multiple hits of the same gate sum into one row
+    #   - by_message: keeps the full message including measured
+    #     values, useful for spotting which exact thresholds were
+    #     triggered. Both are kept so the report can show "this
+    #     gate fired 3 times" AND "here are the 3 specific values."
+    # Codex P2 on PR #292.
+    failure_messages = Counter()
+    warning_messages = Counter()
+    failure_gates = Counter()
+    warning_gates = Counter()
     for r in per_row:
         for tok in r.get("hard_failures", []):
-            failure_tokens[tok] += 1
+            failure_messages[tok] += 1
+            failure_gates[_normalize_gate_token(tok)] += 1
         for tok in r.get("warnings", []):
-            warning_tokens[tok] += 1
+            warning_messages[tok] += 1
+            warning_gates[_normalize_gate_token(tok)] += 1
 
     # Vertex source distribution (affine vs projective) among
     # accepted rows.
@@ -222,8 +271,10 @@ def _summarize(per_row: List[Dict[str, Any]]) -> Dict[str, Any]:
             f"{side}_{verdict}": cnt
             for (side, verdict), cnt in sorted(by_side_accept.items())
         },
-        "hard_failure_tokens": dict(failure_tokens),
-        "warning_tokens": dict(warning_tokens),
+        "hard_failure_gates": dict(failure_gates),
+        "warning_gates": dict(warning_gates),
+        "hard_failure_messages": dict(failure_messages),
+        "warning_messages": dict(warning_messages),
         "vertex_source_accepted": dict(vsource_accepted),
         "spread_norm_accepted_stats": _stats(spread_norm_accepted),
         "sticker_score_accepted_stats": _stats(sticker_accepted),
@@ -306,25 +357,35 @@ def render_report(
     for label, cnt in sorted(summary["by_side_acceptance"].items()):
         lines.append(f"| {label} | {cnt} |")
     lines.append("")
-    lines.append("## Hard-failure tokens (which gates do the work)")
+    lines.append("## Hard-failure gates (which gates do the work)")
     lines.append("")
-    if summary["hard_failure_tokens"]:
-        lines.append("| token | row-count |")
+    if summary["hard_failure_gates"]:
+        lines.append("| gate | row-count |")
         lines.append("|---|---|")
-        for tok, cnt in sorted(summary["hard_failure_tokens"].items(),
+        for tok, cnt in sorted(summary["hard_failure_gates"].items(),
                                key=lambda kv: -kv[1]):
             lines.append(f"| `{tok}` | {cnt} |")
+        lines.append("")
+        lines.append("Specific messages (with measured values):")
+        for msg, cnt in sorted(summary["hard_failure_messages"].items(),
+                               key=lambda kv: -kv[1]):
+            lines.append(f"- ({cnt}×) `{msg}`")
     else:
         lines.append("_No hard failures observed — all rows passed acceptance._")
     lines.append("")
-    lines.append("## Warning tokens (advisory, do not force fallback)")
+    lines.append("## Warning gates (advisory, do not force fallback)")
     lines.append("")
-    if summary["warning_tokens"]:
-        lines.append("| token | row-count |")
+    if summary["warning_gates"]:
+        lines.append("| gate | row-count |")
         lines.append("|---|---|")
-        for tok, cnt in sorted(summary["warning_tokens"].items(),
+        for tok, cnt in sorted(summary["warning_gates"].items(),
                                key=lambda kv: -kv[1]):
             lines.append(f"| `{tok}` | {cnt} |")
+        lines.append("")
+        lines.append("Specific messages (with measured values):")
+        for msg, cnt in sorted(summary["warning_messages"].items(),
+                               key=lambda kv: -kv[1]):
+            lines.append(f"- ({cnt}×) `{msg}`")
     else:
         lines.append("_No warnings observed._")
     lines.append("")
@@ -416,6 +477,13 @@ def main(argv: Optional[List[str]] = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--axis-truth", type=Path, default=DEFAULT_AXIS_TRUTH)
     ap.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
+    ap.add_argument(
+        "--hard-case-manifest", type=Path,
+        default=DEFAULT_HARD_CASE_MANIFEST,
+        help="Second manifest covering hard-case sets (17/21/22/25/30/39/"
+             "44-49/57-58/61-62). Loaded in addition to --manifest so "
+             "approved rows from either manifest reach the resolver.",
+    )
     ap.add_argument("--trace-out", type=Path, default=DEFAULT_TRACE)
     ap.add_argument("--report-out", type=Path, default=DEFAULT_REPORT)
     ap.add_argument("--max-image-dim", type=int, default=DEFAULT_MAX_IMAGE_DIM)
@@ -430,11 +498,31 @@ def main(argv: Optional[List[str]] = None) -> int:
         json.loads(args.manifest.read_text())
         if args.manifest.exists() else {}
     )
-    pairs = manifest_doc.get("pairs", []) if isinstance(manifest_doc, dict) else []
-    # setId → pair record (for image{A,B}Path lookup).
-    set_index: Dict[str, Dict[str, Any]] = {
-        str(p.get("setId")): p for p in pairs if p.get("setId") is not None
-    }
+    hard_case_doc = (
+        json.loads(args.hard_case_manifest.read_text())
+        if args.hard_case_manifest.exists() else {}
+    )
+    # Merge both manifests' pairs. corpus_manifest covers the
+    # primary 27 sets; hard_case_manifest covers sets 17/21/22/25/
+    # 30/39/44-49/57-58/61-62 (15 pairs). Without the hard-case
+    # manifest the analyzer skipped 28/70 rows; with it the resolver
+    # gets a path for every approved row that has an image on disk.
+    # Codex P2 on PR #292.
+    pairs: List[Dict[str, Any]] = []
+    for doc in (manifest_doc, hard_case_doc):
+        if isinstance(doc, dict):
+            pairs.extend(doc.get("pairs", []) or [])
+    # setId → pair record (for image{A,B}Path lookup). When both
+    # manifests carry the same setId, the corpus_manifest wins
+    # (came first in the iteration above; dict.setdefault skips
+    # the second).
+    set_index: Dict[str, Dict[str, Any]] = {}
+    for p in pairs:
+        sid = p.get("setId")
+        if sid is not None:
+            set_index.setdefault(str(sid), p)
+    # image_roots from corpus_manifest alone — the hard-case manifest
+    # uses the same root scheme. Merging would duplicate paths.
     image_roots = _candidate_image_roots(manifest_doc)
     # axis_truth is a dict mapping key (e.g. "17_A") → row record.
     # Only iterate "approved" rows — matches measure_hull_labels_corpus.
@@ -460,7 +548,12 @@ def main(argv: Optional[List[str]] = None) -> int:
         set_id, _, side = key.rpartition("_")
         pair = set_index.get(set_id)
         if pair is None:
-            raw_path = ""
+            # Codex P2 on PR #292: don't skip outright. Pass a
+            # sentinel path matching measure_hull_labels_corpus's
+            # pattern so _resolve_image_path's "Set {id} - {side}"
+            # search fallback still runs and finds the image if
+            # it's in one of the candidate roots.
+            raw_path = f"/tmp/missing_{set_id}_{side}.jpg"
             expected_sha = None
         else:
             raw_path = pair.get(f"image{side}Path") or ""
@@ -469,9 +562,9 @@ def main(argv: Optional[List[str]] = None) -> int:
             per_row.append({
                 "key": key, "side": side,
                 "status": "skipped_no_image_path",
-                "error": f"no manifest entry for set {set_id} side {side}",
+                "error": f"manifest entry for set {set_id} side {side} has empty path",
             })
-            print(f"  [{i:>3}/{len(target_rows)}] {key} SKIP (no manifest)", flush=True)
+            print(f"  [{i:>3}/{len(target_rows)}] {key} SKIP (empty path)", flush=True)
             continue
         image_path = _resolve_image_path(
             raw_path, set_id, side, image_roots,

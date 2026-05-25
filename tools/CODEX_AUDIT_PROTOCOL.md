@@ -42,8 +42,11 @@ the lane was paused — Greptile took its bake-off slot.
 Use the wrapper, not `python3 tools/codex_audit_pr.py` directly. The
 wrapper selects a controlled Python interpreter for the audit script
 itself, avoiding macOS/system-Python certificate-store failures before
-the review even starts. It uses `<repo>/.venv/bin/python` when present,
-then `CODEX_AUDIT_PYTHON`, then a venv discovered from
+the review even starts. It also creates a local active-audit lock via
+`tools/audit_handoff_log.py`, so Claude and Codex refuse to start a
+duplicate audit for the same repo/PR/head while another local process is
+already running. It uses `<repo>/.venv/bin/python` when present, then
+`CODEX_AUDIT_PYTHON`, then a venv discovered from
 `CODEX_AUDIT_REPO_PATHS`; if none exists, it refuses to run rather than
 silently falling back to ambient `python3`.
 
@@ -77,7 +80,36 @@ tools/run_codex_audit_pr.sh --repo jeffhuber/cube-two-view-debugger --pr 233
 
 Add `--dry-run` to print the audit comment to stdout instead of posting.
 
-Exit codes: 0 (success), 1 (error), 2 (stale head — caller may requeue).
+Exit codes: 0 (success), 1 (error), 2 (stale head — caller may requeue),
+20 (active matching audit already running).
+
+### Local audit handoff log / duplicate guard
+
+`tools/audit_handoff_log.py` stores local audit events and active locks
+outside the repository, by default under:
+
+```text
+~/.cache/cube-agent-audits/events.jsonl
+~/.cache/cube-agent-audits/locks/*.json
+```
+
+Set `AUDIT_HANDOFF_LOG_DIR=/path/to/dir` to override the location
+(mainly for tests). Locks are keyed by lane + repo + PR + current head
+SHA. `tools/run_codex_audit_pr.sh` creates a `codex-audit` lock before
+running `codex_audit_pr.py`, appends a `started` event, and removes the
+lock with a `finished` event on exit. If a matching lock exists and its
+PID is still alive, the wrapper exits 20 instead of starting another
+review.
+
+Useful preflight:
+
+```bash
+tools/audit_handoff_log.py status --repo OWNER/REPO --pr N
+```
+
+This complements the chat visibility rule in `CLAUDE.md`: the log/lock
+is the machine-readable local coordination record; the chat timestamp is
+the human-readable handoff/return record.
 
 ### Python interpreter and venv injection
 

@@ -718,11 +718,24 @@ Protocol:
    Codex when manually cross-reviewing a Claude-owned PR (use
    `--lane codex-review`). Example invocation:
    ```
+   # PASS — comment posted, label removed, finished event logged:
    tools/post_review.sh \
      --lane claude-review \
      --repo jeffhuber/cube-snap --pr 172 \
      --head 6abe1c7 \
      --verdict pass \
+     --label needs-claude-review \
+     --body-file /tmp/claude-review-snap172.md
+
+   # BLOCKED — comment posted, label KEPT, finished event logged.
+   # The label stays so the queue sweep / standing instructions
+   # still see "this PR needs follow-up." Helper detects verdict
+   # != "pass" and skips the label removal step.
+   tools/post_review.sh \
+     --lane claude-review \
+     --repo jeffhuber/cube-snap --pr 172 \
+     --head 6abe1c7 \
+     --verdict blocked \
      --label needs-claude-review \
      --body-file /tmp/claude-review-snap172.md
    ```

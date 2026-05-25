@@ -117,13 +117,32 @@ fi
 "${python_bin}" "${script_dir}/safe_gh_comment.py" \
   --repo "${REPO}" --pr "${PR}" --body-file "${BODY_FILE}"
 
-# Step 2: remove the routing label so the other agent's queue sweep
-# notices the lane is done. If the label was already removed (e.g.
-# someone else picked it up), `gh pr edit` returns nonzero — we treat
-# that as non-fatal so step 3 still runs.
-gh pr edit "${PR}" --repo "${REPO}" --remove-label "${LABEL}" \
-  || printf 'warning: failed to remove label %s (may already be gone)\n' \
-            "${LABEL}" >&2
+# Step 2: remove the routing label ONLY for PASS verdicts. For
+# any other verdict (blocked, or any value other than "pass"),
+# keep the label so the queue sweep / standing instructions
+# know the PR still needs follow-up. This matches CLAUDE.md's
+# "Claude cross-review lane" step 3(b): "remove
+# needs-claude-review only when no blockers remain. If blockers
+# remain, keep the label until a new head is ready, and skip
+# this step."
+#
+# Codex P2 on cube-snap#173 head 8d970aa / ctvd#311 head 9f2ebe5:
+# the prior version removed the label unconditionally, which
+# would have caused the queue-visibility failure this whole PR
+# is supposed to prevent if anyone used the helper to post a
+# blocker review.
+#
+# `gh pr edit` may return nonzero if the label was already gone
+# (someone else picked it up); treat that as non-fatal so step 3
+# still runs.
+if [ "${VERDICT}" = "pass" ]; then
+  gh pr edit "${PR}" --repo "${REPO}" --remove-label "${LABEL}" \
+    || printf 'warning: failed to remove label %s (may already be gone)\n' \
+              "${LABEL}" >&2
+else
+  printf 'verdict=%s (not "pass") — keeping label %s for follow-up\n' \
+         "${VERDICT}" "${LABEL}" >&2
+fi
 
 # Step 3: log the event so the other agent's Monitor catches the
 # verdict in real time. Lock-free `record` subcommand (added alongside

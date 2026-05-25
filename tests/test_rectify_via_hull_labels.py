@@ -337,6 +337,38 @@ def test_choose_hybrid_vertex_switches_to_projective_under_strong_perspective():
     )
 
 
+def test_choose_hybrid_vertex_telemetry_is_full_precision():
+    """Codex P2 on PR #289 head 540d891: numeric telemetry fields are
+    surfaced specifically so callers can route on them via
+    `evaluate_hull_label_acceptance`. Rounding them here can flip
+    near-threshold decisions (e.g. a raw 0.02504 stored as 0.0250
+    won't trip a > 0.025 hard gate). Pin that the raw floats survive
+    intact — round only in serialization layers.
+    """
+    from tools.rectify_via_hull_labels import (
+        _choose_hybrid_vertex, _label_corners_by_position,
+    )
+    import math as _m
+    # Tilt the canonical hexagon enough to produce non-trivial
+    # values for all telemetry fields.
+    pts = [(500 + 200 * _m.cos(_m.radians(d)) + (i % 2) * 3.7,
+            500 + 200 * _m.sin(_m.radians(d)) - (i % 3) * 1.3)
+           for i, d in enumerate((-90, -30, 30, 90, 150, 210))]
+    corners = _label_corners_by_position(pts, "A")
+    _vertex, tel = _choose_hybrid_vertex(corners, "A")
+    for key in ("vertex_cloud_spread_px", "vertex_cloud_spread_norm",
+                "hexagon_diameter_px", "projective_residual_norm"):
+        val = tel[key]
+        # Full-precision floats won't be exact multiples of any
+        # nice rounding interval — if it equals its own round-to-3,
+        # we (probably) rounded somewhere.
+        assert val != round(val, 3), (
+            f"telemetry field {key}={val} appears to be rounded; "
+            f"surface full precision so downstream gates can compare "
+            f"exactly against their thresholds"
+        )
+
+
 def test_choose_hybrid_vertex_telemetry_carries_both_candidates():
     """Whichever vertex the switch picks, BOTH candidates + decision
     metadata must be surfaced so callers can route on the same signals

@@ -51,10 +51,12 @@ class HullLabelGateThresholds:
     # `tools/PROJECTIVE_VERTEX_REPORT.md`, residual_norm > 0.025 is a
     # strong bad-input signal (30_A's 0.0315 is the corpus max,
     # correctly flagging the wall-edge artifact case that everyone
-    # else's gates missed). `warn` at 0.020 catches one more
-    # borderline row (30_B at 0.0199) for shadow-mode review.
+    # else's gates missed). `warn` at 0.018 catches the borderline
+    # row 30_B (residual 0.0199) for shadow-mode review — the gate
+    # comparison is strict `>`, so the warn threshold has to sit
+    # below 0.0199 to fire on it. Codex P3 on PR #289 head 540d891.
     max_projective_residual_norm: float = 0.025
-    warn_projective_residual_norm: float = 0.020
+    warn_projective_residual_norm: float = 0.018
 
 
 DEFAULT_THRESHOLDS = HullLabelGateThresholds()

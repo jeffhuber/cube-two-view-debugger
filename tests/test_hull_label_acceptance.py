@@ -149,12 +149,23 @@ def test_projective_residual_norm_below_warn_is_accepted_quiet():
 
 def test_projective_residual_norm_in_warn_band_warns_but_accepts():
     kwargs = _clean_kwargs()
-    # 0.022 is between warn (0.020) and hard (0.025) → accept with warning
+    # 0.022 is between warn (0.018) and hard (0.025) → accept with warning.
+    # Also verify 0.0199 (the cited borderline 30_B residual) triggers
+    # the warn band — Codex P3 on PR #289 head 540d891.
     decision = evaluate_hull_label_acceptance(
         **kwargs, projective_residual_norm=0.022,
     )
     assert decision.accepted
     assert any("projective_residual_norm=0.0220" in w for w in decision.warnings)
+
+    decision_30b = evaluate_hull_label_acceptance(
+        **kwargs, projective_residual_norm=0.0199,
+    )
+    assert decision_30b.accepted
+    assert any("0.0199" in w for w in decision_30b.warnings), (
+        "30_B borderline residual 0.0199 must trigger warn — if not, "
+        "warn_projective_residual_norm has drifted too high"
+    )
 
 
 def test_projective_residual_norm_above_hard_fails():

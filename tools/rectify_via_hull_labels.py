@@ -347,13 +347,20 @@ def _choose_hybrid_vertex(
         chosen = affine_vx
         source = "affine"
 
+    # IMPORTANT: do NOT round the numeric gate signals here. These
+    # fields are surfaced on RectifiedFit specifically so callers can
+    # pass them into `evaluate_hull_label_acceptance` and route on the
+    # same decision signals. Rounding (e.g. 0.02504 → 0.0250) can flip
+    # near-threshold gate decisions. Round only in the serialization
+    # layer (e.g. trace JSON / report tables). Codex P2 on PR #289
+    # head 540d891.
     telemetry = {
         "affine_vertex": affine_vx,
         "projective_vertex": prj.vertex,
-        "vertex_cloud_spread_px": round(spread_px, 1),
-        "vertex_cloud_spread_norm": round(spread_norm, 4),
-        "hexagon_diameter_px": round(hexagon_diameter, 1),
-        "projective_residual_norm": round(prj.residual_norm, 4),
+        "vertex_cloud_spread_px": spread_px,
+        "vertex_cloud_spread_norm": spread_norm,
+        "hexagon_diameter_px": hexagon_diameter,
+        "projective_residual_norm": prj.residual_norm,
         "projective_degeneracy": prj.degeneracy,
         "vertex_source": source,
     }

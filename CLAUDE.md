@@ -241,6 +241,68 @@ This is the parallel-agent analogue of the comparative-claims
 A and B); this one is temporal (re-look at X now, not as you
 remember it).
 
+### Queue state is mutable too — sweep both sources
+
+The "re-pull before asserting" rule applies to QUEUE state ("what
+work exists right now"), not just per-PR state ("what's the head
+SHA on PR #N"). Treating your own conversation context as
+authoritative on "what's in my queue" is the same failure mode as
+treating memory as authoritative on a single PR's labels — neither
+survives parallel agent activity. The other agent (Codex or Claude,
+depending which side you're on) may have opened, labeled, audited,
+or merged work since you last looked.
+
+Two authoritative sources to sweep, both cheap:
+
+- **GitHub** answers "what PRs exist, what labels they carry, are
+  they mergeable":
+  ```
+  gh pr list --repo OWNER/REPO --state open \
+    --json number,title,labels,headRefOid,mergeStateStatus
+  ```
+  Run for both cube-snap and cube-two-view-debugger.
+
+- **Shared local audit log** (`~/.cache/cube-agent-audits/`)
+  answers "which audits are mid-flight on either agent's machine
+  right now":
+  ```
+  tools/audit_handoff_log.py status
+  ```
+  This was added by ctvd#307 / cube-snap#169 and only works as a
+  coordination layer if BOTH agents (a) read it before firing
+  audits, and (b) write to it via `tools/run_codex_audit_pr.sh`
+  (which creates locks automatically), not the raw
+  `codex_audit_pr.py` script.
+
+Sweep both at every natural transition point: after completing a
+task, when a background notification arrives, before declaring
+"next steps" or "holding for direction," before firing any audit.
+This is what makes the standing instructions actually work:
+
+- *"act on `needs-claude-review` / `needs-codex-audit` ASAP"* only
+  fires when you observe the label; observation requires polling.
+- *"proactive merge rule"* (merge own PRs that hit
+  `codex-audit-done`/`devin-audit-done` + CLEAN + no explicit
+  hold) only fires when you observe the audit label flipped;
+  same polling requirement.
+
+Concrete failure modes this rule prevents:
+
+1. **Review PR lapses for hours** because the other agent opened
+   it and you didn't notice. Standing instruction only fires on
+   observation; observation requires polling.
+2. **Mergeable PR sits open** because the audit label flipped to
+   `*-audit-done` while you were doing other work and you never
+   re-checked.
+3. **Duplicate audit fires** on a SHA the other agent is already
+   reviewing locally. The wrapper enforces this with exit code 20,
+   but reading the shared log proactively keeps you from even
+   starting the invocation (wastes Codex CPU / cache cycles).
+
+Symmetric rule. The shared audit log only works as coordination
+if both agents read AND write it; the queue sweep only works as a
+queue if both agents do it.
+
 ## Pre-commit verification — separate commands, explicit paths
 
 Two patterns hit me on cube-snap#114 / ctvd#94 in quick

@@ -24,13 +24,20 @@ convention-aware silhouette-corner labeling pipeline from PRs
 path in `fit_global_cube_model` via Codex PR #291. Default is
 `off`; the env var `CUBE_RECOGNIZER_HULL_LABEL_TIER1=shadow`
 turns on the trace surface. Operator handoff:
-`tools/HULL_LABEL_TIER1_WIRING.md`. Empirical floor on the 70-row
-corpus from the shadow-trace analyzer (PR #292): 69/70 accept +
-1/70 reject (30_A bad-hull, correctly caught by the
-`projective_residual_norm` hard gate) — see
-`tools/SHADOW_TRACE_ANALYSIS.md`. Next milestones are gate
-calibration in shadow mode against real traffic, then the
-`shadow → prefer` default flip.
+`tools/HULL_LABEL_TIER1_WIRING.md`.
+
+The next deliverable is the shadow-trace analyzer (PR #292,
+open at time of writing — this docs PR is intentionally not
+stacked on it). Empirical floor when #292 lands: 69/70 accept
++ 1/70 reject (30_A bad-hull, correctly caught by the
+`projective_residual_norm` hard gate). The accompanying report
+`tools/SHADOW_TRACE_ANALYSIS.md` and the fixture
+`tests/fixtures/shadow_trace_corpus.json` arrive with that PR;
+they are NOT on `main` yet. Update the cross-references in this
+section once #292 merges.
+
+Next milestones after #292: gate calibration in shadow mode
+against real traffic, then the `shadow → prefer` default flip.
 
 The 2026-05-22 strategic shift still holds: Claude's geometry
 research is **scaffolding around** Codex's production `cv-local`,
@@ -81,7 +88,7 @@ not a replacement for it. The role split:
 - `tools/FULL_CORNER_LABELING.md` / `tools/corner_conventions.py` / `tests/fixtures/full_corner_ground_truth.json` — canonical `Va/Vb + 0..5` corner convention, A/B face outlines, flattened facelet mapping, and seed full-corner truth. Update these before touching any downstream geometry convention. **Schema rename 2026-05-23 (#286):** `near_x/y/z` → `axis_x/y/z` with backward-compat read shim — same FAR-corner positions, naming clarified.
 - `tests/fixtures/gcm_axis_ground_truth.json` — user-labeled axis fixture. The label fields now read `axis_x/y/z` (was `near_x/y/z`). Sits at FAR-corner positions per side-specific convention.
 - `tests/fixtures/post_218_baseline.json` — legacy accuracy snapshot derived from the axis fixture. Regenerate when global model semantics change.
-- `tests/fixtures/hard_case_manifest.json` + `tests/fixtures/corpus_manifest.json` — paired manifests; both needed to cover the full 70-row axis-truth corpus (corpus_manifest covers 27 sets, hard_case_manifest adds 17/21/22/25/30/39/44-49/57-58/61-62).
+- `tests/fixtures/hard_case_manifest.json` + `tests/fixtures/corpus_manifest.json` — paired manifests. Both are needed by tools that iterate the 70-row axis-truth corpus: corpus_manifest covers more setIds than the axis truth uses (e.g. it includes sets 63-68 which have no axis labels), hard_case_manifest covers the hard-case sets the axis truth specifically labels (17/21/22/25/30/39/44/46-49/57-58/61-62). Set 44 appears in both; the dispatcher in `analyze_shadow_traces.py` uses `dict.setdefault` so corpus_manifest wins on collisions. Tools that consume the axis truth should load both manifests and let `_resolve_image_path`'s pattern-search fallback handle any remaining gaps.
 - `tools/extract_color_samples.py` — Claude's, but Codex added the `white[- ]up` regex fix in #135. **Coordinate before editing.**
 - `tests/test_auto_geometry_metrics.py` — Claude's, but a growing surface. **Coordinate before adding tests that interact with discovery/geometry.**
 - `tools/global_cube_model.py` — was previously Claude-only; PR #291 wired Tier 1 hull-label paths into it. Now joint: Claude owns the hull-label candidate code; Codex owns the dispatcher / feature-flag wiring. Coordinate before changing the public signature of `fit_global_cube_model`.
@@ -164,7 +171,7 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 Newest first. Each entry: date, decision, one-line why.
 
-- **2026-05-25** — **Hull-labels Tier 1 candidate path landed feature-flagged in `fit_global_cube_model` (Codex #291, default off).** Three modes (`off` / `shadow` / `prefer`) controlled by `CUBE_RECOGNIZER_HULL_LABEL_TIER1` env var. Operator handoff in `tools/HULL_LABEL_TIER1_WIRING.md`. The candidate path uses Claude's `tools/rectify_via_hull_labels.py` + acceptance gates; the dispatcher / feature flag is Codex's. **Empirical floor on 70-row corpus (PR #292 analyzer):** 69/70 accept + 1/70 reject — the rejection is 30_A (bad rembg hull input) caught by the `projective_residual_norm` hard gate. Vertex source breakdown: 64 affine + 5 projective (PR #289's hybrid switch fires on perspective-heavy rows). **Next: gate calibration in shadow mode against real traffic before flipping `shadow → prefer` default.**
+- **2026-05-25** — **Hull-labels Tier 1 candidate path landed feature-flagged in `fit_global_cube_model` (Codex #291, default off).** Three modes (`off` / `shadow` / `prefer`) controlled by `CUBE_RECOGNIZER_HULL_LABEL_TIER1` env var. Operator handoff in `tools/HULL_LABEL_TIER1_WIRING.md`. The candidate path uses Claude's `tools/rectify_via_hull_labels.py` + acceptance gates; the dispatcher / feature flag is Codex's. **Empirical floor numbers pending PR #292** (shadow-trace analyzer, open at time of writing — first run shows 69/70 accept + 1/70 reject on 30_A bad-hull; will be cited here once #292 merges). **Next: gate calibration in shadow mode against real traffic before flipping `shadow → prefer` default.**
 
 - **2026-05-25** — **iOS scoping doc landed (cube-snap PR #158)** — `IOS_APP_SCOPING.md` captures Q1-Q5 answers and 4-lane multi-agent build plan. v1: native SwiftUI, cloud-only recognizer, SceneKit, $0.99 paid, iPhone-only. v1.5: iPad + Mac Catalyst. v2: on-device recognizer + RealityKit/ARKit re-evaluate. 12-17 weeks for full v1 vs 3-6 weeks for ultra-MVP TestFlight learning vehicle. **Not yet started** — scoping captured so implementation can begin cleanly when prioritized.
 

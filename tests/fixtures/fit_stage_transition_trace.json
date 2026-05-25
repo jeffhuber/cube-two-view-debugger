@@ -2,12 +2,13 @@
   "schema": "fit_stage_transition_trace_v1",
   "source": {
     "tool": "tools/diagnose_fit_stage_transitions.py",
-    "git_sha": "3237af802c5d4b75980d6da5454db57ead7b65b1",
-    "generated_at_utc": "2026-05-24T22:07:54.841658+00:00",
+    "git_sha": "ad352898dca2c042d21545bff5e7f3c8bb77783c",
+    "generated_at_utc": "2026-05-24T23:32:16.322690+00:00",
     "truth": "tests/fixtures/full_corner_ground_truth.json",
     "manifest": "tests/fixtures/corpus_manifest.json",
     "max_image_dim": 1600,
-    "run_selection": "single deterministic run per row"
+    "run_selection": "single deterministic run per row",
+    "mask_path": "rembg.remove(...).alpha channel, matching production baselines"
   },
   "summary": {
     "n_rows": 12,

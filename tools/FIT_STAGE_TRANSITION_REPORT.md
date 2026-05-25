@@ -7,12 +7,13 @@ Axis state buckets: `usable` <= 30 deg total axis misfit; `broken` >= 150 deg; o
 ## Source
 
 - Tool: `tools/diagnose_fit_stage_transitions.py`
-- Commit: `3237af802c5d4b75980d6da5454db57ead7b65b1`
-- Generated: `2026-05-24T22:07:54.841658+00:00`
+- Commit: `ad352898dca2c042d21545bff5e7f3c8bb77783c`
+- Generated: `2026-05-24T23:32:16.322690+00:00`
 - Truth: `tests/fixtures/full_corner_ground_truth.json`
 - Manifest: `tests/fixtures/corpus_manifest.json`
 - Max image dim: `1600`
 - Run selection: single deterministic run per row
+- Mask path: rembg.remove(...).alpha channel, matching production baselines
 
 ## Aggregate
 

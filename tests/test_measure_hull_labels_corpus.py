@@ -179,17 +179,50 @@ def test_far_corner_set_matches_expected_per_side():
 
 
 # ---------------- empty-image-path guard (Codex P3 on head 04784014) ----------------
+# ---------------- lazy rembg init (Codex P1 on head 4d1bae4) ----------------
 
 
-def test_empty_image_path_in_manifest_routes_to_skipped(tmp_path, monkeypatch):
+def test_empty_image_path_in_manifest_routes_to_skipped_without_rembg(
+    tmp_path, monkeypatch,
+):
     """If a manifest pair exists but ``imageAPath``/``imageBPath`` is
     empty, the row must be routed to ``skipped_unresolved_image``
     rather than passed through to ``_resolve_image_path`` (which can
     silently return the corpus root as a candidate via
     ``Path("").name → root``, causing the row to later surface as an
-    ``error`` trying to open a directory).
+    ``error`` trying to open a directory) — original Codex P3 finding.
+
+    Additionally, this skip path must NOT require the ``rembg``
+    package, since the package is optional and only needed when we
+    actually evaluate a row. Codex P1 on head 4d1bae4: previous
+    eager ``new_session("u2net")`` at the top of ``main()`` made the
+    skip-path test ``ModuleNotFoundError`` on clean installs without
+    rembg. Fix is lazy session init via ``_get_sess``.
+
+    We simulate a clean-install rembg-less environment by patching
+    ``builtins.__import__`` to raise ``ImportError`` on any rembg
+    import. If the skip path reaches ``_get_sess()`` (and through it
+    ``new_session``), this test fails — proving the lazy guard works.
     """
+    import builtins
     import json
+    import sys
+
+    # Drop any cached rembg module so the patched __import__ fires.
+    for mod_name in list(sys.modules):
+        if mod_name == "rembg" or mod_name.startswith("rembg."):
+            monkeypatch.delitem(sys.modules, mod_name, raising=False)
+
+    real_import = builtins.__import__
+
+    def fake_import(name, globals_=None, locals_=None, fromlist=(), level=0):
+        if name == "rembg" or name.startswith("rembg."):
+            raise ImportError(
+                "simulated rembg-not-installed (skip path must not import rembg)"
+            )
+        return real_import(name, globals_, locals_, fromlist, level)
+
+    monkeypatch.setattr(builtins, "__import__", fake_import)
 
     from tools.measure_hull_labels_corpus import main
 

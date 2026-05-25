@@ -364,10 +364,25 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     set_index = {str(p["setId"]): p for p in manifest.get("pairs", [])}
     image_roots = _candidate_image_roots(manifest)
 
-    from rembg import new_session  # noqa: E402
-    # Explicit "u2net" — matches production
-    # (rubik_recognizer/image_pipeline.py) and other diagnostics.
-    sess = new_session("u2net")
+    # Lazy rembg import + session init — created only when the first
+    # row that actually needs to be evaluated is reached. Keeps the
+    # CLI usable on a clean install (no rembg) when all rows would
+    # skip (e.g. axis-truth + manifest sized to test a skip path), and
+    # avoids the up-front cost when only a subset of rows resolves.
+    # Codex P1 finding on PR #282 head 4d1bae4: previous eager init
+    # made the new empty-imagePath test ModuleNotFoundError on clean
+    # installs instead of exercising the skipped_unresolved_image
+    # path it was written to test.
+    sess: Any = None
+
+    def _get_sess() -> Any:
+        nonlocal sess
+        if sess is None:
+            from rembg import new_session  # noqa: E402
+            # Explicit "u2net" — matches production
+            # (rubik_recognizer/image_pipeline.py) and other diagnostics.
+            sess = new_session("u2net")
+        return sess
 
     records: List[Dict[str, Any]] = []
     skipped: List[Dict[str, str]] = []
@@ -416,7 +431,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         n_done = sum(1 for r in records if r.get("status") == "rectified")
         print(f"[{n_done + 1}] {key} ({image_path.name})...", flush=True)
         rec = evaluate_row(
-            sess, key, image_path, row,
+            _get_sess(), key, image_path, row,
             full_corner_truth.get(key) if full_corner_truth.get(key, {}).get("approved") else None,
             args.max_image_dim,
             thresh_spread=args.thresh_spread_px,

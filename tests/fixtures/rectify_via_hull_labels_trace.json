@@ -1,0 +1,422 @@
+{
+  "schema": "rectify_via_hull_labels_v1",
+  "source": {
+    "tool": "tools/rectify_via_hull_labels.py",
+    "git_sha": "ad352898dca2c042d21545bff5e7f3c8bb77783c",
+    "generated_at_utc": "2026-05-25T00:33:03.614272+00:00",
+    "truth": "tests/fixtures/full_corner_ground_truth.json",
+    "manifest": "tests/fixtures/corpus_manifest.json",
+    "max_image_dim": 1600,
+    "face_size_px": 300
+  },
+  "per_row": [
+    {
+      "key": "20_A",
+      "side": "A",
+      "status": "rectified",
+      "labeling_mean_corner_err_px": 17.2,
+      "per_corner_err_px": {
+        "corner_0": 3.7,
+        "corner_1": 19.2,
+        "corner_2": 13.3,
+        "corner_3": 29.3,
+        "corner_4": 8.3,
+        "corner_5": 29.2
+      },
+      "derived_vertex_error_processing_px": 49.5,
+      "rectified_score": {
+        "total_distance": 656.71,
+        "per_face": {
+          "upper": 214.47,
+          "right": 317.24,
+          "front": 125.0
+        },
+        "mean_sticker_distance": 24.32
+      },
+      "oracle_score": {
+        "total_distance": 637.9,
+        "per_face": {
+          "upper": 194.09,
+          "right": 317.75,
+          "front": 126.06
+        },
+        "mean_sticker_distance": 23.63
+      },
+      "score_delta_vs_oracle": 18.81
+    },
+    {
+      "key": "20_B",
+      "side": "B",
+      "status": "rectified",
+      "labeling_mean_corner_err_px": 19.3,
+      "per_corner_err_px": {
+        "corner_0": 32.1,
+        "corner_1": 8.2,
+        "corner_2": 21.7,
+        "corner_3": 4.4,
+        "corner_4": 23.5,
+        "corner_5": 25.7
+      },
+      "derived_vertex_error_processing_px": 60.1,
+      "rectified_score": {
+        "total_distance": 631.46,
+        "per_face": {
+          "upper": 185.07,
+          "right": 260.18,
+          "front": 186.2
+        },
+        "mean_sticker_distance": 23.39
+      },
+      "oracle_score": {
+        "total_distance": 587.54,
+        "per_face": {
+          "upper": 182.48,
+          "right": 255.48,
+          "front": 149.58
+        },
+        "mean_sticker_distance": 21.76
+      },
+      "score_delta_vs_oracle": 43.92
+    },
+    {
+      "key": "38_A",
+      "side": "A",
+      "status": "rectified",
+      "labeling_mean_corner_err_px": 14.1,
+      "per_corner_err_px": {
+        "corner_0": 5.7,
+        "corner_1": 16.9,
+        "corner_2": 24.1,
+        "corner_3": 20.4,
+        "corner_4": 13.1,
+        "corner_5": 4.5
+      },
+      "derived_vertex_error_processing_px": 43.4,
+      "rectified_score": {
+        "total_distance": 583.87,
+        "per_face": {
+          "upper": 127.52,
+          "right": 229.57,
+          "front": 226.79
+        },
+        "mean_sticker_distance": 21.62
+      },
+      "oracle_score": {
+        "total_distance": 582.03,
+        "per_face": {
+          "upper": 125.74,
+          "right": 231.45,
+          "front": 224.84
+        },
+        "mean_sticker_distance": 21.56
+      },
+      "score_delta_vs_oracle": 1.84
+    },
+    {
+      "key": "38_B",
+      "side": "B",
+      "status": "rectified",
+      "labeling_mean_corner_err_px": 14.4,
+      "per_corner_err_px": {
+        "corner_0": 27.3,
+        "corner_1": 12.4,
+        "corner_2": 18.2,
+        "corner_3": 5.0,
+        "corner_4": 16.8,
+        "corner_5": 6.6
+      },
+      "derived_vertex_error_processing_px": 27.6,
+      "rectified_score": {
+        "total_distance": 496.57,
+        "per_face": {
+          "upper": 171.49,
+          "right": 199.56,
+          "front": 125.52
+        },
+        "mean_sticker_distance": 18.39
+      },
+      "oracle_score": {
+        "total_distance": 497.47,
+        "per_face": {
+          "upper": 172.93,
+          "right": 195.23,
+          "front": 129.31
+        },
+        "mean_sticker_distance": 18.42
+      },
+      "score_delta_vs_oracle": -0.9
+    },
+    {
+      "key": "40_A",
+      "side": "A",
+      "status": "rectified",
+      "labeling_mean_corner_err_px": 15.5,
+      "per_corner_err_px": {
+        "corner_0": 6.9,
+        "corner_1": 25.0,
+        "corner_2": 10.9,
+        "corner_3": 16.7,
+        "corner_4": 8.3,
+        "corner_5": 24.9
+      },
+      "derived_vertex_error_processing_px": 29.9,
+      "rectified_score": {
+        "total_distance": 469.65,
+        "per_face": {
+          "upper": 171.81,
+          "right": 192.4,
+          "front": 105.44
+        },
+        "mean_sticker_distance": 17.39
+      },
+      "oracle_score": {
+        "total_distance": 448.92,
+        "per_face": {
+          "upper": 148.41,
+          "right": 193.21,
+          "front": 107.3
+        },
+        "mean_sticker_distance": 16.63
+      },
+      "score_delta_vs_oracle": 20.73
+    },
+    {
+      "key": "40_B",
+      "side": "B",
+      "status": "rectified",
+      "labeling_mean_corner_err_px": 16.4,
+      "per_corner_err_px": {
+        "corner_0": 17.8,
+        "corner_1": 6.6,
+        "corner_2": 25.9,
+        "corner_3": 17.6,
+        "corner_4": 13.8,
+        "corner_5": 16.9
+      },
+      "derived_vertex_error_processing_px": 36.0,
+      "rectified_score": {
+        "total_distance": 311.96,
+        "per_face": {
+          "upper": 93.76,
+          "right": 148.85,
+          "front": 69.35
+        },
+        "mean_sticker_distance": 11.55
+      },
+      "oracle_score": {
+        "total_distance": 316.9,
+        "per_face": {
+          "upper": 93.83,
+          "right": 148.77,
+          "front": 74.3
+        },
+        "mean_sticker_distance": 11.74
+      },
+      "score_delta_vs_oracle": -4.94
+    },
+    {
+      "key": "41_A",
+      "side": "A",
+      "status": "rectified",
+      "labeling_mean_corner_err_px": 17.6,
+      "per_corner_err_px": {
+        "corner_0": 11.2,
+        "corner_1": 25.8,
+        "corner_2": 23.7,
+        "corner_3": 23.1,
+        "corner_4": 9.8,
+        "corner_5": 11.7
+      },
+      "derived_vertex_error_processing_px": 34.1,
+      "rectified_score": {
+        "total_distance": 461.79,
+        "per_face": {
+          "upper": 137.13,
+          "right": 206.61,
+          "front": 118.06
+        },
+        "mean_sticker_distance": 17.1
+      },
+      "oracle_score": {
+        "total_distance": 459.34,
+        "per_face": {
+          "upper": 132.48,
+          "right": 207.98,
+          "front": 118.88
+        },
+        "mean_sticker_distance": 17.01
+      },
+      "score_delta_vs_oracle": 2.45
+    },
+    {
+      "key": "41_B",
+      "side": "B",
+      "status": "rectified",
+      "labeling_mean_corner_err_px": 13.9,
+      "per_corner_err_px": {
+        "corner_0": 18.5,
+        "corner_1": 11.0,
+        "corner_2": 25.2,
+        "corner_3": 8.9,
+        "corner_4": 6.8,
+        "corner_5": 13.1
+      },
+      "derived_vertex_error_processing_px": 21.9,
+      "rectified_score": {
+        "total_distance": 380.77,
+        "per_face": {
+          "upper": 112.21,
+          "right": 204.4,
+          "front": 64.16
+        },
+        "mean_sticker_distance": 14.1
+      },
+      "oracle_score": {
+        "total_distance": 378.23,
+        "per_face": {
+          "upper": 107.07,
+          "right": 205.16,
+          "front": 66.0
+        },
+        "mean_sticker_distance": 14.01
+      },
+      "score_delta_vs_oracle": 2.54
+    },
+    {
+      "key": "43_A",
+      "side": "A",
+      "status": "rectified",
+      "labeling_mean_corner_err_px": 14.8,
+      "per_corner_err_px": {
+        "corner_0": 16.7,
+        "corner_1": 8.9,
+        "corner_2": 17.4,
+        "corner_3": 15.5,
+        "corner_4": 16.2,
+        "corner_5": 14.1
+      },
+      "derived_vertex_error_processing_px": 20.3,
+      "rectified_score": {
+        "total_distance": 441.3,
+        "per_face": {
+          "upper": 104.43,
+          "right": 158.54,
+          "front": 178.32
+        },
+        "mean_sticker_distance": 16.34
+      },
+      "oracle_score": {
+        "total_distance": 441.23,
+        "per_face": {
+          "upper": 106.19,
+          "right": 159.03,
+          "front": 176.02
+        },
+        "mean_sticker_distance": 16.34
+      },
+      "score_delta_vs_oracle": 0.07
+    },
+    {
+      "key": "43_B",
+      "side": "B",
+      "status": "rectified",
+      "labeling_mean_corner_err_px": 14.0,
+      "per_corner_err_px": {
+        "corner_0": 20.7,
+        "corner_1": 22.9,
+        "corner_2": 14.1,
+        "corner_3": 4.5,
+        "corner_4": 12.8,
+        "corner_5": 9.3
+      },
+      "derived_vertex_error_processing_px": 41.1,
+      "rectified_score": {
+        "total_distance": 439.19,
+        "per_face": {
+          "upper": 99.15,
+          "right": 166.49,
+          "front": 173.55
+        },
+        "mean_sticker_distance": 16.27
+      },
+      "oracle_score": {
+        "total_distance": 436.11,
+        "per_face": {
+          "upper": 97.51,
+          "right": 166.28,
+          "front": 172.32
+        },
+        "mean_sticker_distance": 16.15
+      },
+      "score_delta_vs_oracle": 3.08
+    },
+    {
+      "key": "45_A",
+      "side": "A",
+      "status": "rectified",
+      "labeling_mean_corner_err_px": 14.2,
+      "per_corner_err_px": {
+        "corner_0": 5.4,
+        "corner_1": 6.4,
+        "corner_2": 15.4,
+        "corner_3": 25.3,
+        "corner_4": 13.7,
+        "corner_5": 19.1
+      },
+      "derived_vertex_error_processing_px": 52.7,
+      "rectified_score": {
+        "total_distance": 529.07,
+        "per_face": {
+          "upper": 112.07,
+          "right": 204.13,
+          "front": 212.86
+        },
+        "mean_sticker_distance": 19.6
+      },
+      "oracle_score": {
+        "total_distance": 521.71,
+        "per_face": {
+          "upper": 104.34,
+          "right": 204.28,
+          "front": 213.09
+        },
+        "mean_sticker_distance": 19.32
+      },
+      "score_delta_vs_oracle": 7.36
+    },
+    {
+      "key": "45_B",
+      "side": "B",
+      "status": "rectified",
+      "labeling_mean_corner_err_px": 21.7,
+      "per_corner_err_px": {
+        "corner_0": 29.7,
+        "corner_1": 24.8,
+        "corner_2": 19.9,
+        "corner_3": 19.3,
+        "corner_4": 22.1,
+        "corner_5": 14.6
+      },
+      "derived_vertex_error_processing_px": 67.4,
+      "rectified_score": {
+        "total_distance": 596.07,
+        "per_face": {
+          "upper": 150.15,
+          "right": 194.37,
+          "front": 251.55
+        },
+        "mean_sticker_distance": 22.08
+      },
+      "oracle_score": {
+        "total_distance": 590.94,
+        "per_face": {
+          "upper": 149.79,
+          "right": 195.02,
+          "front": 246.13
+        },
+        "mean_sticker_distance": 21.89
+      },
+      "score_delta_vs_oracle": 5.13
+    }
+  ]
+}

@@ -96,6 +96,9 @@ the corner labels directly. Real masks should still use robust hull vertices
 rather than single-pixel extrema, because shadows, antialiasing, rounded cube
 plastic, and rembg noise can move raw min/max pixels.
 
+See `tools/rectify_via_hull_labels.py` for the diagnostic reference
+implementation of this hull-position labeling convention.
+
 ## Vertex Parallelogram Check
 
 Each visible face is a projected quadrilateral with the visible trihedral

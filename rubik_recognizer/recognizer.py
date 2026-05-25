@@ -307,9 +307,32 @@ class RecognitionWorkset:
 
 
 class WhiteUpRecognizer:
-    def recognize(self, image_a: bytes, image_b: bytes) -> RecognitionResult:
-        analysis_a = analyze_image(image_a)
-        analysis_b = analyze_image(image_b)
+    def recognize(
+        self,
+        image_a: bytes,
+        image_b: bytes,
+        *,
+        hull_label_tier1_mode: Optional[str] = None,
+    ) -> RecognitionResult:
+        mode = _normalize_hull_label_tier1_mode(hull_label_tier1_mode)
+        if mode == "prefer":
+            legacy = self._recognize_with_hull_label_mode(image_a, image_b, "off")
+            candidate = self._recognize_with_hull_label_mode(image_a, image_b, "prefer")
+            if candidate.status == "success" and _hull_label_tier1_selected(candidate):
+                _attach_hull_label_tier1_prefer_decision(candidate, candidate, selected=True)
+                return candidate
+            _attach_hull_label_tier1_prefer_decision(legacy, candidate, selected=False)
+            return legacy
+        return self._recognize_with_hull_label_mode(image_a, image_b, mode)
+
+    def _recognize_with_hull_label_mode(
+        self,
+        image_a: bytes,
+        image_b: bytes,
+        mode: str,
+    ) -> RecognitionResult:
+        analysis_a = analyze_image(image_a, hull_label_side="A", hull_label_mode=mode)
+        analysis_b = analyze_image(image_b, hull_label_side="B", hull_label_mode=mode)
         result = self._recognize_from_analyses(analysis_a, analysis_b)
 
         calibrated_a = copy.deepcopy(analysis_a)
@@ -924,7 +947,7 @@ def recognition_diagnostics(analysis_a: ImageAnalysis, analysis_b: ImageAnalysis
 
 
 def _base_recognition_signals(analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> Dict[str, Any]:
-    return {
+    signals = {
         "schemaVersion": 1,
         "repairPathUsed": False,
         "repairCandidateCount": 0,
@@ -940,6 +963,38 @@ def _base_recognition_signals(analysis_a: ImageAnalysis, analysis_b: ImageAnalys
         "twoViewGeometryConsistency": _two_view_geometry_consistency(analysis_a, analysis_b),
         "perStickerConfidence": _per_sticker_confidence_signal(analysis_a, analysis_b),
     }
+    tier1 = _hull_label_tier1_signal(analysis_a, analysis_b)
+    if tier1 is not None:
+        signals["hullLabelTier1"] = tier1
+    return signals
+
+
+def _hull_label_tier1_signal(
+    analysis_a: ImageAnalysis,
+    analysis_b: ImageAnalysis,
+) -> Optional[Dict[str, Any]]:
+    trace_a = getattr(analysis_a, "hull_label_tier1", None)
+    trace_b = getattr(analysis_b, "hull_label_tier1", None)
+    if not trace_a and not trace_b:
+        return None
+    return {
+        "mode": _first_str(
+            (trace_a or {}).get("mode") if isinstance(trace_a, dict) else None,
+            (trace_b or {}).get("mode") if isinstance(trace_b, dict) else None,
+            "unknown",
+        ),
+        "images": {
+            "imageA": trace_a,
+            "imageB": trace_b,
+        },
+    }
+
+
+def _first_str(*values: object) -> str:
+    for value in values:
+        if isinstance(value, str) and value:
+            return value
+    return ""
 
 
 def _collect_sticker_confidences(analysis: ImageAnalysis) -> List[float]:
@@ -2103,6 +2158,54 @@ def _apply_pair_color_calibration(analysis_a: ImageAnalysis, analysis_b: ImageAn
     for analysis in (analysis_a, analysis_b):
         for sticker in _analysis_stickers_for_reclassification(analysis):
             sticker.match = classify_rgb(sticker.rgb, palette)
+
+
+def _normalize_hull_label_tier1_mode(mode: Optional[str]) -> str:
+    value = (mode if mode is not None else os.environ.get("CUBE_RECOGNIZER_HULL_LABEL_TIER1", "off"))
+    normalized = str(value or "off").strip().lower()
+    if normalized in {"", "0", "false", "no", "off", "legacy"}:
+        return "off"
+    if normalized in {"shadow", "trace", "diagnostic", "dry-run", "dry_run"}:
+        return "shadow"
+    if normalized in {"1", "true", "yes", "on", "prefer", "preferred", "tier1"}:
+        return "prefer"
+    return "off"
+
+
+def _hull_label_tier1_selected(result: RecognitionResult) -> bool:
+    signals = result.recognition_signals or {}
+    tier1 = signals.get("hullLabelTier1")
+    if not isinstance(tier1, dict):
+        return False
+    images = tier1.get("images")
+    if not isinstance(images, dict):
+        return False
+    return all(
+        isinstance(images.get(key), dict)
+        and images[key].get("status") == "accepted"
+        and images[key].get("selected") is True
+        for key in ("imageA", "imageB")
+    )
+
+
+def _attach_hull_label_tier1_prefer_decision(
+    result: RecognitionResult,
+    candidate: RecognitionResult,
+    *,
+    selected: bool,
+) -> None:
+    signals = dict(result.recognition_signals or {})
+    candidate_signals = candidate.recognition_signals or {}
+    signals["hullLabelTier1Prefer"] = {
+        "selected": selected,
+        "fallbackToLegacy": not selected,
+        "candidateStatus": candidate.status,
+        "candidateReason": candidate.reason,
+        "candidateFailedChecks": list(candidate.failed_checks or []),
+        "candidateCategory": _recognition_category_payload(candidate)["category"],
+        "candidateHullLabelTier1": candidate_signals.get("hullLabelTier1"),
+    }
+    result.recognition_signals = signals
 
 
 def _attach_failed_pair_color_calibration_signal(

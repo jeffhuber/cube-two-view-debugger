@@ -6,7 +6,7 @@ import math
 import os
 from collections import deque
 from dataclasses import dataclass
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageOps
@@ -94,6 +94,7 @@ class ImageAnalysis:
     grids: List[FaceGrid]
     overlay_data_url: str
     warnings: List[str]
+    hull_label_tier1: Optional[Dict[str, Any]] = None
 
     def summary(self) -> Dict:
         grids = []
@@ -114,7 +115,7 @@ class ImageAnalysis:
                     }
                 )
             grids.append(row)
-        return {
+        summary = {
             "width": self.width,
             "height": self.height,
             "roi": self.roi,
@@ -122,9 +123,17 @@ class ImageAnalysis:
             "grids": grids,
             "warnings": self.warnings,
         }
+        if self.hull_label_tier1 is not None:
+            summary["hullLabelTier1"] = self.hull_label_tier1
+        return summary
 
 
-def analyze_image(image_bytes: bytes) -> ImageAnalysis:
+def analyze_image(
+    image_bytes: bytes,
+    *,
+    hull_label_side: Optional[str] = None,
+    hull_label_mode: str = "off",
+) -> ImageAnalysis:
     image = _load_image(image_bytes)
     process_image, scale = _resize_for_processing(image, max_side=1150)
     arr = np.asarray(process_image).astype(np.uint8)
@@ -132,9 +141,19 @@ def analyze_image(image_bytes: bytes) -> ImageAnalysis:
     stickers = _find_stickers(arr, roi)
     cube_hull, cube_hull_warning = _rembg_cube_hull_if_enabled(process_image)
     grids = _fit_face_grids(stickers, arr, scale, cube_hull=cube_hull)
+    hull_label_tier1 = _hull_label_tier1_if_enabled(
+        process_image,
+        arr,
+        side=hull_label_side,
+        mode=hull_label_mode,
+    )
+    if hull_label_tier1 and hull_label_tier1.get("selected"):
+        grids = _hull_label_tier1_grids(hull_label_tier1, arr)
     warnings = []
     if cube_hull_warning:
         warnings.append(cube_hull_warning)
+    if hull_label_tier1 and hull_label_tier1.get("status") == "error":
+        warnings.append("Hull-label Tier 1 failed before producing candidate grids.")
     if len(stickers) < 18:
         warnings.append("Few sticker candidates detected.")
     if len(grids) < 3:
@@ -148,6 +167,7 @@ def analyze_image(image_bytes: bytes) -> ImageAnalysis:
         grids=grids,
         overlay_data_url=overlay,
         warnings=warnings,
+        hull_label_tier1=hull_label_tier1,
     )
 
 
@@ -202,6 +222,202 @@ def _rembg_cube_hull_if_enabled(image: Image.Image) -> Tuple[Optional[List[Point
 def _rembg_grid_guard_enabled() -> bool:
     value = os.environ.get(REMBG_GRID_GUARD_ENV, "").strip().lower()
     return value in {"1", "true", "yes", "on", "u2net", REMBG_GRID_GUARD_SOURCE}
+
+
+def _hull_label_tier1_if_enabled(
+    image: Image.Image,
+    arr: np.ndarray,
+    *,
+    side: Optional[str],
+    mode: str,
+) -> Optional[Dict[str, Any]]:
+    """Run the feature-flagged hull-label candidate path for one photo.
+
+    Shadow mode records the trace while preserving legacy grids. Prefer mode
+    marks accepted candidate grids as selected; the recognizer still applies a
+    pair-level legal-state guard before returning a prefer result.
+    """
+    resolved_mode = (mode or "off").strip().lower()
+    if resolved_mode in {"", "0", "false", "no", "off", "legacy"}:
+        return None
+    if resolved_mode in {"trace", "diagnostic", "dry-run", "dry_run"}:
+        resolved_mode = "shadow"
+    if resolved_mode not in {"shadow", "prefer"}:
+        resolved_mode = "off"
+    if resolved_mode == "off":
+        return None
+
+    if side not in {"A", "B"}:
+        return {
+            "mode": resolved_mode,
+            "side": side,
+            "status": "skipped_missing_or_unsupported_side",
+            "accepted": False,
+            "selected": False,
+            "hard_failures": ["hull_label_side must be 'A' or 'B'"],
+        }
+
+    try:
+        from rembg import remove
+        from tools.global_cube_model import _fit_hull_label_tier1_model
+    except ImportError as exc:
+        return {
+            "mode": resolved_mode,
+            "side": side,
+            "status": "error",
+            "accepted": False,
+            "selected": False,
+            "error": f"ImportError: {exc}",
+        }
+
+    try:
+        session = _REMBG_SESSIONS.get("u2net")
+        if session is None:
+            from rembg import new_session
+
+            session = new_session("u2net")
+            _REMBG_SESSIONS["u2net"] = session
+        rgba = remove(image, session=session)
+        if rgba.mode != "RGBA":
+            rgba = rgba.convert("RGBA")
+        alpha = np.asarray(rgba.split()[-1], dtype=np.uint8)
+        mask = alpha > 128
+        if not mask.any():
+            return {
+                "mode": resolved_mode,
+                "side": side,
+                "status": "rejected",
+                "accepted": False,
+                "selected": False,
+                "hard_failures": ["empty cube mask"],
+            }
+        model, trace = _fit_hull_label_tier1_model(
+            arr,
+            mask,
+            side=side,
+            mode=resolved_mode,
+        )
+        trace = dict(trace or {})
+        trace.setdefault("mode", resolved_mode)
+        trace.setdefault("side", side)
+        trace["selected"] = bool(
+            resolved_mode == "prefer"
+            and model is not None
+            and trace.get("status") == "accepted"
+        )
+        if trace["selected"] and model is not None:
+            trace["_model"] = model
+        return trace
+    except Exception as exc:  # noqa: BLE001
+        return {
+            "mode": resolved_mode,
+            "side": side,
+            "status": "error",
+            "accepted": False,
+            "selected": False,
+            "error": f"{type(exc).__name__}: {exc}",
+        }
+
+
+def _hull_label_tier1_grids(trace: Mapping[str, Any], arr: np.ndarray) -> List[FaceGrid]:
+    model = trace.get("_model")
+    if model is None:
+        return []
+    grids: List[FaceGrid] = []
+    face_keys = ("face_xz", "face_yz", "face_xy")
+    for offset, face_key in enumerate(face_keys):
+        cells = getattr(model, "sticker_cells", {}).get(face_key)
+        if not cells or len(cells) != 9:
+            continue
+        grids.append(_face_grid_from_hull_label_cells(10_000 + offset, cells, arr))
+    trace.pop("_model", None)
+    return grids
+
+
+def _face_grid_from_hull_label_cells(
+    grid_id: int,
+    cells: Sequence[Sequence[Point]],
+    arr: np.ndarray,
+) -> FaceGrid:
+    points: List[List[Point]] = []
+    stickers: List[List[Sticker]] = []
+    spacing = _median_cell_spacing(cells)
+    sample_half = max(3, min(18, int(round(spacing * 0.14))))
+    for r in range(3):
+        point_row: List[Point] = []
+        sticker_row: List[Sticker] = []
+        for c in range(3):
+            cell = cells[r * 3 + c]
+            center = _cell_center(cell)
+            bbox = _cell_bbox(cell)
+            rgb = _sample_rgb_square(arr, center[0], center[1], sample_half)
+            sticker = Sticker(
+                id=grid_id * 100 + r * 3 + c,
+                center=center,
+                bbox=bbox,
+                rgb=rgb,
+                match=classify_rgb(rgb),
+                area=(2 * sample_half + 1) ** 2,
+                source="grid_sample",
+            )
+            sticker.grid_spacing = spacing  # type: ignore[attr-defined]
+            point_row.append(center)
+            sticker_row.append(sticker)
+        points.append(point_row)
+        stickers.append(sticker_row)
+    return FaceGrid(
+        id=grid_id,
+        stickers=stickers,
+        points=points,
+        matched_count=9,
+        fit_error=0.0,
+        cube_hull_inside_count=9,
+        cube_hull_outside_count=0,
+        cube_hull_source="hull_label_tier1",
+    )
+
+
+def _cell_center(cell: Sequence[Point]) -> Point:
+    return (
+        sum(float(point[0]) for point in cell) / len(cell),
+        sum(float(point[1]) for point in cell) / len(cell),
+    )
+
+
+def _cell_bbox(cell: Sequence[Point]) -> Tuple[float, float, float, float]:
+    xs = [float(point[0]) for point in cell]
+    ys = [float(point[1]) for point in cell]
+    return min(xs), min(ys), max(xs), max(ys)
+
+
+def _median_cell_spacing(cells: Sequence[Sequence[Point]]) -> float:
+    centers = [_cell_center(cell) for cell in cells]
+    distances: List[float] = []
+    for r in range(3):
+        for c in range(2):
+            a, b = centers[r * 3 + c], centers[r * 3 + c + 1]
+            distances.append(math.hypot(a[0] - b[0], a[1] - b[1]))
+    for r in range(2):
+        for c in range(3):
+            a, b = centers[r * 3 + c], centers[(r + 1) * 3 + c]
+            distances.append(math.hypot(a[0] - b[0], a[1] - b[1]))
+    if not distances:
+        return 32.0
+    distances.sort()
+    return distances[len(distances) // 2]
+
+
+def _sample_rgb_square(arr: np.ndarray, x: float, y: float, half: int) -> RGB:
+    h, w = arr.shape[:2]
+    cx, cy = int(round(x)), int(round(y))
+    x0 = max(0, cx - half)
+    x1 = min(w, cx + half + 1)
+    y0 = max(0, cy - half)
+    y1 = min(h, cy + half + 1)
+    if x0 >= x1 or y0 >= y1:
+        return (0, 0, 0)
+    patch = arr[y0:y1, x0:x1].reshape(-1, 3)
+    return tuple(int(np.median(patch[:, channel])) for channel in range(3))  # type: ignore[return-value]
 
 
 def _find_cube_roi(arr: np.ndarray) -> Tuple[int, int, int, int]:

@@ -141,6 +141,10 @@ class RubikHandler(BaseHTTPRequestHandler):
             image_b = _first_field(fields, "imageB")
             expected = _text_field(fields, "expectedState")
             set_id = _text_field(fields, "setId")
+            hull_label_tier1_mode = (
+                self._query_param("hullLabelTier1")
+                or self._query_param("hull_label_tier1")
+            )
             # `?slim=1` returns a stripped-down payload with the heavy
             # debug fields (overlays + diagnostics) omitted. Used by
             # the cube-snap Fixer integration where the response is
@@ -169,6 +173,7 @@ class RubikHandler(BaseHTTPRequestHandler):
                     image_b=ImageUpload(image_b[0], image_b[1]),
                 ),
                 expected_state=expected,
+                hull_label_tier1_mode=hull_label_tier1_mode,
             )
             # `payload["runtime"]` is now set inside `recognize_and_persist`
             # before `save_run` writes the on-disk `result.json`, so both
@@ -264,6 +269,18 @@ class RubikHandler(BaseHTTPRequestHandler):
                 return True
             return value.lower() in ("1", "true", "yes")
         return False
+
+    def _query_param(self, name: str) -> Optional[str]:
+        if "?" not in self.path:
+            return None
+        query = self.path.split("?", 1)[1]
+        for pair in query.split("&"):
+            if not pair:
+                continue
+            key, _, value = pair.partition("=")
+            if unquote(key) == name:
+                return unquote(value) if value else ""
+        return None
 
     def _send_run_file(self, request_path: str) -> None:
         relative = Path(unquote(request_path.removeprefix("/runs/")))
@@ -716,7 +733,7 @@ def _api_routes() -> List[Dict[str, str]]:
         {"method": "GET",  "path": "/api/labels",          "brief": "List of recently saved cube-geometry label JSON documents."},
         {"method": "GET",  "path": "/runs/pairs/<id>/...", "brief": "Static access to a saved run's files (result.json, debug.json, overlays, samples.csv, original photos)."},
         {"method": "GET",  "path": "/runs/labels/<id>.json", "brief": "Static access to saved cube-geometry label JSON."},
-        {"method": "POST", "path": "/api/recognize",       "brief": "Recognize one pair. Multipart fields: imageA, imageB; optional setId, expectedState. Query: ?slim=1 to omit overlays/diagnostics. Persists a run under /runs/pairs/<id>/."},
+        {"method": "POST", "path": "/api/recognize",       "brief": "Recognize one pair. Multipart fields: imageA, imageB; optional setId, expectedState. Query: ?slim=1 to omit overlays/diagnostics; ?hullLabelTier1=shadow|prefer for the hidden hull-label Tier 1 candidate path. Persists a run under /runs/pairs/<id>/."},
         {"method": "POST", "path": "/api/recognize-batch", "brief": "Recognize multiple pairs in one call. Multipart field: images (multi-file); optional groundTruth (.csv/.tsv/.json). Pairs files by filename A/B markers or by drop order. Persists a batch under /runs/batches/<id>/."},
         {"method": "POST", "path": "/api/labels",          "brief": "Persist one cube-geometry label JSON document under /runs/labels/."},
     ]
@@ -955,8 +972,17 @@ def _text_field(fields: Dict[str, List[Tuple[str, bytes]]], name: str) -> Option
     return value[1].decode("utf-8", errors="replace").strip() or None
 
 
-def recognize_and_persist(recognizer: WhiteUpRecognizer, pair: ImagePair, expected_state: Optional[str] = None) -> Dict:
-    result = recognizer.recognize(pair.image_a.data, pair.image_b.data)
+def recognize_and_persist(
+    recognizer: WhiteUpRecognizer,
+    pair: ImagePair,
+    expected_state: Optional[str] = None,
+    hull_label_tier1_mode: Optional[str] = None,
+) -> Dict:
+    result = recognizer.recognize(
+        pair.image_a.data,
+        pair.image_b.data,
+        hull_label_tier1_mode=hull_label_tier1_mode,
+    )
     payload = result.to_api_dict()
     if result.image_a and result.image_b:
         payload["diagnostics"] = recognition_diagnostics(result.image_a, result.image_b)

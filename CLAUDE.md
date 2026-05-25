@@ -485,6 +485,21 @@ before merging. Do not merge if the user has explicitly asked to pause,
 if review comments are unresolved, if labels indicate a stale/blocking
 head, or if the branch requires a mirror PR that has not been planned.
 
+Review handoff visibility: whenever you ask another reviewer to look at
+a PR, report the handoff in your active chat with Pacific wall-clock
+time, reviewer, PR number, head SHA, trigger path, and expected result.
+This applies to Claude/Codex CLI handoffs, label-only handoffs
+(`needs-claude-review`, `needs-codex-audit`, `needs-greptile-audit`,
+`needs-devin-audit`), direct PR comments, and manual workflow dispatches.
+When the reviewer returns, report the return time, elapsed time,
+verdict, label state, and next action. Use a compact format such as:
+`2026-05-25 09:03 PT - requested Claude review on #301 @ b29d00c via
+label+CLI; expecting PASS/blockers.` and
+`2026-05-25 09:08 PT - Claude PASS on #301 @ b29d00c, label removed;
+elapsed 5m; merging.` If a paid lane is triggered, explicitly say that
+the action may spend a review. If a labeler fails to flip labels, report
+the manual correction and whether a follow-up bug is needed.
+
 ### Claude cross-review lane (no-cost iterative review)
 
 Claude cross-review is the no-cost counterpart to the Codex audit lane

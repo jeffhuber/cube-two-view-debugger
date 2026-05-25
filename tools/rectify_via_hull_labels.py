@@ -154,6 +154,33 @@ class RectifiedFit:
     face_quads: Dict[str, List[Point]]
     rectified_faces: Dict[str, Image.Image]
 
+    # Hybrid-vertex telemetry (always populated since 2026-05-25). The
+    # active `vertex` above is whichever of affine/projective the
+    # spread-gate selected; these fields surface BOTH candidates plus
+    # the decision metadata so callers can route on the same signals
+    # the gate used. Per the corpus probe (see
+    # `tools/HULL_LABELS_CORPUS_REPORT.md` "Hybrid vertex strategy"),
+    # the gate keeps median vertex_err *better* than pure affine while
+    # also unlocking projective for the perspective-heavy minority.
+    affine_vertex: Optional[Point] = None
+    projective_vertex: Optional[Point] = None
+    vertex_cloud_spread_px: Optional[float] = None
+    """Max pairwise distance across the 3 affine parallelogram-
+    completion vertex estimates. Proxy for how non-iso the projection
+    is — high spread → perspective is breaking the iso parallelogram
+    assumption → projective math is preferred."""
+    projective_residual_norm: Optional[float] = None
+    """Projective 3-line LSQ residual ÷ hexagon diameter. Resolution-
+    independent. High → projective fit is poorly conditioned (likely
+    because hull corners themselves are wrong, e.g. 30_A's wall-edge
+    artifact). Useful as a standalone bad-input gate in
+    `tools/hull_label_acceptance.py`."""
+    projective_degeneracy: Optional[str] = None
+    """One of `finite_projective` / `near_affine` / `degenerate`."""
+    vertex_source: Optional[str] = None
+    """`"affine"` or `"projective"` — which candidate the spread-gate
+    selected for the active `vertex`."""
+
 
 def _label_corners_by_position(
     hexagon: Sequence[Point], side: str,
@@ -224,6 +251,82 @@ def _derive_vertex_from_corners(
     return (vx, vy), estimates
 
 
+# Hybrid-vertex switch threshold. When the affine 3-estimate cloud
+# spreads beyond this many pixels, the iso parallelogram assumption is
+# breaking — use the projective (vanishing-point) vertex instead.
+# Empirical sweet spot from the 70-row corpus probe (see
+# `tools/HULL_LABELS_CORPUS_REPORT.md`):
+#   - spread <= 240 px (66 rows): affine 3-estimate mean wins by lower
+#     variance from corner-detection noise (iso assumption is close
+#     enough that the mean denoises better than projective's exact-but-
+#     noisy line intersection)
+#   - spread >  240 px (4 rows in the corpus): projective wins because
+#     the systematic bias from non-iso projection dominates the noise
+#     improvement (e.g. 37_B: vertex_err 80→38 px with projective)
+# Net: hybrid<>240 gives strictly better median/mean/max vertex_err
+# than pure affine, and one more row clears the 30 px threshold.
+# Same threshold as `warn_vertex_cloud_spread_px` in
+# `tools/hull_label_acceptance.py`, so the same signal that warns
+# downstream also drives the switch.
+HYBRID_PROJECTIVE_SPREAD_THRESHOLD_PX = 240.0
+
+
+def _max_pairwise_distance(points: Sequence[Point]) -> float:
+    spread = 0.0
+    for i in range(len(points)):
+        for j in range(i + 1, len(points)):
+            spread = max(
+                spread,
+                math.hypot(points[i][0] - points[j][0],
+                           points[i][1] - points[j][1]),
+            )
+    return spread
+
+
+def _choose_hybrid_vertex(
+    corners_by_num: Dict[int, Point], side: str,
+    *,
+    spread_threshold_px: float = HYBRID_PROJECTIVE_SPREAD_THRESHOLD_PX,
+) -> Tuple[Point, Dict[str, Any]]:
+    """Hybrid affine/projective vertex selection. Returns
+    ``(vertex, telemetry)`` where telemetry carries both candidates
+    and the decision metadata (for surfacing in RectifiedFit).
+
+    The switch uses ``vertex_cloud_spread`` (the affine 3-estimate
+    max pairwise distance) — high spread → iso assumption is breaking
+    → use the projective vanishing-point vertex.
+
+    Empirical basis: `tools/HULL_LABELS_CORPUS_REPORT.md`
+    "Hybrid vertex strategy" section.
+    """
+    # Affine candidate (current default — parallelogram completion mean)
+    affine_vx, estimates = _derive_vertex_from_corners(corners_by_num, side)
+    spread = _max_pairwise_distance(estimates)
+
+    # Projective candidate (vanishing-point construction)
+    # Import locally to keep this module loadable without the heavier
+    # projective_vertex module being imported up front.
+    from tools.projective_vertex import projective_vertex
+    prj = projective_vertex(corners_by_num, side)
+
+    if spread > spread_threshold_px:
+        chosen = prj.vertex
+        source = "projective"
+    else:
+        chosen = affine_vx
+        source = "affine"
+
+    telemetry = {
+        "affine_vertex": affine_vx,
+        "projective_vertex": prj.vertex,
+        "vertex_cloud_spread_px": round(spread, 1),
+        "projective_residual_norm": round(prj.residual_norm, 4),
+        "projective_degeneracy": prj.degeneracy,
+        "vertex_source": source,
+    }
+    return chosen, telemetry
+
+
 def rectify_via_hull_labels(
     image: Image.Image,
     mask: np.ndarray,
@@ -238,6 +341,12 @@ def rectify_via_hull_labels(
     rembg silhouette mask (boolean array, same H×W as image) — caller
     is responsible for choosing the rembg path (production uses
     `remove(image, session=sess)` → split RGBA → alpha > 128).
+
+    The vertex is selected by ``_choose_hybrid_vertex`` — affine
+    (parallelogram completion mean) by default, projective (vanishing-
+    point construction) when the 3-estimate spread indicates the iso
+    assumption is breaking. ``RectifiedFit`` surfaces both candidates
+    + decision metadata so callers can route on the same signals.
     """
     hexagon = detect_hexagon_anchors(mask)
     if len(hexagon) != 6:
@@ -248,7 +357,7 @@ def rectify_via_hull_labels(
             f"add to SILHOUETTE_TO_CORNER"
         )
     corners_by_num = _label_corners_by_position(hexagon, side)
-    vertex, _estimates = _derive_vertex_from_corners(corners_by_num, side)
+    vertex, telemetry = _choose_hybrid_vertex(corners_by_num, side)
     face_quads: Dict[str, List[Point]] = {}
     rectified_faces: Dict[str, Image.Image] = {}
     for slot, names in FACE_DEFS_BY_SIDE[side].items():
@@ -266,6 +375,12 @@ def rectify_via_hull_labels(
         vertex=vertex,
         face_quads=face_quads,
         rectified_faces=rectified_faces,
+        affine_vertex=telemetry["affine_vertex"],
+        projective_vertex=telemetry["projective_vertex"],
+        vertex_cloud_spread_px=telemetry["vertex_cloud_spread_px"],
+        projective_residual_norm=telemetry["projective_residual_norm"],
+        projective_degeneracy=telemetry["projective_degeneracy"],
+        vertex_source=telemetry["vertex_source"],
     )
 
 

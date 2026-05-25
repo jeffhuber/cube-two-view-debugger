@@ -119,3 +119,60 @@ def test_missing_face_slot_or_score_is_hard_failure():
     assert decision.should_fallback
     assert any("rectified_face_slots" in reason for reason in decision.hard_failures)
     assert any("missing per-face sticker scores" in reason for reason in decision.hard_failures)
+
+
+# -------- projective_residual_norm gate (PR #288 follow-up) ----------
+# Added 2026-05-25 — surfaces 30_A-class bad-hull rows that spread
+# and sticker gates miss.
+
+
+def test_projective_residual_norm_omitted_keeps_existing_behavior():
+    """If caller doesn't supply projective_residual_norm (legacy
+    callers from before PR #288), the gate must still accept clean
+    rows — backward-compat shim."""
+    kwargs = _clean_kwargs()
+    decision = evaluate_hull_label_acceptance(**kwargs)
+    assert decision.accepted
+    assert decision.warnings == ()
+    assert "projective_residual_norm" not in decision.metrics
+
+
+def test_projective_residual_norm_below_warn_is_accepted_quiet():
+    kwargs = _clean_kwargs()
+    decision = evaluate_hull_label_acceptance(
+        **kwargs, projective_residual_norm=0.005,
+    )
+    assert decision.accepted
+    assert decision.warnings == ()
+    assert decision.metrics["projective_residual_norm"] == 0.005
+
+
+def test_projective_residual_norm_in_warn_band_warns_but_accepts():
+    kwargs = _clean_kwargs()
+    # 0.022 is between warn (0.020) and hard (0.025) → accept with warning
+    decision = evaluate_hull_label_acceptance(
+        **kwargs, projective_residual_norm=0.022,
+    )
+    assert decision.accepted
+    assert any("projective_residual_norm=0.0220" in w for w in decision.warnings)
+
+
+def test_projective_residual_norm_above_hard_fails():
+    """30_A's 0.0315 is the corpus max and the canonical bad-hull row.
+    The hard gate must fire on it."""
+    kwargs = _clean_kwargs()
+    decision = evaluate_hull_label_acceptance(
+        **kwargs, projective_residual_norm=0.0315,
+    )
+    assert decision.should_fallback
+    assert any("projective_residual_norm=0.0315" in r for r in decision.hard_failures)
+
+
+def test_projective_residual_norm_nonfinite_is_hard_failure():
+    """NaN / inf residual indicates a degenerate fit — fallback."""
+    kwargs = _clean_kwargs()
+    decision = evaluate_hull_label_acceptance(
+        **kwargs, projective_residual_norm=float("inf"),
+    )
+    assert decision.should_fallback
+    assert any("projective_residual_norm" in r for r in decision.hard_failures)

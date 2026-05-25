@@ -246,6 +246,112 @@ def test_silhouette_to_corner_consistent_with_face_defs():
             )
 
 
+# ---------------- _choose_hybrid_vertex (affine ↔ projective switch) ----
+# 2026-05-25 follow-up to PR #288: the projective vertex is used IFF
+# the affine 3-estimate cloud spread exceeds the threshold (240 px by
+# default), otherwise affine wins by lower variance from corner noise.
+
+
+def test_hybrid_projective_threshold_matches_acceptance_warn():
+    """The 240 px default must match `warn_vertex_cloud_spread_px` in
+    `tools/hull_label_acceptance.py` — they're intentionally the
+    SAME signal (when affine-gate says 'perspective heavy, warn',
+    we ALSO switch to projective). Changing one without the other
+    would silently break the gate↔switch consistency the corpus
+    probe relied on."""
+    from tools.rectify_via_hull_labels import HYBRID_PROJECTIVE_SPREAD_THRESHOLD_PX
+    from tools.hull_label_acceptance import DEFAULT_THRESHOLDS
+    assert HYBRID_PROJECTIVE_SPREAD_THRESHOLD_PX == DEFAULT_THRESHOLDS.warn_vertex_cloud_spread_px
+
+
+def test_choose_hybrid_vertex_returns_affine_on_iso_input():
+    """On a perfect iso hexagon the 3 affine estimates are tightly
+    clustered (spread ≈ 0). Switch stays on affine."""
+    from tools.rectify_via_hull_labels import (
+        _choose_hybrid_vertex, _label_corners_by_position,
+        HYBRID_PROJECTIVE_SPREAD_THRESHOLD_PX,
+    )
+    import math as _m
+    pts = [(500 + 200 * _m.cos(_m.radians(d)),
+            500 + 200 * _m.sin(_m.radians(d)))
+           for d in (-90, -30, 30, 90, 150, 210)]
+    corners = _label_corners_by_position(pts, "A")
+    vertex, tel = _choose_hybrid_vertex(corners, "A")
+    assert tel["vertex_source"] == "affine"
+    assert tel["vertex_cloud_spread_px"] < HYBRID_PROJECTIVE_SPREAD_THRESHOLD_PX
+    assert vertex == tel["affine_vertex"]
+
+
+def test_choose_hybrid_vertex_switches_to_projective_under_strong_perspective():
+    """Build a 3D cube + tilted pinhole camera → project → solve.
+    Strong perspective spreads the 3 affine estimates beyond 240 px →
+    switch picks projective. Verifies (a) the switch fires, (b) the
+    chosen vertex is the projective one, and (c) projective is exact
+    on synthetic pinhole input (vertex_err < 1 px vs GT)."""
+    import numpy as np
+    import math as _m
+    cube_3d = {
+        "h_x": (-1., 0., 0.), "h_y": (0., -1., 0.), "h_z": (0., 0., -1.),
+        "h_xy": (-1., -1., 0.), "h_xz": (-1., 0., -1.), "h_yz": (0., -1., -1.),
+        "vertex": (0., 0., 0.),
+    }
+    side_a_map = {0: "h_xy", 1: "h_x", 2: "h_xz", 3: "h_z", 4: "h_yz", 5: "h_y"}
+    cam_pos = np.array([1.4, 1.8, 2.2])
+    target = np.array([-0.4, -0.5, -0.3])
+    fwd = target - cam_pos
+    fwd /= np.linalg.norm(fwd)
+    right = np.cross(fwd, np.array([0., 1., 0.]))
+    right /= np.linalg.norm(right)
+    up = np.cross(right, fwd)
+    R = np.stack([right, up, -fwd])
+    f, cx, cy = 900.0, 500.0, 500.0
+
+    def project(p3):
+        pc = R @ (np.array(p3) - cam_pos)
+        return (float(-f * pc[0] / pc[2] + cx),
+                float(-f * pc[1] / pc[2] + cy))
+
+    corners = {cn: project(cube_3d[side_a_map[cn]]) for cn in range(6)}
+    from tools.rectify_via_hull_labels import _choose_hybrid_vertex
+    # Use a lower threshold for unit test — the production 240 px
+    # default is calibrated to real iPhone shots (largest corpus
+    # spread 268 px), but a synthetic unit-cube + close pinhole
+    # camera produces ~50 px spread. The SWITCH BEHAVIOR is what
+    # this test pins; the threshold value itself is empirically
+    # calibrated and pinned separately by the corpus run.
+    vertex, tel = _choose_hybrid_vertex(corners, "A", spread_threshold_px=30.0)
+    assert tel["vertex_cloud_spread_px"] > 30.0, (
+        f"test camera produces only {tel['vertex_cloud_spread_px']:.1f}px "
+        f"spread — tune cam_pos so perspective is stronger"
+    )
+    assert tel["vertex_source"] == "projective"
+    assert vertex == tel["projective_vertex"]
+    gt = project(cube_3d["vertex"])
+    err = _m.hypot(vertex[0] - gt[0], vertex[1] - gt[1])
+    assert err < 1.0, (
+        f"projective vertex should be exact under pinhole, got {err:.2f}px"
+    )
+
+
+def test_choose_hybrid_vertex_telemetry_carries_both_candidates():
+    """Whichever vertex the switch picks, BOTH candidates + decision
+    metadata must be surfaced so callers can route on the same signals
+    the switch used (e.g. hull_label_acceptance.py)."""
+    from tools.rectify_via_hull_labels import (
+        _choose_hybrid_vertex, _label_corners_by_position,
+    )
+    import math as _m
+    pts = [(500 + 200 * _m.cos(_m.radians(d)),
+            500 + 200 * _m.sin(_m.radians(d)))
+           for d in (-90, -30, 30, 90, 150, 210)]
+    corners = _label_corners_by_position(pts, "A")
+    _vertex, tel = _choose_hybrid_vertex(corners, "A")
+    for key in ("affine_vertex", "projective_vertex",
+                "vertex_cloud_spread_px", "projective_residual_norm",
+                "projective_degeneracy", "vertex_source"):
+        assert key in tel, f"telemetry missing {key}"
+
+
 def test_score_rectified_faces_ignores_classifier_env(monkeypatch):
     """The diagnostic report says its score is canonical CIELAB distance.
     Keep that stable even when production classifier experiments are selected

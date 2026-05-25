@@ -2,8 +2,8 @@
   "schema": "hull_labels_corpus_v1",
   "source": {
     "tool": "tools/measure_hull_labels_corpus.py",
-    "git_sha": "f51dc3207ac042f44f7d1718d3ed5532197bdfb8",
-    "generated_at_utc": "2026-05-25T01:15:05.393554+00:00",
+    "git_sha": "e2197f79834a6fc1470e74187e332b50116bc0e5",
+    "generated_at_utc": "2026-05-25T04:13:19.354144+00:00",
     "axis_truth": "tests/fixtures/gcm_axis_ground_truth.json",
     "manifest": "tests/fixtures/corpus_manifest.json",
     "max_image_dim": 1600,
@@ -17,8 +17,8 @@
     "total_rows_attempted": 70,
     "skipped_unresolved_image": 0,
     "by_bucket": {
-      "rectified_clean": 68,
-      "axis_misfit_high": 2
+      "rectified_clean": 69,
+      "axis_misfit_high": 1
     },
     "by_side_bucket": {
       "A": {
@@ -26,8 +26,7 @@
         "axis_misfit_high": 1
       },
       "B": {
-        "rectified_clean": 34,
-        "axis_misfit_high": 1
+        "rectified_clean": 35
       }
     }
   },
@@ -1312,7 +1311,7 @@
       "in_full_corner_corpus": false,
       "status": "rectified",
       "hexagon_corner_count": 6,
-      "vertex_err_px": 27.2,
+      "vertex_err_px": 43.4,
       "vertex_cloud_spread_px": 251.6,
       "vertex_estimates_processing_px": [
         [
@@ -1329,14 +1328,14 @@
         ]
       ],
       "derived_vertex_processing_px": [
-        619.0,
-        760.0
+        635.0,
+        762.2
       ],
       "gt_vertex_processing_px": [
         592.1,
         755.6
       ],
-      "axis_total_misfit_deg": 4.9,
+      "axis_total_misfit_deg": 9.2,
       "axis_match": {
         "assignment": [
           0,
@@ -1344,15 +1343,15 @@
           2
         ],
         "per_axis_angle_errors_deg": [
-          0.1,
-          4.8,
-          0.0
+          0.9,
+          6.9,
+          1.3
         ],
-        "total_misfit_deg": 4.9,
+        "total_misfit_deg": 9.2,
         "predicted_axis_lengths_px": [
-          411.5,
-          429.2,
-          427.3
+          396.5,
+          432.2,
+          440.2
         ],
         "gt_axis_lengths_px": [
           441.9,
@@ -1365,11 +1364,11 @@
           408.9
         ]
       },
-      "sticker_score_total": 309.03,
+      "sticker_score_total": 309.51,
       "sticker_score_per_face": {
-        "upper": 95.47,
-        "right": 105.91,
-        "front": 107.66
+        "upper": 95.82,
+        "right": 106.19,
+        "front": 107.5
       },
       "bucket": "rectified_clean"
     },
@@ -2518,7 +2517,7 @@
       "in_full_corner_corpus": false,
       "status": "rectified",
       "hexagon_corner_count": 6,
-      "vertex_err_px": 79.7,
+      "vertex_err_px": 37.6,
       "vertex_cloud_spread_px": 252.4,
       "vertex_estimates_processing_px": [
         [
@@ -2535,14 +2534,14 @@
         ]
       ],
       "derived_vertex_processing_px": [
-        563.3,
-        845.7
+        545.3,
+        905.2
       ],
       "gt_vertex_processing_px": [
         577.8,
         924.0
       ],
-      "axis_total_misfit_deg": 32.2,
+      "axis_total_misfit_deg": 14.3,
       "axis_match": {
         "assignment": [
           0,
@@ -2550,15 +2549,15 @@
           2
         ],
         "per_axis_angle_errors_deg": [
-          15.4,
-          2.5,
-          14.4
+          5.5,
+          3.9,
+          4.9
         ],
-        "total_misfit_deg": 32.2,
+        "total_misfit_deg": 14.3,
         "predicted_axis_lengths_px": [
-          361.6,
-          494.3,
-          350.4
+          356.6,
+          555.3,
+          321.9
         ],
         "gt_axis_lengths_px": [
           330.1,
@@ -2571,13 +2570,13 @@
           359.0
         ]
       },
-      "sticker_score_total": 594.78,
+      "sticker_score_total": 593.15,
       "sticker_score_per_face": {
-        "upper": 134.44,
-        "right": 249.72,
-        "front": 210.62
+        "upper": 136.14,
+        "right": 244.75,
+        "front": 212.25
       },
-      "bucket": "axis_misfit_high"
+      "bucket": "rectified_clean"
     },
     {
       "key": "38_A",
@@ -3389,7 +3388,7 @@
       "in_full_corner_corpus": false,
       "status": "rectified",
       "hexagon_corner_count": 6,
-      "vertex_err_px": 36.7,
+      "vertex_err_px": 14.2,
       "vertex_cloud_spread_px": 265.7,
       "vertex_estimates_processing_px": [
         [
@@ -3406,14 +3405,14 @@
         ]
       ],
       "derived_vertex_processing_px": [
-        548.3,
-        746.7
+        528.8,
+        780.2
       ],
       "gt_vertex_processing_px": [
         542.7,
         782.9
       ],
-      "axis_total_misfit_deg": 11.0,
+      "axis_total_misfit_deg": 2.8,
       "axis_match": {
         "assignment": [
           1,
@@ -3422,14 +3421,14 @@
         ],
         "per_axis_angle_errors_deg": [
           1.1,
-          6.1,
-          3.8
+          1.0,
+          0.8
         ],
-        "total_misfit_deg": 11.0,
+        "total_misfit_deg": 2.8,
         "predicted_axis_lengths_px": [
-          453.1,
-          428.3,
-          383.8
+          487.7,
+          432.9,
+          350.1
         ],
         "gt_axis_lengths_px": [
           485.0,
@@ -3442,11 +3441,11 @@
           426.9
         ]
       },
-      "sticker_score_total": 495.9,
+      "sticker_score_total": 502.41,
       "sticker_score_per_face": {
-        "upper": 100.33,
-        "right": 209.61,
-        "front": 185.97
+        "upper": 107.38,
+        "right": 208.85,
+        "front": 186.18
       },
       "bucket": "rectified_clean"
     },
@@ -3590,7 +3589,7 @@
       "in_full_corner_corpus": true,
       "status": "rectified",
       "hexagon_corner_count": 6,
-      "vertex_err_px": 58.9,
+      "vertex_err_px": 8.9,
       "vertex_cloud_spread_px": 267.6,
       "vertex_estimates_processing_px": [
         [
@@ -3607,14 +3606,14 @@
         ]
       ],
       "derived_vertex_processing_px": [
-        645.3,
-        788.0
+        654.3,
+        846.1
       ],
       "gt_vertex_processing_px": [
         645.5,
         846.9
       ],
-      "axis_total_misfit_deg": 21.9,
+      "axis_total_misfit_deg": 8.7,
       "axis_match": {
         "assignment": [
           2,
@@ -3622,15 +3621,15 @@
           0
         ],
         "per_axis_angle_errors_deg": [
-          12.9,
-          2.6,
-          6.4
+          4.0,
+          2.9,
+          1.9
         ],
-        "total_misfit_deg": 21.9,
+        "total_misfit_deg": 8.7,
         "predicted_axis_lengths_px": [
-          332.2,
-          475.1,
-          407.3
+          300.1,
+          533.9,
+          399.5
         ],
         "gt_axis_lengths_px": [
           326.2,
@@ -3643,11 +3642,11 @@
           326.2
         ]
       },
-      "sticker_score_total": 596.07,
+      "sticker_score_total": 593.67,
       "sticker_score_per_face": {
-        "upper": 150.15,
-        "right": 194.37,
-        "front": 251.55
+        "upper": 150.3,
+        "right": 194.82,
+        "front": 248.54
       },
       "bucket": "rectified_clean"
     },

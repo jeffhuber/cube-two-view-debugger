@@ -473,6 +473,18 @@ review; production behavior, recognizer geometry/scoring, auth/CI
 automation, cross-repo mirrored tooling, and artifact-writing tools
 usually do.
 
+Proactive merge rule: when the PR's required review lane is satisfied,
+checks pass, merge state is CLEAN, and there are no unresolved blockers,
+the PR owner should merge without waiting for another user prompt. For
+local, iterative, diagnostic, and tiny docs/comment-only PRs, Claude or
+Codex cross-review PASS is enough. For material production changes,
+auth/CI automation, mirrored tooling, and other higher-risk PRs, wait
+for the selected paid final-review lane when one was requested
+(`devin-audit-done`, or Greptile's clean/no-actionable-blocker result)
+before merging. Do not merge if the user has explicitly asked to pause,
+if review comments are unresolved, if labels indicate a stale/blocking
+head, or if the branch requires a mirror PR that has not been planned.
+
 ### Claude cross-review lane (no-cost iterative review)
 
 Claude cross-review is the no-cost counterpart to the Codex audit lane

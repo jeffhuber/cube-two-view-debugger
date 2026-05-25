@@ -594,6 +594,66 @@
       },
       "notes": "Added and calibrated 2026-05-23 for corpus expansion from canonical /Users/jhuber/cube-corpus files. Category/score pinned from tools/probe_corpus.py on current recognizer: needs_manual_review, score 54/54. Human-confirmed capture yaw=0 (R center red, F center green); expectedYaw is executable because current recognizer emits matching standard captureYaw.",
       "expectedScoreFloor": 54
+    },
+    {
+      "setId": "69",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 69 - A - white-up IMG_7596.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 69 - B - white-up IMG_7597.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 69 - cube-ground-truth-1779745145900.json",
+      "imageA_sha256_expected": "42b6774928e2bcf576aac901d3c5198557dc04daa4b0599c8f77102d2a079e49",
+      "imageB_sha256_expected": "25fde7eaf38f9b419b249a82569cc3092b8cdcc727b4e9786c458887110f0902",
+      "groundTruth_sha256_expected": "13f9167e7afc1ab42c4c058695481bf96be9c32893fd234c52352c68c0d3996a",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-25 from canonical /Users/jhuber/cube-corpus files for medium-challenge Sets 69-73. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54. GT records capture yaw=2 via center-inference; not encoded as expectedYaw because the current reject path emits no captureYaw signal."
+    },
+    {
+      "setId": "70",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 70 - A - white-up IMG_7598.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 70 - B - white-up IMG_7599.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 70 - cube-ground-truth-1779750099146.json",
+      "imageA_sha256_expected": "2f87bdf7056d00321c7b8155ec55e4e20f48a2744189ac43c2d714c5893e7bb1",
+      "imageB_sha256_expected": "145af2e7a18c97ab026ee0500d89753fabcd14b8170537d67b49fa0042c3b985",
+      "groundTruth_sha256_expected": "99967b17b04b805a82e16136cbf93537300399b9e0523d014df5e3ff419b923c",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-25 from canonical /Users/jhuber/cube-corpus files for medium-challenge Sets 69-73. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54. GT records capture yaw=2 via explicit-yaw; not encoded as expectedYaw because the current reject path emits no captureYaw signal."
+    },
+    {
+      "setId": "71",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 71 - A - white-up IMG_7600.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 71 - B - white-up IMG_7601.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 71 - cube-ground-truth-1779750325949.json",
+      "imageA_sha256_expected": "c7f6b78ca8807470a800f8f33fb608aaa4d32284e65cceabc9de4eb7aeaa7072",
+      "imageB_sha256_expected": "cd440bced1cb7025073080936616326556c5b97cb4f93e70c1dafcc083535dcc",
+      "groundTruth_sha256_expected": "1a66328edede9dce2432b6fd00e12a29ff1c7c497ed51b88a4b6f9ea7618466f",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-25 from canonical /Users/jhuber/cube-corpus files for medium-challenge Sets 69-73. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54. GT file does not encode capture yaw; image set still follows white-up A / yellow-up B capture convention."
+    },
+    {
+      "setId": "72",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 72 - A - white-up IMG_7602.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 72 - B - white-up IMG_7603.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 72 - cube-ground-truth-1779747336734.json",
+      "imageA_sha256_expected": "809a65bb528c17bf305471e78fee1793b0d5916e0d7d55095022198bf07091f4",
+      "imageB_sha256_expected": "bcbaef8a3be46ed9540176d6c975b6584106ebf71fd0b42d7f91719de5fd7776",
+      "groundTruth_sha256_expected": "5cd166296fe4802608f2fda3f0c9566d4c9907780aa36b3d90de71a3d74cdf76",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-25 from canonical /Users/jhuber/cube-corpus files for medium-challenge Sets 69-73. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54. GT file does not encode capture yaw; image set still follows white-up A / yellow-up B capture convention."
+    },
+    {
+      "setId": "73",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 73 - A - white-up IMG_7604.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 73 - B - white-up IMG_7605.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 73 - cube-ground-truth-1779750578235 copy.json",
+      "imageA_sha256_expected": "3587221da3aa923b2de9a85c949002c2a4a20d294b2355c59eee10b29e14611e",
+      "imageB_sha256_expected": "cf69caf2529bfd2d4cdf1cd80f4259e49a3854f2df20b8cd6bcc618b7b10b2d5",
+      "groundTruth_sha256_expected": "7a16cfa931844dc94b09f57c24d674f84fb5331c81dbbde157ca8d69c6e5c757",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-25 from canonical /Users/jhuber/cube-corpus files for medium-challenge Sets 69-73. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54. GT file does not encode capture yaw; image set still follows white-up A / yellow-up B capture convention."
     }
   ]
 }

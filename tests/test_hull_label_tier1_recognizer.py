@@ -6,8 +6,14 @@ from typing import List, Optional
 from PIL import Image
 
 from rubik_recognizer.dataset import ImagePair, ImageUpload
-from rubik_recognizer.image_pipeline import ImageAnalysis
-from rubik_recognizer.recognizer import RecognitionResult, WhiteUpRecognizer, _base_recognition_signals
+from rubik_recognizer.image_pipeline import FaceGrid, ImageAnalysis
+from rubik_recognizer.recognizer import (
+    HULL_LABEL_DIRECT_OPTION_SCORE,
+    RecognitionResult,
+    WhiteUpRecognizer,
+    _base_recognition_signals,
+    _hull_label_direct_options,
+)
 from tools.corner_conventions import wca_face_by_slot
 
 
@@ -168,3 +174,77 @@ def test_base_signals_include_hull_label_center_yaw_inference():
     assert yaw["yawQuarterTurns"] == 2
     assert yaw["bestScore"] == 6
     assert yaw["margin"] == 4
+
+
+SLOT_QUADS = {
+    "upper": [(0, 0), (10, 0), (10, 10), (0, 10)],
+    "right": [(20, 0), (30, 0), (30, 10), (20, 10)],
+    "front": [(-20, 0), (-10, 0), (-10, 10), (-20, 10)],
+}
+
+
+def _grid_for_slot(slot: str, center_x: float) -> FaceGrid:
+    return FaceGrid(
+        id=10_000,
+        stickers=[
+            [f"{slot}-0", f"{slot}-1", f"{slot}-2"],
+            [f"{slot}-3", f"{slot}-4", f"{slot}-5"],
+            [f"{slot}-6", f"{slot}-7", f"{slot}-8"],
+        ],  # type: ignore[arg-type]
+        points=[
+            [(center_x - 1, 0), (center_x, 0), (center_x + 1, 0)],
+            [(center_x - 1, 1), (center_x, 1), (center_x + 1, 1)],
+            [(center_x - 1, 2), (center_x, 2), (center_x + 1, 2)],
+        ],
+        matched_count=9,
+        fit_error=0.0,
+        cube_hull_source="hull_label_tier1",
+        hull_label_slot=slot,
+    )
+
+
+def _selected_hull_label_analysis(side: str, yaw: int) -> ImageAnalysis:
+    assignments = wca_face_by_slot(side, yaw)
+    return ImageAnalysis(
+        width=10,
+        height=10,
+        roi=(0, 0, 10, 10),
+        stickers=[],
+        grids=[
+            _grid_for_slot("front", 10),
+            _grid_for_slot("upper", 20),
+            _grid_for_slot("right", 30),
+        ],
+        overlay_data_url="",
+        warnings=[],
+        hull_label_tier1={
+            "mode": "prefer",
+            "side": side,
+            "status": "accepted",
+            "accepted": True,
+            "selected": True,
+            "face_quads_by_slot": SLOT_QUADS,
+            "slot_center_faces": {
+                slot: {"face": face, "color": face, "rgb": [0, 0, 0]}
+                for slot, face in assignments.items()
+            },
+        },
+    )
+
+
+def test_hull_label_direct_options_use_inferred_yaw_and_slot_convention():
+    option_a, option_b = _hull_label_direct_options(
+        _selected_hull_label_analysis("A", 2),
+        _selected_hull_label_analysis("B", 2),
+    )
+
+    assert option_a is not None
+    assert option_b is not None
+    assert {face for face in option_a if face in "URFDLB"} == {"U", "L", "B"}
+    assert {face for face in option_b if face in "URFDLB"} == {"D", "F", "R"}
+    assert option_a["_score"] == HULL_LABEL_DIRECT_OPTION_SCORE
+    assert option_b["_score"] == HULL_LABEL_DIRECT_OPTION_SCORE
+    assert option_a["_ordered_side_pair"] == ("B", "L")
+    assert option_b["_ordered_side_pair"] == ("R", "F")
+    assert option_a["U"][1][1] == "upper-4"
+    assert option_b["D"][1][1] == "upper-4"

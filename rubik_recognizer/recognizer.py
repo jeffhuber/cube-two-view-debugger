@@ -60,6 +60,7 @@ MAX_VISIBLE_FACE_TRIPLES = 42
 MAX_ORIENTATION_VARIANTS_PER_TRIPLE = 96
 LOOSE_TRANSFORMS_PER_FACE = 8
 ORIENTATION_SCORE_WEIGHT = 8.0
+HULL_LABEL_DIRECT_OPTION_SCORE = 1_000_000.0
 MIN_IMAGE_B_D_ANCHOR_MATCHED_COUNT = 6
 ANCHOR_FACE_EDGE_MATCH_WEIGHT = 2.0
 SIDE_ANCHOR_EDGE_MATCH_WEIGHT = 3.0
@@ -293,6 +294,7 @@ class PieceOption:
 
 FaceSignature = Tuple[Tuple[str, str], ...]
 FaceletOptionsKey = Tuple[str, object]
+HullLabelDirectOptions = Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]
 
 
 @dataclass
@@ -370,7 +372,12 @@ class WhiteUpRecognizer:
 
     def _recognize_from_analyses(self, analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> RecognitionResult:
         recognition_signals = _base_recognition_signals(analysis_a, analysis_b)
-        checks = _failed_checks_with_context(_white_up_checks(analysis_a, analysis_b), analysis_a, analysis_b)
+        hull_label_direct_options = _hull_label_direct_options(analysis_a, analysis_b)
+        checks = _failed_checks_with_context(
+            _white_up_checks(analysis_a, analysis_b, direct_options=hull_label_direct_options),
+            analysis_a,
+            analysis_b,
+        )
         if checks:
             return RecognitionResult(
                 status="rejected",
@@ -384,7 +391,7 @@ class WhiteUpRecognizer:
                 ),
             )
 
-        workset = _recognition_workset(analysis_a, analysis_b)
+        workset = _recognition_workset(analysis_a, analysis_b, direct_options=hull_label_direct_options)
         candidates = self._state_candidates_from_workset(workset)
         legal = []
         invalid_reasons: List[str] = []
@@ -1989,14 +1996,126 @@ def _side_pair_key(value: Any) -> str:
     return "/".join(str(part) for part in sorted(value))
 
 
-def _recognition_workset(analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> RecognitionWorkset:
+def _recognition_workset(
+    analysis_a: ImageAnalysis,
+    analysis_b: ImageAnalysis,
+    *,
+    direct_options: Optional[HullLabelDirectOptions] = None,
+) -> RecognitionWorkset:
     options_a = _oriented_face_options(analysis_a, "U")
     options_b = _oriented_face_options(analysis_b, "D")
+    direct_a, direct_b = (
+        direct_options if direct_options is not None else _hull_label_direct_options(analysis_a, analysis_b)
+    )
+    if direct_a is not None:
+        options_a = [direct_a, *options_a]
+    if direct_b is not None:
+        options_b = [direct_b, *options_b]
     return RecognitionWorkset(
         options_a=options_a,
         options_b=options_b,
         merged_candidates=_merged_face_candidates(options_a, options_b),
     )
+
+
+def _hull_label_direct_options(
+    analysis_a: ImageAnalysis,
+    analysis_b: ImageAnalysis,
+) -> Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]:
+    tier1 = _hull_label_tier1_signal(analysis_a, analysis_b)
+    if tier1 is None:
+        return None, None
+    yaw = _hull_label_tier1_yaw_signal(tier1)
+    if not isinstance(yaw, dict) or yaw.get("accepted") is not True:
+        return None, None
+    yaw_quarter_turns = yaw.get("yawQuarterTurns")
+    if not isinstance(yaw_quarter_turns, int):
+        return None, None
+    return (
+        _hull_label_direct_option_for_analysis(analysis_a, "A", yaw_quarter_turns),
+        _hull_label_direct_option_for_analysis(analysis_b, "B", yaw_quarter_turns),
+    )
+
+
+def _hull_label_direct_option_for_analysis(
+    analysis: ImageAnalysis,
+    side: str,
+    yaw_quarter_turns: int,
+) -> Optional[Dict[str, Any]]:
+    trace = getattr(analysis, "hull_label_tier1", None)
+    if not isinstance(trace, Mapping):
+        return None
+    if trace.get("status") != "accepted" or trace.get("selected") is not True:
+        return None
+    face_quads = trace.get("face_quads_by_slot")
+    if not isinstance(face_quads, Mapping):
+        return None
+
+    try:
+        from tools.hull_label_assembly import SLOT_ORDER, oriented_slot_matrix
+    except ImportError:
+        return None
+
+    grids_by_slot = _hull_label_grids_by_slot(analysis)
+    option: Dict[str, Any] = {}
+    orientation_by_slot: Dict[str, Any] = {}
+    face_to_slot: Dict[str, str] = {}
+    for slot in SLOT_ORDER:
+        grid = grids_by_slot.get(slot)
+        quad = face_quads.get(slot)
+        if grid is None or not isinstance(quad, (list, tuple)):
+            return None
+        oriented = oriented_slot_matrix(
+            raw_matrix=grid.stickers,
+            side=side,
+            slot=slot,
+            yaw_quarter_turns=yaw_quarter_turns,
+            quad=quad,
+        )
+        if oriented is None:
+            return None
+        wca_face, matrix, orientation = oriented
+        option[wca_face] = matrix
+        orientation_by_slot[slot] = orientation
+        face_to_slot[wca_face] = slot
+
+    side_pair = tuple(sorted(face for face in option if face in SIDE_NEIGHBORS))
+    ordered_side_pair = _hull_label_ordered_side_pair(grids_by_slot, face_to_slot)
+    option["_score"] = HULL_LABEL_DIRECT_OPTION_SCORE
+    option["_selection_score"] = HULL_LABEL_DIRECT_OPTION_SCORE
+    option["_orientation_score"] = 0.0
+    option["_orientation_rank"] = 0
+    option["_side_pair"] = side_pair
+    option["_ordered_side_pair"] = ordered_side_pair
+    option["_hull_label_direct"] = True
+    option["_hull_label_yaw_quarter_turns"] = yaw_quarter_turns
+    option["_hull_label_slot_orientations"] = orientation_by_slot
+    return option
+
+
+def _hull_label_grids_by_slot(analysis: ImageAnalysis) -> Dict[str, FaceGrid]:
+    out: Dict[str, FaceGrid] = {}
+    for grid in getattr(analysis, "grids", []):
+        slot = getattr(grid, "hull_label_slot", None)
+        if isinstance(slot, str) and slot:
+            out[slot] = grid
+    return out
+
+
+def _hull_label_ordered_side_pair(
+    grids_by_slot: Mapping[str, FaceGrid],
+    face_to_slot: Mapping[str, str],
+) -> Tuple[str, ...]:
+    side_items: List[Tuple[str, float]] = []
+    for face, slot in face_to_slot.items():
+        if face not in SIDE_NEIGHBORS:
+            continue
+        grid = grids_by_slot.get(slot)
+        if grid is not None:
+            side_items.append((face, _grid_center_x(grid)))
+    if len(side_items) != 2:
+        return tuple(face for face in sorted(face for face in face_to_slot if face in SIDE_NEIGHBORS))
+    return tuple(face for face, _ in sorted(side_items, key=lambda item: (item[1], item[0])))
 
 
 def _merged_face_candidates(
@@ -2113,7 +2232,22 @@ def _diverse_repair_items(
     return selected
 
 
-def _white_up_checks(analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> List[str]:
+def _white_up_checks(
+    analysis_a: ImageAnalysis,
+    analysis_b: ImageAnalysis,
+    *,
+    direct_options: Optional[HullLabelDirectOptions] = None,
+) -> List[str]:
+    direct_a, direct_b = (
+        direct_options if direct_options is not None else _hull_label_direct_options(analysis_a, analysis_b)
+    )
+    if direct_a is not None and direct_b is not None:
+        # Direct hull-label grids are assembled from side/yaw conventions, so they bypass the color-anchor gate.
+        checks = []
+        if _visible_face_color_count_imbalance_suspected(analysis_a, analysis_b):
+            checks.append(VISIBLE_FACE_COLOR_COUNT_IMBALANCE_CHECK)
+        return checks
+
     checks = []
     expectations = (("image_a", analysis_a, "U"), ("image_b", analysis_b, "D"))
     for label, analysis, anchor in expectations:

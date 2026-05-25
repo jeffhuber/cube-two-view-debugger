@@ -75,6 +75,7 @@ class FaceGrid:
     cube_hull_inside_count: Optional[int] = None
     cube_hull_outside_count: Optional[int] = None
     cube_hull_source: Optional[str] = None
+    hull_label_slot: Optional[str] = None
 
     @property
     def center_sticker(self) -> Sticker:
@@ -324,12 +325,12 @@ def _hull_label_tier1_grids(trace: Mapping[str, Any], arr: np.ndarray) -> List[F
     if model is None:
         return []
     grids: List[FaceGrid] = []
-    face_keys = ("face_xz", "face_yz", "face_xy")
-    for offset, face_key in enumerate(face_keys):
+    face_slots = (("face_xz", "upper"), ("face_yz", "right"), ("face_xy", "front"))
+    for offset, (face_key, slot) in enumerate(face_slots):
         cells = getattr(model, "sticker_cells", {}).get(face_key)
         if not cells or len(cells) != 9:
             continue
-        grids.append(_face_grid_from_hull_label_cells(10_000 + offset, cells, arr))
+        grids.append(_face_grid_from_hull_label_cells(10_000 + offset, cells, arr, slot=slot))
     trace.pop("_model", None)
     return grids
 
@@ -338,6 +339,8 @@ def _face_grid_from_hull_label_cells(
     grid_id: int,
     cells: Sequence[Sequence[Point]],
     arr: np.ndarray,
+    *,
+    slot: Optional[str] = None,
 ) -> FaceGrid:
     points: List[List[Point]] = []
     stickers: List[List[Sticker]] = []
@@ -374,6 +377,7 @@ def _face_grid_from_hull_label_cells(
         cube_hull_inside_count=9,
         cube_hull_outside_count=0,
         cube_hull_source="hull_label_tier1",
+        hull_label_slot=slot,
     )
 
 

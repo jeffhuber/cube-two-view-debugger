@@ -63,6 +63,7 @@ Dependencies:
 """
 from __future__ import annotations
 
+import os
 import itertools
 import math
 import sys
@@ -86,6 +87,10 @@ Point = Tuple[float, float]
 Point3D = Tuple[float, float, float]
 Quad = Tuple[Point, Point, Point, Point]
 _MAX_HULL_POINTS = 50000
+HULL_LABEL_TIER1_ENV = "CUBE_RECOGNIZER_HULL_LABEL_TIER1"
+_HULL_LABEL_OFF_VALUES = {"", "0", "false", "no", "off", "legacy"}
+_HULL_LABEL_PREFER_VALUES = {"1", "true", "yes", "on", "prefer", "preferred", "tier1"}
+_HULL_LABEL_SHADOW_VALUES = {"shadow", "trace", "diagnostic", "dry-run", "dry_run"}
 
 
 # ---- Cube template ----
@@ -184,6 +189,283 @@ def derive_geometry(model: GlobalCubeModel) -> None:
                 cells.append(cell_quad)
         sticker_cells[face_name] = cells
     model.sticker_cells = sticker_cells
+
+
+def _subdivide_quad_cells(face_quads: Dict[str, Sequence[Point]]) -> Dict[str, List[List[Point]]]:
+    """Generate 3x3 cell quads from arbitrary face quads.
+
+    ``derive_geometry`` assumes parallelogram faces because it derives far
+    corners by adding axis vectors. Hull-label faces may be mildly projective,
+    so preserve all four quad corners and subdivide with bilinear coordinates.
+    """
+    sticker_cells: Dict[str, List[List[Point]]] = {}
+    for face_name, quad in face_quads.items():
+        if len(quad) != 4:
+            continue
+        a, b, c, d = quad
+
+        def at(row_frac: float, col_frac: float) -> Point:
+            u = col_frac
+            v = row_frac
+            return (
+                (1 - u) * (1 - v) * a[0]
+                + u * (1 - v) * b[0]
+                + u * v * c[0]
+                + (1 - u) * v * d[0],
+                (1 - u) * (1 - v) * a[1]
+                + u * (1 - v) * b[1]
+                + u * v * c[1]
+                + (1 - u) * v * d[1],
+            )
+
+        cells: List[List[Point]] = []
+        for row in range(3):
+            for col in range(3):
+                cells.append([
+                    at(row / 3, col / 3),
+                    at(row / 3, (col + 1) / 3),
+                    at((row + 1) / 3, (col + 1) / 3),
+                    at((row + 1) / 3, col / 3),
+                ])
+        sticker_cells[face_name] = cells
+    return sticker_cells
+
+
+def _hull_label_mode(value: Optional[str]) -> str:
+    """Normalize the Tier 1 hull-label feature flag mode."""
+    raw = (value if value is not None else os.environ.get(HULL_LABEL_TIER1_ENV, ""))
+    normalized = str(raw).strip().lower()
+    if normalized in _HULL_LABEL_OFF_VALUES:
+        return "off"
+    if normalized in _HULL_LABEL_SHADOW_VALUES:
+        return "shadow"
+    if normalized in _HULL_LABEL_PREFER_VALUES:
+        return "prefer"
+    # Fail closed: unknown values should not silently switch production paths.
+    return "off"
+
+
+def _point_list(point: Point) -> List[float]:
+    return [round(float(point[0]), 1), round(float(point[1]), 1)]
+
+
+def _json_float(value: Any) -> Optional[float]:
+    if value is None:
+        return None
+    return float(value)
+
+
+def _hull_label_trace_payload(
+    *,
+    side: Optional[str],
+    mode: str,
+    status: str,
+    selected: bool = False,
+    decision: Optional[Any] = None,
+    score: Optional[Dict[str, Any]] = None,
+    fit: Optional[Any] = None,
+    vertex_estimates: Optional[Sequence[Point]] = None,
+    error: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Small JSON-serializable debug record for Tier 1 hull-label attempts."""
+    payload: Dict[str, Any] = {
+        "enabled": mode != "off",
+        "mode": mode,
+        "side": side,
+        "status": status,
+        "selected": selected,
+    }
+    if error:
+        payload["error"] = error
+    if decision is not None:
+        payload["accepted"] = bool(decision.accepted)
+        payload["hard_failures"] = list(decision.hard_failures)
+        payload["warnings"] = list(decision.warnings)
+        payload["metrics"] = dict(decision.metrics)
+    if score is not None:
+        payload["sticker_score_total"] = score.get("total_distance")
+        payload["sticker_score_per_face"] = score.get("per_face")
+        payload["mean_sticker_distance"] = score.get("mean_sticker_distance")
+    if fit is not None:
+        payload["vertex_source"] = fit.vertex_source
+        payload["vertex"] = _point_list(fit.vertex)
+        payload["affine_vertex"] = (
+            _point_list(fit.affine_vertex) if fit.affine_vertex is not None else None
+        )
+        payload["projective_vertex"] = (
+            _point_list(fit.projective_vertex) if fit.projective_vertex is not None else None
+        )
+        payload["hexagon_diameter_px"] = _json_float(fit.hexagon_diameter_px)
+        payload["vertex_cloud_spread_px"] = _json_float(fit.vertex_cloud_spread_px)
+        payload["vertex_cloud_spread_norm"] = _json_float(fit.vertex_cloud_spread_norm)
+        payload["projective_residual_norm"] = _json_float(fit.projective_residual_norm)
+        payload["projective_degeneracy"] = fit.projective_degeneracy
+        payload["corners_by_num"] = {
+            f"corner_{idx}": _point_list(point)
+            for idx, point in sorted(fit.corners_by_num.items())
+        }
+        payload["face_quads_by_slot"] = {
+            slot: [_point_list(point) for point in quad]
+            for slot, quad in sorted(fit.face_quads.items())
+        }
+    if vertex_estimates is not None:
+        payload["vertex_estimates"] = [_point_list(point) for point in vertex_estimates]
+    return payload
+
+
+_HULL_LABEL_SLOT_TO_LEGACY_FACE = {
+    "right": "face_yz",
+    "upper": "face_xz",
+    "front": "face_xy",
+}
+
+
+def _global_model_from_hull_label_fit(
+    fit: Any,
+    side: str,
+    *,
+    score: Dict[str, Any],
+    decision: Any,
+    trace: Dict[str, Any],
+) -> GlobalCubeModel:
+    """Convert a convention-aware hull-label fit into the legacy model shape.
+
+    The resulting ``GlobalCubeModel`` keeps the legacy face keys
+    (``face_yz``/``face_xz``/``face_xy``) and h-corner keys so existing
+    diagnostic consumers continue to work, but it preserves the actual
+    hull-label quadrilaterals rather than recomputing parallelogram corners.
+    """
+    from tools.corner_conventions import FACE_DEFS_BY_SIDE
+
+    visible: Dict[str, Point] = {}
+    conflicts: List[str] = []
+    for slot, legacy_face in _HULL_LABEL_SLOT_TO_LEGACY_FACE.items():
+        legacy_names = _FACE_DEFS[legacy_face]
+        side_names = FACE_DEFS_BY_SIDE[side][slot]
+        for legacy_name, side_name in zip(legacy_names, side_names):
+            point = fit.vertex
+            if side_name != "vertex":
+                point = fit.corners_by_num[int(side_name.split("_", 1)[1])]
+            prior = visible.get(legacy_name)
+            if prior is not None and math.hypot(prior[0] - point[0], prior[1] - point[1]) > 1e-6:
+                conflicts.append(legacy_name)
+            visible[legacy_name] = point
+
+    vertex = fit.vertex
+    axis_x = (visible["h_x"][0] - vertex[0], visible["h_x"][1] - vertex[1])
+    axis_y = (visible["h_y"][0] - vertex[0], visible["h_y"][1] - vertex[1])
+    axis_z = (visible["h_z"][0] - vertex[0], visible["h_z"][1] - vertex[1])
+    legacy_face_quads = {
+        legacy_face: [tuple(point) for point in fit.face_quads[slot]]
+        for slot, legacy_face in _HULL_LABEL_SLOT_TO_LEGACY_FACE.items()
+    }
+
+    model = GlobalCubeModel(
+        cube_center_screen=vertex,
+        axis_x_2d=axis_x,
+        axis_y_2d=axis_y,
+        axis_z_2d=axis_z,
+        visible_corners=visible,
+        face_quads=legacy_face_quads,
+        sticker_cells=_subdivide_quad_cells(legacy_face_quads),
+        fit_loss=float(score.get("total_distance", 0.0)),
+        fit_quality=max(
+            0.0,
+            1.0 - float(score.get("total_distance", 0.0)) / max(1.0, 900.0),
+        ),
+        debug={
+            "approach": "hull_label_tier1",
+            "cube_center_source": f"hull_label_{fit.vertex_source or 'unknown'}",
+            "n_hexagon_anchors": 6,
+            "phase_check": "skipped_hull_label_tier1",
+            "hull_label_tier1": trace,
+        },
+    )
+    if conflicts:
+        model.debug["hull_label_tier1"]["legacy_corner_conflicts"] = sorted(set(conflicts))
+    model.debug["hull_label_gate_warnings"] = list(decision.warnings)
+    return model
+
+
+def _fit_hull_label_tier1_model(
+    image_rgb: Optional[np.ndarray],
+    silhouette_mask: np.ndarray,
+    *,
+    side: Optional[str],
+    mode: str,
+) -> Tuple[Optional[GlobalCubeModel], Dict[str, Any]]:
+    """Attempt the feature-flagged hull-label path and return model+trace."""
+    if mode == "off":
+        return None, _hull_label_trace_payload(side=side, mode=mode, status="disabled")
+    if side not in {"A", "B"}:
+        return None, _hull_label_trace_payload(
+            side=side,
+            mode=mode,
+            status="skipped_missing_or_unsupported_side",
+            error="hull_label_side must be 'A' or 'B'",
+        )
+    if image_rgb is None:
+        return None, _hull_label_trace_payload(
+            side=side,
+            mode=mode,
+            status="skipped_no_image",
+            error="image_rgb is required for hull-label sticker scoring",
+        )
+    try:
+        from PIL import Image
+        from tools.hull_label_acceptance import evaluate_hull_label_acceptance
+        from tools.rectify_via_hull_labels import (
+            _derive_vertex_from_corners,
+            _score_rectified_faces,
+            rectify_via_hull_labels,
+        )
+
+        image = Image.fromarray(np.asarray(image_rgb, dtype=np.uint8)).convert("RGB")
+        fit = rectify_via_hull_labels(image, silhouette_mask, side)
+        if fit is None:
+            return None, _hull_label_trace_payload(
+                side=side,
+                mode=mode,
+                status="rejected",
+                error="rectify_via_hull_labels returned None",
+            )
+
+        _affine_vertex, vertex_estimates = _derive_vertex_from_corners(
+            fit.corners_by_num, side,
+        )
+        score = _score_rectified_faces(fit.rectified_faces)
+        decision = evaluate_hull_label_acceptance(
+            side=side,
+            hexagon_corner_count=6,
+            vertex_estimates=vertex_estimates,
+            rectified_face_slots=fit.rectified_faces.keys(),
+            sticker_score_total=float(score["total_distance"]),
+            sticker_score_per_face=score["per_face"],
+            projective_residual_norm=fit.projective_residual_norm,
+        )
+        status = "accepted" if decision.accepted else "rejected"
+        trace = _hull_label_trace_payload(
+            side=side,
+            mode=mode,
+            status=status,
+            selected=decision.accepted and mode == "prefer",
+            decision=decision,
+            score=score,
+            fit=fit,
+            vertex_estimates=vertex_estimates,
+        )
+        if not decision.accepted:
+            return None, trace
+        return _global_model_from_hull_label_fit(
+            fit, side, score=score, decision=decision, trace=trace,
+        ), trace
+    except Exception as exc:  # noqa: BLE001
+        return None, _hull_label_trace_payload(
+            side=side,
+            mode=mode,
+            status="error",
+            error=f"{type(exc).__name__}: {exc}",
+        )
 
 
 # ----------------- anchor point detection -----------------
@@ -1096,6 +1378,8 @@ def fit_global_cube_model(
     *,
     optimize: bool = True,
     apply_phase_correction: bool = True,
+    hull_label_side: Optional[str] = None,
+    hull_label_mode: Optional[str] = None,
 ) -> Optional[GlobalCubeModel]:
     """Fit the cube model by aligning the 3D template to detected
     anchor points (1 cube_center + 6 hexagon outer vertices).
@@ -1111,9 +1395,32 @@ def fit_global_cube_model(
         apply the 60-degree near/far flip. Defaults True to preserve
         production behavior; diagnostics can set False to score the
         uncorrected phase hypothesis from a real pipeline run.
+      hull_label_side: optional capture side ("A" or "B") for the
+        convention-aware hull-label candidate path. Required whenever
+        hull-label mode is enabled because A/B use different corner
+        numbering for the same silhouette positions.
+      hull_label_mode: optional feature-flag mode for the hull-label
+        candidate path. Defaults to the
+        CUBE_RECOGNIZER_HULL_LABEL_TIER1 environment variable.
+        Supported modes: "off" (legacy behavior), "shadow" (compute
+        trace and still return legacy), and "prefer" (return the
+        accepted hull-label model, otherwise fallback to legacy).
 
     Returns: best-fit GlobalCubeModel or None on failure.
     """
+    tier1_mode = _hull_label_mode(hull_label_mode)
+    tier1_model: Optional[GlobalCubeModel] = None
+    tier1_trace: Optional[Dict[str, Any]] = None
+    if tier1_mode != "off":
+        tier1_model, tier1_trace = _fit_hull_label_tier1_model(
+            image_rgb,
+            silhouette_mask,
+            side=hull_label_side,
+            mode=tier1_mode,
+        )
+        if tier1_mode == "prefer" and tier1_model is not None:
+            return tier1_model
+
     if detection.cube_center is None:
         return None
     if _try_import_scipy_ndimage() is None:
@@ -1260,5 +1567,14 @@ def fit_global_cube_model(
                     for cell in cells
                 ]
             model.debug["cube_center_source"] = "mean3_ensemble+image_refined"
+
+    if tier1_trace is not None:
+        tier1_trace = dict(tier1_trace)
+        tier1_trace["selected"] = False
+        if tier1_mode == "shadow":
+            tier1_trace["shadow_returned_legacy"] = True
+        elif tier1_mode == "prefer":
+            tier1_trace["fallback_to_legacy"] = True
+        model.debug["hull_label_tier1"] = tier1_trace
 
     return model

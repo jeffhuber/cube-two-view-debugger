@@ -38,3 +38,24 @@ def test_oriented_slot_matrix_preserves_center_and_assigns_wca_face():
         "mirror": True,
         "rotQuarter": 3,
     }
+
+
+def test_oriented_slot_matrix_covers_all_sides_yaws_and_slots():
+    for side in ("A", "B"):
+        for yaw_quarter_turns in range(4):
+            assignments = slot_face_assignments(yaw_quarter_turns)[side]
+            for slot, quad in SLOT_QUADS.items():
+                result = oriented_slot_matrix(
+                    raw_matrix=RAW_MATRIX,
+                    side=side,
+                    slot=slot,
+                    yaw_quarter_turns=yaw_quarter_turns,
+                    quad=quad,
+                )
+
+                assert result is not None, (side, yaw_quarter_turns, slot)
+                wca_face, matrix, orientation = result
+                assert wca_face == assignments[slot]
+                assert matrix[1][1] == 4
+                assert orientation["slot"] == slot
+                assert orientation["wcaFace"] == wca_face

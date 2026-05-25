@@ -294,6 +294,7 @@ class PieceOption:
 
 FaceSignature = Tuple[Tuple[str, str], ...]
 FaceletOptionsKey = Tuple[str, object]
+HullLabelDirectOptions = Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]
 
 
 @dataclass
@@ -371,7 +372,12 @@ class WhiteUpRecognizer:
 
     def _recognize_from_analyses(self, analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> RecognitionResult:
         recognition_signals = _base_recognition_signals(analysis_a, analysis_b)
-        checks = _failed_checks_with_context(_white_up_checks(analysis_a, analysis_b), analysis_a, analysis_b)
+        hull_label_direct_options = _hull_label_direct_options(analysis_a, analysis_b)
+        checks = _failed_checks_with_context(
+            _white_up_checks(analysis_a, analysis_b, direct_options=hull_label_direct_options),
+            analysis_a,
+            analysis_b,
+        )
         if checks:
             return RecognitionResult(
                 status="rejected",
@@ -385,7 +391,7 @@ class WhiteUpRecognizer:
                 ),
             )
 
-        workset = _recognition_workset(analysis_a, analysis_b)
+        workset = _recognition_workset(analysis_a, analysis_b, direct_options=hull_label_direct_options)
         candidates = self._state_candidates_from_workset(workset)
         legal = []
         invalid_reasons: List[str] = []
@@ -1990,10 +1996,17 @@ def _side_pair_key(value: Any) -> str:
     return "/".join(str(part) for part in sorted(value))
 
 
-def _recognition_workset(analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> RecognitionWorkset:
+def _recognition_workset(
+    analysis_a: ImageAnalysis,
+    analysis_b: ImageAnalysis,
+    *,
+    direct_options: Optional[HullLabelDirectOptions] = None,
+) -> RecognitionWorkset:
     options_a = _oriented_face_options(analysis_a, "U")
     options_b = _oriented_face_options(analysis_b, "D")
-    direct_a, direct_b = _hull_label_direct_options(analysis_a, analysis_b)
+    direct_a, direct_b = (
+        direct_options if direct_options is not None else _hull_label_direct_options(analysis_a, analysis_b)
+    )
     if direct_a is not None:
         options_a = [direct_a, *options_a]
     if direct_b is not None:
@@ -2219,9 +2232,17 @@ def _diverse_repair_items(
     return selected
 
 
-def _white_up_checks(analysis_a: ImageAnalysis, analysis_b: ImageAnalysis) -> List[str]:
-    direct_a, direct_b = _hull_label_direct_options(analysis_a, analysis_b)
+def _white_up_checks(
+    analysis_a: ImageAnalysis,
+    analysis_b: ImageAnalysis,
+    *,
+    direct_options: Optional[HullLabelDirectOptions] = None,
+) -> List[str]:
+    direct_a, direct_b = (
+        direct_options if direct_options is not None else _hull_label_direct_options(analysis_a, analysis_b)
+    )
     if direct_a is not None and direct_b is not None:
+        # Direct hull-label grids are assembled from side/yaw conventions, so they bypass the color-anchor gate.
         checks = []
         if _visible_face_color_count_imbalance_suspected(analysis_a, analysis_b):
             checks.append(VISIBLE_FACE_COLOR_COUNT_IMBALANCE_CHECK)

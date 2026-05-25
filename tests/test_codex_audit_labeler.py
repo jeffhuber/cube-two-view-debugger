@@ -156,8 +156,9 @@ def test_main_does_fetch_pr_head_on_pr_comment(monkeypatch, tmp_path):
 
     fetch_calls = []
 
-    def track_fetch(repo, issue_number, *, token):
+    def track_fetch(repo, issue_number, *, token=None, tokens=None):
         fetch_calls.append((repo, issue_number))
+        assert token == "test-token" or tokens is not None
         return {"head": {"sha": "deadbeef"}}
 
     monkeypatch.setattr(codex_audit_labeler, "fetch_pull_request", track_fetch)
@@ -167,3 +168,65 @@ def test_main_does_fetch_pr_head_on_pr_comment(monkeypatch, tmp_path):
 
     codex_audit_labeler.main()
     assert fetch_calls == [("owner/repo", 234)]
+
+
+def test_apply_label_decision_falls_back_when_label_pat_is_forbidden(monkeypatch):
+    """If CODEX_AUDIT_LABEL_TOKEN exists but lacks Issues:write, the
+    labeler should retry with the built-in GITHUB_TOKEN instead of failing
+    before the labels can reflect the audit comment.
+    """
+    from tools import codex_audit_labeler
+
+    calls = []
+
+    def fake_request(method, path, *, token, body=None, allow_missing=False):
+        calls.append((method, path, token, body, allow_missing))
+        if token == "bad-pat":
+            raise codex_audit_labeler.GitHubRequestError(method, path, 403, "forbidden")
+        return None
+
+    monkeypatch.setattr(codex_audit_labeler, "github_request", fake_request)
+
+    decision = codex_audit_labeler.LabelDecision(
+        issue_number=279,
+        add_label=codex_audit_labeler.BLOCKED_LABEL,
+        remove_labels=(),
+        reviewed_sha="deadbeef",
+        reason="audit blocked",
+    )
+    codex_audit_labeler.apply_label_decision(
+        "owner/repo",
+        decision,
+        tokens=(
+            codex_audit_labeler.GitHubToken("CODEX_AUDIT_LABEL_TOKEN", "bad-pat"),
+            codex_audit_labeler.GitHubToken("GITHUB_TOKEN", "github-token"),
+        ),
+    )
+
+    assert calls == [
+        (
+            "POST",
+            "/repos/owner/repo/issues/279/labels",
+            "bad-pat",
+            {"labels": [codex_audit_labeler.BLOCKED_LABEL]},
+            False,
+        ),
+        (
+            "POST",
+            "/repos/owner/repo/issues/279/labels",
+            "github-token",
+            {"labels": [codex_audit_labeler.BLOCKED_LABEL]},
+            False,
+        ),
+    ]
+
+
+def test_env_tokens_prefer_label_pat_then_github_token(monkeypatch):
+    from tools import codex_audit_labeler
+
+    monkeypatch.setenv("CODEX_AUDIT_LABEL_TOKEN", "pat")
+    monkeypatch.setenv("GITHUB_TOKEN", "builtin")
+    assert codex_audit_labeler.github_tokens_from_env() == (
+        codex_audit_labeler.GitHubToken("CODEX_AUDIT_LABEL_TOKEN", "pat"),
+        codex_audit_labeler.GitHubToken("GITHUB_TOKEN", "builtin"),
+    )

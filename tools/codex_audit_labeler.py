@@ -26,7 +26,7 @@ import urllib.error
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Sequence
 from urllib.parse import quote
 
 
@@ -59,6 +59,21 @@ class LabelDecision:
     remove_labels: tuple[str, ...]
     reviewed_sha: Optional[str]
     reason: str
+
+
+@dataclass(frozen=True)
+class GitHubToken:
+    name: str
+    value: str
+
+
+class GitHubRequestError(RuntimeError):
+    def __init__(self, method: str, path: str, code: int, response_body: str) -> None:
+        self.method = method
+        self.path = path
+        self.code = code
+        self.response_body = response_body
+        super().__init__(f"GitHub API {method} {path} failed: HTTP {code}\n{response_body}")
 
 
 def load_json(path: Path) -> Dict[str, Any]:
@@ -218,27 +233,99 @@ def github_request(
         if allow_missing and exc.code == 404:
             return None
         response_body = exc.read().decode("utf-8", errors="replace")
-        raise RuntimeError(f"GitHub API {method} {path} failed: HTTP {exc.code}\n{response_body}") from exc
+        raise GitHubRequestError(method, path, exc.code, response_body) from exc
 
 
-def fetch_pull_request(repo: str, issue_number: int, *, token: str) -> Dict[str, Any]:
-    return github_request("GET", f"/repos/{repo}/pulls/{issue_number}", token=token)
+def github_request_with_fallback(
+    method: str,
+    path: str,
+    *,
+    tokens: Sequence[GitHubToken],
+    body: Optional[Dict[str, Any]] = None,
+    allow_missing: bool = False,
+) -> Any:
+    """Use the optional PAT first, then fall back to GITHUB_TOKEN on auth errors.
+
+    CODEX_AUDIT_LABEL_TOKEN is useful when GitHub's built-in token cannot write
+    labels for a deployment, but an under-scoped PAT should not make the
+    otherwise-valid built-in token unreachable. Only auth/permission failures
+    fall through; semantic API failures such as a missing label still fail fast.
+    """
+    last_error: Optional[GitHubRequestError] = None
+    for token in tokens:
+        try:
+            return github_request(
+                method,
+                path,
+                token=token.value,
+                body=body,
+                allow_missing=allow_missing,
+            )
+        except GitHubRequestError as exc:
+            last_error = exc
+            if exc.code not in {401, 403}:
+                raise
+            print(
+                f"warning: {method} {path} failed with HTTP {exc.code} using "
+                f"{token.name}; trying next token",
+                file=sys.stderr,
+            )
+    if last_error is not None:
+        raise last_error
+    raise RuntimeError(f"no GitHub tokens available for {method} {path}")
 
 
-def apply_label_decision(repo: str, decision: LabelDecision, *, token: str) -> None:
-    github_request(
+def fetch_pull_request(
+    repo: str,
+    issue_number: int,
+    *,
+    token: Optional[str] = None,
+    tokens: Optional[Sequence[GitHubToken]] = None,
+) -> Dict[str, Any]:
+    path = f"/repos/{repo}/pulls/{issue_number}"
+    if tokens is not None:
+        return github_request_with_fallback("GET", path, tokens=tokens)
+    if token is None:
+        raise ValueError("token or tokens is required")
+    return github_request("GET", path, token=token)
+
+
+def apply_label_decision(
+    repo: str,
+    decision: LabelDecision,
+    *,
+    token: Optional[str] = None,
+    tokens: Optional[Sequence[GitHubToken]] = None,
+) -> None:
+    if tokens is None:
+        if token is None:
+            raise ValueError("token or tokens is required")
+        tokens = (GitHubToken("GITHUB_TOKEN", token),)
+    github_request_with_fallback(
         "POST",
         f"/repos/{repo}/issues/{decision.issue_number}/labels",
-        token=token,
+        tokens=tokens,
         body={"labels": [decision.add_label]},
     )
     for label in decision.remove_labels:
-        github_request(
+        github_request_with_fallback(
             "DELETE",
             f"/repos/{repo}/issues/{decision.issue_number}/labels/{quote(label, safe='')}",
-            token=token,
+            tokens=tokens,
             allow_missing=True,
         )
+
+
+def github_tokens_from_env() -> tuple[GitHubToken, ...]:
+    tokens = []
+    seen = set()
+    for name in ("CODEX_AUDIT_LABEL_TOKEN", "GITHUB_TOKEN"):
+        value = (os.environ.get(name) or "").strip()
+        if not value or value in seen:
+            continue
+        tokens.append(GitHubToken(name, value))
+        seen.add(value)
+    return tuple(tokens)
 
 
 def main() -> int:
@@ -247,10 +334,10 @@ def main() -> int:
     event = load_json(event_path)
 
     current_head_sha = os.environ.get("DRY_RUN_HEAD_SHA")
-    token = os.environ.get("GITHUB_TOKEN")
+    tokens = github_tokens_from_env()
     if not os.environ.get("DRY_RUN"):
-        if not token:
-            print("error: GITHUB_TOKEN is required", file=sys.stderr)
+        if not tokens:
+            print("error: GITHUB_TOKEN or CODEX_AUDIT_LABEL_TOKEN is required", file=sys.stderr)
             return 1
         # Codex round 1 of #234 — P3: the workflow fires on every
         # `issue_comment`, including comments on regular (non-PR) issues.
@@ -260,7 +347,7 @@ def main() -> int:
         issue_number = int(issue.get("number", 0))
         is_pr = "pull_request" in issue
         if issue_number and is_pr:
-            current_head_sha = fetch_pull_request(repo, issue_number, token=token)["head"]["sha"]
+            current_head_sha = fetch_pull_request(repo, issue_number, tokens=tokens)["head"]["sha"]
 
     decision, reason = resolve_label_decision(event, current_head_sha=current_head_sha)
     if decision is None:
@@ -271,7 +358,7 @@ def main() -> int:
         print(json.dumps({"decision": decision.__dict__, "reason": reason}, sort_keys=True))
         return 0
 
-    apply_label_decision(repo, decision, token=token or "")
+    apply_label_decision(repo, decision, tokens=tokens)
     print(
         f"applied: add {decision.add_label}; remove {', '.join(decision.remove_labels)} "
         f"on {repo}#{decision.issue_number} ({decision.reason})"

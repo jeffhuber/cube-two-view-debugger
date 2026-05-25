@@ -647,11 +647,18 @@ State machine (parallels Devin):
 Trigger model: **manual CLI**, not auto-fired. Run
 `tools/run_codex_audit_pr.sh --repo OWNER/REPO --pr N`
 to audit one PR; the wrapper uses a controlled Python interpreter
-instead of ambient `python3`, and the CLI posts a comment with the
+instead of ambient `python3`, creates a local audit handoff lock under
+`~/.cache/cube-agent-audits` to avoid duplicate Claude/Codex audits on
+the same repo/PR/head, and posts a comment with the
 authoritative `<!-- CODEX_AUDIT_STATE: ... -->` trailer, and
 `tools/codex_audit_labeler.py` (fired by
 `.github/workflows/codex-audit-labeler.yml` on `issue_comment`)
 flips the label.
+
+Before starting a manual audit outside the wrapper, check
+`tools/audit_handoff_log.py status --repo OWNER/REPO --pr N`; if a
+matching active audit exists, do not start another one. Treat it as
+"audit already in progress" and wait for the existing result.
 
 If the built-in workflow token can't label the bot's comments,
 set repo secret `CODEX_AUDIT_LABEL_TOKEN` to a fine-grained
@@ -661,6 +668,7 @@ Mirror invariant — these files MUST stay byte-identical across
 `cube-two-view-debugger` and `cube-snap`:
 
 - `tools/codex_audit_pr.py`
+- `tools/audit_handoff_log.py`
 - `tools/run_codex_audit_pr.sh`
 - `tools/codex_audit_labeler.py`
 - `tools/CODEX_AUDIT_PROTOCOL.md`

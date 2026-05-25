@@ -212,15 +212,10 @@ class RubikHandler(BaseHTTPRequestHandler):
             fields = self._read_multipart()
             image_a = _first_field(fields, "imageA")
             image_b = _first_field(fields, "imageB")
-            yaw_raw = (
+            yaw_quarter_turns = _parse_llm_rectified_yaw(
                 self._query_param("yawQuarterTurns")
                 or _text_field(fields, "yawQuarterTurns")
-                or "0"
             )
-            try:
-                yaw_quarter_turns = int(yaw_raw) % 4
-            except ValueError:
-                raise ValueError("yawQuarterTurns must be an integer 0..3")
             if not image_a or not image_b:
                 self._send_json(
                     {
@@ -789,7 +784,7 @@ def _api_routes() -> List[Dict[str, str]]:
         {"method": "GET",  "path": "/runs/pairs/<id>/...", "brief": "Static access to a saved run's files (result.json, debug.json, overlays, samples.csv, original photos)."},
         {"method": "GET",  "path": "/runs/labels/<id>.json", "brief": "Static access to saved cube-geometry label JSON."},
         {"method": "POST", "path": "/api/recognize",       "brief": "Recognize one pair. Multipart fields: imageA, imageB; optional setId, expectedState. Query: ?slim=1 to omit overlays/diagnostics; ?hullLabelTier1=shadow|prefer for the hidden hull-label Tier 1 candidate path. Persists a run under /runs/pairs/<id>/."},
-        {"method": "POST", "path": "/api/llm-rectified-input", "brief": "Prepare two Claude/GPT-ready rectified WCA contact-sheet JPEGs from imageA/imageB. Multipart fields: imageA, imageB; optional yawQuarterTurns. Does not call an LLM or persist a run."},
+        {"method": "POST", "path": "/api/llm-rectified-input", "brief": "Prepare two Claude/GPT-ready rectified WCA contact-sheet JPEGs from imageA/imageB. Multipart fields: imageA, imageB; optional yawQuarterTurns=0..3 or auto. Does not call an LLM or persist a run."},
         {"method": "POST", "path": "/api/recognize-batch", "brief": "Recognize multiple pairs in one call. Multipart field: images (multi-file); optional groundTruth (.csv/.tsv/.json). Pairs files by filename A/B markers or by drop order. Persists a batch under /runs/batches/<id>/."},
         {"method": "POST", "path": "/api/labels",          "brief": "Persist one cube-geometry label JSON document under /runs/labels/."},
     ]
@@ -801,6 +796,18 @@ _LLM_RECTIFIED_WCA_GROUPS = {
 }
 _LLM_RECTIFIED_SESSION: Any = None
 _LLM_RECTIFIED_SESSION_LOCK = threading.Lock()
+
+
+def _parse_llm_rectified_yaw(raw: Optional[str]) -> Optional[int]:
+    if raw is None:
+        return None
+    value = raw.strip().lower()
+    if value in ("", "auto", "infer", "center", "center-inference"):
+        return None
+    try:
+        return int(value) % 4
+    except ValueError:
+        raise ValueError("yawQuarterTurns must be an integer 0..3 or auto")
 
 
 def _llm_rectified_session() -> Any:
@@ -817,7 +824,7 @@ def prepare_llm_rectified_input(
     image_a_bytes: bytes,
     image_b_bytes: bytes,
     *,
-    yaw_quarter_turns: int = 0,
+    yaw_quarter_turns: Optional[int] = None,
     max_side: int = 1600,
     panel_size: int = 300,
 ) -> Dict[str, Any]:
@@ -826,7 +833,9 @@ def prepare_llm_rectified_input(
     This is intentionally preparation-only: it does not call any LLM and it
     does not persist a recognizer run. CubeSnap's Fixer uses it as a local
     geometry-cleanup step before sending the resulting JPEGs to its normal
-    cloud LLM endpoint with the rectified-face prompt.
+    cloud LLM endpoint with the rectified-face prompt. When
+    ``yaw_quarter_turns`` is omitted, infer capture yaw from the six
+    rectified slot-center colors before assigning panels to WCA faces.
     """
 
     from PIL import Image, ImageDraw, ImageFont, ImageOps
@@ -904,20 +913,39 @@ def prepare_llm_rectified_input(
     image_a = load_image(image_a_bytes)
     image_b = load_image(image_b_bytes)
     session = _llm_rectified_session()
-    panels_by_face: Dict[str, Image.Image] = {}
-    panel_metadata: List[Dict[str, Any]] = []
+    fits_by_side: Dict[str, Any] = {}
     for side, image in (("A", image_a), ("B", image_b)):
         rgba = remove(image, session=session).convert("RGBA")
         mask = _np.asarray(rgba.split()[-1]) > 128
         fit = rectify_via_hull_labels(image, mask, side, face_size_px=panel_size)
         if fit is None:
             raise RuntimeError(f"hull-label rectification failed for side {side}")
-        assignments = wca_face_by_slot(side, yaw_quarter_turns % 4)
+        fits_by_side[side] = fit
+
+    yaw_inference = _infer_yaw_from_rectified_fits(fits_by_side)
+    if yaw_quarter_turns is None:
+        if not yaw_inference.get("accepted"):
+            raise RuntimeError(
+                "could not infer capture yaw from rectified center colors "
+                f"(best={yaw_inference.get('bestYawQuarterTurns')}, "
+                f"score={yaw_inference.get('bestScore')}, "
+                f"margin={yaw_inference.get('margin')})"
+            )
+        selected_yaw = int(yaw_inference["yawQuarterTurns"])
+        yaw_source = "center-inference"
+    else:
+        selected_yaw = yaw_quarter_turns % 4
+        yaw_source = "explicit"
+
+    panels_by_face: Dict[str, Image.Image] = {}
+    panel_metadata: List[Dict[str, Any]] = []
+    for side, fit in (("A", fits_by_side["A"]), ("B", fits_by_side["B"])):
+        assignments = wca_face_by_slot(side, selected_yaw)
         for slot, wca_face in assignments.items():
             orientation = convention_orientation_for_slot(
                 side=side,
                 slot=slot,
-                yaw_quarter_turns=yaw_quarter_turns % 4,
+                yaw_quarter_turns=selected_yaw,
                 wca_face=wca_face,
                 quad=fit.face_quads[slot],
             )
@@ -929,7 +957,7 @@ def prepare_llm_rectified_input(
                 "image": "imageA" if side == "A" else "imageB",
                 "slot": slot,
                 "wcaFace": wca_face,
-                "yawQuarterTurns": yaw_quarter_turns % 4,
+                "yawQuarterTurns": selected_yaw,
                 "mirror": orientation[0],
                 "rotQuarter": orientation[1],
             })
@@ -949,9 +977,59 @@ def prepare_llm_rectified_input(
         "imageB": image_b_b64,
         "imageABytes": image_a_size,
         "imageBBytes": image_b_size,
-        "yawQuarterTurns": yaw_quarter_turns % 4,
+        "yawQuarterTurns": selected_yaw,
+        "yawSource": yaw_source,
+        "yawInference": yaw_inference,
         "panels": panel_metadata,
     }
+
+
+def _infer_yaw_from_rectified_fits(fits_by_side: Dict[str, Any]) -> Dict[str, Any]:
+    from rubik_recognizer.colors import CLASSIFIER_CANONICAL, classify_rgb_with_mode
+    from tools.hull_label_yaw import score_yaw_candidates
+    from tools.rectify_faces import extract_stickers_from_rectified
+
+    observed = []
+    observations = []
+    for side in ("A", "B"):
+        fit = fits_by_side.get(side)
+        if fit is None:
+            continue
+        for slot in ("upper", "right", "front"):
+            face_img = fit.rectified_faces.get(slot)
+            if face_img is None:
+                continue
+            center = extract_stickers_from_rectified(face_img)[1][1]
+            rgb = tuple(int(v) for v in center.rgb)
+            match = classify_rgb_with_mode(rgb, CLASSIFIER_CANONICAL)
+            observed.append((side, slot, match.face))
+            observations.append({
+                "side": side,
+                "slot": slot,
+                "centerFace": match.face,
+                "centerColor": match.color,
+                "rgb": list(rgb),
+                "distance": round(float(match.distance), 2),
+                "confidence": round(float(match.confidence), 4),
+            })
+
+    if len(observed) != 6:
+        return {
+            "source": "hull_label_center_colors",
+            "status": "unavailable",
+            "accepted": False,
+            "yawQuarterTurns": None,
+            "reason": "need six slot center observations",
+            "observedCenters": observations,
+        }
+
+    result = score_yaw_candidates(observed)
+    result.update({
+        "source": "hull_label_center_colors",
+        "status": "accepted" if result["accepted"] else "ambiguous",
+        "observedCenters": observations,
+    })
+    return result
 
 
 def _image_fingerprint(image_bytes: bytes) -> Dict[str, Any]:

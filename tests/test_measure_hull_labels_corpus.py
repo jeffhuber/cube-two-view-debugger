@@ -176,3 +176,60 @@ def test_far_corner_set_matches_expected_per_side():
     rotate the axis comparison."""
     assert set(FAR_CORNERS_BY_SIDE["A"]) == {"corner_0", "corner_2", "corner_4"}
     assert set(FAR_CORNERS_BY_SIDE["B"]) == {"corner_1", "corner_3", "corner_5"}
+
+
+# ---------------- empty-image-path guard (Codex P3 on head 04784014) ----------------
+
+
+def test_empty_image_path_in_manifest_routes_to_skipped(tmp_path, monkeypatch):
+    """If a manifest pair exists but ``imageAPath``/``imageBPath`` is
+    empty, the row must be routed to ``skipped_unresolved_image``
+    rather than passed through to ``_resolve_image_path`` (which can
+    silently return the corpus root as a candidate via
+    ``Path("").name → root``, causing the row to later surface as an
+    ``error`` trying to open a directory).
+    """
+    import json
+
+    from tools.measure_hull_labels_corpus import main
+
+    # Minimal axis truth with one approved row pointing to a
+    # set whose manifest entry has an empty image path.
+    axis_truth = {
+        "99_A": {
+            "approved": True,
+            "vertex": [100, 100],
+            "near_x": [200, 100],
+            "near_y": [100, 200],
+            "near_z": [100, 50],
+        }
+    }
+    full_corner_truth: dict = {}
+    manifest = {"pairs": [{"setId": "99", "imageAPath": "", "imageBPath": ""}]}
+
+    axis_path = tmp_path / "axis.json"
+    full_path = tmp_path / "full.json"
+    manifest_path = tmp_path / "manifest.json"
+    out_json = tmp_path / "out.json"
+    axis_path.write_text(json.dumps(axis_truth))
+    full_path.write_text(json.dumps(full_corner_truth))
+    manifest_path.write_text(json.dumps(manifest))
+
+    rc = main([
+        "--axis-truth", str(axis_path),
+        "--full-corner-truth", str(full_path),
+        "--manifest", str(manifest_path),
+        "--out-json", str(out_json),
+    ])
+    assert rc == 0
+
+    out = json.loads(out_json.read_text())
+    # Row should be in skipped, NOT in per_row
+    assert out["summary"]["skipped_unresolved_image"] == 1
+    assert out["summary"]["total_rows_attempted"] == 0
+    assert any(s["key"] == "99_A" for s in out["skipped"])
+    # And the skip reason must mention the manifest path is missing,
+    # not a generic "no image found" (so the human can immediately
+    # tell the manifest is the problem, not the corpus).
+    skip = next(s for s in out["skipped"] if s["key"] == "99_A")
+    assert "no image path in manifest" in skip["reason"].lower()

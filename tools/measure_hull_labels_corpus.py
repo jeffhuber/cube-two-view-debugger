@@ -386,6 +386,20 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         else:
             raw_path = pair.get(f"image{side}Path") or ""
             expected_sha = pair.get(f"image{side}_sha256_expected")
+        if not raw_path:
+            # Empty image path in the manifest entry. Matches the
+            # guard in measure_axis_correctness.py — skip cleanly into
+            # skipped_unresolved_image rather than letting an empty
+            # raw_path slip through to _resolve_image_path (which
+            # would silently return the corpus root as a "candidate"
+            # via Path("").name → root, and the row would later
+            # surface as an "error" trying to open a directory).
+            # Codex P3 finding on PR #282 head 04784014.
+            skipped.append({
+                "key": key,
+                "reason": f"no image path in manifest for set {set_id} side {side}",
+            })
+            continue
         image_path = _resolve_image_path(
             raw_path, set_id, side, image_roots,
             expected_sha256=expected_sha,

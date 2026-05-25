@@ -76,6 +76,57 @@ The numbering is a human visual convention. It does not change when the cube
 has capture yaw. Downstream code may convert these points into model-axis names
 or WCA face names, but that conversion must be explicit and tested.
 
+## Hull Position Convention
+
+For the controlled two-view capture, the six visible silhouette corners can be
+ordered by hull position. The side-specific numbering is:
+
+| Hull position | Image A label | Image B label |
+|---|---:|---:|
+| top | `corner_0` | `corner_3` |
+| upper-right | `corner_1` | `corner_2` |
+| lower-right | `corner_2` | `corner_1` |
+| bottom | `corner_3` | `corner_0` |
+| lower-left | `corner_4` | `corner_5` |
+| upper-left | `corner_5` | `corner_4` |
+
+This is a stronger production prior than anonymous model-axis fitting: once
+the app knows whether the photo is side A or side B, the hull positions imply
+the corner labels directly. Real masks should still use robust hull vertices
+rather than single-pixel extrema, because shadows, antialiasing, rounded cube
+plastic, and rembg noise can move raw min/max pixels.
+
+## Vertex Parallelogram Check
+
+Each visible face is a projected quadrilateral with the visible trihedral
+vertex opposite one labeled hull corner. In an affine/orthographic view,
+opposite diagonals share a midpoint. That gives a simple geometric check and a
+strong vertex estimate from the six labeled corners:
+
+![Visual rule: complete the face parallelogram to estimate Va](assets/va_vertex_parallelogram.svg)
+
+For image A:
+
+```text
+upper slot: Va = corner_1 + corner_5 - corner_0
+right slot: Va = corner_1 + corner_3 - corner_2
+front slot: Va = corner_5 + corner_3 - corner_4
+```
+
+For image B, the same rule applies with the B slot definitions:
+
+```text
+upper slot: Vb = corner_2 + corner_4 - corner_3
+right slot: Vb = corner_0 + corner_2 - corner_1
+front slot: Vb = corner_4 + corner_0 - corner_5
+```
+
+In real phone images these formulas are not exact because of perspective,
+lens effects, rounded cube plastic, and mask noise. Treat the three estimates
+as a vertex cloud: if they cluster tightly, the corner labels imply a reliable
+`Va`/`Vb`; if they spread out, the hull/corner ordering or projection
+assumptions need review before downstream rectification uses the result.
+
 ## Capture Yaw
 
 The slot labels above are view-local. Canonical WCA face names depend on

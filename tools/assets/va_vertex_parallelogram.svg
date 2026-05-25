@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="520" viewBox="0 0 1120 520">
+  <defs>
+    <style>
+      text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #202124; }
+      .title { font-size: 26px; font-weight: 700; }
+      .subtitle { font-size: 16px; fill: #5f6368; }
+      .label { font-size: 18px; font-weight: 700; }
+      .small { font-size: 15px; fill: #3c4043; }
+      .face { fill-opacity: 0.34; stroke-width: 3; }
+      .diag { stroke: #202124; stroke-width: 2; stroke-dasharray: 8 6; }
+      .point { stroke: white; stroke-width: 3; }
+      .va { fill: #e53935; }
+      .corner { fill: #fbbc04; }
+      .mid { fill: #1a73e8; }
+      .formula { font-size: 17px; font-weight: 650; fill: #202124; }
+    </style>
+  </defs>
+
+  <rect width="1120" height="520" fill="#ffffff"/>
+  <text x="40" y="46" class="title">Visual rule: complete the face parallelogram to estimate Va</text>
+  <text x="40" y="74" class="subtitle">For each visible face, Va is opposite one labeled hull corner. In an affine view, opposite diagonals share a midpoint.</text>
+
+  <g transform="translate(40,110)">
+    <text x="0" y="0" class="label">Upper face: Va + 1,0,5</text>
+    <polygon class="face" fill="#e8f0fe" stroke="#1a73e8" points="150,200 250,135 150,70 50,135"/>
+    <line class="diag" x1="150" y1="70" x2="150" y2="200"/>
+    <line class="diag" x1="250" y1="135" x2="50" y2="135"/>
+    <circle class="point va" cx="150" cy="200" r="8"/>
+    <circle class="point corner" cx="150" cy="70" r="7"/>
+    <circle class="point corner" cx="250" cy="135" r="7"/>
+    <circle class="point corner" cx="50" cy="135" r="7"/>
+    <circle class="point mid" cx="150" cy="135" r="6"/>
+    <text x="162" y="206" class="small">Va</text>
+    <text x="160" y="76" class="small">0</text>
+    <text x="262" y="141" class="small">1</text>
+    <text x="30" y="141" class="small">5</text>
+    <text x="160" y="132" class="small">mid</text>
+    <text x="0" y="376" class="formula">Va = 1 + 5 - 0</text>
+    <text x="0" y="404" class="small">Same midpoint: (Va + 0) / 2 = (1 + 5) / 2</text>
+  </g>
+
+  <g transform="translate(405,110)">
+    <text x="0" y="0" class="label">Right face: Va + 3,2,1</text>
+    <polygon class="face" fill="#fce8e6" stroke="#d93025" points="150,200 150,330 255,260 250,135"/>
+    <line class="diag" x1="255" y1="260" x2="150" y2="200"/>
+    <line class="diag" x1="250" y1="135" x2="150" y2="330"/>
+    <circle class="point va" cx="150" cy="200" r="8"/>
+    <circle class="point corner" cx="250" cy="135" r="7"/>
+    <circle class="point corner" cx="255" cy="260" r="7"/>
+    <circle class="point corner" cx="150" cy="330" r="7"/>
+    <circle class="point mid" cx="202.5" cy="230" r="6"/>
+    <text x="122" y="206" class="small">Va</text>
+    <text x="262" y="141" class="small">1</text>
+    <text x="267" y="266" class="small">2</text>
+    <text x="160" y="336" class="small">3</text>
+    <text x="214" y="227" class="small">mid</text>
+    <text x="0" y="376" class="formula">Va = 1 + 3 - 2</text>
+    <text x="0" y="404" class="small">Same midpoint: (Va + 2) / 2 = (1 + 3) / 2</text>
+  </g>
+
+  <g transform="translate(770,110)">
+    <text x="0" y="0" class="label">Front face: Va + 5,4,3</text>
+    <polygon class="face" fill="#e6f4ea" stroke="#188038" points="150,200 50,135 45,260 150,330"/>
+    <line class="diag" x1="45" y1="260" x2="150" y2="200"/>
+    <line class="diag" x1="50" y1="135" x2="150" y2="330"/>
+    <circle class="point va" cx="150" cy="200" r="8"/>
+    <circle class="point corner" cx="50" cy="135" r="7"/>
+    <circle class="point corner" cx="45" cy="260" r="7"/>
+    <circle class="point corner" cx="150" cy="330" r="7"/>
+    <circle class="point mid" cx="97.5" cy="230" r="6"/>
+    <text x="162" y="206" class="small">Va</text>
+    <text x="30" y="141" class="small">5</text>
+    <text x="25" y="266" class="small">4</text>
+    <text x="160" y="336" class="small">3</text>
+    <text x="60" y="227" class="small">mid</text>
+    <text x="0" y="376" class="formula">Va = 5 + 3 - 4</text>
+    <text x="0" y="404" class="small">Same midpoint: (Va + 4) / 2 = (5 + 3) / 2</text>
+  </g>
+</svg>

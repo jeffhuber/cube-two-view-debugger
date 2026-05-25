@@ -280,7 +280,7 @@ HTML_TEMPLATE = """<!doctype html>
 
   <div class="intro">
     <h2>Cube axis labeling</h2>
-    <p>Place WHITE at the trihedral vertex and RED/GREEN/BLUE at the three one-edge-away visible corners. Drag a marker, or choose a marker button and click the photo.</p>
+    <p>Place WHITE at the trihedral vertex and RED/GREEN/BLUE at the three <strong>FAR / silhouette-axis-endpoint</strong> corners (the silhouette corner that visually marks each world-axis direction from the vertex — in iso projection these are the two-cube-edge corners of each visible face, NOT the one-edge-away neighbors of the vertex). See <code>tools/FULL_CORNER_LABELING.md</code> "Axis-truth schema convention". Drag a marker, or choose a marker button and click the photo.</p>
   </div>
 
   <div class="viewer" id="case-host"></div>

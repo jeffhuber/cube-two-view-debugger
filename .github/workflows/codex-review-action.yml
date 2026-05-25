@@ -1,0 +1,124 @@
+# Codex review action — auto-trigger Codex audit on labeled PRs
+#
+# Fires when a PR gets the `needs-codex-audit` label applied, or when a
+# labeled PR receives new commits. Runs the existing
+# `tools/run_codex_audit_pr.sh` on a self-hosted Mac runner where the
+# `codex` CLI is already authenticated.
+#
+# Why self-hosted: OpenAI has not shipped an official Codex GitHub
+# Action as of 2026-05. The CLI is interactive-auth-by-default and the
+# canonical wrapper (`tools/run_codex_audit_pr.sh`) assumes a logged-in
+# Codex session. Easiest path is to register the developer's Mac as a
+# self-hosted runner, where Codex auth already works.
+#
+# Required: a self-hosted runner registered on this repo with labels
+#   `self-hosted, macos, codex`
+# and the codex CLI authenticated as the runner's login user. Setup
+# steps: tools/AUTOMATED_REVIEW_LANES_SETUP.md
+#
+# Graceful degradation: if the runner is offline (Mac asleep, etc.),
+# the workflow stays queued. PRs can still be audited manually via
+#   tools/run_codex_audit_pr.sh --repo OWNER/REPO --pr N
+# which is the same script the runner invokes.
+#
+# Mirror invariant: byte-identical across jeffhuber/cube-snap and
+# jeffhuber/cube-two-view-debugger.
+
+name: Codex review action
+
+on:
+  pull_request_target:
+    types: [labeled, synchronize]
+  schedule:
+    # Watchdog: re-scan open PRs with needs-codex-audit every 15 min.
+    # Longer interval than Claude/Devin watchdogs because the self-hosted
+    # runner check itself is the long pole — no point polling faster
+    # than the runner can keep up.
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  audit:
+    # Job-level prefilter: only act on the needs-codex-audit label.
+    # Pattern from devin-audit-bridge.yml.
+    if: >
+      github.actor != 'vercel[bot]' &&
+      (
+        github.event_name == 'schedule' ||
+        github.event_name == 'workflow_dispatch' ||
+        (
+          github.event_name == 'pull_request_target' &&
+          (
+            (
+              github.event.action == 'labeled' &&
+              github.event.label.name == 'needs-codex-audit'
+            ) ||
+            (
+              github.event.action == 'synchronize' &&
+              contains(github.event.pull_request.labels.*.name, 'needs-codex-audit')
+            )
+          )
+        )
+      )
+    runs-on: [self-hosted, macos, codex]
+    timeout-minutes: 30
+    steps:
+      - name: Check out PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Scheduled watchdog — pick open PRs needing audit
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        id: scan
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # List open PRs with the trigger label. The labeled-event path
+          # handles the immediate case; this is the missed-event catchup.
+          prs=$(gh pr list --repo ${{ github.repository }} \
+                  --state open --label needs-codex-audit \
+                  --json number --jq '[.[].number] | @csv')
+          echo "prs=${prs}" >> "$GITHUB_OUTPUT"
+
+      - name: Run Codex audit (labeled-event path)
+        if: github.event_name == 'pull_request_target'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # CODEX_AUDIT_PYTHON should be set in the runner's environment
+          # (e.g. ~/.codex/runner-env) to the venv path the script needs.
+        run: |
+          bash tools/run_codex_audit_pr.sh \
+            --repo ${{ github.repository }} \
+            --pr ${{ github.event.pull_request.number }} \
+            --repo-paths ${{ github.repository }}:$GITHUB_WORKSPACE
+
+      - name: Run Codex audit (watchdog path)
+        if: >
+          (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') &&
+          steps.scan.outputs.prs != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          IFS=',' read -ra prs <<< "${{ steps.scan.outputs.prs }}"
+          for pr in "${prs[@]}"; do
+            echo "::group::Audit PR #${pr}"
+            bash tools/run_codex_audit_pr.sh \
+              --repo ${{ github.repository }} \
+              --pr "${pr}" \
+              --repo-paths ${{ github.repository }}:$GITHUB_WORKSPACE || true
+            echo "::endgroup::"
+          done
+
+      # tools/codex_audit_labeler.py + .github/workflows/codex-audit-labeler.yml
+      # already handle flipping `needs-codex-audit` to `codex-audit-done`
+      # or `codex-audit-blocked` based on the comment trailer this script
+      # posts. No label management needed in this workflow.

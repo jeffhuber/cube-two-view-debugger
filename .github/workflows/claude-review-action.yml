@@ -1,0 +1,129 @@
+# Claude review action — auto-trigger cross-review on labeled PRs
+#
+# Fires when a PR gets the `needs-claude-review` label applied, or when a
+# labeled PR receives new commits (re-review on head change). Uses the
+# official `anthropics/claude-code-action@v1` running on GitHub-hosted
+# runners.
+#
+# Required repo secrets:
+#   ANTHROPIC_API_KEY     Claude API key from console.anthropic.com.
+#
+# Required GitHub App:
+#   github.com/apps/claude must be installed on this repo so the action
+#   can post PR comments + modify labels.
+#
+# Setup + ops guide: tools/AUTOMATED_REVIEW_LANES_SETUP.md
+#
+# Mirror invariant: byte-identical across jeffhuber/cube-snap and
+# jeffhuber/cube-two-view-debugger.
+
+name: Claude review action
+
+on:
+  pull_request_target:
+    types: [labeled, synchronize]
+  schedule:
+    # Watchdog: re-scan open PRs with needs-claude-review every 10 min so
+    # a missed labeled-event dispatch doesn't leave a PR waiting forever.
+    # Parallels the Devin audit bridge's 5-min watchdog pattern; longer
+    # interval here because the action itself is more expensive per run.
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  review:
+    # Job-level prefilter so unrelated label changes / sync events skip
+    # before checkout. Pattern from devin-audit-bridge.yml.
+    if: >
+      github.actor != 'claude[bot]' &&
+      github.actor != 'vercel[bot]' &&
+      (
+        github.event_name == 'schedule' ||
+        github.event_name == 'workflow_dispatch' ||
+        (
+          github.event_name == 'pull_request_target' &&
+          (
+            (
+              github.event.action == 'labeled' &&
+              github.event.label.name == 'needs-claude-review'
+            ) ||
+            (
+              github.event.action == 'synchronize' &&
+              contains(github.event.pull_request.labels.*.name, 'needs-claude-review')
+            )
+          )
+        )
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          # Don't persist credentials — the action manages its own auth.
+          persist-credentials: false
+
+      - name: Run Claude cross-review
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # --max-turns caps cost. Bump if reviews come back shallow.
+          # --model claude-opus-4-7 is the highest-quality option as of
+          # 2026-05; downgrade to claude-sonnet-4-6 if cost is a concern.
+          claude_args: --model claude-opus-4-7 --max-turns 20
+          prompt: |
+            Review pull request #${{ github.event.pull_request.number }}
+            in ${{ github.repository }} as a skeptical cross-reviewer.
+
+            ## Procedure
+
+            1. Read `CLAUDE.md` and (if present) `COORDINATION.md` first —
+               they define this project's conventions and the cross-review
+               protocol.
+            2. Read the PR description and the diff. If the description
+               cites validation commands (tests, scripts), run them and
+               verify the claimed results. Don't trust headline numbers
+               in the PR body without checking the underlying artifact.
+            3. For analyzer / diagnostic tool PRs: read the actual
+               generated artifact (JSON/CSV/etc.), not just the
+               human-readable report rendered from it. Aggregation bugs
+               are the most common defect class on this codebase
+               (corroborated by prior cross-reviews on PR #292).
+            4. For docs / planning PRs: check that cited PR numbers and
+               file references resolve; flag any references to unmerged
+               artifacts.
+
+            ## Output
+
+            Post exactly ONE comment titled `## Claude cross-review` with:
+
+            - **Verdict:** `PASS` or `BLOCKERS`
+            - **What I checked:** concrete list (tests run + result,
+              files inspected, numbers verified). Avoid "I reviewed the
+              diff" — name specifics.
+            - **Findings (if BLOCKERS):** ordered by severity (P0/P1/P2),
+              each with file:line citation and a concrete suggested fix.
+            - **Forward notes (optional):** out-of-scope observations
+              worth flagging for follow-up.
+
+            ## Label management
+
+            - On PASS: remove the `needs-claude-review` label via
+              `gh pr edit ${{ github.event.pull_request.number }}
+              --remove-label needs-claude-review`.
+            - On BLOCKERS: leave the label so the next push re-triggers
+              this workflow.
+            - Never apply a paid-review label (`needs-devin-audit`,
+              `needs-greptile-audit`) — those are deliberate human calls
+              per `CLAUDE.md` Paid Review Budget Policy.
+
+            ## Merge
+
+            DO NOT merge the PR — Claude cross-review is non-gating per
+            `CLAUDE.md`. The PR owner merges after addressing findings.

@@ -21,6 +21,58 @@
   },
   "pairs": [
     {
+      "setId": "8",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 8 - A - white up.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 8 - B - white up.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 8 - cube-ground-truth-1779832742493.json",
+      "imageA_sha256_expected": "45f0788e2f0e3d2562a3d097dbf3f54bea57d1038c98f356cab288ece3e5bf58",
+      "imageB_sha256_expected": "f79eecefc5e882a1b31475888093681ade025769573673962519be7a23fd3700",
+      "groundTruth_sha256_expected": "158878f2d67ff8bad18b5bb24c9a8a132ed937ef86614d6de50b907d714583b9",
+      "expectedCategory": "needs_manual_review",
+      "currentScoreObserved": 54,
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus GT expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: needs_manual_review, score 54/54.",
+      "expectedScoreFloor": 54
+    },
+    {
+      "setId": "9",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 9 - A - white up IMG_6694.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 9 - B - white up IMG_6695.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 9 - cube-ground-truth-1779832823084.json",
+      "imageA_sha256_expected": "cfd3d4b9b32963ee81eb7731fe46afd55a4b968b3dbe3564e757aae8daa224f4",
+      "imageB_sha256_expected": "caa1381fbab2dd332a341c24bc25d67ad8dff597b3144b7711c22604586c7415",
+      "groundTruth_sha256_expected": "d2d743ee4b4733f4882b281a52ab26d29e6d9ef628506c7c948b8ba8e8a028d8",
+      "expectedCategory": "needs_manual_review",
+      "currentScoreObserved": 54,
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus GT expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: needs_manual_review, score 54/54.",
+      "expectedScoreFloor": 54
+    },
+    {
+      "setId": "10",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 10 - A - white up IMG_6696.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 10 - B - white up IMG_6697.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 10 - cube-ground-truth-1779833337857.json",
+      "imageA_sha256_expected": "76a0909eff0db7fa53b15f7642f4c579eae98d1b827007e3a1f6bcb33a3dfbd6",
+      "imageB_sha256_expected": "deca301ccf1904a9419ce1c645d81fde83d39b9bfa4459ddd23132b979364475",
+      "groundTruth_sha256_expected": "033b158aeda3c6cb071b10924d8ad87d2d64ff5419c5d95a1c4b9863a96a5694",
+      "expectedCategory": "success_clean",
+      "currentScoreObserved": 54,
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus GT expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: success_clean, score 54/54.",
+      "expectedScoreFloor": 54
+    },
+    {
+      "setId": "11",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 11 - A - white up IMG_6699.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 11 - B - white up IMG_6700.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 11 - cube-ground-truth-1779833553634.json",
+      "imageA_sha256_expected": "2a84527c48e7833a6a97384c30a9190471cb41cd7cb3631e02d5b9d63466f20c",
+      "imageB_sha256_expected": "8d4891238ee915c2c1ec69c3eb2e8e014218b67e803998bcc2cf10aa2fa7d2db",
+      "groundTruth_sha256_expected": "d5756afd33fd109e031bf4340ad854f08a727de325fb48c9dc2415f0c84ecca1",
+      "expectedCategory": "needs_manual_review",
+      "currentScoreObserved": 39,
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus GT expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: needs_manual_review, score 39/54.",
+      "expectedScoreFloor": 39
+    },
+    {
       "setId": "12",
       "imageAPath": "/Users/jhuber/Downloads/Set 12 - A - white up IMG_6701.JPG",
       "imageBPath": "/Users/jhuber/Downloads/Set 12 - B - white up IMG_6702.JPG",
@@ -37,6 +89,19 @@
         "normalizationApplied": true
       },
       "notes": "Canonical-WCA ground truth captured post-PR-#95 (cube-snap); no _canonical_ground_truth_state rotation needed at parse time. Yaw=3. Repair stays score-positive but is manual-review because pre-repair piece evidence is too conflicted for a trusted high-confidence result. captureFrameState preserved in the saved file's recognitionSignals for the photo-frame projection."
+    },
+    {
+      "setId": "13",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 13 - A - white up IMG_6703.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 13 - B - white up IMG_6704.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 13 - cube-ground-truth-1779833671500.json",
+      "imageA_sha256_expected": "5070f9ff6968d48926bbc5c38a2374ed453c01a80d113b8b0d24df0054502ef6",
+      "imageB_sha256_expected": "5fad2cbc72d66a045b554faedeab512a125b6339e705400897be9787a4f7e95e",
+      "groundTruth_sha256_expected": "ec2bbf22e7f99dbe4011edc10be5d2f428bfc08299838b0ed0188f2a93448d86",
+      "expectedCategory": "success_clean",
+      "currentScoreObserved": 54,
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus GT expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: success_clean, score 54/54.",
+      "expectedScoreFloor": 54
     },
     {
       "setId": "14",
@@ -63,6 +128,97 @@
       "expectedScoreFloor": 54,
       "currentScoreObserved": 54,
       "notes": "Clean direct success."
+    },
+    {
+      "setId": "16",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 16 - A - white up IMG_6709.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 16 - B - white up IMG_6710.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 16 - cube-ground-truth-1779833924528.json",
+      "imageA_sha256_expected": "2802514a0a1edcb39525a61135d1d9ead1776d25527c480cf9ee55b9767dbc29",
+      "imageB_sha256_expected": "df4fa34f25929d94298b00718f3457d9812b4032bcde61fcc6ab21161f145e38",
+      "groundTruth_sha256_expected": "2c46d9aee2beff171805cf68829cd42a3bb36a17d9943bf777aad3418066088f",
+      "expectedCategory": "needs_manual_review",
+      "currentScoreObserved": 34,
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus GT expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: needs_manual_review, score 34/54.",
+      "expectedScoreFloor": 34
+    },
+    {
+      "setId": "17",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 17 - A - white up.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 17 - B - white up.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 17 v2 - cube-ground-truth-1779030240217.json",
+      "imageA_sha256_expected": "fab9622d69167e1808dcb53115bb802654f28b09b8cf399f116222dd830e12c2",
+      "imageB_sha256_expected": "ec886dbdc33632585caee6c142218ae12148a9a727b5635862f6c10a153c1fed",
+      "groundTruth_sha256_expected": "3bb093f97fcc5b77dd886311a3cdcd936a8be2eefa76cef3735036dfb7ff908f",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-25 from canonical /Users/jhuber/cube-corpus files to close the gcm_axis_ground_truth/corpus_manifest coverage gap for hull-label shadow/e2e validation. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54.",
+      "expectedScoreFloor": null
+    },
+    {
+      "setId": "18",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 18 - A - white up.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 18 - B - white up.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 18 - cube-ground-truth-1779834037452.json",
+      "imageA_sha256_expected": "41deeac0b9be17e3225c6394c4686a010ce6961822f77c45dc57377438951115",
+      "imageB_sha256_expected": "55ba6061bf07fe2b0c751ca132fa3e455f109fc1d78f2cce57cbfe26d7612459",
+      "groundTruth_sha256_expected": "eff8fb653d5b44dc9ca29b7397721f809ff89b7942939e4279f38ca59d698f91",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus GT expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54.",
+      "expectedScoreFloor": null
+    },
+    {
+      "setId": "19",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 19 - A - white up.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 19 - B - white up.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 19 - cube-ground-truth-1779834163813.json",
+      "imageA_sha256_expected": "45243d12af8e3be0c11be3e13103c2c10d3619c98e1bfed48c6ba290fe487744",
+      "imageB_sha256_expected": "b7e5ac6ad05d6006f3b2e3fca619c5d440be1740e946cea5e0d29a0fb977958a",
+      "groundTruth_sha256_expected": "d641962144eff349b827b2a0744829afda7023ed9a2ef685984630d99affb3cd",
+      "expectedCategory": "needs_manual_review",
+      "currentScoreObserved": 48,
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus GT expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: needs_manual_review, score 48/54.",
+      "expectedScoreFloor": 48
+    },
+    {
+      "setId": "20",
+      "imageAPath": "/Users/jhuber/Downloads/Set 20 - A - white up.JPG",
+      "imageBPath": "/Users/jhuber/Downloads/Set 20 - B - white up.JPG",
+      "groundTruthPath": "/Users/jhuber/Downloads/Set 20 v2 - cube-ground-truth-1778616039266.json",
+      "imageA_sha256_expected": "050de57efee8c44af8704d7fc14b07b6ae61aae13a63509ff6d2c0d7e0c8fd41",
+      "imageB_sha256_expected": "a318038e14ebf4bee5dc8b46a5b60d994c3d34610c65ca3d16139ef638da881e",
+      "groundTruth_sha256_expected": "be11bcb2fad4b9194a72d31e158a7fb9a5bb54da0de3b848c4c2fb084f02cb0b",
+      "expectedCategory": "needs_manual_review",
+      "currentScoreObserved": 54,
+      "notes": "Calibrated 2026-05-23 with tools/probe_corpus.py after the Phase 4 corpus expansion. Current recognizer contract pins category=needs_manual_review, score=54/54 on the native ARM64 macOS policy.",
+      "expectedScoreFloor": 54
+    },
+    {
+      "setId": "21",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 21 - A - white up.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 21 - B - white up.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 21 - cube-ground-truth-1778698843952.json",
+      "imageA_sha256_expected": "07815296421057e8cd9cb1a0a1795f5c095eeababbcffcc3aa9009593a47106b",
+      "imageB_sha256_expected": "0f38063c582f6ee2bcdfcc41b385fc86a7591038a90f8fe2bab06ff5f1524a85",
+      "groundTruth_sha256_expected": "820a624082eebd4d2e96c51ddc70e53e2d692710fecbd121f13b415b5aee0e62",
+      "expectedCategory": "needs_manual_review",
+      "currentScoreObserved": 54,
+      "notes": "Added and calibrated 2026-05-25 from canonical /Users/jhuber/cube-corpus files to close the gcm_axis_ground_truth/corpus_manifest coverage gap for hull-label shadow/e2e validation. Category/score pinned from tools/probe_corpus.py on current recognizer: needs_manual_review, score 54/54.",
+      "expectedScoreFloor": 54
+    },
+    {
+      "setId": "22",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 22 - A - white up.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 22 - B - white up.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 22 - cube-ground-truth-1778699416367.json",
+      "imageA_sha256_expected": "570dc99c76889f3dc0745f983271c1433cc6e00cc7e45402aca8e14de1410851",
+      "imageB_sha256_expected": "bf32a69619eb86a700e1c1020df87bb4785ef8ed4dd6839890252c86052a370a",
+      "groundTruth_sha256_expected": "64d56ccb7828102966da471c5534db8962545c04efd25f20daa7f40944262cf5",
+      "expectedCategory": "success_clean",
+      "currentScoreObserved": 54,
+      "notes": "Added and calibrated 2026-05-25 from canonical /Users/jhuber/cube-corpus files to close the gcm_axis_ground_truth/corpus_manifest coverage gap for hull-label shadow/e2e validation. Category/score pinned from tools/probe_corpus.py on current recognizer: success_clean, score 54/54.",
+      "expectedScoreFloor": 54
     },
     {
       "setId": "23",
@@ -94,6 +250,19 @@
       "expectedScoreFloor": 54,
       "currentScoreObserved": 54,
       "notes": "Known cross-runner disagreement case; SHA fields are load-bearing and this local hashed pair is currently exact."
+    },
+    {
+      "setId": "25",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 25 - A - white up IMG_6771.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 25 - B - white up IMG_6772.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 25 - cube-ground-truth-1778709723112.json",
+      "imageA_sha256_expected": "b6add5412d2ed1bb3a86a038c5a67136e3280ac78b4e44bba4e2b016053536de",
+      "imageB_sha256_expected": "b93645f19bd3d8ea889b3e5f0f410bdb4263cf0173d9128fa3ae72377a7d8774",
+      "groundTruth_sha256_expected": "7aff30bc7d9a589690b8a635073d652a69f252f22087f65d091220d16a9ec630",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-25 from canonical /Users/jhuber/cube-corpus files to close the gcm_axis_ground_truth/corpus_manifest coverage gap for hull-label shadow/e2e validation. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54.",
+      "expectedScoreFloor": null
     },
     {
       "setId": "26",
@@ -148,6 +317,19 @@
       "notes": "Exact direct case on the local hashed images. Promoted to success_clean after selected-grid quality calibration accepted marginal but supported direct unique legal states."
     },
     {
+      "setId": "30",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 30 - A - white up IMG_7100.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 30 - B - white up IMG_7101.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 30 - really tricky - cube-ground-truth-1778721256490.json",
+      "imageA_sha256_expected": "f834711f98f11bf96383037836ec82f64b6a085d73150b6c751c6058264007e4",
+      "imageB_sha256_expected": "a7a94f6c86ca7743cefd514c9b3324cebc831b3f8dbce6c5ff2498bb808cd176",
+      "groundTruth_sha256_expected": "9673a0c186c096b81a7984053cea6f72c13c552b0017434596928a1515beaf7b",
+      "expectedCategory": "needs_manual_review",
+      "currentScoreObserved": 18,
+      "notes": "Added and calibrated 2026-05-25 from canonical /Users/jhuber/cube-corpus files to close the gcm_axis_ground_truth/corpus_manifest coverage gap for hull-label shadow/e2e validation. Category/score pinned from tools/probe_corpus.py on current recognizer: needs_manual_review, score 18/54.",
+      "expectedScoreFloor": 18
+    },
+    {
       "setId": "31",
       "imageAPath": "/Users/jhuber/Downloads/Set 31 - A - white up IMG_7102.JPG",
       "imageBPath": "/Users/jhuber/Downloads/Set 31 - B - white up IMG_7103.JPG",
@@ -177,6 +359,45 @@
         "normalizationApplied": true
       },
       "notes": "Canonical-WCA ground truth captured post-PR-#95 (cube-snap); no _canonical_ground_truth_state rotation needed at parse time. Yaw=1, success_clean direct path. captureFrameState preserved in the saved file's recognitionSignals."
+    },
+    {
+      "setId": "33",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 33 - A - white up IMG_7145.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 33 - B - white up IMG_7146.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 33 - cube-ground-truth-1779834290989.json",
+      "imageA_sha256_expected": "0acfb1370f203b7fccda46ced71930c3ce47730e03fb17574b7ee4bdad9f4e29",
+      "imageB_sha256_expected": "019d97ea02d24daa4ae11200d320d558dd026510f68a3bc37d3b978c4db976f4",
+      "groundTruth_sha256_expected": "be52a8f61bfb4cb2004036d088ccff849b796a5394e33c45605f92ddc8a814ff",
+      "expectedCategory": "needs_manual_review",
+      "currentScoreObserved": 54,
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus GT expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: needs_manual_review, score 54/54.",
+      "expectedScoreFloor": 54
+    },
+    {
+      "setId": "34",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 34 - A - white up IMG_7147.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 34 - B - white up IMG_7148.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 34 - cube-ground-truth-1779834391378.json",
+      "imageA_sha256_expected": "7ec97a6b34643476fe1fa88f6f350decdaa88ac3310e2802a8dcaf46730793e0",
+      "imageB_sha256_expected": "17cdb3c770182dcd939a7be692cb318c4ef47bace4d4a0558f395a1da66aad08",
+      "groundTruth_sha256_expected": "65427c6324d7dbce4999aaffb039621075c94fec09f41c97af43301e75214fe7",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus GT expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54.",
+      "expectedScoreFloor": null
+    },
+    {
+      "setId": "35",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 35 - A - white up IMG_7149.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 35 - B - white up IMG_7150.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 35 - cube-ground-truth-1779834457057.json",
+      "imageA_sha256_expected": "0a46c4b918a77b3ac27e298984579a8c1a98936c9deb90ce8a9a82c6a0bb6fe6",
+      "imageB_sha256_expected": "58a6faf4ba56d4685259ff264b9f2aa4e58b540a888be83c18ad3f94a7b4e7bb",
+      "groundTruth_sha256_expected": "f4d3efd170ab9fb97c27f52fc8dfc5f1451e191d9894ca5cbd7cf10b91aa90e5",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus GT expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54.",
+      "expectedScoreFloor": null
     },
     {
       "setId": "36",
@@ -215,50 +436,6 @@
       "notes": "yaw=1 corpus pair. cv-local success_clean direct path, recognizer output equals ground truth byte-for-byte (diffFromCorrected=0). GT was originally saved by the Fixer in capture-frame yaw (centers UBRDFL) \u2014 yaw-normalized to canonical WCA via _capture_yaw_state_to_wca(state, 1) on 2026-05-14 before manifest wiring; cube-snap#105 prevents this case in the Fixer save path going forward. LLM provider gpt-5 failed validation on this pair (duplicated/missing centers, the expected LLM failure mode on non-canonical-yaw captures)."
     },
     {
-      "setId": "42",
-      "imageAPath": "/Users/jhuber/Downloads/Set 42 - A - white up IMG_7163.JPG",
-      "imageBPath": "/Users/jhuber/Downloads/Set 42 - B - white up IMG_7164.JPG",
-      "groundTruthPath": "/Users/jhuber/Downloads/Set 42 v1 - cube-ground-truth-1778518211191.json",
-      "imageA_sha256_expected": "cc768cc72e490101048677ae5d5c7a95d8d28fe9d8682981e6d10d1e316d0df5",
-      "imageB_sha256_expected": "f69444a6f3e7e05430383c0be2e8990aadf50d497bdf9b24013c1e26a38b9831",
-      "groundTruth_sha256_expected": "d89588e526d9df91cd9cf99a5681abd713410bc37b7416b0689d7b212c7f3179",
-      "expectedCategory": "success_clean",
-      "expectedScoreFloor": 54,
-      "currentScoreObserved": 54,
-      "expectedYaw": {
-        "status": "nonstandard",
-        "quarterTurns": 1,
-        "normalizationApplied": true
-      },
-      "notes": "Clean nonstandard-yaw regression case; yaw=1, normalizationApplied=true, no ground-truth canonicalization needed."
-    },
-    {
-      "setId": "44",
-      "imageAPath": "/Users/jhuber/Downloads/Set 44 - A - white up IMG_7167.JPG",
-      "imageBPath": "/Users/jhuber/Downloads/Set 44 - B - white up IMG_7168.JPG",
-      "groundTruthPath": "/Users/jhuber/Downloads/Set 44 v1 - cube-ground-truth-1778461001488.json",
-      "imageA_sha256_expected": "ceaecaefb0e14cf9b20b6d00dff0d362a08b643c1380e955c7edecbdc29275a0",
-      "imageB_sha256_expected": "6a8ead89f81007b01e8f27ec80de5015ab1298b261669fea635c17885fe0bb6d",
-      "groundTruth_sha256_expected": "330ef3b8e36881103e6ea84775772502f3bac5b297e8078d896f166bf5b67826",
-      "expectedCategory": "reject_retake",
-      "expectedScoreFloor": null,
-      "currentScoreObserved": 0,
-      "notes": "Known rejected color/grid evidence collapse; image B D/yellow anchor is weak (5/9 matched) and is rejected before merged-candidate generation."
-    },
-    {
-      "setId": "20",
-      "imageAPath": "/Users/jhuber/Downloads/Set 20 - A - white up.JPG",
-      "imageBPath": "/Users/jhuber/Downloads/Set 20 - B - white up.JPG",
-      "groundTruthPath": "/Users/jhuber/Downloads/Set 20 v2 - cube-ground-truth-1778616039266.json",
-      "imageA_sha256_expected": "050de57efee8c44af8704d7fc14b07b6ae61aae13a63509ff6d2c0d7e0c8fd41",
-      "imageB_sha256_expected": "a318038e14ebf4bee5dc8b46a5b60d994c3d34610c65ca3d16139ef638da881e",
-      "groundTruth_sha256_expected": "be11bcb2fad4b9194a72d31e158a7fb9a5bb54da0de3b848c4c2fb084f02cb0b",
-      "expectedCategory": "needs_manual_review",
-      "currentScoreObserved": 54,
-      "notes": "Calibrated 2026-05-23 with tools/probe_corpus.py after the Phase 4 corpus expansion. Current recognizer contract pins category=needs_manual_review, score=54/54 on the native ARM64 macOS policy.",
-      "expectedScoreFloor": 54
-    },
-    {
       "setId": "38",
       "imageAPath": "/Users/jhuber/Downloads/Set 38 - A - white up IMG_7155.JPG",
       "imageBPath": "/Users/jhuber/Downloads/Set 38 - B - white up IMG_7156.JPG",
@@ -270,6 +447,19 @@
       "currentScoreObserved": 48,
       "notes": "Calibrated 2026-05-23 with tools/probe_corpus.py after the Phase 4 corpus expansion. Current recognizer contract pins category=needs_manual_review, score=48/54 on the native ARM64 macOS policy.",
       "expectedScoreFloor": 48
+    },
+    {
+      "setId": "39",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 39 - A - white up IMG_7157.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 39 - B - white up IMG_7158.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 39 - cube-ground-truth-1778722779064.json",
+      "imageA_sha256_expected": "d3707913abce12f205981cf51c3c584f0e89332be9a86ed52dbba9a5128a746c",
+      "imageB_sha256_expected": "1ea3af41716e071daba570d17aea85343872ec1cb090e8d18aff39d63cb336ac",
+      "groundTruth_sha256_expected": "7e8fbeae2a37b22729566733f0757dc3a5e71d50024d440299ca55964ae60e48",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-25 from canonical /Users/jhuber/cube-corpus files to close the gcm_axis_ground_truth/corpus_manifest coverage gap for hull-label shadow/e2e validation. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54.",
+      "expectedScoreFloor": null
     },
     {
       "setId": "40",
@@ -298,6 +488,24 @@
       "expectedScoreFloor": 54
     },
     {
+      "setId": "42",
+      "imageAPath": "/Users/jhuber/Downloads/Set 42 - A - white up IMG_7163.JPG",
+      "imageBPath": "/Users/jhuber/Downloads/Set 42 - B - white up IMG_7164.JPG",
+      "groundTruthPath": "/Users/jhuber/Downloads/Set 42 v1 - cube-ground-truth-1778518211191.json",
+      "imageA_sha256_expected": "cc768cc72e490101048677ae5d5c7a95d8d28fe9d8682981e6d10d1e316d0df5",
+      "imageB_sha256_expected": "f69444a6f3e7e05430383c0be2e8990aadf50d497bdf9b24013c1e26a38b9831",
+      "groundTruth_sha256_expected": "d89588e526d9df91cd9cf99a5681abd713410bc37b7416b0689d7b212c7f3179",
+      "expectedCategory": "success_clean",
+      "expectedScoreFloor": 54,
+      "currentScoreObserved": 54,
+      "expectedYaw": {
+        "status": "nonstandard",
+        "quarterTurns": 1,
+        "normalizationApplied": true
+      },
+      "notes": "Clean nonstandard-yaw regression case; yaw=1, normalizationApplied=true, no ground-truth canonicalization needed."
+    },
+    {
       "setId": "43",
       "imageAPath": "/Users/jhuber/Downloads/Set 43 - A - white up IMG_7165.JPG",
       "imageBPath": "/Users/jhuber/Downloads/Set 43 - B - white up IMG_7166.JPG",
@@ -311,6 +519,19 @@
       "expectedScoreFloor": 54
     },
     {
+      "setId": "44",
+      "imageAPath": "/Users/jhuber/Downloads/Set 44 - A - white up IMG_7167.JPG",
+      "imageBPath": "/Users/jhuber/Downloads/Set 44 - B - white up IMG_7168.JPG",
+      "groundTruthPath": "/Users/jhuber/Downloads/Set 44 v1 - cube-ground-truth-1778461001488.json",
+      "imageA_sha256_expected": "ceaecaefb0e14cf9b20b6d00dff0d362a08b643c1380e955c7edecbdc29275a0",
+      "imageB_sha256_expected": "6a8ead89f81007b01e8f27ec80de5015ab1298b261669fea635c17885fe0bb6d",
+      "groundTruth_sha256_expected": "330ef3b8e36881103e6ea84775772502f3bac5b297e8078d896f166bf5b67826",
+      "expectedCategory": "reject_retake",
+      "expectedScoreFloor": null,
+      "currentScoreObserved": 0,
+      "notes": "Known rejected color/grid evidence collapse; image B D/yellow anchor is weak (5/9 matched) and is rejected before merged-candidate generation."
+    },
+    {
       "setId": "45",
       "imageAPath": "/Users/jhuber/Downloads/Set 45 - A - white up IMG_7169.JPG",
       "imageBPath": "/Users/jhuber/Downloads/Set 45 - B - white up IMG_7170.JPG",
@@ -322,84 +543,6 @@
       "currentScoreObserved": 54,
       "notes": "Calibrated 2026-05-23 with tools/probe_corpus.py after the Phase 4 corpus expansion. Current recognizer contract pins category=success_clean, score=54/54 on the native ARM64 macOS policy.",
       "expectedScoreFloor": 54
-    },
-    {
-      "setId": "17",
-      "imageAPath": "/Users/jhuber/cube-corpus/Set 17 - A - white up.JPG",
-      "imageBPath": "/Users/jhuber/cube-corpus/Set 17 - B - white up.JPG",
-      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 17 v2 - cube-ground-truth-1779030240217.json",
-      "imageA_sha256_expected": "fab9622d69167e1808dcb53115bb802654f28b09b8cf399f116222dd830e12c2",
-      "imageB_sha256_expected": "ec886dbdc33632585caee6c142218ae12148a9a727b5635862f6c10a153c1fed",
-      "groundTruth_sha256_expected": "3bb093f97fcc5b77dd886311a3cdcd936a8be2eefa76cef3735036dfb7ff908f",
-      "expectedCategory": "reject_retake",
-      "currentScoreObserved": 0,
-      "notes": "Added and calibrated 2026-05-25 from canonical /Users/jhuber/cube-corpus files to close the gcm_axis_ground_truth/corpus_manifest coverage gap for hull-label shadow/e2e validation. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54.",
-      "expectedScoreFloor": null
-    },
-    {
-      "setId": "21",
-      "imageAPath": "/Users/jhuber/cube-corpus/Set 21 - A - white up.JPG",
-      "imageBPath": "/Users/jhuber/cube-corpus/Set 21 - B - white up.JPG",
-      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 21 - cube-ground-truth-1778698843952.json",
-      "imageA_sha256_expected": "07815296421057e8cd9cb1a0a1795f5c095eeababbcffcc3aa9009593a47106b",
-      "imageB_sha256_expected": "0f38063c582f6ee2bcdfcc41b385fc86a7591038a90f8fe2bab06ff5f1524a85",
-      "groundTruth_sha256_expected": "820a624082eebd4d2e96c51ddc70e53e2d692710fecbd121f13b415b5aee0e62",
-      "expectedCategory": "needs_manual_review",
-      "currentScoreObserved": 54,
-      "notes": "Added and calibrated 2026-05-25 from canonical /Users/jhuber/cube-corpus files to close the gcm_axis_ground_truth/corpus_manifest coverage gap for hull-label shadow/e2e validation. Category/score pinned from tools/probe_corpus.py on current recognizer: needs_manual_review, score 54/54.",
-      "expectedScoreFloor": 54
-    },
-    {
-      "setId": "22",
-      "imageAPath": "/Users/jhuber/cube-corpus/Set 22 - A - white up.JPG",
-      "imageBPath": "/Users/jhuber/cube-corpus/Set 22 - B - white up.JPG",
-      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 22 - cube-ground-truth-1778699416367.json",
-      "imageA_sha256_expected": "570dc99c76889f3dc0745f983271c1433cc6e00cc7e45402aca8e14de1410851",
-      "imageB_sha256_expected": "bf32a69619eb86a700e1c1020df87bb4785ef8ed4dd6839890252c86052a370a",
-      "groundTruth_sha256_expected": "64d56ccb7828102966da471c5534db8962545c04efd25f20daa7f40944262cf5",
-      "expectedCategory": "success_clean",
-      "currentScoreObserved": 54,
-      "notes": "Added and calibrated 2026-05-25 from canonical /Users/jhuber/cube-corpus files to close the gcm_axis_ground_truth/corpus_manifest coverage gap for hull-label shadow/e2e validation. Category/score pinned from tools/probe_corpus.py on current recognizer: success_clean, score 54/54.",
-      "expectedScoreFloor": 54
-    },
-    {
-      "setId": "25",
-      "imageAPath": "/Users/jhuber/cube-corpus/Set 25 - A - white up IMG_6771.JPG",
-      "imageBPath": "/Users/jhuber/cube-corpus/Set 25 - B - white up IMG_6772.JPG",
-      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 25 - cube-ground-truth-1778709723112.json",
-      "imageA_sha256_expected": "b6add5412d2ed1bb3a86a038c5a67136e3280ac78b4e44bba4e2b016053536de",
-      "imageB_sha256_expected": "b93645f19bd3d8ea889b3e5f0f410bdb4263cf0173d9128fa3ae72377a7d8774",
-      "groundTruth_sha256_expected": "7aff30bc7d9a589690b8a635073d652a69f252f22087f65d091220d16a9ec630",
-      "expectedCategory": "reject_retake",
-      "currentScoreObserved": 0,
-      "notes": "Added and calibrated 2026-05-25 from canonical /Users/jhuber/cube-corpus files to close the gcm_axis_ground_truth/corpus_manifest coverage gap for hull-label shadow/e2e validation. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54.",
-      "expectedScoreFloor": null
-    },
-    {
-      "setId": "30",
-      "imageAPath": "/Users/jhuber/cube-corpus/Set 30 - A - white up IMG_7100.JPG",
-      "imageBPath": "/Users/jhuber/cube-corpus/Set 30 - B - white up IMG_7101.JPG",
-      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 30 - really tricky - cube-ground-truth-1778721256490.json",
-      "imageA_sha256_expected": "f834711f98f11bf96383037836ec82f64b6a085d73150b6c751c6058264007e4",
-      "imageB_sha256_expected": "a7a94f6c86ca7743cefd514c9b3324cebc831b3f8dbce6c5ff2498bb808cd176",
-      "groundTruth_sha256_expected": "9673a0c186c096b81a7984053cea6f72c13c552b0017434596928a1515beaf7b",
-      "expectedCategory": "needs_manual_review",
-      "currentScoreObserved": 18,
-      "notes": "Added and calibrated 2026-05-25 from canonical /Users/jhuber/cube-corpus files to close the gcm_axis_ground_truth/corpus_manifest coverage gap for hull-label shadow/e2e validation. Category/score pinned from tools/probe_corpus.py on current recognizer: needs_manual_review, score 18/54.",
-      "expectedScoreFloor": 18
-    },
-    {
-      "setId": "39",
-      "imageAPath": "/Users/jhuber/cube-corpus/Set 39 - A - white up IMG_7157.JPG",
-      "imageBPath": "/Users/jhuber/cube-corpus/Set 39 - B - white up IMG_7158.JPG",
-      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 39 - cube-ground-truth-1778722779064.json",
-      "imageA_sha256_expected": "d3707913abce12f205981cf51c3c584f0e89332be9a86ed52dbba9a5128a746c",
-      "imageB_sha256_expected": "1ea3af41716e071daba570d17aea85343872ec1cb090e8d18aff39d63cb336ac",
-      "groundTruth_sha256_expected": "7e8fbeae2a37b22729566733f0757dc3a5e71d50024d440299ca55964ae60e48",
-      "expectedCategory": "reject_retake",
-      "currentScoreObserved": 0,
-      "notes": "Added and calibrated 2026-05-25 from canonical /Users/jhuber/cube-corpus files to close the gcm_axis_ground_truth/corpus_manifest coverage gap for hull-label shadow/e2e validation. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54.",
-      "expectedScoreFloor": null
     },
     {
       "setId": "46",
@@ -454,6 +597,97 @@
       "expectedScoreFloor": null
     },
     {
+      "setId": "50",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set GAN 50 - A - white-up IMG_7448.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set GAN 50 - B - white-up IMG_7449.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/SET GAN 50 - cube-ground-truth-1779835033550.json",
+      "imageA_sha256_expected": "51020ee891d7307cf2744cf479dd4feb5d19bf07e9a8760e7d3b2324e19b2f7e",
+      "imageB_sha256_expected": "d91bfc4f3f2c7026e76c325428755dc22b9d8c9ac9103abe5875c0a4de121e16",
+      "groundTruth_sha256_expected": "1275e2f5146ca3c89dd2d3d381ac83d4a5fc40583e4f76cdfa558c8e097b1c38",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus GT expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54. Source files use Set GAN 50 naming; manifest setId kept numeric for corpus tooling.",
+      "expectedScoreFloor": null
+    },
+    {
+      "setId": "51",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set GAN 51 - A - white-up IMG_7454.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set GAN 51 - B - white-up IMG_7455.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/SET GAN 51 - cube-ground-truth-1779834953517.json",
+      "imageA_sha256_expected": "0c05167e6780acaa84c294b7f87da1b7f595125f08e835a8b567b2814d19a8ee",
+      "imageB_sha256_expected": "dc20c05740723c7cd66b6ae65499feba6e888df7522aa2a87e7f429cdb257597",
+      "groundTruth_sha256_expected": "8452c011684ae09596ea396f79860a6a58bd07534b5ea03609669e197e32b7eb",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus GT expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54. Source files use Set GAN 51 naming; manifest setId kept numeric for corpus tooling.",
+      "expectedScoreFloor": null
+    },
+    {
+      "setId": "52",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 52 - A - white-up IMG_7500.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 52 - B - white-up IMG_7501.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 52 - cube-ground-truth-1779834712704.json",
+      "imageA_sha256_expected": "21383c6df7dc7fef5faad4341d6403da9d7c7231f50e5358445ce2c10b259eca",
+      "imageB_sha256_expected": "1f97b251769d4b11b8ade2ce484151de02fd5da187eef637f782d260cd2d4264",
+      "groundTruth_sha256_expected": "3eb3da5163d79f30fd0cd3e4d83c8c518f516c3f3e2eeaa339ab06c3361181ac",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus GT expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54.",
+      "expectedScoreFloor": null
+    },
+    {
+      "setId": "53",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 53 - A - white-up IMG_7502.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 53 - B - white-up IMG_7503.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 53 - cube-ground-truth-1779835108150.json",
+      "imageA_sha256_expected": "54e24b3ae9a3541fee55e26f8817b636b21117f7ec17cf81bee92f596412a747",
+      "imageB_sha256_expected": "28ca07e013e553759cf89b18e32d343b016d017025c38e36e10233028b3a1396",
+      "groundTruth_sha256_expected": "712ccdc55c2edd20bcd2fcc5c5a0c3b82f0d70a594aa60aeab143c80a5a26a93",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus GT expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54.",
+      "expectedScoreFloor": null
+    },
+    {
+      "setId": "54",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 54 - A - white-up IMG_7504.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 54 - B - white-up IMG_7505.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 54 - cube-ground-truth-1779835226934.json",
+      "imageA_sha256_expected": "51eaee960b92a658099302f86a485005bba70561764c47d71b9735a6f627d46f",
+      "imageB_sha256_expected": "1e957c9e903f620d5739a50b945f749c11d7260fc632888c5104457bccd43ef9",
+      "groundTruth_sha256_expected": "0f5469bd84347c2eeb0c44e85c781311f9822768ade2c509584186dc8101fc2b",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus GT expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54.",
+      "expectedScoreFloor": null
+    },
+    {
+      "setId": "55",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 55 - A - white-up IMG_7506.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 55 - B - white-up IMG_7507.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 55 - cube-ground-truth-1779835329942.json",
+      "imageA_sha256_expected": "10450c0740cfbba80333fb53a676ab664600e7d6727fb902d56380a13af500b3",
+      "imageB_sha256_expected": "67b93b592f6d900f98894c39d009c13fa596ff2501067e96c8d18a59905f22c8",
+      "groundTruth_sha256_expected": "da6543c6de872232bd32b1bfabd2094dd298ea2e44f66769250a610be061967a",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus GT expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54.",
+      "expectedScoreFloor": null
+    },
+    {
+      "setId": "56",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 56 - A - white-up IMG_7508.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 56 - B - white-up IMG_7509.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 56 - cube-ground-truth-1779835389195.json",
+      "imageA_sha256_expected": "637d5bd572af399e5cdf5d07e1bee471ae09882c54c6405a46c8b398ff6d0782",
+      "imageB_sha256_expected": "1b0caa9bca1b1c4ea52487aa1943014b05a79607d4fbf7b896f5bf8250a22c8a",
+      "groundTruth_sha256_expected": "ea65bb3a8c839289fa1e6e3e5af9e7fb781a05a7fed45763533b709611527a67",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus GT expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54.",
+      "expectedScoreFloor": null
+    },
+    {
       "setId": "57",
       "imageAPath": "/Users/jhuber/cube-corpus/Set 57 - A - white-up IMG_7510.JPG",
       "imageBPath": "/Users/jhuber/cube-corpus/Set 57 - B - white-up IMG_7511.JPG",
@@ -478,6 +712,32 @@
       "currentScoreObserved": 42,
       "notes": "Added and calibrated 2026-05-25 from canonical /Users/jhuber/cube-corpus files to close the gcm_axis_ground_truth/corpus_manifest coverage gap for hull-label shadow/e2e validation. Category/score pinned from tools/probe_corpus.py on current recognizer: needs_manual_review, score 42/54.",
       "expectedScoreFloor": 42
+    },
+    {
+      "setId": "59",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 59 - A - white-up IMG_7514.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 59 - B - white-up IMG_7515.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 59 - cube-ground-truth-1779835518531.json",
+      "imageA_sha256_expected": "b7daf25ac782ff1fd7c5b3de8d94f27e0a1430baf4dee1ef489c9af7d623c538",
+      "imageB_sha256_expected": "574e3b4805a9931915c8ed5323703e60defe9f2eb926382af2cf1fa5703da3f0",
+      "groundTruth_sha256_expected": "ac057236fe434be285d96fe031ae20e6a3b5bfe852f208aef6a8c858bb84d7a3",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus GT expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54.",
+      "expectedScoreFloor": null
+    },
+    {
+      "setId": "60",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 60 - A - white-up IMG_7516.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 60 - B - white-up IMG_7517.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 60 - cube-ground-truth-1779835643063.json",
+      "imageA_sha256_expected": "6645f4f12f1d7a3fef0e5b1146469759c6f0205f12333173ee4392e01b99c015",
+      "imageB_sha256_expected": "513698b4750cd6646f3aca5a4c8c6f30b7192926f26e2181126dab8cf055a4ce",
+      "groundTruth_sha256_expected": "c6e5d30693659e0c78e4bc588b2f2366118a808511ad94beca823b0eb364d714",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus GT expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54.",
+      "expectedScoreFloor": null
     },
     {
       "setId": "61",

@@ -1,0 +1,692 @@
+{
+  "rows": [
+    {
+      "acceptedThresholdPairs": 25,
+      "baselineCategory": "needs_manual_review",
+      "baselineScoreObserved": 54,
+      "broadLegalHamming": 0,
+      "broadLegalRepairChanges": 0,
+      "broadLegalValidState": true,
+      "conservativeLegalStatus": "already_valid_count_repair",
+      "currentThresholds": {
+        "A": 192,
+        "B": 128
+      },
+      "guardedBroadLegalStatus": "accepted_guarded_broad_legal_repair",
+      "isGanBrand": false,
+      "recommendedHamming": 0,
+      "recommendedMethod": "canonical_count_repaired",
+      "recommendedRepairMoveCount": 5,
+      "recommendedStickersCorrect": 54,
+      "recommendedValidState": true,
+      "selectedThresholds": {
+        "A": 192,
+        "B": 128
+      },
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "8",
+      "yawQuarterTurns": 3,
+      "yawSource": "hull_label_center_colors"
+    },
+    {
+      "acceptedThresholdPairs": 25,
+      "baselineCategory": "needs_manual_review",
+      "baselineScoreObserved": 54,
+      "broadLegalHamming": 0,
+      "broadLegalRepairChanges": 0,
+      "broadLegalValidState": true,
+      "conservativeLegalStatus": "already_valid_count_repair",
+      "currentThresholds": {
+        "A": 224,
+        "B": 160
+      },
+      "guardedBroadLegalStatus": "accepted_guarded_broad_legal_repair",
+      "isGanBrand": false,
+      "recommendedHamming": 0,
+      "recommendedMethod": "canonical_count_repaired",
+      "recommendedRepairMoveCount": 3,
+      "recommendedStickersCorrect": 54,
+      "recommendedValidState": true,
+      "selectedThresholds": {
+        "A": 224,
+        "B": 160
+      },
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "9",
+      "yawQuarterTurns": 3,
+      "yawSource": "hull_label_center_colors"
+    },
+    {
+      "acceptedThresholdPairs": 25,
+      "baselineCategory": "success_clean",
+      "baselineScoreObserved": 54,
+      "broadLegalHamming": 0,
+      "broadLegalRepairChanges": 0,
+      "broadLegalValidState": true,
+      "conservativeLegalStatus": "already_valid_count_repair",
+      "currentThresholds": {
+        "A": 64,
+        "B": 224
+      },
+      "guardedBroadLegalStatus": "accepted_guarded_broad_legal_repair",
+      "isGanBrand": false,
+      "recommendedHamming": 0,
+      "recommendedMethod": "canonical_count_repaired",
+      "recommendedRepairMoveCount": 5,
+      "recommendedStickersCorrect": 54,
+      "recommendedValidState": true,
+      "selectedThresholds": {
+        "A": 64,
+        "B": 224
+      },
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "10",
+      "yawQuarterTurns": 3,
+      "yawSource": "hull_label_center_colors"
+    },
+    {
+      "acceptedThresholdPairs": 25,
+      "baselineCategory": "needs_manual_review",
+      "baselineScoreObserved": 39,
+      "broadLegalHamming": 0,
+      "broadLegalRepairChanges": 6,
+      "broadLegalValidState": true,
+      "conservativeLegalStatus": "no_legal_repair",
+      "currentThresholds": {
+        "A": 160,
+        "B": 128
+      },
+      "guardedBroadLegalStatus": "rejected_guarded_broad_legal_repair",
+      "isGanBrand": false,
+      "recommendedHamming": 2,
+      "recommendedMethod": "canonical_count_repaired",
+      "recommendedRepairMoveCount": 11,
+      "recommendedStickersCorrect": 52,
+      "recommendedValidState": false,
+      "selectedThresholds": {
+        "A": 160,
+        "B": 128
+      },
+      "selectionReason": "current_invalid_selected_best_pair",
+      "setId": "11",
+      "yawQuarterTurns": 3,
+      "yawSource": "hull_label_center_colors"
+    },
+    {
+      "acceptedThresholdPairs": 25,
+      "baselineCategory": "success_clean",
+      "baselineScoreObserved": 54,
+      "broadLegalHamming": 0,
+      "broadLegalRepairChanges": 0,
+      "broadLegalValidState": true,
+      "conservativeLegalStatus": "already_valid_count_repair",
+      "currentThresholds": {
+        "A": 224,
+        "B": 128
+      },
+      "guardedBroadLegalStatus": "accepted_guarded_broad_legal_repair",
+      "isGanBrand": false,
+      "recommendedHamming": 0,
+      "recommendedMethod": "canonical_count_repaired",
+      "recommendedRepairMoveCount": 6,
+      "recommendedStickersCorrect": 54,
+      "recommendedValidState": true,
+      "selectedThresholds": {
+        "A": 224,
+        "B": 128
+      },
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "13",
+      "yawQuarterTurns": 0,
+      "yawSource": "hull_label_center_colors"
+    },
+    {
+      "acceptedThresholdPairs": 25,
+      "baselineCategory": "needs_manual_review",
+      "baselineScoreObserved": 34,
+      "broadLegalHamming": 0,
+      "broadLegalRepairChanges": 0,
+      "broadLegalValidState": true,
+      "conservativeLegalStatus": "already_valid_count_repair",
+      "currentThresholds": {
+        "A": 128,
+        "B": 128
+      },
+      "guardedBroadLegalStatus": "accepted_guarded_broad_legal_repair",
+      "isGanBrand": false,
+      "recommendedHamming": 0,
+      "recommendedMethod": "canonical_count_repaired",
+      "recommendedRepairMoveCount": 5,
+      "recommendedStickersCorrect": 54,
+      "recommendedValidState": true,
+      "selectedThresholds": {
+        "A": 128,
+        "B": 128
+      },
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "16",
+      "yawQuarterTurns": 3,
+      "yawSource": "hull_label_center_colors"
+    },
+    {
+      "acceptedThresholdPairs": 25,
+      "baselineCategory": "reject_retake",
+      "baselineScoreObserved": 0,
+      "broadLegalHamming": 0,
+      "broadLegalRepairChanges": 0,
+      "broadLegalValidState": true,
+      "conservativeLegalStatus": "already_valid_count_repair",
+      "currentThresholds": {
+        "A": 64,
+        "B": 128
+      },
+      "guardedBroadLegalStatus": "accepted_guarded_broad_legal_repair",
+      "isGanBrand": false,
+      "recommendedHamming": 0,
+      "recommendedMethod": "canonical_count_repaired",
+      "recommendedRepairMoveCount": 0,
+      "recommendedStickersCorrect": 54,
+      "recommendedValidState": true,
+      "selectedThresholds": {
+        "A": 64,
+        "B": 128
+      },
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "18",
+      "yawQuarterTurns": 0,
+      "yawSource": "hull_label_center_colors"
+    },
+    {
+      "acceptedThresholdPairs": 25,
+      "baselineCategory": "needs_manual_review",
+      "baselineScoreObserved": 48,
+      "broadLegalHamming": 0,
+      "broadLegalRepairChanges": 0,
+      "broadLegalValidState": true,
+      "conservativeLegalStatus": "already_valid_count_repair",
+      "currentThresholds": {
+        "A": 224,
+        "B": 64
+      },
+      "guardedBroadLegalStatus": "accepted_guarded_broad_legal_repair",
+      "isGanBrand": false,
+      "recommendedHamming": 0,
+      "recommendedMethod": "canonical_count_repaired",
+      "recommendedRepairMoveCount": 0,
+      "recommendedStickersCorrect": 54,
+      "recommendedValidState": true,
+      "selectedThresholds": {
+        "A": 224,
+        "B": 64
+      },
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "19",
+      "yawQuarterTurns": 1,
+      "yawSource": "hull_label_center_colors"
+    },
+    {
+      "acceptedThresholdPairs": 25,
+      "baselineCategory": "needs_manual_review",
+      "baselineScoreObserved": 54,
+      "broadLegalHamming": 0,
+      "broadLegalRepairChanges": 0,
+      "broadLegalValidState": true,
+      "conservativeLegalStatus": "already_valid_count_repair",
+      "currentThresholds": {
+        "A": 224,
+        "B": 192
+      },
+      "guardedBroadLegalStatus": "accepted_guarded_broad_legal_repair",
+      "isGanBrand": false,
+      "recommendedHamming": 0,
+      "recommendedMethod": "canonical_count_repaired",
+      "recommendedRepairMoveCount": 2,
+      "recommendedStickersCorrect": 54,
+      "recommendedValidState": true,
+      "selectedThresholds": {
+        "A": 224,
+        "B": 192
+      },
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "33",
+      "yawQuarterTurns": 0,
+      "yawSource": "hull_label_center_colors"
+    },
+    {
+      "acceptedThresholdPairs": 25,
+      "baselineCategory": "reject_retake",
+      "baselineScoreObserved": 0,
+      "broadLegalHamming": 0,
+      "broadLegalRepairChanges": 0,
+      "broadLegalValidState": true,
+      "conservativeLegalStatus": "already_valid_count_repair",
+      "currentThresholds": {
+        "A": 192,
+        "B": 160
+      },
+      "guardedBroadLegalStatus": "accepted_guarded_broad_legal_repair",
+      "isGanBrand": false,
+      "recommendedHamming": 0,
+      "recommendedMethod": "canonical_count_repaired",
+      "recommendedRepairMoveCount": 4,
+      "recommendedStickersCorrect": 54,
+      "recommendedValidState": true,
+      "selectedThresholds": {
+        "A": 192,
+        "B": 160
+      },
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "34",
+      "yawQuarterTurns": 0,
+      "yawSource": "hull_label_center_colors"
+    },
+    {
+      "acceptedThresholdPairs": 25,
+      "baselineCategory": "reject_retake",
+      "baselineScoreObserved": 0,
+      "broadLegalHamming": 0,
+      "broadLegalRepairChanges": 0,
+      "broadLegalValidState": true,
+      "conservativeLegalStatus": "already_valid_count_repair",
+      "currentThresholds": {
+        "A": 160,
+        "B": 128
+      },
+      "guardedBroadLegalStatus": "accepted_guarded_broad_legal_repair",
+      "isGanBrand": false,
+      "recommendedHamming": 0,
+      "recommendedMethod": "canonical_count_repaired",
+      "recommendedRepairMoveCount": 3,
+      "recommendedStickersCorrect": 54,
+      "recommendedValidState": true,
+      "selectedThresholds": {
+        "A": 160,
+        "B": 128
+      },
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "35",
+      "yawQuarterTurns": 0,
+      "yawSource": "hull_label_center_colors"
+    },
+    {
+      "acceptedThresholdPairs": 25,
+      "baselineCategory": "reject_retake",
+      "baselineScoreObserved": 0,
+      "broadLegalHamming": 0,
+      "broadLegalRepairChanges": 0,
+      "broadLegalValidState": true,
+      "conservativeLegalStatus": "already_valid_count_repair",
+      "currentThresholds": {
+        "A": 224,
+        "B": 160
+      },
+      "guardedBroadLegalStatus": "accepted_guarded_broad_legal_repair",
+      "isGanBrand": true,
+      "recommendedHamming": 0,
+      "recommendedMethod": "canonical_count_repaired",
+      "recommendedRepairMoveCount": 0,
+      "recommendedStickersCorrect": 54,
+      "recommendedValidState": true,
+      "selectedThresholds": {
+        "A": 224,
+        "B": 160
+      },
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "50",
+      "yawQuarterTurns": 0,
+      "yawSource": "hull_label_center_colors"
+    },
+    {
+      "acceptedThresholdPairs": 25,
+      "baselineCategory": "reject_retake",
+      "baselineScoreObserved": 0,
+      "broadLegalHamming": 0,
+      "broadLegalRepairChanges": 0,
+      "broadLegalValidState": true,
+      "conservativeLegalStatus": "already_valid_count_repair",
+      "currentThresholds": {
+        "A": 192,
+        "B": 64
+      },
+      "guardedBroadLegalStatus": "accepted_guarded_broad_legal_repair",
+      "isGanBrand": true,
+      "recommendedHamming": 0,
+      "recommendedMethod": "canonical_count_repaired",
+      "recommendedRepairMoveCount": 0,
+      "recommendedStickersCorrect": 54,
+      "recommendedValidState": true,
+      "selectedThresholds": {
+        "A": 192,
+        "B": 64
+      },
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "51",
+      "yawQuarterTurns": 0,
+      "yawSource": "hull_label_center_colors"
+    },
+    {
+      "acceptedThresholdPairs": 25,
+      "baselineCategory": "reject_retake",
+      "baselineScoreObserved": 0,
+      "broadLegalHamming": 0,
+      "broadLegalRepairChanges": 0,
+      "broadLegalValidState": true,
+      "conservativeLegalStatus": "already_valid_count_repair",
+      "currentThresholds": {
+        "A": 160,
+        "B": 128
+      },
+      "guardedBroadLegalStatus": "accepted_guarded_broad_legal_repair",
+      "isGanBrand": false,
+      "recommendedHamming": 0,
+      "recommendedMethod": "canonical_count_repaired",
+      "recommendedRepairMoveCount": 0,
+      "recommendedStickersCorrect": 54,
+      "recommendedValidState": true,
+      "selectedThresholds": {
+        "A": 160,
+        "B": 128
+      },
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "52",
+      "yawQuarterTurns": 0,
+      "yawSource": "hull_label_center_colors"
+    },
+    {
+      "acceptedThresholdPairs": 25,
+      "baselineCategory": "reject_retake",
+      "baselineScoreObserved": 0,
+      "broadLegalHamming": 0,
+      "broadLegalRepairChanges": 0,
+      "broadLegalValidState": true,
+      "conservativeLegalStatus": "already_valid_count_repair",
+      "currentThresholds": {
+        "A": 192,
+        "B": 224
+      },
+      "guardedBroadLegalStatus": "accepted_guarded_broad_legal_repair",
+      "isGanBrand": false,
+      "recommendedHamming": 0,
+      "recommendedMethod": "canonical_count_repaired",
+      "recommendedRepairMoveCount": 0,
+      "recommendedStickersCorrect": 54,
+      "recommendedValidState": true,
+      "selectedThresholds": {
+        "A": 192,
+        "B": 224
+      },
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "53",
+      "yawQuarterTurns": 1,
+      "yawSource": "hull_label_center_colors"
+    },
+    {
+      "acceptedThresholdPairs": 25,
+      "baselineCategory": "reject_retake",
+      "baselineScoreObserved": 0,
+      "broadLegalHamming": 0,
+      "broadLegalRepairChanges": 0,
+      "broadLegalValidState": true,
+      "conservativeLegalStatus": "already_valid_count_repair",
+      "currentThresholds": {
+        "A": 128,
+        "B": 224
+      },
+      "guardedBroadLegalStatus": "accepted_guarded_broad_legal_repair",
+      "isGanBrand": false,
+      "recommendedHamming": 0,
+      "recommendedMethod": "canonical_count_repaired",
+      "recommendedRepairMoveCount": 0,
+      "recommendedStickersCorrect": 54,
+      "recommendedValidState": true,
+      "selectedThresholds": {
+        "A": 128,
+        "B": 224
+      },
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "54",
+      "yawQuarterTurns": 2,
+      "yawSource": "hull_label_center_colors"
+    },
+    {
+      "acceptedThresholdPairs": 25,
+      "baselineCategory": "reject_retake",
+      "baselineScoreObserved": 0,
+      "broadLegalHamming": 0,
+      "broadLegalRepairChanges": 0,
+      "broadLegalValidState": true,
+      "conservativeLegalStatus": "already_valid_count_repair",
+      "currentThresholds": {
+        "A": 192,
+        "B": 160
+      },
+      "guardedBroadLegalStatus": "accepted_guarded_broad_legal_repair",
+      "isGanBrand": false,
+      "recommendedHamming": 0,
+      "recommendedMethod": "canonical_count_repaired",
+      "recommendedRepairMoveCount": 1,
+      "recommendedStickersCorrect": 54,
+      "recommendedValidState": true,
+      "selectedThresholds": {
+        "A": 192,
+        "B": 160
+      },
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "55",
+      "yawQuarterTurns": 3,
+      "yawSource": "hull_label_center_colors"
+    },
+    {
+      "acceptedThresholdPairs": 25,
+      "baselineCategory": "reject_retake",
+      "baselineScoreObserved": 0,
+      "broadLegalHamming": 0,
+      "broadLegalRepairChanges": 0,
+      "broadLegalValidState": true,
+      "conservativeLegalStatus": "already_valid_count_repair",
+      "currentThresholds": {
+        "A": 128,
+        "B": 64
+      },
+      "guardedBroadLegalStatus": "accepted_guarded_broad_legal_repair",
+      "isGanBrand": false,
+      "recommendedHamming": 0,
+      "recommendedMethod": "canonical_count_repaired",
+      "recommendedRepairMoveCount": 0,
+      "recommendedStickersCorrect": 54,
+      "recommendedValidState": true,
+      "selectedThresholds": {
+        "A": 128,
+        "B": 64
+      },
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "56",
+      "yawQuarterTurns": 0,
+      "yawSource": "hull_label_center_colors"
+    },
+    {
+      "acceptedThresholdPairs": 20,
+      "baselineCategory": "reject_retake",
+      "baselineScoreObserved": 0,
+      "broadLegalHamming": 0,
+      "broadLegalRepairChanges": 5,
+      "broadLegalValidState": true,
+      "conservativeLegalStatus": "legal_repair_found",
+      "currentThresholds": {
+        "A": 128,
+        "B": 224
+      },
+      "guardedBroadLegalStatus": "rejected_guarded_broad_legal_repair",
+      "isGanBrand": false,
+      "recommendedHamming": 0,
+      "recommendedMethod": "conservative_legal_repaired",
+      "recommendedRepairMoveCount": null,
+      "recommendedStickersCorrect": 54,
+      "recommendedValidState": true,
+      "selectedThresholds": {
+        "A": 128,
+        "B": 224
+      },
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "59",
+      "yawQuarterTurns": 0,
+      "yawSource": "hull_label_center_colors"
+    },
+    {
+      "acceptedThresholdPairs": 25,
+      "baselineCategory": "reject_retake",
+      "baselineScoreObserved": 0,
+      "broadLegalHamming": 0,
+      "broadLegalRepairChanges": 0,
+      "broadLegalValidState": true,
+      "conservativeLegalStatus": "already_valid_count_repair",
+      "currentThresholds": {
+        "A": 160,
+        "B": 192
+      },
+      "guardedBroadLegalStatus": "accepted_guarded_broad_legal_repair",
+      "isGanBrand": false,
+      "recommendedHamming": 0,
+      "recommendedMethod": "canonical_count_repaired",
+      "recommendedRepairMoveCount": 4,
+      "recommendedStickersCorrect": 54,
+      "recommendedValidState": true,
+      "selectedThresholds": {
+        "A": 160,
+        "B": 192
+      },
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "60",
+      "yawQuarterTurns": 3,
+      "yawSource": "hull_label_center_colors"
+    }
+  ],
+  "schema": "fresh_gt_constrained_inference_v1",
+  "source": {
+    "command": ".venv/bin/python tools/diagnose_pair_threshold_repair.py --only-sets 8 9 10 11 13 16 18 19 33 34 35 50 51 52 53 54 55 56 59 60 --out-json /tmp/fresh_gt_pair_threshold.json --report /tmp/fresh_gt_pair_threshold.md",
+    "generated_at_utc": "2026-05-26T23:18:55.766308+00:00",
+    "git_sha": "fb81baf65a12ef864ae4c07ea6691621dc0f7ddf",
+    "inputTrace": "/tmp/fresh_gt_pair_threshold.json",
+    "manifest": "tests/fixtures/corpus_manifest.json",
+    "tool": "tools/diagnose_pair_threshold_repair.py"
+  },
+  "summary": {
+    "baseline": {
+      "categoryDistribution": {
+        "needs_manual_review": 6,
+        "reject_retake": 12,
+        "success_clean": 2
+      },
+      "needsManualReview": 6,
+      "rejectRetake": 12,
+      "score54Rows": 5,
+      "successClean": 2
+    },
+    "broadLegalCandidate": {
+      "exact": 20,
+      "hammingDistribution": {
+        "0": 20
+      },
+      "legal": 20
+    },
+    "constrainedRecommended": {
+      "assembled": 20,
+      "exact": 19,
+      "hammingDistribution": {
+        "0": 19,
+        "2": 1
+      },
+      "legal": 19,
+      "within3": 20
+    },
+    "ganRows": [
+      {
+        "acceptedThresholdPairs": 25,
+        "baselineCategory": "reject_retake",
+        "baselineScoreObserved": 0,
+        "broadLegalHamming": 0,
+        "broadLegalRepairChanges": 0,
+        "broadLegalValidState": true,
+        "conservativeLegalStatus": "already_valid_count_repair",
+        "currentThresholds": {
+          "A": 224,
+          "B": 160
+        },
+        "guardedBroadLegalStatus": "accepted_guarded_broad_legal_repair",
+        "isGanBrand": true,
+        "recommendedHamming": 0,
+        "recommendedMethod": "canonical_count_repaired",
+        "recommendedRepairMoveCount": 0,
+        "recommendedStickersCorrect": 54,
+        "recommendedValidState": true,
+        "selectedThresholds": {
+          "A": 224,
+          "B": 160
+        },
+        "selectionReason": "kept_current_valid_repair",
+        "setId": "50",
+        "yawQuarterTurns": 0,
+        "yawSource": "hull_label_center_colors"
+      },
+      {
+        "acceptedThresholdPairs": 25,
+        "baselineCategory": "reject_retake",
+        "baselineScoreObserved": 0,
+        "broadLegalHamming": 0,
+        "broadLegalRepairChanges": 0,
+        "broadLegalValidState": true,
+        "conservativeLegalStatus": "already_valid_count_repair",
+        "currentThresholds": {
+          "A": 192,
+          "B": 64
+        },
+        "guardedBroadLegalStatus": "accepted_guarded_broad_legal_repair",
+        "isGanBrand": true,
+        "recommendedHamming": 0,
+        "recommendedMethod": "canonical_count_repaired",
+        "recommendedRepairMoveCount": 0,
+        "recommendedStickersCorrect": 54,
+        "recommendedValidState": true,
+        "selectedThresholds": {
+          "A": 192,
+          "B": 64
+        },
+        "selectionReason": "kept_current_valid_repair",
+        "setId": "51",
+        "yawQuarterTurns": 0,
+        "yawSource": "hull_label_center_colors"
+      }
+    ],
+    "remainingRecommendedMisses": [
+      {
+        "acceptedThresholdPairs": 25,
+        "baselineCategory": "needs_manual_review",
+        "baselineScoreObserved": 39,
+        "broadLegalHamming": 0,
+        "broadLegalRepairChanges": 6,
+        "broadLegalValidState": true,
+        "conservativeLegalStatus": "no_legal_repair",
+        "currentThresholds": {
+          "A": 160,
+          "B": 128
+        },
+        "guardedBroadLegalStatus": "rejected_guarded_broad_legal_repair",
+        "isGanBrand": false,
+        "recommendedHamming": 2,
+        "recommendedMethod": "canonical_count_repaired",
+        "recommendedRepairMoveCount": 11,
+        "recommendedStickersCorrect": 52,
+        "recommendedValidState": false,
+        "selectedThresholds": {
+          "A": 160,
+          "B": 128
+        },
+        "selectionReason": "current_invalid_selected_best_pair",
+        "setId": "11",
+        "yawQuarterTurns": 3,
+        "yawSource": "hull_label_center_colors"
+      }
+    ],
+    "rowCount": 20
+  }
+}

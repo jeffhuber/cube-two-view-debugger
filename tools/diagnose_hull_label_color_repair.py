@@ -58,6 +58,7 @@ from tools.diagnose_slot_yaw_assignment import (  # noqa: E402
     slot_face_assignments,
 )
 from tools.extract_color_samples import PairTask, load_corpus_tasks  # noqa: E402
+from tools.hull_label_color_repair import repair_from_hull_label_fits  # noqa: E402
 from tools.hull_label_assembly import convention_orientation_for_slot  # noqa: E402
 from tools.rectify_faces import DEFAULT_FACE_SIZE, extract_stickers_from_rectified, rectify_face  # noqa: E402
 from tools.sample_stickers_from_hull import apply_orientation  # noqa: E402
@@ -349,9 +350,10 @@ def _evaluate_yaw_source(
             "yawQuarterTurns": None,
         }
     try:
-        observations, panel_meta = _sample_observations(
+        repair_payload = repair_from_hull_label_fits(
             side_fits=side_fits,
             yaw_quarter_turns=yaw,
+            gt_state=gt_state,
         )
     except Exception as exc:  # noqa: BLE001
         return {
@@ -362,31 +364,17 @@ def _evaluate_yaw_source(
             "sideTraces": {side: side_fits[side].get("trace") for side in ("A", "B")},
         }
 
-    canonical = _evaluate_palette(
-        observations=observations,
-        palette=CANONICAL_RGB,
-        gt_state=gt_state,
-        prefix="canonical",
-    )
-    adaptive_palette = _adaptive_palette(observations)
-    adaptive = _evaluate_palette(
-        observations=observations,
-        palette=adaptive_palette,
-        gt_state=gt_state,
-        prefix="adaptive",
-    )
     return {
         "source": source.get("source"),
-        "status": "assembled",
+        "status": repair_payload.get("status"),
         "yawQuarterTurns": yaw,
         "sourceMeta": {key: value for key, value in source.items() if key not in {"source"}},
-        "panelMeta": panel_meta,
-        "adaptivePalette": adaptive_palette,
-        "methods": {
-            **canonical,
-            **adaptive,
-        },
-        "sideTraces": {side: side_fits[side].get("trace") for side in ("A", "B")},
+        "panelMeta": repair_payload.get("panelMeta"),
+        "adaptivePalette": repair_payload.get("adaptivePalette"),
+        "recommendedMethod": repair_payload.get("recommendedMethod"),
+        "recommended": repair_payload.get("recommended"),
+        "methods": repair_payload.get("methods", {}),
+        "sideTraces": repair_payload.get("sideTraces", {}),
     }
 
 

@@ -22,9 +22,13 @@ without coordinating in this doc first.
 convention-aware silhouette-corner labeling pipeline from PRs
 #282/#284/#286/#288/#289/#291) is now the **foundation** of the
 rectification + repair stack — no longer the next deliverable. The
-shadow-trace analyzer (#292) landed, confirming gate calibration on
-the 70-row axis corpus (69/70 accept; 30_A correctly rejected via the
-`projective_residual_norm` hard gate). Operator handoff:
+shadow-trace analyzer (#292) landed and the current corpus run reports
+**70/70 accept, 0 rejections, 0 hard failures** on the 70-row axis
+corpus (2 advisory warnings on 14_A `sticker_score_total` and 37_A
+`vertex_cloud_spread_px`). The earlier "69/70 accept + 30_A rejected
+on `projective_residual_norm`" was the empirical floor at #292 first
+run; subsequent regenerations now accept all 70. See
+`tools/SHADOW_TRACE_ANALYSIS.md` for current numbers. Operator handoff:
 `tools/HULL_LABEL_TIER1_WIRING.md`.
 
 Active focus has shifted to **constrained cube-state inference** as

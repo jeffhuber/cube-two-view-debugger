@@ -15,7 +15,7 @@ is deterministic?
 This tool answers that question with a 7-step implementation. The original
 12-row full-corner seed produced essentially-oracle-quality rectifications
 (per `tools/RECTIFY_VIA_HULL_LABELS_REPORT.md`); targeted tail labels such as
-Set 70 extend that corpus for failure analysis.
+Sets 63-73 extend that corpus for failure analysis.
 
 ## Pipeline
 

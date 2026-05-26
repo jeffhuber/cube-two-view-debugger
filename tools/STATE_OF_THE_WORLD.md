@@ -63,7 +63,7 @@ principles work.
 | Asset | Path | What it is |
 |---|---|---|
 | **Full-corner convention** | `tools/FULL_CORNER_LABELING.md` | Canonical `Va/Vb + 0..5` convention, A/B face outlines, flattened facelet mapping, and legacy-axis audit note. |
-| **Full-corner seed truth** | `tests/fixtures/full_corner_ground_truth.json` | First canonical 12-photo full-corner fixture, covering sets 20, 38, 40, 41, 43, and 45. |
+| **Full-corner truth** | `tests/fixtures/full_corner_ground_truth.json` | Canonical 34-photo full-corner fixture, covering seed sets 20, 38, 40, 41, 43, 45 plus tail/stress sets 63-73. |
 | **Canonical full-corner global baseline** | `tests/fixtures/full_corner_global_model_baseline.json` | First current-main global-model snapshot against full-corner truth. Seed result: 8/12 `PHASE_SWAPPED`, 3/12 `GOOD`, 1/12 `MARGINAL`. |
 | **Axis-labeled ground truth** | `tests/fixtures/gcm_axis_ground_truth.json` | Legacy vertex + `near_*` fixture. Treat as provisional until audited/migrated against full-corner labels; do not assume `near_*` means one-edge truth. |
 | **Post-#218 baseline snapshot** | `tests/fixtures/post_218_baseline.json` | Legacy current-main accuracy snapshot derived from `gcm_axis_ground_truth.json`. Regression-gate semantics are provisional until the fixture is migrated. |

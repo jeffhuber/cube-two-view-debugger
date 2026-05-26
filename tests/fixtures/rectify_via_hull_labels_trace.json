@@ -2,8 +2,8 @@
   "schema": "rectify_via_hull_labels_v1",
   "source": {
     "tool": "tools/rectify_via_hull_labels.py",
-    "git_sha": "ad352898dca2c042d21545bff5e7f3c8bb77783c",
-    "generated_at_utc": "2026-05-25T00:33:03.614272+00:00",
+    "git_sha": "e021b8907fbd8c054c4eeb25f54f58da22fb1ed8",
+    "generated_at_utc": "2026-05-26T19:34:11.164950+00:00",
     "truth": "tests/fixtures/full_corner_ground_truth.json",
     "manifest": "tests/fixtures/corpus_manifest.json",
     "max_image_dim": 1600,
@@ -14,24 +14,129 @@
       "key": "20_A",
       "side": "A",
       "status": "rectified",
-      "labeling_mean_corner_err_px": 17.2,
-      "per_corner_err_px": {
-        "corner_0": 3.7,
-        "corner_1": 19.2,
-        "corner_2": 13.3,
-        "corner_3": 29.3,
-        "corner_4": 8.3,
-        "corner_5": 29.2
-      },
-      "derived_vertex_error_processing_px": 49.5,
-      "rectified_score": {
-        "total_distance": 656.71,
-        "per_face": {
-          "upper": 214.47,
-          "right": 317.24,
-          "front": 125.0
+      "selected_mask_threshold": 224,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 727.48,
+          "sticker_score_per_face": {
+            "upper": 278.86,
+            "right": 319.93,
+            "front": 128.69
+          },
+          "mean_sticker_distance": 26.94,
+          "vertex_cloud_spread_px": 236.93247983339052,
+          "vertex_cloud_spread_norm": 0.2515320178760317,
+          "hexagon_diameter_px": 941.9575361978904,
+          "projective_residual_norm": 0.0011533174937834994,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=727.5; warning 700.0"
+          ]
         },
-        "mean_sticker_distance": 24.32
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 656.71,
+          "sticker_score_per_face": {
+            "upper": 214.47,
+            "right": 317.24,
+            "front": 125.0
+          },
+          "mean_sticker_distance": 24.32,
+          "vertex_cloud_spread_px": 229.21823662178366,
+          "vertex_cloud_spread_norm": 0.24458479585559167,
+          "hexagon_diameter_px": 937.1728762613651,
+          "projective_residual_norm": 0.00023699938101950517,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 637.2,
+          "sticker_score_per_face": {
+            "upper": 196.48,
+            "right": 317.12,
+            "front": 123.6
+          },
+          "mean_sticker_distance": 23.6,
+          "vertex_cloud_spread_px": 232.57256931977167,
+          "vertex_cloud_spread_norm": 0.24701037875480863,
+          "hexagon_diameter_px": 941.5497862566801,
+          "projective_residual_norm": 4.652673352091555e-05,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 640.62,
+          "sticker_score_per_face": {
+            "upper": 194.23,
+            "right": 322.37,
+            "front": 124.02
+          },
+          "mean_sticker_distance": 23.73,
+          "vertex_cloud_spread_px": 219.02054698132775,
+          "vertex_cloud_spread_norm": 0.2346576136545758,
+          "hexagon_diameter_px": 933.3622019344901,
+          "projective_residual_norm": 0.007089336863980416,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 634.08,
+          "sticker_score_per_face": {
+            "upper": 193.58,
+            "right": 317.08,
+            "front": 123.43
+          },
+          "mean_sticker_distance": 23.48,
+          "vertex_cloud_spread_px": 221.29844102478444,
+          "vertex_cloud_spread_norm": 0.23731180252488787,
+          "hexagon_diameter_px": 932.5218496099702,
+          "projective_residual_norm": 0.00667955557141215,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        }
+      ],
+      "labeling_mean_corner_err_px": 17.6,
+      "per_corner_err_px": {
+        "corner_0": 10.9,
+        "corner_1": 15.5,
+        "corner_2": 12.4,
+        "corner_3": 30.7,
+        "corner_4": 11.0,
+        "corner_5": 24.8
+      },
+      "derived_vertex_error_processing_px": 34.9,
+      "rectified_score": {
+        "total_distance": 634.08,
+        "per_face": {
+          "upper": 193.58,
+          "right": 317.08,
+          "front": 123.43
+        },
+        "mean_sticker_distance": 23.48
       },
       "oracle_score": {
         "total_distance": 637.9,
@@ -42,30 +147,135 @@
         },
         "mean_sticker_distance": 23.63
       },
-      "score_delta_vs_oracle": 18.81
+      "score_delta_vs_oracle": -3.82
     },
     {
       "key": "20_B",
       "side": "B",
       "status": "rectified",
-      "labeling_mean_corner_err_px": 19.3,
-      "per_corner_err_px": {
-        "corner_0": 32.1,
-        "corner_1": 8.2,
-        "corner_2": 21.7,
-        "corner_3": 4.4,
-        "corner_4": 23.5,
-        "corner_5": 25.7
-      },
-      "derived_vertex_error_processing_px": 60.1,
-      "rectified_score": {
-        "total_distance": 631.46,
-        "per_face": {
-          "upper": 185.07,
-          "right": 260.18,
-          "front": 186.2
+      "selected_mask_threshold": 64,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 592.39,
+          "sticker_score_per_face": {
+            "upper": 182.82,
+            "right": 258.66,
+            "front": 150.9
+          },
+          "mean_sticker_distance": 21.94,
+          "vertex_cloud_spread_px": 245.381335883559,
+          "vertex_cloud_spread_norm": 0.2510943177569099,
+          "hexagon_diameter_px": 977.247665640599,
+          "projective_residual_norm": 0.004132165872131294,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "vertex_cloud_spread_px=245.4; warning 240.0"
+          ]
         },
-        "mean_sticker_distance": 23.39
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 631.46,
+          "sticker_score_per_face": {
+            "upper": 185.07,
+            "right": 260.18,
+            "front": 186.2
+          },
+          "mean_sticker_distance": 23.39,
+          "vertex_cloud_spread_px": 233.80547470065795,
+          "vertex_cloud_spread_norm": 0.24077288709548886,
+          "hexagon_diameter_px": 971.062304901184,
+          "projective_residual_norm": 0.0046039515028094636,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 597.85,
+          "sticker_score_per_face": {
+            "upper": 183.98,
+            "right": 260.73,
+            "front": 153.14
+          },
+          "mean_sticker_distance": 22.14,
+          "vertex_cloud_spread_px": 238.6063704095094,
+          "vertex_cloud_spread_norm": 0.24648773957308726,
+          "hexagon_diameter_px": 968.0253095864798,
+          "projective_residual_norm": 0.0020700079092014537,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 597.6,
+          "sticker_score_per_face": {
+            "upper": 184.14,
+            "right": 262.84,
+            "front": 150.62
+          },
+          "mean_sticker_distance": 22.13,
+          "vertex_cloud_spread_px": 229.4733099948663,
+          "vertex_cloud_spread_norm": 0.2374767291941444,
+          "hexagon_diameter_px": 966.2980906531897,
+          "projective_residual_norm": 0.0026734900369038486,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 599.06,
+          "sticker_score_per_face": {
+            "upper": 184.14,
+            "right": 262.59,
+            "front": 152.33
+          },
+          "mean_sticker_distance": 22.19,
+          "vertex_cloud_spread_px": 229.53213282675696,
+          "vertex_cloud_spread_norm": 0.23805264483890343,
+          "hexagon_diameter_px": 964.2074465590898,
+          "projective_residual_norm": 0.002067841952053371,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        }
+      ],
+      "labeling_mean_corner_err_px": 19.0,
+      "per_corner_err_px": {
+        "corner_0": 27.5,
+        "corner_1": 19.9,
+        "corner_2": 18.6,
+        "corner_3": 4.5,
+        "corner_4": 17.2,
+        "corner_5": 26.2
+      },
+      "derived_vertex_error_processing_px": 28.4,
+      "rectified_score": {
+        "total_distance": 592.39,
+        "per_face": {
+          "upper": 182.82,
+          "right": 258.66,
+          "front": 150.9
+        },
+        "mean_sticker_distance": 21.94
       },
       "oracle_score": {
         "total_distance": 587.54,
@@ -76,30 +286,135 @@
         },
         "mean_sticker_distance": 21.76
       },
-      "score_delta_vs_oracle": 43.92
+      "score_delta_vs_oracle": 4.85
     },
     {
       "key": "38_A",
       "side": "A",
       "status": "rectified",
-      "labeling_mean_corner_err_px": 14.1,
-      "per_corner_err_px": {
-        "corner_0": 5.7,
-        "corner_1": 16.9,
-        "corner_2": 24.1,
-        "corner_3": 20.4,
-        "corner_4": 13.1,
-        "corner_5": 4.5
-      },
-      "derived_vertex_error_processing_px": 43.4,
-      "rectified_score": {
-        "total_distance": 583.87,
-        "per_face": {
-          "upper": 127.52,
-          "right": 229.57,
-          "front": 226.79
+      "selected_mask_threshold": 192,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "projective",
+          "sticker_score_total": 593.36,
+          "sticker_score_per_face": {
+            "upper": 125.79,
+            "right": 243.5,
+            "front": 224.07
+          },
+          "mean_sticker_distance": 21.98,
+          "vertex_cloud_spread_px": 247.315587862957,
+          "vertex_cloud_spread_norm": 0.27111011632045995,
+          "hexagon_diameter_px": 912.2329746287403,
+          "projective_residual_norm": 0.002035708175046985,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "vertex_cloud_spread_px=247.3; warning 240.0"
+          ]
         },
-        "mean_sticker_distance": 21.62
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 583.87,
+          "sticker_score_per_face": {
+            "upper": 127.52,
+            "right": 229.57,
+            "front": 226.79
+          },
+          "mean_sticker_distance": 21.62,
+          "vertex_cloud_spread_px": 215.52262062252305,
+          "vertex_cloud_spread_norm": 0.2361296631701861,
+          "hexagon_diameter_px": 912.7299710210025,
+          "projective_residual_norm": 0.0038860577941946537,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 582.78,
+          "sticker_score_per_face": {
+            "upper": 127.97,
+            "right": 229.92,
+            "front": 224.89
+          },
+          "mean_sticker_distance": 21.58,
+          "vertex_cloud_spread_px": 222.03603311174518,
+          "vertex_cloud_spread_norm": 0.24363579276152633,
+          "hexagon_diameter_px": 911.3440623606432,
+          "projective_residual_norm": 0.0052764259445612395,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 582.49,
+          "sticker_score_per_face": {
+            "upper": 126.98,
+            "right": 229.66,
+            "front": 225.86
+          },
+          "mean_sticker_distance": 21.57,
+          "vertex_cloud_spread_px": 218.44907873461037,
+          "vertex_cloud_spread_norm": 0.23983320003511593,
+          "hexagon_diameter_px": 910.8375266753121,
+          "projective_residual_norm": 0.0010914021112699438,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 582.94,
+          "sticker_score_per_face": {
+            "upper": 128.34,
+            "right": 229.17,
+            "front": 225.43
+          },
+          "mean_sticker_distance": 21.59,
+          "vertex_cloud_spread_px": 231.24878378058554,
+          "vertex_cloud_spread_norm": 0.2557996035503373,
+          "hexagon_diameter_px": 904.0232297900315,
+          "projective_residual_norm": 0.008770026743798606,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        }
+      ],
+      "labeling_mean_corner_err_px": 15.8,
+      "per_corner_err_px": {
+        "corner_0": 16.4,
+        "corner_1": 11.8,
+        "corner_2": 20.8,
+        "corner_3": 19.6,
+        "corner_4": 25.0,
+        "corner_5": 1.3
+      },
+      "derived_vertex_error_processing_px": 44.9,
+      "rectified_score": {
+        "total_distance": 582.49,
+        "per_face": {
+          "upper": 126.98,
+          "right": 229.66,
+          "front": 225.86
+        },
+        "mean_sticker_distance": 21.57
       },
       "oracle_score": {
         "total_distance": 582.03,
@@ -110,30 +425,133 @@
         },
         "mean_sticker_distance": 21.56
       },
-      "score_delta_vs_oracle": 1.84
+      "score_delta_vs_oracle": 0.46
     },
     {
       "key": "38_B",
       "side": "B",
       "status": "rectified",
-      "labeling_mean_corner_err_px": 14.4,
-      "per_corner_err_px": {
-        "corner_0": 27.3,
-        "corner_1": 12.4,
-        "corner_2": 18.2,
-        "corner_3": 5.0,
-        "corner_4": 16.8,
-        "corner_5": 6.6
-      },
-      "derived_vertex_error_processing_px": 27.6,
-      "rectified_score": {
-        "total_distance": 496.57,
-        "per_face": {
-          "upper": 171.49,
-          "right": 199.56,
-          "front": 125.52
+      "selected_mask_threshold": 224,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 503.96,
+          "sticker_score_per_face": {
+            "upper": 173.57,
+            "right": 203.92,
+            "front": 126.46
+          },
+          "mean_sticker_distance": 18.67,
+          "vertex_cloud_spread_px": 178.05897899291685,
+          "vertex_cloud_spread_norm": 0.21813010611341527,
+          "hexagon_diameter_px": 816.2971272765818,
+          "projective_residual_norm": 2.1735571901390256e-05,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
         },
-        "mean_sticker_distance": 18.39
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 496.57,
+          "sticker_score_per_face": {
+            "upper": 171.49,
+            "right": 199.56,
+            "front": 125.52
+          },
+          "mean_sticker_distance": 18.39,
+          "vertex_cloud_spread_px": 183.0109286354233,
+          "vertex_cloud_spread_norm": 0.22609143735725282,
+          "hexagon_diameter_px": 809.4553724573085,
+          "projective_residual_norm": 0.00403380052482238,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 496.76,
+          "sticker_score_per_face": {
+            "upper": 171.35,
+            "right": 199.03,
+            "front": 126.39
+          },
+          "mean_sticker_distance": 18.4,
+          "vertex_cloud_spread_px": 181.06904760339356,
+          "vertex_cloud_spread_norm": 0.22397719994541712,
+          "hexagon_diameter_px": 808.4262489553391,
+          "projective_residual_norm": 0.005730869054104852,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 493.37,
+          "sticker_score_per_face": {
+            "upper": 172.23,
+            "right": 197.57,
+            "front": 123.57
+          },
+          "mean_sticker_distance": 18.27,
+          "vertex_cloud_spread_px": 166.3640586184408,
+          "vertex_cloud_spread_norm": 0.20565103203100626,
+          "hexagon_diameter_px": 808.9629163317686,
+          "projective_residual_norm": 0.0005200872544165988,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 492.52,
+          "sticker_score_per_face": {
+            "upper": 172.46,
+            "right": 198.32,
+            "front": 121.75
+          },
+          "mean_sticker_distance": 18.24,
+          "vertex_cloud_spread_px": 156.11534197509224,
+          "vertex_cloud_spread_norm": 0.1940939079605265,
+          "hexagon_diameter_px": 804.328912821117,
+          "projective_residual_norm": 0.0005969217296300848,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        }
+      ],
+      "labeling_mean_corner_err_px": 15.9,
+      "per_corner_err_px": {
+        "corner_0": 25.9,
+        "corner_1": 16.7,
+        "corner_2": 18.6,
+        "corner_3": 6.9,
+        "corner_4": 17.5,
+        "corner_5": 9.6
+      },
+      "derived_vertex_error_processing_px": 37.2,
+      "rectified_score": {
+        "total_distance": 492.52,
+        "per_face": {
+          "upper": 172.46,
+          "right": 198.32,
+          "front": 121.75
+        },
+        "mean_sticker_distance": 18.24
       },
       "oracle_score": {
         "total_distance": 497.47,
@@ -144,30 +562,133 @@
         },
         "mean_sticker_distance": 18.42
       },
-      "score_delta_vs_oracle": -0.9
+      "score_delta_vs_oracle": -4.95
     },
     {
       "key": "40_A",
       "side": "A",
       "status": "rectified",
-      "labeling_mean_corner_err_px": 15.5,
-      "per_corner_err_px": {
-        "corner_0": 6.9,
-        "corner_1": 25.0,
-        "corner_2": 10.9,
-        "corner_3": 16.7,
-        "corner_4": 8.3,
-        "corner_5": 24.9
-      },
-      "derived_vertex_error_processing_px": 29.9,
-      "rectified_score": {
-        "total_distance": 469.65,
-        "per_face": {
-          "upper": 171.81,
-          "right": 192.4,
-          "front": 105.44
+      "selected_mask_threshold": 224,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 455.84,
+          "sticker_score_per_face": {
+            "upper": 150.76,
+            "right": 194.33,
+            "front": 110.75
+          },
+          "mean_sticker_distance": 16.88,
+          "vertex_cloud_spread_px": 100.30453628824571,
+          "vertex_cloud_spread_norm": 0.09993654787042278,
+          "hexagon_diameter_px": 1003.6822206256321,
+          "projective_residual_norm": 0.002311497441276916,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
         },
-        "mean_sticker_distance": 17.39
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 469.65,
+          "sticker_score_per_face": {
+            "upper": 171.81,
+            "right": 192.4,
+            "front": 105.44
+          },
+          "mean_sticker_distance": 17.39,
+          "vertex_cloud_spread_px": 99.98499887483122,
+          "vertex_cloud_spread_norm": 0.10103614024473787,
+          "hexagon_diameter_px": 989.5963823701055,
+          "projective_residual_norm": 0.001988016812611861,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 451.18,
+          "sticker_score_per_face": {
+            "upper": 151.04,
+            "right": 193.17,
+            "front": 106.97
+          },
+          "mean_sticker_distance": 16.71,
+          "vertex_cloud_spread_px": 105.89145385724005,
+          "vertex_cloud_spread_norm": 0.10722054127490442,
+          "hexagon_diameter_px": 987.6041717206342,
+          "projective_residual_norm": 0.005514820790795773,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 518.31,
+          "sticker_score_per_face": {
+            "upper": 219.56,
+            "right": 192.4,
+            "front": 106.34
+          },
+          "mean_sticker_distance": 19.2,
+          "vertex_cloud_spread_px": 99.24716620639605,
+          "vertex_cloud_spread_norm": 0.10051702798978633,
+          "hexagon_diameter_px": 987.3666998638348,
+          "projective_residual_norm": 0.002428440660016835,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 450.61,
+          "sticker_score_per_face": {
+            "upper": 148.3,
+            "right": 192.62,
+            "front": 109.7
+          },
+          "mean_sticker_distance": 16.69,
+          "vertex_cloud_spread_px": 99.50376877284599,
+          "vertex_cloud_spread_norm": 0.10100302405091928,
+          "hexagon_diameter_px": 985.1563327716063,
+          "projective_residual_norm": 0.00047569441842460066,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        }
+      ],
+      "labeling_mean_corner_err_px": 14.4,
+      "per_corner_err_px": {
+        "corner_0": 12.3,
+        "corner_1": 13.6,
+        "corner_2": 12.8,
+        "corner_3": 20.3,
+        "corner_4": 10.5,
+        "corner_5": 16.7
+      },
+      "derived_vertex_error_processing_px": 28.3,
+      "rectified_score": {
+        "total_distance": 450.61,
+        "per_face": {
+          "upper": 148.3,
+          "right": 192.62,
+          "front": 109.7
+        },
+        "mean_sticker_distance": 16.69
       },
       "oracle_score": {
         "total_distance": 448.92,
@@ -178,12 +699,115 @@
         },
         "mean_sticker_distance": 16.63
       },
-      "score_delta_vs_oracle": 20.73
+      "score_delta_vs_oracle": 1.69
     },
     {
       "key": "40_B",
       "side": "B",
       "status": "rectified",
+      "selected_mask_threshold": 128,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 323.99,
+          "sticker_score_per_face": {
+            "upper": 102.48,
+            "right": 149.26,
+            "front": 72.25
+          },
+          "mean_sticker_distance": 12.0,
+          "vertex_cloud_spread_px": 145.9931505242626,
+          "vertex_cloud_spread_norm": 0.1466272179343522,
+          "hexagon_diameter_px": 995.6756499985324,
+          "projective_residual_norm": 0.013785131676488947,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 311.96,
+          "sticker_score_per_face": {
+            "upper": 93.76,
+            "right": 148.85,
+            "front": 69.35
+          },
+          "mean_sticker_distance": 11.55,
+          "vertex_cloud_spread_px": 136.69308687713507,
+          "vertex_cloud_spread_norm": 0.137853037624801,
+          "hexagon_diameter_px": 991.5855989272939,
+          "projective_residual_norm": 0.01082765313360145,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 315.87,
+          "sticker_score_per_face": {
+            "upper": 93.42,
+            "right": 148.99,
+            "front": 73.46
+          },
+          "mean_sticker_distance": 11.7,
+          "vertex_cloud_spread_px": 160.90991268408544,
+          "vertex_cloud_spread_norm": 0.162283945489017,
+          "hexagon_diameter_px": 991.5331562786995,
+          "projective_residual_norm": 0.0017623815093152344,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 319.7,
+          "sticker_score_per_face": {
+            "upper": 93.42,
+            "right": 154.68,
+            "front": 71.59
+          },
+          "mean_sticker_distance": 11.84,
+          "vertex_cloud_spread_px": 168.14577009250038,
+          "vertex_cloud_spread_norm": 0.1723695530252135,
+          "hexagon_diameter_px": 975.4957713901173,
+          "projective_residual_norm": 0.011173067873988854,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 314.64,
+          "sticker_score_per_face": {
+            "upper": 93.37,
+            "right": 150.47,
+            "front": 70.8
+          },
+          "mean_sticker_distance": 11.65,
+          "vertex_cloud_spread_px": 165.04847772699995,
+          "vertex_cloud_spread_norm": 0.16964027242922197,
+          "hexagon_diameter_px": 972.9321661863174,
+          "projective_residual_norm": 0.01104055586065115,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        }
+      ],
       "labeling_mean_corner_err_px": 16.4,
       "per_corner_err_px": {
         "corner_0": 17.8,
@@ -218,24 +842,127 @@
       "key": "41_A",
       "side": "A",
       "status": "rectified",
-      "labeling_mean_corner_err_px": 17.6,
-      "per_corner_err_px": {
-        "corner_0": 11.2,
-        "corner_1": 25.8,
-        "corner_2": 23.7,
-        "corner_3": 23.1,
-        "corner_4": 9.8,
-        "corner_5": 11.7
-      },
-      "derived_vertex_error_processing_px": 34.1,
-      "rectified_score": {
-        "total_distance": 461.79,
-        "per_face": {
-          "upper": 137.13,
-          "right": 206.61,
-          "front": 118.06
+      "selected_mask_threshold": 160,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 460.1,
+          "sticker_score_per_face": {
+            "upper": 135.52,
+            "right": 206.46,
+            "front": 118.12
+          },
+          "mean_sticker_distance": 17.04,
+          "vertex_cloud_spread_px": 98.29038610159185,
+          "vertex_cloud_spread_norm": 0.10013327496586256,
+          "hexagon_diameter_px": 981.5956397621171,
+          "projective_residual_norm": 0.005619380860382195,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
         },
-        "mean_sticker_distance": 17.1
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 461.79,
+          "sticker_score_per_face": {
+            "upper": 137.13,
+            "right": 206.61,
+            "front": 118.06
+          },
+          "mean_sticker_distance": 17.1,
+          "vertex_cloud_spread_px": 94.62557793746889,
+          "vertex_cloud_spread_norm": 0.09695136774726504,
+          "hexagon_diameter_px": 976.0107581374295,
+          "projective_residual_norm": 0.008366967695653349,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 460.02,
+          "sticker_score_per_face": {
+            "upper": 134.87,
+            "right": 207.67,
+            "front": 117.48
+          },
+          "mean_sticker_distance": 17.04,
+          "vertex_cloud_spread_px": 107.48953437428223,
+          "vertex_cloud_spread_norm": 0.1110736724829198,
+          "hexagon_diameter_px": 967.7318843564058,
+          "projective_residual_norm": 0.006610715288166617,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 474.62,
+          "sticker_score_per_face": {
+            "upper": 149.44,
+            "right": 207.57,
+            "front": 117.61
+          },
+          "mean_sticker_distance": 17.58,
+          "vertex_cloud_spread_px": 97.41663102366043,
+          "vertex_cloud_spread_norm": 0.10141482226762953,
+          "hexagon_diameter_px": 960.5758689452905,
+          "projective_residual_norm": 0.0019741120771399373,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 473.97,
+          "sticker_score_per_face": {
+            "upper": 148.71,
+            "right": 207.09,
+            "front": 118.17
+          },
+          "mean_sticker_distance": 17.55,
+          "vertex_cloud_spread_px": 90.55385138137417,
+          "vertex_cloud_spread_norm": 0.09400895179809489,
+          "hexagon_diameter_px": 963.2471126351742,
+          "projective_residual_norm": 0.0022764442741053624,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        }
+      ],
+      "labeling_mean_corner_err_px": 17.3,
+      "per_corner_err_px": {
+        "corner_0": 7.3,
+        "corner_1": 17.2,
+        "corner_2": 43.9,
+        "corner_3": 17.1,
+        "corner_4": 8.7,
+        "corner_5": 9.6
+      },
+      "derived_vertex_error_processing_px": 39.8,
+      "rectified_score": {
+        "total_distance": 460.02,
+        "per_face": {
+          "upper": 134.87,
+          "right": 207.67,
+          "front": 117.48
+        },
+        "mean_sticker_distance": 17.04
       },
       "oracle_score": {
         "total_distance": 459.34,
@@ -246,30 +973,133 @@
         },
         "mean_sticker_distance": 17.01
       },
-      "score_delta_vs_oracle": 2.45
+      "score_delta_vs_oracle": 0.68
     },
     {
       "key": "41_B",
       "side": "B",
       "status": "rectified",
-      "labeling_mean_corner_err_px": 13.9,
-      "per_corner_err_px": {
-        "corner_0": 18.5,
-        "corner_1": 11.0,
-        "corner_2": 25.2,
-        "corner_3": 8.9,
-        "corner_4": 6.8,
-        "corner_5": 13.1
-      },
-      "derived_vertex_error_processing_px": 21.9,
-      "rectified_score": {
-        "total_distance": 380.77,
-        "per_face": {
-          "upper": 112.21,
-          "right": 204.4,
-          "front": 64.16
+      "selected_mask_threshold": 192,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 375.42,
+          "sticker_score_per_face": {
+            "upper": 104.68,
+            "right": 205.78,
+            "front": 64.96
+          },
+          "mean_sticker_distance": 13.9,
+          "vertex_cloud_spread_px": 112.89375536317321,
+          "vertex_cloud_spread_norm": 0.12164992847835807,
+          "hexagon_diameter_px": 928.0215514738868,
+          "projective_residual_norm": 0.0027326893450619204,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
         },
-        "mean_sticker_distance": 14.1
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 380.77,
+          "sticker_score_per_face": {
+            "upper": 112.21,
+            "right": 204.4,
+            "front": 64.16
+          },
+          "mean_sticker_distance": 14.1,
+          "vertex_cloud_spread_px": 122.14745187681976,
+          "vertex_cloud_spread_norm": 0.1324500430143014,
+          "hexagon_diameter_px": 922.215267711395,
+          "projective_residual_norm": 0.0009318021960450573,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 375.33,
+          "sticker_score_per_face": {
+            "upper": 105.21,
+            "right": 206.32,
+            "front": 63.8
+          },
+          "mean_sticker_distance": 13.9,
+          "vertex_cloud_spread_px": 112.69871339105873,
+          "vertex_cloud_spread_norm": 0.12112841528036024,
+          "hexagon_diameter_px": 930.4069002323661,
+          "projective_residual_norm": 0.0004578995337572368,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 374.69,
+          "sticker_score_per_face": {
+            "upper": 106.25,
+            "right": 204.77,
+            "front": 63.67
+          },
+          "mean_sticker_distance": 13.88,
+          "vertex_cloud_spread_px": 113.59577456930342,
+          "vertex_cloud_spread_norm": 0.12401307603457011,
+          "hexagon_diameter_px": 915.9983624439511,
+          "projective_residual_norm": 0.005358614525308832,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 376.64,
+          "sticker_score_per_face": {
+            "upper": 108.9,
+            "right": 203.55,
+            "front": 64.19
+          },
+          "mean_sticker_distance": 13.95,
+          "vertex_cloud_spread_px": 114.63420083029322,
+          "vertex_cloud_spread_norm": 0.12562276862504568,
+          "hexagon_diameter_px": 912.5272598667943,
+          "projective_residual_norm": 0.004812042325195321,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        }
+      ],
+      "labeling_mean_corner_err_px": 16.6,
+      "per_corner_err_px": {
+        "corner_0": 18.6,
+        "corner_1": 14.0,
+        "corner_2": 30.4,
+        "corner_3": 17.8,
+        "corner_4": 5.4,
+        "corner_5": 13.4
+      },
+      "derived_vertex_error_processing_px": 26.1,
+      "rectified_score": {
+        "total_distance": 374.69,
+        "per_face": {
+          "upper": 106.25,
+          "right": 204.77,
+          "front": 63.67
+        },
+        "mean_sticker_distance": 13.88
       },
       "oracle_score": {
         "total_distance": 378.23,
@@ -280,12 +1110,115 @@
         },
         "mean_sticker_distance": 14.01
       },
-      "score_delta_vs_oracle": 2.54
+      "score_delta_vs_oracle": -3.54
     },
     {
       "key": "43_A",
       "side": "A",
       "status": "rectified",
+      "selected_mask_threshold": 128,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 452.2,
+          "sticker_score_per_face": {
+            "upper": 109.36,
+            "right": 160.13,
+            "front": 182.72
+          },
+          "mean_sticker_distance": 16.75,
+          "vertex_cloud_spread_px": 206.69300907384363,
+          "vertex_cloud_spread_norm": 0.23859330429337766,
+          "hexagon_diameter_px": 866.2984474186711,
+          "projective_residual_norm": 0.002285918541356929,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 441.3,
+          "sticker_score_per_face": {
+            "upper": 104.43,
+            "right": 158.54,
+            "front": 178.32
+          },
+          "mean_sticker_distance": 16.34,
+          "vertex_cloud_spread_px": 200.11246837716035,
+          "vertex_cloud_spread_norm": 0.23163197825322085,
+          "hexagon_diameter_px": 863.9241864886062,
+          "projective_residual_norm": 0.009617929161659797,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 452.5,
+          "sticker_score_per_face": {
+            "upper": 113.97,
+            "right": 159.99,
+            "front": 178.54
+          },
+          "mean_sticker_distance": 16.76,
+          "vertex_cloud_spread_px": 184.76200908195386,
+          "vertex_cloud_spread_norm": 0.21423601017815622,
+          "hexagon_diameter_px": 862.4227501637465,
+          "projective_residual_norm": 0.00040639305404800095,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 451.11,
+          "sticker_score_per_face": {
+            "upper": 113.61,
+            "right": 158.91,
+            "front": 178.59
+          },
+          "mean_sticker_distance": 16.71,
+          "vertex_cloud_spread_px": 193.59752064528098,
+          "vertex_cloud_spread_norm": 0.22536797777758705,
+          "hexagon_diameter_px": 859.0285210631833,
+          "projective_residual_norm": 0.003160985643118086,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 447.26,
+          "sticker_score_per_face": {
+            "upper": 108.14,
+            "right": 162.98,
+            "front": 176.15
+          },
+          "mean_sticker_distance": 16.57,
+          "vertex_cloud_spread_px": 192.43960091415696,
+          "vertex_cloud_spread_norm": 0.22410903846825633,
+          "hexagon_diameter_px": 858.6873703508163,
+          "projective_residual_norm": 0.005690764951201586,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        }
+      ],
       "labeling_mean_corner_err_px": 14.8,
       "per_corner_err_px": {
         "corner_0": 16.7,
@@ -320,24 +1253,127 @@
       "key": "43_B",
       "side": "B",
       "status": "rectified",
+      "selected_mask_threshold": 224,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 450.21,
+          "sticker_score_per_face": {
+            "upper": 100.62,
+            "right": 176.13,
+            "front": 173.46
+          },
+          "mean_sticker_distance": 16.67,
+          "vertex_cloud_spread_px": 215.5017401321855,
+          "vertex_cloud_spread_norm": 0.23827115768087537,
+          "hexagon_diameter_px": 904.4390526729813,
+          "projective_residual_norm": 0.0032054750124341463,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 439.19,
+          "sticker_score_per_face": {
+            "upper": 99.15,
+            "right": 166.49,
+            "front": 173.55
+          },
+          "mean_sticker_distance": 16.27,
+          "vertex_cloud_spread_px": 216.1342175593675,
+          "vertex_cloud_spread_norm": 0.24004528163927705,
+          "hexagon_diameter_px": 900.3893602214545,
+          "projective_residual_norm": 0.0003546575342614084,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 470.24,
+          "sticker_score_per_face": {
+            "upper": 98.95,
+            "right": 198.54,
+            "front": 172.75
+          },
+          "mean_sticker_distance": 17.42,
+          "vertex_cloud_spread_px": 203.3051893090779,
+          "vertex_cloud_spread_norm": 0.22684081793047986,
+          "hexagon_diameter_px": 896.2460599634455,
+          "projective_residual_norm": 0.005171480456309176,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 438.31,
+          "sticker_score_per_face": {
+            "upper": 99.11,
+            "right": 165.93,
+            "front": 173.27
+          },
+          "mean_sticker_distance": 16.23,
+          "vertex_cloud_spread_px": 204.6264889988586,
+          "vertex_cloud_spread_norm": 0.22891847994342532,
+          "hexagon_diameter_px": 893.8836613340687,
+          "projective_residual_norm": 0.006261538104302275,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 435.95,
+          "sticker_score_per_face": {
+            "upper": 99.16,
+            "right": 163.34,
+            "front": 173.44
+          },
+          "mean_sticker_distance": 16.15,
+          "vertex_cloud_spread_px": 212.33935103979195,
+          "vertex_cloud_spread_norm": 0.23836246335442313,
+          "hexagon_diameter_px": 890.8254598966063,
+          "projective_residual_norm": 0.0007827750697551424,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        }
+      ],
       "labeling_mean_corner_err_px": 14.0,
       "per_corner_err_px": {
-        "corner_0": 20.7,
-        "corner_1": 22.9,
-        "corner_2": 14.1,
-        "corner_3": 4.5,
-        "corner_4": 12.8,
-        "corner_5": 9.3
+        "corner_0": 22.5,
+        "corner_1": 9.9,
+        "corner_2": 11.9,
+        "corner_3": 13.4,
+        "corner_4": 7.8,
+        "corner_5": 18.6
       },
-      "derived_vertex_error_processing_px": 41.1,
+      "derived_vertex_error_processing_px": 50.5,
       "rectified_score": {
-        "total_distance": 439.19,
+        "total_distance": 435.95,
         "per_face": {
-          "upper": 99.15,
-          "right": 166.49,
-          "front": 173.55
+          "upper": 99.16,
+          "right": 163.34,
+          "front": 173.44
         },
-        "mean_sticker_distance": 16.27
+        "mean_sticker_distance": 16.15
       },
       "oracle_score": {
         "total_distance": 436.11,
@@ -348,12 +1384,117 @@
         },
         "mean_sticker_distance": 16.15
       },
-      "score_delta_vs_oracle": 3.08
+      "score_delta_vs_oracle": -0.16
     },
     {
       "key": "45_A",
       "side": "A",
       "status": "rectified",
+      "selected_mask_threshold": 128,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 536.01,
+          "sticker_score_per_face": {
+            "upper": 115.17,
+            "right": 203.09,
+            "front": 217.75
+          },
+          "mean_sticker_distance": 19.85,
+          "vertex_cloud_spread_px": 221.44976857066254,
+          "vertex_cloud_spread_norm": 0.24414680811339634,
+          "hexagon_diameter_px": 907.0352804604681,
+          "projective_residual_norm": 0.01954813360243549,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "projective_residual_norm=0.0195; warning 0.0180"
+          ]
+        },
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 529.07,
+          "sticker_score_per_face": {
+            "upper": 112.07,
+            "right": 204.13,
+            "front": 212.86
+          },
+          "mean_sticker_distance": 19.6,
+          "vertex_cloud_spread_px": 233.94443784796422,
+          "vertex_cloud_spread_norm": 0.2573590117551346,
+          "hexagon_diameter_px": 909.019801764516,
+          "projective_residual_norm": 0.005620733101164847,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 537.34,
+          "sticker_score_per_face": {
+            "upper": 113.85,
+            "right": 206.74,
+            "front": 216.75
+          },
+          "mean_sticker_distance": 19.9,
+          "vertex_cloud_spread_px": 234.5591609807641,
+          "vertex_cloud_spread_norm": 0.2588875941079238,
+          "hexagon_diameter_px": 906.0270415390481,
+          "projective_residual_norm": 0.001912935503552249,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 536.59,
+          "sticker_score_per_face": {
+            "upper": 116.33,
+            "right": 206.45,
+            "front": 213.81
+          },
+          "mean_sticker_distance": 19.87,
+          "vertex_cloud_spread_px": 231.96982562393757,
+          "vertex_cloud_spread_norm": 0.2560334361817749,
+          "hexagon_diameter_px": 906.0137968044417,
+          "projective_residual_norm": 0.0030067345922729937,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 555.35,
+          "sticker_score_per_face": {
+            "upper": 104.32,
+            "right": 205.84,
+            "front": 245.2
+          },
+          "mean_sticker_distance": 20.57,
+          "vertex_cloud_spread_px": 196.4001018329675,
+          "vertex_cloud_spread_norm": 0.2176951302508054,
+          "hexagon_diameter_px": 902.179583009946,
+          "projective_residual_norm": 0.00358941005711169,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        }
+      ],
       "labeling_mean_corner_err_px": 14.2,
       "per_corner_err_px": {
         "corner_0": 5.4,
@@ -388,24 +1529,135 @@
       "key": "45_B",
       "side": "B",
       "status": "rectified",
-      "labeling_mean_corner_err_px": 21.7,
-      "per_corner_err_px": {
-        "corner_0": 29.7,
-        "corner_1": 24.8,
-        "corner_2": 19.9,
-        "corner_3": 19.3,
-        "corner_4": 22.1,
-        "corner_5": 14.6
-      },
-      "derived_vertex_error_processing_px": 67.4,
-      "rectified_score": {
-        "total_distance": 596.07,
-        "per_face": {
-          "upper": 150.15,
-          "right": 194.37,
-          "front": 251.55
+      "selected_mask_threshold": 192,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 633.96,
+          "sticker_score_per_face": {
+            "upper": 149.68,
+            "right": 195.46,
+            "front": 288.81
+          },
+          "mean_sticker_distance": 23.48,
+          "vertex_cloud_spread_px": 221.20578654275752,
+          "vertex_cloud_spread_norm": 0.23144455178100198,
+          "hexagon_diameter_px": 955.7614765201619,
+          "projective_residual_norm": 0.007214236720951297,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
         },
-        "mean_sticker_distance": 22.08
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "projective",
+          "sticker_score_total": 593.67,
+          "sticker_score_per_face": {
+            "upper": 150.3,
+            "right": 194.82,
+            "front": 248.54
+          },
+          "mean_sticker_distance": 21.99,
+          "vertex_cloud_spread_px": 267.58550035455954,
+          "vertex_cloud_spread_norm": 0.2818230948258461,
+          "hexagon_diameter_px": 949.4803842102268,
+          "projective_residual_norm": 0.011560330193746485,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "vertex_cloud_spread_px=267.6; warning 240.0"
+          ]
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 599.57,
+          "sticker_score_per_face": {
+            "upper": 151.09,
+            "right": 197.01,
+            "front": 251.47
+          },
+          "mean_sticker_distance": 22.21,
+          "vertex_cloud_spread_px": 244.20483205702544,
+          "vertex_cloud_spread_norm": 0.25601169620161424,
+          "hexagon_diameter_px": 953.8815440084791,
+          "projective_residual_norm": 0.002733108843274212,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "vertex_cloud_spread_px=244.2; warning 240.0"
+          ]
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "projective",
+          "sticker_score_total": 584.62,
+          "sticker_score_per_face": {
+            "upper": 148.3,
+            "right": 192.79,
+            "front": 243.53
+          },
+          "mean_sticker_distance": 21.65,
+          "vertex_cloud_spread_px": 273.59276306218334,
+          "vertex_cloud_spread_norm": 0.28734154642507315,
+          "hexagon_diameter_px": 952.1517736159503,
+          "projective_residual_norm": 0.005115007765629935,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "vertex_cloud_spread_px=273.6; warning 240.0"
+          ]
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "projective",
+          "sticker_score_total": 595.25,
+          "sticker_score_per_face": {
+            "upper": 150.82,
+            "right": 198.78,
+            "front": 245.64
+          },
+          "mean_sticker_distance": 22.05,
+          "vertex_cloud_spread_px": 250.25187311986298,
+          "vertex_cloud_spread_norm": 0.2636676695122197,
+          "hexagon_diameter_px": 949.1185384344782,
+          "projective_residual_norm": 0.0029505540051448014,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "vertex_cloud_spread_px=250.3; warning 240.0"
+          ]
+        }
+      ],
+      "labeling_mean_corner_err_px": 16.6,
+      "per_corner_err_px": {
+        "corner_0": 20.8,
+        "corner_1": 19.8,
+        "corner_2": 25.2,
+        "corner_3": 13.9,
+        "corner_4": 10.7,
+        "corner_5": 9.2
+      },
+      "derived_vertex_error_processing_px": 8.0,
+      "rectified_score": {
+        "total_distance": 584.62,
+        "per_face": {
+          "upper": 148.3,
+          "right": 192.79,
+          "front": 243.53
+        },
+        "mean_sticker_distance": 21.65
       },
       "oracle_score": {
         "total_distance": 590.94,
@@ -416,7 +1668,3117 @@
         },
         "mean_sticker_distance": 21.89
       },
-      "score_delta_vs_oracle": 5.13
+      "score_delta_vs_oracle": -6.32
+    },
+    {
+      "key": "63_A",
+      "side": "A",
+      "status": "rectified",
+      "selected_mask_threshold": 192,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 598.16,
+          "sticker_score_per_face": {
+            "upper": 140.54,
+            "right": 270.32,
+            "front": 187.29
+          },
+          "mean_sticker_distance": 22.15,
+          "vertex_cloud_spread_px": 207.5090359478353,
+          "vertex_cloud_spread_norm": 0.23633535452548246,
+          "hexagon_diameter_px": 878.0279038846089,
+          "projective_residual_norm": 0.0012198522409169338,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 655.62,
+          "sticker_score_per_face": {
+            "upper": 149.98,
+            "right": 318.56,
+            "front": 187.08
+          },
+          "mean_sticker_distance": 24.28,
+          "vertex_cloud_spread_px": 200.44450603596,
+          "vertex_cloud_spread_norm": 0.2295607244820461,
+          "hexagon_diameter_px": 873.1655055028227,
+          "projective_residual_norm": 0.004612599533510767,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 583.52,
+          "sticker_score_per_face": {
+            "upper": 141.12,
+            "right": 253.48,
+            "front": 188.92
+          },
+          "mean_sticker_distance": 21.61,
+          "vertex_cloud_spread_px": 194.0412327316027,
+          "vertex_cloud_spread_norm": 0.22176010543361377,
+          "hexagon_diameter_px": 875.0051428420293,
+          "projective_residual_norm": 0.0034122580218083256,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 569.36,
+          "sticker_score_per_face": {
+            "upper": 149.13,
+            "right": 232.23,
+            "front": 188.01
+          },
+          "mean_sticker_distance": 21.09,
+          "vertex_cloud_spread_px": 213.9369065869655,
+          "vertex_cloud_spread_norm": 0.2453172614589052,
+          "hexagon_diameter_px": 872.0825648985307,
+          "projective_residual_norm": 0.00402906496354499,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 571.93,
+          "sticker_score_per_face": {
+            "upper": 148.2,
+            "right": 233.33,
+            "front": 190.4
+          },
+          "mean_sticker_distance": 21.18,
+          "vertex_cloud_spread_px": 213.2650932525058,
+          "vertex_cloud_spread_norm": 0.24617773339313742,
+          "hexagon_diameter_px": 866.3053734105544,
+          "projective_residual_norm": 0.004776584700736357,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        }
+      ],
+      "labeling_mean_corner_err_px": 15.2,
+      "per_corner_err_px": {
+        "corner_0": 8.7,
+        "corner_1": 28.1,
+        "corner_2": 12.5,
+        "corner_3": 14.6,
+        "corner_4": 18.2,
+        "corner_5": 9.3
+      },
+      "derived_vertex_error_processing_px": 41.2,
+      "rectified_score": {
+        "total_distance": 569.36,
+        "per_face": {
+          "upper": 149.13,
+          "right": 232.23,
+          "front": 188.01
+        },
+        "mean_sticker_distance": 21.09
+      },
+      "oracle_score": {
+        "total_distance": 566.49,
+        "per_face": {
+          "upper": 145.2,
+          "right": 230.54,
+          "front": 190.74
+        },
+        "mean_sticker_distance": 20.98
+      },
+      "score_delta_vs_oracle": 2.87
+    },
+    {
+      "key": "63_B",
+      "side": "B",
+      "status": "rectified",
+      "selected_mask_threshold": 224,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "projective",
+          "sticker_score_total": 597.17,
+          "sticker_score_per_face": {
+            "upper": 154.1,
+            "right": 181.12,
+            "front": 261.96
+          },
+          "mean_sticker_distance": 22.12,
+          "vertex_cloud_spread_px": 244.00204917172314,
+          "vertex_cloud_spread_norm": 0.26402138971651934,
+          "hexagon_diameter_px": 924.1753080449618,
+          "projective_residual_norm": 0.006660997092598125,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "vertex_cloud_spread_px=244.0; warning 240.0"
+          ]
+        },
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 574.21,
+          "sticker_score_per_face": {
+            "upper": 147.19,
+            "right": 183.22,
+            "front": 243.8
+          },
+          "mean_sticker_distance": 21.27,
+          "vertex_cloud_spread_px": 217.1128738697915,
+          "vertex_cloud_spread_norm": 0.23623771839823865,
+          "hexagon_diameter_px": 919.044068584309,
+          "projective_residual_norm": 0.0019303819516015544,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 569.76,
+          "sticker_score_per_face": {
+            "upper": 152.55,
+            "right": 182.6,
+            "front": 234.62
+          },
+          "mean_sticker_distance": 21.1,
+          "vertex_cloud_spread_px": 228.17756243767704,
+          "vertex_cloud_spread_norm": 0.24855574944342582,
+          "hexagon_diameter_px": 918.0136164567496,
+          "projective_residual_norm": 0.0008406412549461044,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 564.91,
+          "sticker_score_per_face": {
+            "upper": 149.41,
+            "right": 181.91,
+            "front": 233.59
+          },
+          "mean_sticker_distance": 20.92,
+          "vertex_cloud_spread_px": 234.17301296263838,
+          "vertex_cloud_spread_norm": 0.25591441079501,
+          "hexagon_diameter_px": 915.0442612245596,
+          "projective_residual_norm": 0.0008146331498084587,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 557.98,
+          "sticker_score_per_face": {
+            "upper": 146.84,
+            "right": 172.03,
+            "front": 239.12
+          },
+          "mean_sticker_distance": 20.67,
+          "vertex_cloud_spread_px": 205.47749268472205,
+          "vertex_cloud_spread_norm": 0.22505411989378815,
+          "hexagon_diameter_px": 913.0136910254961,
+          "projective_residual_norm": 0.0017337646983787652,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        }
+      ],
+      "labeling_mean_corner_err_px": 15.6,
+      "per_corner_err_px": {
+        "corner_0": 23.8,
+        "corner_1": 8.9,
+        "corner_2": 25.7,
+        "corner_3": 2.6,
+        "corner_4": 27.7,
+        "corner_5": 4.9
+      },
+      "derived_vertex_error_processing_px": 43.7,
+      "rectified_score": {
+        "total_distance": 557.98,
+        "per_face": {
+          "upper": 146.84,
+          "right": 172.03,
+          "front": 239.12
+        },
+        "mean_sticker_distance": 20.67
+      },
+      "oracle_score": {
+        "total_distance": 562.52,
+        "per_face": {
+          "upper": 147.2,
+          "right": 183.75,
+          "front": 231.57
+        },
+        "mean_sticker_distance": 20.83
+      },
+      "score_delta_vs_oracle": -4.54
+    },
+    {
+      "key": "64_A",
+      "side": "A",
+      "status": "rectified",
+      "selected_mask_threshold": 224,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 616.91,
+          "sticker_score_per_face": {
+            "upper": 130.98,
+            "right": 315.52,
+            "front": 170.42
+          },
+          "mean_sticker_distance": 22.85,
+          "vertex_cloud_spread_px": 174.38463235044537,
+          "vertex_cloud_spread_norm": 0.19726566419677874,
+          "hexagon_diameter_px": 884.0090497274335,
+          "projective_residual_norm": 0.004835388034340941,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 560.3,
+          "sticker_score_per_face": {
+            "upper": 131.17,
+            "right": 255.79,
+            "front": 173.34
+          },
+          "mean_sticker_distance": 20.75,
+          "vertex_cloud_spread_px": 183.29484444468153,
+          "vertex_cloud_spread_norm": 0.2089754778271465,
+          "hexagon_diameter_px": 877.1117374656435,
+          "projective_residual_norm": 0.010349761743599105,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 593.0,
+          "sticker_score_per_face": {
+            "upper": 130.65,
+            "right": 291.26,
+            "front": 171.09
+          },
+          "mean_sticker_distance": 21.96,
+          "vertex_cloud_spread_px": 191.44189719076647,
+          "vertex_cloud_spread_norm": 0.21901684598645488,
+          "hexagon_diameter_px": 874.0966765753088,
+          "projective_residual_norm": 0.007465909920034783,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 552.14,
+          "sticker_score_per_face": {
+            "upper": 129.35,
+            "right": 251.86,
+            "front": 170.92
+          },
+          "mean_sticker_distance": 20.45,
+          "vertex_cloud_spread_px": 185.15398996510984,
+          "vertex_cloud_spread_norm": 0.21158120959184878,
+          "hexagon_diameter_px": 875.0965660999933,
+          "projective_residual_norm": 0.0033270416068515826,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 549.94,
+          "sticker_score_per_face": {
+            "upper": 127.84,
+            "right": 247.65,
+            "front": 174.45
+          },
+          "mean_sticker_distance": 20.37,
+          "vertex_cloud_spread_px": 192.76929216034384,
+          "vertex_cloud_spread_norm": 0.22104477250129762,
+          "hexagon_diameter_px": 872.0825648985307,
+          "projective_residual_norm": 0.006124003485189885,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        }
+      ],
+      "labeling_mean_corner_err_px": 19.5,
+      "per_corner_err_px": {
+        "corner_0": 8.3,
+        "corner_1": 16.1,
+        "corner_2": 16.4,
+        "corner_3": 24.9,
+        "corner_4": 30.2,
+        "corner_5": 21.3
+      },
+      "derived_vertex_error_processing_px": 47.4,
+      "rectified_score": {
+        "total_distance": 549.94,
+        "per_face": {
+          "upper": 127.84,
+          "right": 247.65,
+          "front": 174.45
+        },
+        "mean_sticker_distance": 20.37
+      },
+      "oracle_score": {
+        "total_distance": 544.18,
+        "per_face": {
+          "upper": 129.09,
+          "right": 241.03,
+          "front": 174.06
+        },
+        "mean_sticker_distance": 20.15
+      },
+      "score_delta_vs_oracle": 5.76
+    },
+    {
+      "key": "64_B",
+      "side": "B",
+      "status": "rectified",
+      "selected_mask_threshold": 64,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 617.99,
+          "sticker_score_per_face": {
+            "upper": 153.08,
+            "right": 213.49,
+            "front": 251.42
+          },
+          "mean_sticker_distance": 22.89,
+          "vertex_cloud_spread_px": 198.0353503796734,
+          "vertex_cloud_spread_norm": 0.22037144602599293,
+          "hexagon_diameter_px": 898.6434220534861,
+          "projective_residual_norm": 0.006086685691641791,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 632.37,
+          "sticker_score_per_face": {
+            "upper": 153.59,
+            "right": 225.87,
+            "front": 252.91
+          },
+          "mean_sticker_distance": 23.42,
+          "vertex_cloud_spread_px": 192.4266093865399,
+          "vertex_cloud_spread_norm": 0.214548151658832,
+          "hexagon_diameter_px": 896.892412722953,
+          "projective_residual_norm": 0.0030015876916448143,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 624.66,
+          "sticker_score_per_face": {
+            "upper": 155.66,
+            "right": 207.9,
+            "front": 261.1
+          },
+          "mean_sticker_distance": 23.14,
+          "vertex_cloud_spread_px": 188.74321179846442,
+          "vertex_cloud_spread_norm": 0.21068633761513922,
+          "hexagon_diameter_px": 895.8493176868529,
+          "projective_residual_norm": 0.013144316855154612,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 623.83,
+          "sticker_score_per_face": {
+            "upper": 155.59,
+            "right": 207.83,
+            "front": 260.41
+          },
+          "mean_sticker_distance": 23.1,
+          "vertex_cloud_spread_px": 204.9243762952568,
+          "vertex_cloud_spread_norm": 0.22836900217405742,
+          "hexagon_diameter_px": 897.338843469957,
+          "projective_residual_norm": 0.013631161647103318,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 620.74,
+          "sticker_score_per_face": {
+            "upper": 153.76,
+            "right": 204.16,
+            "front": 262.82
+          },
+          "mean_sticker_distance": 22.99,
+          "vertex_cloud_spread_px": 195.04102132628407,
+          "vertex_cloud_spread_norm": 0.21821351978687376,
+          "hexagon_diameter_px": 893.8081449617697,
+          "projective_residual_norm": 0.0031516718763470036,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        }
+      ],
+      "labeling_mean_corner_err_px": 18.1,
+      "per_corner_err_px": {
+        "corner_0": 23.1,
+        "corner_1": 15.2,
+        "corner_2": 20.3,
+        "corner_3": 11.8,
+        "corner_4": 26.8,
+        "corner_5": 11.4
+      },
+      "derived_vertex_error_processing_px": 39.2,
+      "rectified_score": {
+        "total_distance": 617.99,
+        "per_face": {
+          "upper": 153.08,
+          "right": 213.49,
+          "front": 251.42
+        },
+        "mean_sticker_distance": 22.89
+      },
+      "oracle_score": {
+        "total_distance": 613.98,
+        "per_face": {
+          "upper": 154.1,
+          "right": 205.01,
+          "front": 254.86
+        },
+        "mean_sticker_distance": 22.74
+      },
+      "score_delta_vs_oracle": 4.01
+    },
+    {
+      "key": "65_A",
+      "side": "A",
+      "status": "rectified",
+      "selected_mask_threshold": 64,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 642.04,
+          "sticker_score_per_face": {
+            "upper": 128.53,
+            "right": 264.8,
+            "front": 248.71
+          },
+          "mean_sticker_distance": 23.78,
+          "vertex_cloud_spread_px": 201.69779374103229,
+          "vertex_cloud_spread_norm": 0.22510788301345563,
+          "hexagon_diameter_px": 896.0050223073529,
+          "projective_residual_norm": 0.002043044363682922,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 672.37,
+          "sticker_score_per_face": {
+            "upper": 128.91,
+            "right": 226.76,
+            "front": 316.7
+          },
+          "mean_sticker_distance": 24.9,
+          "vertex_cloud_spread_px": 211.62703040963365,
+          "vertex_cloud_spread_norm": 0.2375312685811091,
+          "hexagon_diameter_px": 890.9438815099411,
+          "projective_residual_norm": 0.00037791261137165295,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 659.16,
+          "sticker_score_per_face": {
+            "upper": 128.27,
+            "right": 227.44,
+            "front": 303.45
+          },
+          "mean_sticker_distance": 24.41,
+          "vertex_cloud_spread_px": 213.01643129110957,
+          "vertex_cloud_spread_norm": 0.23890180677869305,
+          "hexagon_diameter_px": 891.6484733346432,
+          "projective_residual_norm": 0.005148790929711454,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 643.04,
+          "sticker_score_per_face": {
+            "upper": 128.3,
+            "right": 280.37,
+            "front": 234.36
+          },
+          "mean_sticker_distance": 23.82,
+          "vertex_cloud_spread_px": 215.26030753485418,
+          "vertex_cloud_spread_norm": 0.24268108090766005,
+          "hexagon_diameter_px": 887.0090191198734,
+          "projective_residual_norm": 0.004665335723824808,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 669.99,
+          "sticker_score_per_face": {
+            "upper": 125.19,
+            "right": 226.91,
+            "front": 317.89
+          },
+          "mean_sticker_distance": 24.81,
+          "vertex_cloud_spread_px": 213.32838535928593,
+          "vertex_cloud_spread_norm": 0.24062971303821834,
+          "hexagon_diameter_px": 886.5421591780055,
+          "projective_residual_norm": 0.00037470467907152656,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        }
+      ],
+      "labeling_mean_corner_err_px": 15.3,
+      "per_corner_err_px": {
+        "corner_0": 4.1,
+        "corner_1": 24.7,
+        "corner_2": 3.3,
+        "corner_3": 28.9,
+        "corner_4": 5.2,
+        "corner_5": 25.9
+      },
+      "derived_vertex_error_processing_px": 78.5,
+      "rectified_score": {
+        "total_distance": 642.04,
+        "per_face": {
+          "upper": 128.53,
+          "right": 264.8,
+          "front": 248.71
+        },
+        "mean_sticker_distance": 23.78
+      },
+      "oracle_score": {
+        "total_distance": 557.37,
+        "per_face": {
+          "upper": 127.07,
+          "right": 227.56,
+          "front": 202.74
+        },
+        "mean_sticker_distance": 20.64
+      },
+      "score_delta_vs_oracle": 84.67
+    },
+    {
+      "key": "65_B",
+      "side": "B",
+      "status": "rectified",
+      "selected_mask_threshold": 160,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 636.38,
+          "sticker_score_per_face": {
+            "upper": 137.21,
+            "right": 239.06,
+            "front": 260.12
+          },
+          "mean_sticker_distance": 23.57,
+          "vertex_cloud_spread_px": 198.33809518093088,
+          "vertex_cloud_spread_norm": 0.2172376519297101,
+          "hexagon_diameter_px": 913.0005476449617,
+          "projective_residual_norm": 0.0011579580711745174,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 628.46,
+          "sticker_score_per_face": {
+            "upper": 136.92,
+            "right": 239.19,
+            "front": 252.35
+          },
+          "mean_sticker_distance": 23.28,
+          "vertex_cloud_spread_px": 205.5164227014474,
+          "vertex_cloud_spread_norm": 0.2260598975750341,
+          "hexagon_diameter_px": 909.1237539521228,
+          "projective_residual_norm": 0.0012710907600529478,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 594.69,
+          "sticker_score_per_face": {
+            "upper": 139.68,
+            "right": 240.97,
+            "front": 214.04
+          },
+          "mean_sticker_distance": 22.03,
+          "vertex_cloud_spread_px": 220.9547464980103,
+          "vertex_cloud_spread_norm": 0.24369926456429006,
+          "hexagon_diameter_px": 906.6697303869805,
+          "projective_residual_norm": 0.007179870045107891,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 694.34,
+          "sticker_score_per_face": {
+            "upper": 138.53,
+            "right": 239.13,
+            "front": 316.67
+          },
+          "mean_sticker_distance": 25.72,
+          "vertex_cloud_spread_px": 197.0406049523803,
+          "vertex_cloud_spread_norm": 0.2174502051937555,
+          "hexagon_diameter_px": 906.1412693393895,
+          "projective_residual_norm": 0.007134980696836378,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 600.25,
+          "sticker_score_per_face": {
+            "upper": 142.36,
+            "right": 240.98,
+            "front": 216.91
+          },
+          "mean_sticker_distance": 22.23,
+          "vertex_cloud_spread_px": 228.1622229905731,
+          "vertex_cloud_spread_norm": 0.25295131127904996,
+          "hexagon_diameter_px": 902.0005543235548,
+          "projective_residual_norm": 0.0032512555669559832,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        }
+      ],
+      "labeling_mean_corner_err_px": 17.8,
+      "per_corner_err_px": {
+        "corner_0": 17.1,
+        "corner_1": 8.4,
+        "corner_2": 24.5,
+        "corner_3": 19.7,
+        "corner_4": 11.2,
+        "corner_5": 25.7
+      },
+      "derived_vertex_error_processing_px": 44.4,
+      "rectified_score": {
+        "total_distance": 594.69,
+        "per_face": {
+          "upper": 139.68,
+          "right": 240.97,
+          "front": 214.04
+        },
+        "mean_sticker_distance": 22.03
+      },
+      "oracle_score": {
+        "total_distance": 590.51,
+        "per_face": {
+          "upper": 139.22,
+          "right": 239.23,
+          "front": 212.07
+        },
+        "mean_sticker_distance": 21.87
+      },
+      "score_delta_vs_oracle": 4.18
+    },
+    {
+      "key": "66_A",
+      "side": "A",
+      "status": "rectified",
+      "selected_mask_threshold": 128,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 639.41,
+          "sticker_score_per_face": {
+            "upper": 139.62,
+            "right": 313.38,
+            "front": 186.4
+          },
+          "mean_sticker_distance": 23.68,
+          "vertex_cloud_spread_px": 203.48218595248088,
+          "vertex_cloud_spread_norm": 0.22262488109875198,
+          "hexagon_diameter_px": 914.0136760464802,
+          "projective_residual_norm": 0.006167253623802767,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 593.95,
+          "sticker_score_per_face": {
+            "upper": 139.78,
+            "right": 256.92,
+            "front": 197.25
+          },
+          "mean_sticker_distance": 22.0,
+          "vertex_cloud_spread_px": 208.40585404445815,
+          "vertex_cloud_spread_norm": 0.22773930461333466,
+          "hexagon_diameter_px": 915.1070975574389,
+          "projective_residual_norm": 0.0016441857141967383,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 614.53,
+          "sticker_score_per_face": {
+            "upper": 140.17,
+            "right": 286.27,
+            "front": 188.09
+          },
+          "mean_sticker_distance": 22.76,
+          "vertex_cloud_spread_px": 200.12246250733574,
+          "vertex_cloud_spread_norm": 0.21918574022963547,
+          "hexagon_diameter_px": 913.0268342168263,
+          "projective_residual_norm": 0.0008125859636863671,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 678.8,
+          "sticker_score_per_face": {
+            "upper": 136.12,
+            "right": 259.84,
+            "front": 282.84
+          },
+          "mean_sticker_distance": 25.14,
+          "vertex_cloud_spread_px": 222.75098204048393,
+          "vertex_cloud_spread_norm": 0.24418578833571397,
+          "hexagon_diameter_px": 912.2192718858772,
+          "projective_residual_norm": 0.0005972142060634405,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 595.98,
+          "sticker_score_per_face": {
+            "upper": 140.12,
+            "right": 259.96,
+            "front": 195.89
+          },
+          "mean_sticker_distance": 22.07,
+          "vertex_cloud_spread_px": 212.60291625469299,
+          "vertex_cloud_spread_norm": 0.2335731732845483,
+          "hexagon_diameter_px": 910.2197536858888,
+          "projective_residual_norm": 1.789568960269153e-05,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        }
+      ],
+      "labeling_mean_corner_err_px": 18.2,
+      "per_corner_err_px": {
+        "corner_0": 13.5,
+        "corner_1": 16.8,
+        "corner_2": 16.3,
+        "corner_3": 22.5,
+        "corner_4": 14.6,
+        "corner_5": 25.8
+      },
+      "derived_vertex_error_processing_px": 37.9,
+      "rectified_score": {
+        "total_distance": 593.95,
+        "per_face": {
+          "upper": 139.78,
+          "right": 256.92,
+          "front": 197.25
+        },
+        "mean_sticker_distance": 22.0
+      },
+      "oracle_score": {
+        "total_distance": 590.14,
+        "per_face": {
+          "upper": 138.87,
+          "right": 259.67,
+          "front": 191.6
+        },
+        "mean_sticker_distance": 21.86
+      },
+      "score_delta_vs_oracle": 3.81
+    },
+    {
+      "key": "66_B",
+      "side": "B",
+      "status": "rectified",
+      "selected_mask_threshold": 224,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 565.51,
+          "sticker_score_per_face": {
+            "upper": 144.94,
+            "right": 224.74,
+            "front": 195.82
+          },
+          "mean_sticker_distance": 20.94,
+          "vertex_cloud_spread_px": 197.43353311937665,
+          "vertex_cloud_spread_norm": 0.2183698667434627,
+          "hexagon_diameter_px": 904.1244383379978,
+          "projective_residual_norm": 0.012316619019040706,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "projective",
+          "sticker_score_total": 537.67,
+          "sticker_score_per_face": {
+            "upper": 147.64,
+            "right": 199.76,
+            "front": 190.28
+          },
+          "mean_sticker_distance": 19.91,
+          "vertex_cloud_spread_px": 234.26907606425564,
+          "vertex_cloud_spread_norm": 0.26025784948743025,
+          "hexagon_diameter_px": 900.1422109866862,
+          "projective_residual_norm": 0.010118572951722925,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 603.7,
+          "sticker_score_per_face": {
+            "upper": 144.39,
+            "right": 273.11,
+            "front": 186.2
+          },
+          "mean_sticker_distance": 22.36,
+          "vertex_cloud_spread_px": 195.4405280385826,
+          "vertex_cloud_spread_norm": 0.21785195917313127,
+          "hexagon_diameter_px": 897.1254092934834,
+          "projective_residual_norm": 0.008126371909743656,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 569.16,
+          "sticker_score_per_face": {
+            "upper": 144.68,
+            "right": 233.2,
+            "front": 191.27
+          },
+          "mean_sticker_distance": 21.08,
+          "vertex_cloud_spread_px": 191.42622599842477,
+          "vertex_cloud_spread_norm": 0.21336884833509445,
+          "hexagon_diameter_px": 897.1610780679242,
+          "projective_residual_norm": 0.005916128599164254,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 534.82,
+          "sticker_score_per_face": {
+            "upper": 144.29,
+            "right": 198.84,
+            "front": 191.69
+          },
+          "mean_sticker_distance": 19.81,
+          "vertex_cloud_spread_px": 196.9771560359221,
+          "vertex_cloud_spread_norm": 0.22030138198814786,
+          "hexagon_diameter_px": 894.1258300709135,
+          "projective_residual_norm": 0.00854869088710761,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        }
+      ],
+      "labeling_mean_corner_err_px": 16.5,
+      "per_corner_err_px": {
+        "corner_0": 21.9,
+        "corner_1": 17.6,
+        "corner_2": 21.5,
+        "corner_3": 8.3,
+        "corner_4": 18.6,
+        "corner_5": 10.9
+      },
+      "derived_vertex_error_processing_px": 32.6,
+      "rectified_score": {
+        "total_distance": 534.82,
+        "per_face": {
+          "upper": 144.29,
+          "right": 198.84,
+          "front": 191.69
+        },
+        "mean_sticker_distance": 19.81
+      },
+      "oracle_score": {
+        "total_distance": 536.63,
+        "per_face": {
+          "upper": 144.92,
+          "right": 202.04,
+          "front": 189.67
+        },
+        "mean_sticker_distance": 19.88
+      },
+      "score_delta_vs_oracle": -1.81
+    },
+    {
+      "key": "67_A",
+      "side": "A",
+      "status": "rectified",
+      "selected_mask_threshold": 224,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 552.78,
+          "sticker_score_per_face": {
+            "upper": 144.1,
+            "right": 185.53,
+            "front": 223.15
+          },
+          "mean_sticker_distance": 20.47,
+          "vertex_cloud_spread_px": 204.24495097798624,
+          "vertex_cloud_spread_norm": 0.22089198357967268,
+          "hexagon_diameter_px": 924.6372261595355,
+          "projective_residual_norm": 0.0020892592031089164,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 555.12,
+          "sticker_score_per_face": {
+            "upper": 144.82,
+            "right": 192.68,
+            "front": 217.62
+          },
+          "mean_sticker_distance": 20.56,
+          "vertex_cloud_spread_px": 193.27959023135372,
+          "vertex_cloud_spread_norm": 0.20935932035254515,
+          "hexagon_diameter_px": 923.195537250912,
+          "projective_residual_norm": 0.0012775839476538368,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 562.41,
+          "sticker_score_per_face": {
+            "upper": 138.85,
+            "right": 187.59,
+            "front": 235.98
+          },
+          "mean_sticker_distance": 20.83,
+          "vertex_cloud_spread_px": 222.44325119005072,
+          "vertex_cloud_spread_norm": 0.2405860632463615,
+          "hexagon_diameter_px": 924.5890979240454,
+          "projective_residual_norm": 0.005853658744357785,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "projective",
+          "sticker_score_total": 556.79,
+          "sticker_score_per_face": {
+            "upper": 147.32,
+            "right": 186.77,
+            "front": 222.7
+          },
+          "mean_sticker_distance": 20.62,
+          "vertex_cloud_spread_px": 240.40798655618744,
+          "vertex_cloud_spread_norm": 0.26070693676021955,
+          "hexagon_diameter_px": 922.1388181830325,
+          "projective_residual_norm": 0.004308370226044147,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "vertex_cloud_spread_px=240.4; warning 240.0"
+          ]
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 538.4,
+          "sticker_score_per_face": {
+            "upper": 144.78,
+            "right": 176.83,
+            "front": 216.79
+          },
+          "mean_sticker_distance": 19.94,
+          "vertex_cloud_spread_px": 201.24611797498108,
+          "vertex_cloud_spread_norm": 0.21918477083429708,
+          "hexagon_diameter_px": 918.1573939145728,
+          "projective_residual_norm": 0.005159073406675434,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        }
+      ],
+      "labeling_mean_corner_err_px": 18.4,
+      "per_corner_err_px": {
+        "corner_0": 14.3,
+        "corner_1": 25.5,
+        "corner_2": 13.5,
+        "corner_3": 21.0,
+        "corner_4": 8.1,
+        "corner_5": 28.1
+      },
+      "derived_vertex_error_processing_px": 40.6,
+      "rectified_score": {
+        "total_distance": 538.4,
+        "per_face": {
+          "upper": 144.78,
+          "right": 176.83,
+          "front": 216.79
+        },
+        "mean_sticker_distance": 19.94
+      },
+      "oracle_score": {
+        "total_distance": 562.37,
+        "per_face": {
+          "upper": 144.28,
+          "right": 196.86,
+          "front": 221.22
+        },
+        "mean_sticker_distance": 20.83
+      },
+      "score_delta_vs_oracle": -23.97
+    },
+    {
+      "key": "67_B",
+      "side": "B",
+      "status": "rectified",
+      "selected_mask_threshold": 64,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 607.42,
+          "sticker_score_per_face": {
+            "upper": 153.02,
+            "right": 252.27,
+            "front": 202.12
+          },
+          "mean_sticker_distance": 22.5,
+          "vertex_cloud_spread_px": 200.7710138441304,
+          "vertex_cloud_spread_norm": 0.2140740768176365,
+          "hexagon_diameter_px": 937.8576651070247,
+          "projective_residual_norm": 0.002935503104011816,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 639.57,
+          "sticker_score_per_face": {
+            "upper": 153.36,
+            "right": 260.19,
+            "front": 226.02
+          },
+          "mean_sticker_distance": 23.69,
+          "vertex_cloud_spread_px": 214.67417171145672,
+          "vertex_cloud_spread_norm": 0.2296914666999661,
+          "hexagon_diameter_px": 934.6197087585945,
+          "projective_residual_norm": 0.007220824840274555,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 647.77,
+          "sticker_score_per_face": {
+            "upper": 152.19,
+            "right": 267.93,
+            "front": 227.65
+          },
+          "mean_sticker_distance": 23.99,
+          "vertex_cloud_spread_px": 201.71762441591463,
+          "vertex_cloud_spread_norm": 0.21608610628546265,
+          "hexagon_diameter_px": 933.5057578826174,
+          "projective_residual_norm": 0.0033799462663150876,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 636.64,
+          "sticker_score_per_face": {
+            "upper": 151.85,
+            "right": 256.55,
+            "front": 228.24
+          },
+          "mean_sticker_distance": 23.58,
+          "vertex_cloud_spread_px": 214.61826576505553,
+          "vertex_cloud_spread_norm": 0.23042757141870257,
+          "hexagon_diameter_px": 931.3914322131163,
+          "projective_residual_norm": 0.00168155029675482,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 617.54,
+          "sticker_score_per_face": {
+            "upper": 153.1,
+            "right": 257.13,
+            "front": 207.31
+          },
+          "mean_sticker_distance": 22.87,
+          "vertex_cloud_spread_px": 201.0024875467963,
+          "vertex_cloud_spread_norm": 0.21628605566934586,
+          "hexagon_diameter_px": 929.3363223290048,
+          "projective_residual_norm": 0.001033658160273604,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        }
+      ],
+      "labeling_mean_corner_err_px": 20.2,
+      "per_corner_err_px": {
+        "corner_0": 13.9,
+        "corner_1": 25.6,
+        "corner_2": 22.7,
+        "corner_3": 22.4,
+        "corner_4": 31.8,
+        "corner_5": 4.9
+      },
+      "derived_vertex_error_processing_px": 33.8,
+      "rectified_score": {
+        "total_distance": 607.42,
+        "per_face": {
+          "upper": 153.02,
+          "right": 252.27,
+          "front": 202.12
+        },
+        "mean_sticker_distance": 22.5
+      },
+      "oracle_score": {
+        "total_distance": 609.64,
+        "per_face": {
+          "upper": 152.35,
+          "right": 255.01,
+          "front": 202.28
+        },
+        "mean_sticker_distance": 22.58
+      },
+      "score_delta_vs_oracle": -2.22
+    },
+    {
+      "key": "68_A",
+      "side": "A",
+      "status": "rectified",
+      "selected_mask_threshold": 160,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 648.18,
+          "sticker_score_per_face": {
+            "upper": 134.71,
+            "right": 328.17,
+            "front": 185.3
+          },
+          "mean_sticker_distance": 24.01,
+          "vertex_cloud_spread_px": 205.80087463370995,
+          "vertex_cloud_spread_norm": 0.22344726458485556,
+          "hexagon_diameter_px": 921.0266011359281,
+          "projective_residual_norm": 0.0054189681323433435,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 580.0,
+          "sticker_score_per_face": {
+            "upper": 139.14,
+            "right": 254.35,
+            "front": 186.52
+          },
+          "mean_sticker_distance": 21.48,
+          "vertex_cloud_spread_px": 208.19462048765814,
+          "vertex_cloud_spread_norm": 0.2265399166586084,
+          "hexagon_diameter_px": 919.0195862983552,
+          "projective_residual_norm": 0.004890241911273721,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 576.44,
+          "sticker_score_per_face": {
+            "upper": 134.96,
+            "right": 254.35,
+            "front": 187.13
+          },
+          "mean_sticker_distance": 21.35,
+          "vertex_cloud_spread_px": 208.86598574205422,
+          "vertex_cloud_spread_norm": 0.2272751491714712,
+          "hexagon_diameter_px": 919.0005440694798,
+          "projective_residual_norm": 0.011586245377407893,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 621.45,
+          "sticker_score_per_face": {
+            "upper": 137.11,
+            "right": 289.61,
+            "front": 194.73
+          },
+          "mean_sticker_distance": 23.02,
+          "vertex_cloud_spread_px": 191.14915641979695,
+          "vertex_cloud_spread_norm": 0.208786389603452,
+          "hexagon_diameter_px": 915.5249860052974,
+          "projective_residual_norm": 0.0018822083123171296,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 582.24,
+          "sticker_score_per_face": {
+            "upper": 135.4,
+            "right": 249.98,
+            "front": 196.86
+          },
+          "mean_sticker_distance": 21.56,
+          "vertex_cloud_spread_px": 205.1828452868319,
+          "vertex_cloud_spread_norm": 0.2246214869116531,
+          "hexagon_diameter_px": 913.4604534406511,
+          "projective_residual_norm": 0.00835735555787635,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        }
+      ],
+      "labeling_mean_corner_err_px": 15.2,
+      "per_corner_err_px": {
+        "corner_0": 7.9,
+        "corner_1": 23.1,
+        "corner_2": 11.3,
+        "corner_3": 18.4,
+        "corner_4": 11.1,
+        "corner_5": 19.4
+      },
+      "derived_vertex_error_processing_px": 62.0,
+      "rectified_score": {
+        "total_distance": 576.44,
+        "per_face": {
+          "upper": 134.96,
+          "right": 254.35,
+          "front": 187.13
+        },
+        "mean_sticker_distance": 21.35
+      },
+      "oracle_score": {
+        "total_distance": 571.69,
+        "per_face": {
+          "upper": 130.81,
+          "right": 249.81,
+          "front": 191.08
+        },
+        "mean_sticker_distance": 21.17
+      },
+      "score_delta_vs_oracle": 4.75
+    },
+    {
+      "key": "68_B",
+      "side": "B",
+      "status": "rectified",
+      "selected_mask_threshold": 160,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "projective",
+          "sticker_score_total": 607.9,
+          "sticker_score_per_face": {
+            "upper": 141.65,
+            "right": 226.66,
+            "front": 239.59
+          },
+          "mean_sticker_distance": 22.51,
+          "vertex_cloud_spread_px": 264.39364591457183,
+          "vertex_cloud_spread_norm": 0.2673321369862845,
+          "hexagon_diameter_px": 989.0080889456871,
+          "projective_residual_norm": 0.005606197295698485,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "vertex_cloud_spread_px=264.4; warning 240.0"
+          ]
+        },
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "projective",
+          "sticker_score_total": 698.76,
+          "sticker_score_per_face": {
+            "upper": 135.61,
+            "right": 326.9,
+            "front": 236.26
+          },
+          "mean_sticker_distance": 25.88,
+          "vertex_cloud_spread_px": 262.42713274354844,
+          "vertex_cloud_spread_norm": 0.2682125129559191,
+          "hexagon_diameter_px": 978.4298646300613,
+          "projective_residual_norm": 0.006565692462548436,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "vertex_cloud_spread_px=262.4; warning 240.0"
+          ]
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 590.01,
+          "sticker_score_per_face": {
+            "upper": 138.52,
+            "right": 213.02,
+            "front": 238.46
+          },
+          "mean_sticker_distance": 21.85,
+          "vertex_cloud_spread_px": 238.53720883753127,
+          "vertex_cloud_spread_norm": 0.24390192903070704,
+          "hexagon_diameter_px": 978.0046012161702,
+          "projective_residual_norm": 0.004017421344480985,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 617.42,
+          "sticker_score_per_face": {
+            "upper": 140.9,
+            "right": 224.94,
+            "front": 251.58
+          },
+          "mean_sticker_distance": 22.87,
+          "vertex_cloud_spread_px": 240.2019983264086,
+          "vertex_cloud_spread_norm": 0.24635895069552738,
+          "hexagon_diameter_px": 975.0082050936802,
+          "projective_residual_norm": 0.0019341819034684078,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "vertex_cloud_spread_px=240.2; warning 240.0"
+          ]
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 597.71,
+          "sticker_score_per_face": {
+            "upper": 137.86,
+            "right": 211.31,
+            "front": 248.54
+          },
+          "mean_sticker_distance": 22.14,
+          "vertex_cloud_spread_px": 228.12277396174193,
+          "vertex_cloud_spread_norm": 0.23412235645015533,
+          "hexagon_diameter_px": 974.3741581138121,
+          "projective_residual_norm": 0.0041670256705411,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        }
+      ],
+      "labeling_mean_corner_err_px": 22.1,
+      "per_corner_err_px": {
+        "corner_0": 23.3,
+        "corner_1": 18.9,
+        "corner_2": 16.8,
+        "corner_3": 15.2,
+        "corner_4": 20.7,
+        "corner_5": 37.8
+      },
+      "derived_vertex_error_processing_px": 64.1,
+      "rectified_score": {
+        "total_distance": 590.01,
+        "per_face": {
+          "upper": 138.52,
+          "right": 213.02,
+          "front": 238.46
+        },
+        "mean_sticker_distance": 21.85
+      },
+      "oracle_score": {
+        "total_distance": 598.48,
+        "per_face": {
+          "upper": 140.04,
+          "right": 220.88,
+          "front": 237.56
+        },
+        "mean_sticker_distance": 22.17
+      },
+      "score_delta_vs_oracle": -8.47
+    },
+    {
+      "key": "69_A",
+      "side": "A",
+      "status": "rectified",
+      "selected_mask_threshold": 64,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 789.15,
+          "sticker_score_per_face": {
+            "upper": 141.94,
+            "right": 346.78,
+            "front": 300.43
+          },
+          "mean_sticker_distance": 29.23,
+          "vertex_cloud_spread_px": 162.0154313638056,
+          "vertex_cloud_spread_norm": 0.211622216379435,
+          "hexagon_diameter_px": 765.5880093104907,
+          "projective_residual_norm": 0.012261741202001252,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=789.1; warning 700.0"
+          ]
+        },
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 792.7,
+          "sticker_score_per_face": {
+            "upper": 141.52,
+            "right": 348.6,
+            "front": 302.57
+          },
+          "mean_sticker_distance": 29.36,
+          "vertex_cloud_spread_px": 165.64117845511726,
+          "vertex_cloud_spread_norm": 0.21805427193220342,
+          "hexagon_diameter_px": 759.632806031967,
+          "projective_residual_norm": 0.013987909242965143,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=792.7; warning 700.0"
+          ]
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 794.69,
+          "sticker_score_per_face": {
+            "upper": 141.5,
+            "right": 350.15,
+            "front": 303.04
+          },
+          "mean_sticker_distance": 29.43,
+          "vertex_cloud_spread_px": 169.36646657470303,
+          "vertex_cloud_spread_norm": 0.22356977949857407,
+          "hexagon_diameter_px": 757.55527851108,
+          "projective_residual_norm": 0.0157085600482988,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=794.7; warning 700.0",
+            "sticker_score_worst_face=350.1; warning 350.0"
+          ]
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 793.1,
+          "sticker_score_per_face": {
+            "upper": 141.8,
+            "right": 349.36,
+            "front": 301.94
+          },
+          "mean_sticker_distance": 29.37,
+          "vertex_cloud_spread_px": 158.40454538932903,
+          "vertex_cloud_spread_norm": 0.20997021992983345,
+          "hexagon_diameter_px": 754.4143423875238,
+          "projective_residual_norm": 0.0119823545973371,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=793.1; warning 700.0"
+          ]
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 794.67,
+          "sticker_score_per_face": {
+            "upper": 142.38,
+            "right": 350.19,
+            "front": 302.11
+          },
+          "mean_sticker_distance": 29.43,
+          "vertex_cloud_spread_px": 159.21369287847074,
+          "vertex_cloud_spread_norm": 0.2116213789361883,
+          "hexagon_diameter_px": 752.3516465058078,
+          "projective_residual_norm": 0.009124207562133604,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=794.7; warning 700.0",
+            "sticker_score_worst_face=350.2; warning 350.0"
+          ]
+        }
+      ],
+      "labeling_mean_corner_err_px": 14.8,
+      "per_corner_err_px": {
+        "corner_0": 20.2,
+        "corner_1": 7.6,
+        "corner_2": 25.8,
+        "corner_3": 10.1,
+        "corner_4": 21.6,
+        "corner_5": 3.2
+      },
+      "derived_vertex_error_processing_px": 27.7,
+      "rectified_score": {
+        "total_distance": 789.15,
+        "per_face": {
+          "upper": 141.94,
+          "right": 346.78,
+          "front": 300.43
+        },
+        "mean_sticker_distance": 29.23
+      },
+      "oracle_score": {
+        "total_distance": 794.97,
+        "per_face": {
+          "upper": 141.82,
+          "right": 351.6,
+          "front": 301.55
+        },
+        "mean_sticker_distance": 29.44
+      },
+      "score_delta_vs_oracle": -5.82
+    },
+    {
+      "key": "69_B",
+      "side": "B",
+      "status": "rectified",
+      "selected_mask_threshold": 160,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 760.42,
+          "sticker_score_per_face": {
+            "upper": 219.76,
+            "right": 326.88,
+            "front": 213.78
+          },
+          "mean_sticker_distance": 28.16,
+          "vertex_cloud_spread_px": 153.0294089382822,
+          "vertex_cloud_spread_norm": 0.2083130107545368,
+          "hexagon_diameter_px": 734.6128231932792,
+          "projective_residual_norm": 0.006986499174295391,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=760.4; warning 700.0"
+          ]
+        },
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 755.55,
+          "sticker_score_per_face": {
+            "upper": 215.21,
+            "right": 326.98,
+            "front": 213.36
+          },
+          "mean_sticker_distance": 27.98,
+          "vertex_cloud_spread_px": 162.60996279441184,
+          "vertex_cloud_spread_norm": 0.22615581511113966,
+          "hexagon_diameter_px": 719.0173850471211,
+          "projective_residual_norm": 0.014608235818576615,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=755.5; warning 700.0"
+          ]
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 753.74,
+          "sticker_score_per_face": {
+            "upper": 219.62,
+            "right": 321.27,
+            "front": 212.86
+          },
+          "mean_sticker_distance": 27.92,
+          "vertex_cloud_spread_px": 169.75276139138356,
+          "vertex_cloud_spread_norm": 0.23438444365418817,
+          "hexagon_diameter_px": 724.2492664821967,
+          "projective_residual_norm": 0.00589861382301494,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=753.7; warning 700.0"
+          ]
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 758.38,
+          "sticker_score_per_face": {
+            "upper": 219.1,
+            "right": 326.49,
+            "front": 212.79
+          },
+          "mean_sticker_distance": 28.09,
+          "vertex_cloud_spread_px": 150.20652449211386,
+          "vertex_cloud_spread_norm": 0.20890527491525118,
+          "hexagon_diameter_px": 719.0173850471211,
+          "projective_residual_norm": 0.010284528784835833,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=758.4; warning 700.0"
+          ]
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 759.16,
+          "sticker_score_per_face": {
+            "upper": 220.9,
+            "right": 324.89,
+            "front": 213.37
+          },
+          "mean_sticker_distance": 28.12,
+          "vertex_cloud_spread_px": 149.21461054467824,
+          "vertex_cloud_spread_norm": 0.2082295662163609,
+          "hexagon_diameter_px": 716.5870498411201,
+          "projective_residual_norm": 0.004445700660884299,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=759.2; warning 700.0"
+          ]
+        }
+      ],
+      "labeling_mean_corner_err_px": 17.2,
+      "per_corner_err_px": {
+        "corner_0": 8.3,
+        "corner_1": 35.0,
+        "corner_2": 17.3,
+        "corner_3": 15.1,
+        "corner_4": 11.2,
+        "corner_5": 16.5
+      },
+      "derived_vertex_error_processing_px": 9.2,
+      "rectified_score": {
+        "total_distance": 753.74,
+        "per_face": {
+          "upper": 219.62,
+          "right": 321.27,
+          "front": 212.86
+        },
+        "mean_sticker_distance": 27.92
+      },
+      "oracle_score": {
+        "total_distance": 759.34,
+        "per_face": {
+          "upper": 219.32,
+          "right": 325.58,
+          "front": 214.44
+        },
+        "mean_sticker_distance": 28.12
+      },
+      "score_delta_vs_oracle": -5.6
+    },
+    {
+      "key": "70_A",
+      "side": "A",
+      "status": "rectified",
+      "selected_mask_threshold": 192,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 792.38,
+          "sticker_score_per_face": {
+            "upper": 129.27,
+            "right": 373.68,
+            "front": 289.43
+          },
+          "mean_sticker_distance": 29.35,
+          "vertex_cloud_spread_px": 190.80094339389416,
+          "vertex_cloud_spread_norm": 0.25478655999776,
+          "hexagon_diameter_px": 748.8658090739622,
+          "projective_residual_norm": 0.007166017164156009,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=792.4; warning 700.0",
+            "sticker_score_worst_face=373.7; warning 350.0"
+          ]
+        },
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 876.44,
+          "sticker_score_per_face": {
+            "upper": 168.4,
+            "right": 437.85,
+            "front": 270.19
+          },
+          "mean_sticker_distance": 32.46,
+          "vertex_cloud_spread_px": 171.82840277439584,
+          "vertex_cloud_spread_norm": 0.2238531528229945,
+          "hexagon_diameter_px": 767.5942938818657,
+          "projective_residual_norm": 0.002235276624697797,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=876.4; warning 700.0",
+            "sticker_score_worst_face=437.9; warning 350.0"
+          ]
+        },
+        {
+          "threshold": 160,
+          "status": "rejected",
+          "accepted": false,
+          "vertex_source": "projective",
+          "sticker_score_total": 917.71,
+          "sticker_score_per_face": {
+            "upper": 173.2,
+            "right": 435.24,
+            "front": 309.27
+          },
+          "mean_sticker_distance": 33.99,
+          "vertex_cloud_spread_px": 207.06762180505189,
+          "vertex_cloud_spread_norm": 0.26956606072496514,
+          "hexagon_diameter_px": 768.1516777303816,
+          "projective_residual_norm": 0.0016328363273730312,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [
+            "sticker_score_total=917.7; max 900.0"
+          ],
+          "warnings": [
+            "sticker_score_worst_face=435.2; warning 350.0"
+          ]
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 667.83,
+          "sticker_score_per_face": {
+            "upper": 127.53,
+            "right": 293.5,
+            "front": 246.79
+          },
+          "mean_sticker_distance": 24.73,
+          "vertex_cloud_spread_px": 177.55280904564702,
+          "vertex_cloud_spread_norm": 0.23225377588908766,
+          "hexagon_diameter_px": 764.4775994102116,
+          "projective_residual_norm": 0.01382179998164232,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 682.4,
+          "sticker_score_per_face": {
+            "upper": 130.44,
+            "right": 316.71,
+            "front": 235.26
+          },
+          "mean_sticker_distance": 25.27,
+          "vertex_cloud_spread_px": 193.27959023135372,
+          "vertex_cloud_spread_norm": 0.256747559706179,
+          "hexagon_diameter_px": 752.8001062699182,
+          "projective_residual_norm": 0.015660206023546907,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        }
+      ],
+      "labeling_mean_corner_err_px": 31.9,
+      "per_corner_err_px": {
+        "corner_0": 12.1,
+        "corner_1": 13.5,
+        "corner_2": 101.8,
+        "corner_3": 10.7,
+        "corner_4": 39.1,
+        "corner_5": 14.5
+      },
+      "derived_vertex_error_processing_px": 77.1,
+      "rectified_score": {
+        "total_distance": 667.83,
+        "per_face": {
+          "upper": 127.53,
+          "right": 293.5,
+          "front": 246.79
+        },
+        "mean_sticker_distance": 24.73
+      },
+      "oracle_score": {
+        "total_distance": 602.79,
+        "per_face": {
+          "upper": 130.45,
+          "right": 226.3,
+          "front": 246.03
+        },
+        "mean_sticker_distance": 22.33
+      },
+      "score_delta_vs_oracle": 65.04
+    },
+    {
+      "key": "70_B",
+      "side": "B",
+      "status": "rectified",
+      "selected_mask_threshold": 224,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 566.96,
+          "sticker_score_per_face": {
+            "upper": 178.92,
+            "right": 212.46,
+            "front": 175.58
+          },
+          "mean_sticker_distance": 21.0,
+          "vertex_cloud_spread_px": 158.21820375671064,
+          "vertex_cloud_spread_norm": 0.21118957162143162,
+          "hexagon_diameter_px": 749.1762142513602,
+          "projective_residual_norm": 0.0019843490219881047,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 613.14,
+          "sticker_score_per_face": {
+            "upper": 176.24,
+            "right": 255.86,
+            "front": 181.04
+          },
+          "mean_sticker_distance": 22.71,
+          "vertex_cloud_spread_px": 175.6359872008012,
+          "vertex_cloud_spread_norm": 0.23511421939664953,
+          "hexagon_diameter_px": 747.0240959969096,
+          "projective_residual_norm": 0.012606535831581396,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 579.45,
+          "sticker_score_per_face": {
+            "upper": 176.81,
+            "right": 217.51,
+            "front": 185.14
+          },
+          "mean_sticker_distance": 21.46,
+          "vertex_cloud_spread_px": 162.34839081432253,
+          "vertex_cloud_spread_norm": 0.21774710298270158,
+          "hexagon_diameter_px": 745.5823227518206,
+          "projective_residual_norm": 0.012410237408026445,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 567.68,
+          "sticker_score_per_face": {
+            "upper": 177.48,
+            "right": 201.34,
+            "front": 188.86
+          },
+          "mean_sticker_distance": 21.03,
+          "vertex_cloud_spread_px": 149.40214188558343,
+          "vertex_cloud_spread_norm": 0.20096459693514399,
+          "hexagon_diameter_px": 743.4251811715823,
+          "projective_residual_norm": 0.005091978016193621,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 560.65,
+          "sticker_score_per_face": {
+            "upper": 179.76,
+            "right": 203.34,
+            "front": 177.55
+          },
+          "mean_sticker_distance": 20.76,
+          "vertex_cloud_spread_px": 137.37903770226373,
+          "vertex_cloud_spread_norm": 0.1859223949707301,
+          "hexagon_diameter_px": 738.9052713305001,
+          "projective_residual_norm": 0.00030575594914550487,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        }
+      ],
+      "labeling_mean_corner_err_px": 17.2,
+      "per_corner_err_px": {
+        "corner_0": 19.6,
+        "corner_1": 22.4,
+        "corner_2": 14.0,
+        "corner_3": 23.4,
+        "corner_4": 11.3,
+        "corner_5": 12.4
+      },
+      "derived_vertex_error_processing_px": 34.0,
+      "rectified_score": {
+        "total_distance": 560.65,
+        "per_face": {
+          "upper": 179.76,
+          "right": 203.34,
+          "front": 177.55
+        },
+        "mean_sticker_distance": 20.76
+      },
+      "oracle_score": {
+        "total_distance": 564.77,
+        "per_face": {
+          "upper": 178.93,
+          "right": 207.7,
+          "front": 178.14
+        },
+        "mean_sticker_distance": 20.92
+      },
+      "score_delta_vs_oracle": -4.12
+    },
+    {
+      "key": "71_A",
+      "side": "A",
+      "status": "rectified",
+      "selected_mask_threshold": 128,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 815.97,
+          "sticker_score_per_face": {
+            "upper": 308.78,
+            "right": 252.89,
+            "front": 254.31
+          },
+          "mean_sticker_distance": 30.22,
+          "vertex_cloud_spread_px": 137.2953021774598,
+          "vertex_cloud_spread_norm": 0.1885469163098931,
+          "hexagon_diameter_px": 728.175802948711,
+          "projective_residual_norm": 0.003052839303582419,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=816.0; warning 700.0"
+          ]
+        },
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 813.35,
+          "sticker_score_per_face": {
+            "upper": 310.0,
+            "right": 249.22,
+            "front": 254.13
+          },
+          "mean_sticker_distance": 30.12,
+          "vertex_cloud_spread_px": 154.9322432549145,
+          "vertex_cloud_spread_norm": 0.21503252955709842,
+          "hexagon_diameter_px": 720.5060721465156,
+          "projective_residual_norm": 0.009159352323699424,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=813.4; warning 700.0"
+          ]
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 818.36,
+          "sticker_score_per_face": {
+            "upper": 312.41,
+            "right": 252.63,
+            "front": 253.32
+          },
+          "mean_sticker_distance": 30.31,
+          "vertex_cloud_spread_px": 152.08221460775746,
+          "vertex_cloud_spread_norm": 0.21114934846667244,
+          "hexagon_diameter_px": 720.2589812005124,
+          "projective_residual_norm": 0.00669082112413834,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=818.4; warning 700.0"
+          ]
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 814.38,
+          "sticker_score_per_face": {
+            "upper": 311.86,
+            "right": 249.15,
+            "front": 253.37
+          },
+          "mean_sticker_distance": 30.16,
+          "vertex_cloud_spread_px": 154.45711378890906,
+          "vertex_cloud_spread_norm": 0.21616034049811683,
+          "hexagon_diameter_px": 714.5488086897914,
+          "projective_residual_norm": 0.011132823809548768,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=814.4; warning 700.0"
+          ]
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 835.16,
+          "sticker_score_per_face": {
+            "upper": 311.72,
+            "right": 269.53,
+            "front": 253.91
+          },
+          "mean_sticker_distance": 30.93,
+          "vertex_cloud_spread_px": 151.90786681406595,
+          "vertex_cloud_spread_norm": 0.21269687905290402,
+          "hexagon_diameter_px": 714.1988518613006,
+          "projective_residual_norm": 0.008512905572770612,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=835.2; warning 700.0"
+          ]
+        }
+      ],
+      "labeling_mean_corner_err_px": 11.9,
+      "per_corner_err_px": {
+        "corner_0": 14.9,
+        "corner_1": 18.1,
+        "corner_2": 11.4,
+        "corner_3": 14.9,
+        "corner_4": 7.2,
+        "corner_5": 5.1
+      },
+      "derived_vertex_error_processing_px": 15.9,
+      "rectified_score": {
+        "total_distance": 813.35,
+        "per_face": {
+          "upper": 310.0,
+          "right": 249.22,
+          "front": 254.13
+        },
+        "mean_sticker_distance": 30.12
+      },
+      "oracle_score": {
+        "total_distance": 816.88,
+        "per_face": {
+          "upper": 313.85,
+          "right": 249.03,
+          "front": 254.0
+        },
+        "mean_sticker_distance": 30.25
+      },
+      "score_delta_vs_oracle": -3.53
+    },
+    {
+      "key": "71_B",
+      "side": "B",
+      "status": "rectified",
+      "selected_mask_threshold": 64,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 753.84,
+          "sticker_score_per_face": {
+            "upper": 312.06,
+            "right": 136.98,
+            "front": 304.8
+          },
+          "mean_sticker_distance": 27.92,
+          "vertex_cloud_spread_px": 162.85576440519384,
+          "vertex_cloud_spread_norm": 0.20894318330532477,
+          "hexagon_diameter_px": 779.4260709008905,
+          "projective_residual_norm": 0.0064379679165568506,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=753.8; warning 700.0"
+          ]
+        },
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 759.5,
+          "sticker_score_per_face": {
+            "upper": 312.12,
+            "right": 141.98,
+            "front": 305.4
+          },
+          "mean_sticker_distance": 28.13,
+          "vertex_cloud_spread_px": 155.8717421471897,
+          "vertex_cloud_spread_norm": 0.20005056246707031,
+          "hexagon_diameter_px": 779.1617290396134,
+          "projective_residual_norm": 0.005629621229399426,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=759.5; warning 700.0"
+          ]
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 774.16,
+          "sticker_score_per_face": {
+            "upper": 311.42,
+            "right": 152.35,
+            "front": 310.39
+          },
+          "mean_sticker_distance": 28.67,
+          "vertex_cloud_spread_px": 165.12419568312816,
+          "vertex_cloud_spread_norm": 0.21347920120518538,
+          "hexagon_diameter_px": 773.4907885682932,
+          "projective_residual_norm": 0.008051861096501824,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=774.2; warning 700.0"
+          ]
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 755.36,
+          "sticker_score_per_face": {
+            "upper": 312.16,
+            "right": 138.19,
+            "front": 305.01
+          },
+          "mean_sticker_distance": 27.98,
+          "vertex_cloud_spread_px": 157.99050604387594,
+          "vertex_cloud_spread_norm": 0.20441011351430075,
+          "hexagon_diameter_px": 772.9094384208282,
+          "projective_residual_norm": 0.0009509007289955041,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=755.4; warning 700.0"
+          ]
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 766.71,
+          "sticker_score_per_face": {
+            "upper": 311.68,
+            "right": 144.99,
+            "front": 310.05
+          },
+          "mean_sticker_distance": 28.4,
+          "vertex_cloud_spread_px": 163.6154026979123,
+          "vertex_cloud_spread_norm": 0.21290214549050784,
+          "hexagon_diameter_px": 768.5004879634105,
+          "projective_residual_norm": 0.00508154434959164,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=766.7; warning 700.0"
+          ]
+        }
+      ],
+      "labeling_mean_corner_err_px": 13.2,
+      "per_corner_err_px": {
+        "corner_0": 21.6,
+        "corner_1": 3.6,
+        "corner_2": 4.2,
+        "corner_3": 28.9,
+        "corner_4": 11.8,
+        "corner_5": 9.2
+      },
+      "derived_vertex_error_processing_px": 18.2,
+      "rectified_score": {
+        "total_distance": 753.84,
+        "per_face": {
+          "upper": 312.06,
+          "right": 136.98,
+          "front": 304.8
+        },
+        "mean_sticker_distance": 27.92
+      },
+      "oracle_score": {
+        "total_distance": 764.3,
+        "per_face": {
+          "upper": 311.72,
+          "right": 140.42,
+          "front": 312.16
+        },
+        "mean_sticker_distance": 28.31
+      },
+      "score_delta_vs_oracle": -10.46
+    },
+    {
+      "key": "72_A",
+      "side": "A",
+      "status": "rectified",
+      "selected_mask_threshold": 64,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 671.89,
+          "sticker_score_per_face": {
+            "upper": 257.49,
+            "right": 218.8,
+            "front": 195.61
+          },
+          "mean_sticker_distance": 24.88,
+          "vertex_cloud_spread_px": 153.9415473483361,
+          "vertex_cloud_spread_norm": 0.20598154838081648,
+          "hexagon_diameter_px": 747.3560061978494,
+          "projective_residual_norm": 0.0036269768900711297,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 675.78,
+          "sticker_score_per_face": {
+            "upper": 257.88,
+            "right": 221.87,
+            "front": 196.03
+          },
+          "mean_sticker_distance": 25.03,
+          "vertex_cloud_spread_px": 151.60804727981954,
+          "vertex_cloud_spread_norm": 0.20507019156449383,
+          "hexagon_diameter_px": 739.2983159726525,
+          "projective_residual_norm": 0.01061247449736851,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 672.03,
+          "sticker_score_per_face": {
+            "upper": 257.32,
+            "right": 220.15,
+            "front": 194.56
+          },
+          "mean_sticker_distance": 24.89,
+          "vertex_cloud_spread_px": 157.0636813525011,
+          "vertex_cloud_spread_norm": 0.21221547366082896,
+          "hexagon_diameter_px": 740.1141803802979,
+          "projective_residual_norm": 0.0005432120751951206,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 699.9,
+          "sticker_score_per_face": {
+            "upper": 257.01,
+            "right": 247.04,
+            "front": 195.86
+          },
+          "mean_sticker_distance": 25.92,
+          "vertex_cloud_spread_px": 168.35973390332975,
+          "vertex_cloud_spread_norm": 0.22822423242240464,
+          "hexagon_diameter_px": 737.6943811633649,
+          "projective_residual_norm": 0.012486260030247765,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 671.96,
+          "sticker_score_per_face": {
+            "upper": 256.68,
+            "right": 220.48,
+            "front": 194.8
+          },
+          "mean_sticker_distance": 24.89,
+          "vertex_cloud_spread_px": 157.88920165736477,
+          "vertex_cloud_spread_norm": 0.21459052901803324,
+          "hexagon_diameter_px": 735.7696650447068,
+          "projective_residual_norm": 0.0005609231396799491,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": []
+        }
+      ],
+      "labeling_mean_corner_err_px": 9.8,
+      "per_corner_err_px": {
+        "corner_0": 6.6,
+        "corner_1": 13.6,
+        "corner_2": 11.7,
+        "corner_3": 15.2,
+        "corner_4": 5.1,
+        "corner_5": 6.9
+      },
+      "derived_vertex_error_processing_px": 29.9,
+      "rectified_score": {
+        "total_distance": 671.89,
+        "per_face": {
+          "upper": 257.49,
+          "right": 218.8,
+          "front": 195.61
+        },
+        "mean_sticker_distance": 24.88
+      },
+      "oracle_score": {
+        "total_distance": 672.45,
+        "per_face": {
+          "upper": 258.72,
+          "right": 215.56,
+          "front": 198.16
+        },
+        "mean_sticker_distance": 24.91
+      },
+      "score_delta_vs_oracle": -0.56
+    },
+    {
+      "key": "72_B",
+      "side": "B",
+      "status": "rectified",
+      "selected_mask_threshold": 128,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 796.06,
+          "sticker_score_per_face": {
+            "upper": 313.37,
+            "right": 228.74,
+            "front": 253.95
+          },
+          "mean_sticker_distance": 29.48,
+          "vertex_cloud_spread_px": 181.4717608885746,
+          "vertex_cloud_spread_norm": 0.21989034658058712,
+          "hexagon_diameter_px": 825.2829817704954,
+          "projective_residual_norm": 0.0028970202244666546,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=796.1; warning 700.0"
+          ]
+        },
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 760.34,
+          "sticker_score_per_face": {
+            "upper": 313.9,
+            "right": 192.34,
+            "front": 254.11
+          },
+          "mean_sticker_distance": 28.16,
+          "vertex_cloud_spread_px": 186.93581786270923,
+          "vertex_cloud_spread_norm": 0.2252786581358241,
+          "hexagon_diameter_px": 829.7981682312874,
+          "projective_residual_norm": 0.005167739678364799,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=760.3; warning 700.0"
+          ]
+        },
+        {
+          "threshold": 160,
+          "status": "rejected",
+          "accepted": false,
+          "vertex_source": "affine",
+          "sticker_score_total": 951.76,
+          "sticker_score_per_face": {
+            "upper": 312.81,
+            "right": 378.1,
+            "front": 260.86
+          },
+          "mean_sticker_distance": 35.25,
+          "vertex_cloud_spread_px": 180.93645293306707,
+          "vertex_cloud_spread_norm": 0.22085630607683915,
+          "hexagon_diameter_px": 819.2496566981276,
+          "projective_residual_norm": 0.000477007321022635,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [
+            "sticker_score_total=951.8; max 900.0"
+          ],
+          "warnings": [
+            "sticker_score_worst_face=378.1; warning 350.0"
+          ]
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 858.97,
+          "sticker_score_per_face": {
+            "upper": 312.8,
+            "right": 288.91,
+            "front": 257.26
+          },
+          "mean_sticker_distance": 31.81,
+          "vertex_cloud_spread_px": 191.23022773609824,
+          "vertex_cloud_spread_norm": 0.23218600006404916,
+          "hexagon_diameter_px": 823.6079164262568,
+          "projective_residual_norm": 0.0033118258703649333,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=859.0; warning 700.0"
+          ]
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 761.85,
+          "sticker_score_per_face": {
+            "upper": 313.74,
+            "right": 195.78,
+            "front": 252.33
+          },
+          "mean_sticker_distance": 28.22,
+          "vertex_cloud_spread_px": 184.44782460088814,
+          "vertex_cloud_spread_norm": 0.22596028453269562,
+          "hexagon_diameter_px": 816.2842642119227,
+          "projective_residual_norm": 0.0068976040334161525,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=761.9; warning 700.0"
+          ]
+        }
+      ],
+      "labeling_mean_corner_err_px": 12.5,
+      "per_corner_err_px": {
+        "corner_0": 9.3,
+        "corner_1": 6.8,
+        "corner_2": 18.7,
+        "corner_3": 7.8,
+        "corner_4": 16.8,
+        "corner_5": 15.6
+      },
+      "derived_vertex_error_processing_px": 47.2,
+      "rectified_score": {
+        "total_distance": 760.34,
+        "per_face": {
+          "upper": 313.9,
+          "right": 192.34,
+          "front": 254.11
+        },
+        "mean_sticker_distance": 28.16
+      },
+      "oracle_score": {
+        "total_distance": 762.28,
+        "per_face": {
+          "upper": 313.53,
+          "right": 191.78,
+          "front": 256.97
+        },
+        "mean_sticker_distance": 28.23
+      },
+      "score_delta_vs_oracle": -1.94
+    },
+    {
+      "key": "73_A",
+      "side": "A",
+      "status": "rectified",
+      "selected_mask_threshold": 128,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 714.33,
+          "sticker_score_per_face": {
+            "upper": 265.47,
+            "right": 240.49,
+            "front": 208.37
+          },
+          "mean_sticker_distance": 26.46,
+          "vertex_cloud_spread_px": 196.30843079195554,
+          "vertex_cloud_spread_norm": 0.23167047056146167,
+          "hexagon_diameter_px": 847.3606080058241,
+          "projective_residual_norm": 0.005655554607685012,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=714.3; warning 700.0"
+          ]
+        },
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 709.42,
+          "sticker_score_per_face": {
+            "upper": 265.69,
+            "right": 236.28,
+            "front": 207.44
+          },
+          "mean_sticker_distance": 26.27,
+          "vertex_cloud_spread_px": 192.31484602078956,
+          "vertex_cloud_spread_norm": 0.2276975903818368,
+          "hexagon_diameter_px": 844.6064172145509,
+          "projective_residual_norm": 0.004039032195266515,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=709.4; warning 700.0"
+          ]
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 711.41,
+          "sticker_score_per_face": {
+            "upper": 265.01,
+            "right": 237.74,
+            "front": 208.66
+          },
+          "mean_sticker_distance": 26.35,
+          "vertex_cloud_spread_px": 207.0,
+          "vertex_cloud_spread_norm": 0.2458291876629237,
+          "hexagon_diameter_px": 842.0480983886847,
+          "projective_residual_norm": 0.003393294132423276,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=711.4; warning 700.0"
+          ]
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 712.54,
+          "sticker_score_per_face": {
+            "upper": 265.14,
+            "right": 236.97,
+            "front": 210.43
+          },
+          "mean_sticker_distance": 26.39,
+          "vertex_cloud_spread_px": 182.8578683021324,
+          "vertex_cloud_spread_norm": 0.21713212567427878,
+          "hexagon_diameter_px": 842.1502241286884,
+          "projective_residual_norm": 0.005351512117094007,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=712.5; warning 700.0"
+          ]
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 711.02,
+          "sticker_score_per_face": {
+            "upper": 265.3,
+            "right": 238.3,
+            "front": 207.41
+          },
+          "mean_sticker_distance": 26.33,
+          "vertex_cloud_spread_px": 181.62048342629197,
+          "vertex_cloud_spread_norm": 0.2166628671046935,
+          "hexagon_diameter_px": 838.2630851946184,
+          "projective_residual_norm": 0.005761283895821658,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=711.0; warning 700.0"
+          ]
+        }
+      ],
+      "labeling_mean_corner_err_px": 14.6,
+      "per_corner_err_px": {
+        "corner_0": 8.8,
+        "corner_1": 21.9,
+        "corner_2": 21.5,
+        "corner_3": 13.6,
+        "corner_4": 9.8,
+        "corner_5": 11.8
+      },
+      "derived_vertex_error_processing_px": 29.0,
+      "rectified_score": {
+        "total_distance": 709.42,
+        "per_face": {
+          "upper": 265.69,
+          "right": 236.28,
+          "front": 207.44
+        },
+        "mean_sticker_distance": 26.27
+      },
+      "oracle_score": {
+        "total_distance": 714.69,
+        "per_face": {
+          "upper": 266.22,
+          "right": 239.81,
+          "front": 208.66
+        },
+        "mean_sticker_distance": 26.47
+      },
+      "score_delta_vs_oracle": -5.27
+    },
+    {
+      "key": "73_B",
+      "side": "B",
+      "status": "rectified",
+      "selected_mask_threshold": 160,
+      "threshold_candidates": [
+        {
+          "threshold": 64,
+          "status": "rejected",
+          "accepted": false,
+          "vertex_source": "affine",
+          "sticker_score_total": 954.01,
+          "sticker_score_per_face": {
+            "upper": 314.82,
+            "right": 400.91,
+            "front": 238.28
+          },
+          "mean_sticker_distance": 35.33,
+          "vertex_cloud_spread_px": 186.2149295840696,
+          "vertex_cloud_spread_norm": 0.21446445403070777,
+          "hexagon_diameter_px": 868.278757082079,
+          "projective_residual_norm": 0.0019313696515248743,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [
+            "sticker_score_total=954.0; max 900.0"
+          ],
+          "warnings": [
+            "sticker_score_worst_face=400.9; warning 350.0"
+          ]
+        },
+        {
+          "threshold": 128,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 774.63,
+          "sticker_score_per_face": {
+            "upper": 315.98,
+            "right": 219.78,
+            "front": 238.86
+          },
+          "mean_sticker_distance": 28.69,
+          "vertex_cloud_spread_px": 186.25251676151922,
+          "vertex_cloud_spread_norm": 0.215035491843545,
+          "hexagon_diameter_px": 866.1477933932523,
+          "projective_residual_norm": 0.003913915139152832,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=774.6; warning 700.0"
+          ]
+        },
+        {
+          "threshold": 160,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 746.45,
+          "sticker_score_per_face": {
+            "upper": 315.45,
+            "right": 193.83,
+            "front": 237.16
+          },
+          "mean_sticker_distance": 27.65,
+          "vertex_cloud_spread_px": 201.62589119455865,
+          "vertex_cloud_spread_norm": 0.23308588375506384,
+          "hexagon_diameter_px": 865.0283232357193,
+          "projective_residual_norm": 0.01581652000743755,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=746.5; warning 700.0"
+          ]
+        },
+        {
+          "threshold": 192,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 809.27,
+          "sticker_score_per_face": {
+            "upper": 315.98,
+            "right": 254.19,
+            "front": 239.09
+          },
+          "mean_sticker_distance": 29.97,
+          "vertex_cloud_spread_px": 186.49664876345634,
+          "vertex_cloud_spread_norm": 0.21632489165184765,
+          "hexagon_diameter_px": 862.1136815988945,
+          "projective_residual_norm": 0.00633947673877543,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=809.3; warning 700.0"
+          ]
+        },
+        {
+          "threshold": 224,
+          "status": "accepted",
+          "accepted": true,
+          "vertex_source": "affine",
+          "sticker_score_total": 763.6,
+          "sticker_score_per_face": {
+            "upper": 315.18,
+            "right": 190.0,
+            "front": 258.42
+          },
+          "mean_sticker_distance": 28.28,
+          "vertex_cloud_spread_px": 196.5807722031837,
+          "vertex_cloud_spread_norm": 0.2290846248271029,
+          "hexagon_diameter_px": 858.1142115126634,
+          "projective_residual_norm": 0.013112546577413342,
+          "projective_degeneracy": "finite_projective",
+          "hard_failures": [],
+          "warnings": [
+            "sticker_score_total=763.6; warning 700.0"
+          ]
+        }
+      ],
+      "labeling_mean_corner_err_px": 19.8,
+      "per_corner_err_px": {
+        "corner_0": 21.8,
+        "corner_1": 19.0,
+        "corner_2": 25.9,
+        "corner_3": 19.5,
+        "corner_4": 14.2,
+        "corner_5": 18.1
+      },
+      "derived_vertex_error_processing_px": 51.8,
+      "rectified_score": {
+        "total_distance": 746.45,
+        "per_face": {
+          "upper": 315.45,
+          "right": 193.83,
+          "front": 237.16
+        },
+        "mean_sticker_distance": 27.65
+      },
+      "oracle_score": {
+        "total_distance": 747.41,
+        "per_face": {
+          "upper": 315.95,
+          "right": 190.41,
+          "front": 241.04
+        },
+        "mean_sticker_distance": 27.68
+      },
+      "score_delta_vs_oracle": -0.96
     }
   ]
 }

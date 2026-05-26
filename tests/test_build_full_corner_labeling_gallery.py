@@ -214,6 +214,8 @@ def test_full_corner_truth_fixture_is_schema_clean():
         "43_B",
         "45_A",
         "45_B",
+        "70_A",
+        "70_B",
     }
     for key, row in data.items():
         assert key.endswith(("_A", "_B"))

@@ -33,9 +33,9 @@ Pipeline per row:
          canonical color across 27 sampled stickers (no GT needed —
          a measure of how cleanly our face quads sample the cube)
 
-The 12 rows that overlap the full-corner corpus also get tagged with
-``in_full_corner_corpus: true`` so the report can split "old 12" vs
-"new 58".
+Rows that overlap the full-corner corpus also get tagged with
+``in_full_corner_corpus: true`` so the report can split human-reviewed
+full-corner geometry from rows that only have legacy axis labels.
 
 Failure buckets per Codex's lane-split outline (2026-05-24):
 - ``mask_failure``                — rembg / hexagon detect produces

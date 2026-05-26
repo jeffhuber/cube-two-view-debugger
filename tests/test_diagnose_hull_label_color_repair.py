@@ -4,9 +4,16 @@ import json
 from pathlib import Path
 
 from tools.diagnose_hull_label_color_repair import (
-    _face_index,
     _metadata_yaw_source,
     build_summary,
+)
+from tools.hull_label_color_repair import (
+    FACE_ORDER,
+    CANONICAL_RGB,
+    FACE_TO_COLOR,
+    StickerObservation,
+    assemble_color_repair_payload,
+    _face_index,
     greedy_count_repair,
 )
 from tools.extract_color_samples import PairTask
@@ -91,3 +98,34 @@ def test_build_summary_counts_repair_methods():
     assert repaired["exact"] == 1
     assert repaired["legal"] == 1
     assert repaired["meanStickersCorrect"] == 54
+
+
+def test_assemble_color_repair_payload_exposes_repaired_draft():
+    observations = []
+    for face in FACE_ORDER:
+        for face_index in range(9):
+            rgb = CANONICAL_RGB[FACE_TO_COLOR[face]]
+            observations.append(
+                StickerObservation(
+                    index=_face_index(face, face_index),
+                    side="A" if face in "URF" else "B",
+                    slot="upper",
+                    wca_face=face,
+                    face_index=face_index,
+                    rgb=rgb,
+                    raw_color=FACE_TO_COLOR[face],
+                )
+            )
+
+    payload = assemble_color_repair_payload(
+        observations=observations,
+        panel_meta={"panels": []},
+        yaw_quarter_turns=0,
+    )
+
+    assert payload["status"] == "assembled"
+    assert payload["recommendedMethod"] == "canonical_count_repaired"
+    assert payload["recommended"]["state"] == "".join(face * 9 for face in FACE_ORDER)
+    assert payload["recommended"]["validState"] is True
+    assert payload["recommended"]["repairMoveCount"] == 0
+    assert payload["recommended"]["confidence"] == "high"

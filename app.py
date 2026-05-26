@@ -858,6 +858,7 @@ def prepare_llm_rectified_input(
     from rembg import remove
 
     from tools.corner_conventions import wca_face_by_slot
+    from tools.hull_label_color_repair import repair_from_hull_label_fits
     from tools.hull_label_assembly import convention_orientation_for_slot
     from tools.rectify_via_hull_labels import select_hull_label_threshold_fit
 
@@ -1014,6 +1015,28 @@ def prepare_llm_rectified_input(
     image_a_b64, image_a_size = jpeg_base64(image_a_sheet)
     image_b_b64, image_b_size = jpeg_base64(image_b_sheet)
     panel_metadata.sort(key=lambda item: "URFDLB".index(str(item["wcaFace"])))
+    try:
+        deterministic_repair = repair_from_hull_label_fits(
+            side_fits={
+                "A": {
+                    "fit": fits_by_side["A"],
+                    "image": image_a,
+                    "trace": threshold_traces_by_side.get("A"),
+                },
+                "B": {
+                    "fit": fits_by_side["B"],
+                    "image": image_b,
+                    "trace": threshold_traces_by_side.get("B"),
+                },
+            },
+            yaw_quarter_turns=selected_yaw,
+        )
+    except Exception as exc:  # noqa: BLE001
+        deterministic_repair = {
+            "schema": "hull_label_color_repair_v1",
+            "status": "error",
+            "error": f"{type(exc).__name__}: {exc}",
+        }
     return {
         "status": "success",
         "prompt": "rectified",
@@ -1026,6 +1049,7 @@ def prepare_llm_rectified_input(
         "yawInference": yaw_inference,
         "panels": panel_metadata,
         "hullLabelMaskThresholds": threshold_traces_by_side,
+        "deterministicColorRepair": deterministic_repair,
     }
 
 

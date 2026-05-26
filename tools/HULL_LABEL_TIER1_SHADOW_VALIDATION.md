@@ -12,43 +12,43 @@ model quads, classifies stickers, performs joint face-ID, assembles a
 54-sticker URFDLB state, and validates that state. It does not change
 the production `WhiteUpRecognizer` path.
 
-Git head: `8de0941ce1f4b7fa7c2f524b4e021edc19dc7aad`
-Generated: `2026-05-25T07:26:01.642841+00:00`
+Git head: `87f9282d38b3aad7ff4de733fe54adcb4f458dd7`
+Generated: `2026-05-26T00:04:54.427745+00:00`
 
 ## Summary By Mode
 
 | Mode | Pairs | Assembled | Legal | Exact | Rectified sticker acc | Assembled sticker acc |
 |---|---:|---:|---:|---:|---:|---:|
-| `off` | 41 | 41 | 0 | 0 | 33.1% | 33.1% |
-| `shadow` | 41 | 41 | 0 | 0 | 33.1% | 33.1% |
-| `prefer` | 41 | 41 | 19 | 19 | 95.9% | 95.9% |
+| `off` | 46 | 46 | 0 | 0 | 32.9% | 32.9% |
+| `shadow` | 46 | 46 | 0 | 0 | 32.9% | 32.9% |
+| `prefer` | 46 | 46 | 19 | 19 | 94.0% | 94.0% |
 
 ## Shadow Trace
 
-- Side traces: `82`
-- Accepted sides: `81`
+- Side traces: `92`
+- Accepted sides: `90`
 - Selected sides: `0`
-- Status counts: `{'accepted': 81, 'rejected': 1}`
-- Hard failures: `{'projective_residual_norm=0.0273; max 0.0250': 1}`
-- Warnings: `{'projective_residual_norm=0.0189; warning 0.0180': 1, 'projective_residual_norm=0.0229; warning 0.0180': 1, 'sticker_score_total=706.5; warning 700.0': 1, 'sticker_score_total=712.6; warning 700.0': 1, 'sticker_score_total=728.7; warning 700.0': 1, 'sticker_score_worst_face=351.6; warning 350.0': 1, 'sticker_score_worst_face=357.4; warning 350.0': 1, 'sticker_score_worst_face=360.3; warning 350.0': 1, 'sticker_score_worst_face=372.5; warning 350.0': 1}`
+- Status counts: `{'accepted': 90, 'rejected': 2}`
+- Hard failures: `{'projective_residual_norm=0.0273; max 0.0250': 1, 'sticker_score_total=922.5; max 900.0': 1}`
+- Warnings: `{'sticker_score_total=728.7; warning 700.0': 1, 'sticker_score_worst_face=357.4; warning 350.0': 1, 'projective_residual_norm=0.0189; warning 0.0180': 1, 'sticker_score_worst_face=360.3; warning 350.0': 1, 'sticker_score_total=706.5; warning 700.0': 1, 'projective_residual_norm=0.0229; warning 0.0180': 1, 'sticker_score_worst_face=372.5; warning 350.0': 1, 'sticker_score_total=712.6; warning 700.0': 1, 'sticker_score_worst_face=351.6; warning 350.0': 1, 'sticker_score_total=794.5; warning 700.0': 1, 'sticker_score_worst_face=351.3; warning 350.0': 1, 'sticker_score_total=757.5; warning 700.0': 1, 'sticker_score_worst_face=412.1; warning 350.0': 1, 'projective_residual_norm=0.0207; warning 0.0180': 1, 'sticker_score_total=817.2; warning 700.0': 1, 'sticker_score_total=761.7; warning 700.0': 1, 'sticker_score_total=711.6; warning 700.0': 1, 'sticker_score_total=794.7; warning 700.0': 1, 'sticker_score_total=711.3; warning 700.0': 1, 'sticker_score_total=753.5; warning 700.0': 1}`
 
 ## Prefer Trace
 
-- Side traces: `82`
-- Accepted sides: `81`
-- Selected sides: `81`
-- Status counts: `{'accepted': 81, 'rejected': 1}`
-- Hard failures: `{'projective_residual_norm=0.0273; max 0.0250': 1}`
-- Warnings: `{'projective_residual_norm=0.0189; warning 0.0180': 1, 'projective_residual_norm=0.0229; warning 0.0180': 1, 'sticker_score_total=706.5; warning 700.0': 1, 'sticker_score_total=712.6; warning 700.0': 1, 'sticker_score_total=728.7; warning 700.0': 1, 'sticker_score_worst_face=351.6; warning 350.0': 1, 'sticker_score_worst_face=357.4; warning 350.0': 1, 'sticker_score_worst_face=360.3; warning 350.0': 1, 'sticker_score_worst_face=372.5; warning 350.0': 1}`
+- Side traces: `92`
+- Accepted sides: `90`
+- Selected sides: `90`
+- Status counts: `{'accepted': 90, 'rejected': 2}`
+- Hard failures: `{'projective_residual_norm=0.0273; max 0.0250': 1, 'sticker_score_total=922.5; max 900.0': 1}`
+- Warnings: `{'sticker_score_total=728.7; warning 700.0': 1, 'sticker_score_worst_face=357.4; warning 350.0': 1, 'projective_residual_norm=0.0189; warning 0.0180': 1, 'sticker_score_worst_face=360.3; warning 350.0': 1, 'sticker_score_total=706.5; warning 700.0': 1, 'projective_residual_norm=0.0229; warning 0.0180': 1, 'sticker_score_worst_face=372.5; warning 350.0': 1, 'sticker_score_total=712.6; warning 700.0': 1, 'sticker_score_worst_face=351.6; warning 350.0': 1, 'sticker_score_total=794.5; warning 700.0': 1, 'sticker_score_worst_face=351.3; warning 350.0': 1, 'sticker_score_total=757.5; warning 700.0': 1, 'sticker_score_worst_face=412.1; warning 350.0': 1, 'projective_residual_norm=0.0207; warning 0.0180': 1, 'sticker_score_total=817.2; warning 700.0': 1, 'sticker_score_total=761.7; warning 700.0': 1, 'sticker_score_total=711.6; warning 700.0': 1, 'sticker_score_total=794.7; warning 700.0': 1, 'sticker_score_total=711.3; warning 700.0': 1, 'sticker_score_total=753.5; warning 700.0': 1}`
 
 ## Prefer Versus Legacy
 
-- Improved hamming: `41`
+- Improved hamming: `46`
 - Regressed hamming: `0`
 - Same hamming/incomplete status: `0`
 - Incomplete-status changes: `0`
 
-Improved rows (first 20 of 41; see per-pair snapshot below):
+Improved rows (first 20 of 46; see per-pair snapshot below):
 - Set 12: `32` -> `0`
 - Set 14: `28` -> `5`
 - Set 15: `38` -> `0`
@@ -115,3 +115,8 @@ Improved rows (first 20 of 41; see per-pair snapshot below):
 | 66 | 38 | 0 | 2 | `{'A': 'accepted', 'B': 'accepted'}` |
 | 67 | 36 | 9 | 2 | `{'A': 'accepted', 'B': 'accepted'}` |
 | 68 | 35 | 4 | 2 | `{'A': 'accepted', 'B': 'accepted'}` |
+| 69 | 42 | 1 | 2 | `{'A': 'accepted', 'B': 'accepted'}` |
+| 70 | 38 | 24 | 1 | `{'A': 'rejected', 'B': 'accepted'}` |
+| 71 | 34 | 12 | 2 | `{'A': 'accepted', 'B': 'accepted'}` |
+| 72 | 35 | 10 | 2 | `{'A': 'accepted', 'B': 'accepted'}` |
+| 73 | 36 | 11 | 2 | `{'A': 'accepted', 'B': 'accepted'}` |

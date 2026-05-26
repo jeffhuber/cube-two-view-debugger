@@ -8,17 +8,17 @@ geometry-only shadow validation, this includes the production-shaped
 face identity, color repair, legal-state, fallback, and diagnostic
 signals that cube-snap would consume.
 
-Git head: `a03e154bf51c750712f62101d41723c62de4add4`
-Generated: `2026-05-25T18:06:29.795176+00:00`
+Git head: `87f9282d38b3aad7ff4de733fe54adcb4f458dd7`
+Generated: `2026-05-26T00:05:00.889834+00:00`
 
 ## Summary By Mode
 
 | Mode | Pairs | Success | Legal | Exact | Mean stickers | Sticker acc |
 |---|---:|---:|---:|---:|---:|---:|
-| `off` | 41 | 29 | 29 | 19 | 34.463 | 63.8% |
-| `shadow` | 41 | 29 | 29 | 19 | 34.463 | 63.8% |
-| `prefer_candidate` | 41 | 4 | 4 | 4 | 5.268 | 9.8% |
-| `prefer_effective` | 41 | 30 | 30 | 20 | 35.78 | 66.3% |
+| `off` | 46 | 29 | 29 | 19 | 30.717 | 56.9% |
+| `shadow` | 46 | 29 | 29 | 19 | 30.717 | 56.9% |
+| `prefer_candidate` | 46 | 4 | 4 | 4 | 4.696 | 8.7% |
+| `prefer_effective` | 46 | 30 | 30 | 20 | 31.891 | 59.1% |
 
 `prefer_candidate` is the raw hull-label recognizer candidate. Rejected
 candidate rows contribute 0 recognized stickers to its aggregate score;
@@ -28,8 +28,8 @@ legacy unless both hull-label sides are selected and the candidate succeeds.
 ## Interpretation
 
 - Shadow mode is output-identical to legacy in aggregate: `19` exact / `29` success versus legacy `19` exact / `29` success.
-- Hull-label geometry/yaw is usually available: `81/82` sides accepted and yaw accepted on `41` pairs.
-- Effective prefer selected `4/41` rows, improved `1`, regressed `0`, and moved exact solves from `19` to `20`.
+- Hull-label geometry/yaw is usually available: `90/92` sides accepted and yaw accepted on `45` pairs.
+- Effective prefer selected `4/46` rows, improved `1`, regressed `0`, and moved exact solves from `19` to `20`.
 - Default-on prefer is still premature. The remaining bottleneck is not
   hull geometry; it is color/slot-to-WCA face identity after rectification.
 
@@ -37,9 +37,9 @@ legacy unless both hull-label sides are selected and the candidate succeeds.
 
 - Improved hamming: `1`
 - Regressed hamming: `0`
-- Same hamming/incomplete status: `40`
+- Same hamming/incomplete status: `45`
 - Hull-label selected rows: `4`
-- Fallback rows: `37`
+- Fallback rows: `42`
 - Selected setIds: `32, 42, 45, 39`
 
 Improved rows:
@@ -49,37 +49,39 @@ Improved rows:
 
 ### Shadow
 
-- Side traces: `82`
-- Accepted sides: `81`
+- Side traces: `92`
+- Accepted sides: `90`
 - Selected sides: `0`
-- Side statuses: `{'accepted': 81, 'rejected': 1}`
-- Yaw statuses: `{'accepted': 41}`
-- Best-yaw counts: `{'0': 16, '1': 15, '2': 7, '3': 3}`
-- Vertex sources: `{'affine': 75, 'projective': 7}`
-- Hard failures: `projective_residual_norm=0.0273; max 0.0250`: `1`
-- Warnings: `projective_residual_norm=0.0189; warning 0.0180`: `1`, `projective_residual_norm=0.0229; warning 0.0180`: `1`, `sticker_score_total=706.5; warning 700.0`: `1`, `sticker_score_total=712.6; warning 700.0`: `1`, `sticker_score_total=728.7; warning 700.0`: `1`, `sticker_score_worst_face=351.6; warning 350.0`: `1`, `sticker_score_worst_face=357.4; warning 350.0`: `1`, `sticker_score_worst_face=360.3; warning 350.0`: `1`
+- Side statuses: `{'accepted': 90, 'rejected': 2}`
+- Yaw statuses: `{'accepted': 45, 'ambiguous': 1}`
+- Best-yaw counts: `{'0': 19, '1': 15, '2': 9, '3': 3}`
+- Vertex sources: `{'affine': 84, 'projective': 8}`
+- Hard failures: `projective_residual_norm=0.0273; max 0.0250`: `1`, `sticker_score_total=922.5; max 900.0`: `1`
+- Warnings: `projective_residual_norm=0.0189; warning 0.0180`: `1`, `projective_residual_norm=0.0207; warning 0.0180`: `1`, `projective_residual_norm=0.0229; warning 0.0180`: `1`, `sticker_score_total=706.5; warning 700.0`: `1`, `sticker_score_total=711.3; warning 700.0`: `1`, `sticker_score_total=711.6; warning 700.0`: `1`, `sticker_score_total=712.6; warning 700.0`: `1`, `sticker_score_total=728.7; warning 700.0`: `1`
 
 ### Prefer Candidate
 
-- Side traces: `82`
-- Accepted sides: `81`
-- Selected sides: `81`
-- Side statuses: `{'accepted': 81, 'rejected': 1}`
-- Yaw statuses: `{'accepted': 41}`
-- Best-yaw counts: `{'0': 16, '1': 15, '2': 7, '3': 3}`
-- Vertex sources: `{'affine': 75, 'projective': 7}`
-- Hard failures: `projective_residual_norm=0.0273; max 0.0250`: `1`
-- Warnings: `projective_residual_norm=0.0189; warning 0.0180`: `1`, `projective_residual_norm=0.0229; warning 0.0180`: `1`, `sticker_score_total=706.5; warning 700.0`: `1`, `sticker_score_total=712.6; warning 700.0`: `1`, `sticker_score_total=728.7; warning 700.0`: `1`, `sticker_score_worst_face=351.6; warning 350.0`: `1`, `sticker_score_worst_face=357.4; warning 350.0`: `1`, `sticker_score_worst_face=360.3; warning 350.0`: `1`
+- Side traces: `92`
+- Accepted sides: `90`
+- Selected sides: `90`
+- Side statuses: `{'accepted': 90, 'rejected': 2}`
+- Yaw statuses: `{'accepted': 45, 'ambiguous': 1}`
+- Best-yaw counts: `{'0': 19, '1': 15, '2': 9, '3': 3}`
+- Vertex sources: `{'affine': 84, 'projective': 8}`
+- Hard failures: `projective_residual_norm=0.0273; max 0.0250`: `1`, `sticker_score_total=922.5; max 900.0`: `1`
+- Warnings: `projective_residual_norm=0.0189; warning 0.0180`: `1`, `projective_residual_norm=0.0207; warning 0.0180`: `1`, `projective_residual_norm=0.0229; warning 0.0180`: `1`, `sticker_score_total=706.5; warning 700.0`: `1`, `sticker_score_total=711.3; warning 700.0`: `1`, `sticker_score_total=711.6; warning 700.0`: `1`, `sticker_score_total=712.6; warning 700.0`: `1`, `sticker_score_total=728.7; warning 700.0`: `1`
 
 ## Candidate Fallback Diagnostics
 
-- Candidate categories: `{'needs_manual_review': 4, 'reject_retake': 37}`
-- Candidate failed checks: `B_count_not_9`: `26`, `D_count_not_9`: `26`, `R_count_not_9`: `26`, `L_center_invalid`: `25`, `U_count_not_9`: `23`, `L_count_not_9`: `22`, `F_center_invalid`: `21`, `F_count_not_9`: `20`, `R_center_invalid`: `19`, `U_center_invalid`: `10`, `B_center_invalid`: `8`, `D_center_invalid`: `4`
+- Candidate categories: `{'reject_retake': 42, 'needs_manual_review': 4}`
+- Candidate failed checks: `B_count_not_9`: `28`, `D_count_not_9`: `28`, `R_count_not_9`: `28`, `L_center_invalid`: `27`, `U_count_not_9`: `25`, `L_count_not_9`: `24`, `F_center_invalid`: `22`, `F_count_not_9`: `22`, `R_center_invalid`: `20`, `U_center_invalid`: `10`, `B_center_invalid`: `9`, `D_center_invalid`: `6`
 
 Capture / rollout guidance buckets:
-- `37`: face counts/centers invalid; inspect color classifier and slot assignment
-- `5`: rectified sticker score high; improve lighting/focus/glare
-- `2`: hull/projective residual high; avoid background edges and steep tilt
+- `40`: face counts/centers invalid; inspect color classifier and slot assignment
+- `10`: rectified sticker score high; improve lighting/focus/glare
+- `3`: hull/projective residual high; avoid background edges and steep tilt
+- `1`: U/D anchor not reliable; ensure A is white-up and B is yellow-up
+- `1`: visible 3-face grid not reliable; improve framing/focus
 
 ## Per-Pair Snapshot
 
@@ -126,3 +128,8 @@ Capture / rollout guidance buckets:
 | 66 | None | None | None | False | `reject_retake` | `B_count_not_9, D_count_not_9, F_center_invalid` |
 | 67 | 12 | None | 12 | False | `reject_retake` | `B_count_not_9, D_count_not_9, F_center_invalid` |
 | 68 | 0 | None | 0 | False | `reject_retake` | `B_count_not_9, D_count_not_9, F_center_invalid` |
+| 69 | None | None | None | False | `reject_retake` | `B_center_invalid, L_center_invalid` |
+| 70 | None | None | None | False | `reject_retake` | `image_b_no_reliable_face_triple` |
+| 71 | None | None | None | False | `reject_retake` | `image_b_D_anchor_missing` |
+| 72 | None | None | None | False | `reject_retake` | `B_count_not_9, D_center_invalid, D_count_not_9` |
+| 73 | None | None | None | False | `reject_retake` | `B_count_not_9, D_center_invalid, D_count_not_9` |

@@ -8,10 +8,9 @@ LLM is treated as the source of truth:
 * force the six known WCA centers;
 * greedily repair duplicated/missing colors to exactly nine stickers per WCA
   face color;
+* optionally run cubie-legality repair over the same Lab evidence with guarded
+  cost/change thresholds;
 * expose the trace as a JSON-safe payload that Fixer can use as a draft.
-
-It is intentionally not a cube legality solver. If the repaired state is not a
-legal cube, callers can still present it as a useful draft for human correction.
 """
 from __future__ import annotations
 
@@ -30,6 +29,8 @@ from rubik_recognizer.colors import (
     build_adaptive_palette,
     classify_rgb_with_mode,
 )
+from rubik_recognizer.image_pipeline import Sticker
+from rubik_recognizer.recognizer import _legal_repaired_state_from_faces
 from rubik_recognizer.validation import FACE_ORDER, validate_state
 from tools.corner_conventions import wca_face_by_slot
 from tools.hull_label_assembly import convention_orientation_for_slot
@@ -42,6 +43,8 @@ SLOT_TO_LEGACY_FACE = {
     "right": "face_yz",
     "front": "face_xy",
 }
+GUARDED_BROAD_MAX_REPAIR_COST = 16.0
+GUARDED_BROAD_MAX_REPAIR_CHANGES = 4
 
 
 @dataclass(frozen=True)
@@ -317,6 +320,145 @@ def evaluate_palette(
 _evaluate_palette = evaluate_palette
 
 
+def _payload_for_state(state: Optional[str], gt_state: Optional[str]) -> Dict[str, Any]:
+    if gt_state is not None:
+        return _state_eval(state, gt_state)
+    return state_payload(state)
+
+
+def _observation_by_index(observations: Sequence[StickerObservation]) -> Dict[int, StickerObservation]:
+    return {int(obs.index): obs for obs in observations}
+
+
+def _faces_for_legal_repair(
+    observations: Sequence[StickerObservation],
+    *,
+    source: str,
+) -> Dict[str, List[List[Any]]]:
+    by_index = _observation_by_index(observations)
+    faces: Dict[str, List[List[Any]]] = {}
+    for face in FACE_ORDER:
+        matrix: List[List[Any]] = []
+        for row in range(3):
+            matrix_row: List[Any] = []
+            for col in range(3):
+                index_in_face = row * 3 + col
+                index = face_index(face, index_in_face)
+                if index_in_face == 4:
+                    matrix_row.append(face)
+                    continue
+                obs = by_index[index]
+                match = classify_rgb_with_mode(obs.rgb, CLASSIFIER_CANONICAL, prototypes=CANONICAL_RGB)
+                matrix_row.append(
+                    Sticker(
+                        id=index,
+                        center=(0.0, 0.0),
+                        bbox=(0.0, 0.0, 1.0, 1.0),
+                        rgb=obs.rgb,
+                        match=match,
+                        area=1,
+                        source=source,
+                    )
+                )
+            matrix.append(matrix_row)
+        faces[face] = matrix
+    return faces
+
+
+def _legal_repair_payload(
+    observations: Sequence[StickerObservation],
+    *,
+    gt_state: Optional[str],
+    source: str,
+    baseline_state: Optional[str],
+) -> Dict[str, Any]:
+    if baseline_state and validate_state(baseline_state).valid:
+        return {
+            "status": "already_valid_count_repair",
+            **_payload_for_state(baseline_state, gt_state),
+            "repairCost": 0.0,
+            "repairChanges": 0,
+            "sourceMode": source,
+        }
+    faces = _faces_for_legal_repair(observations, source=source)
+    result = _legal_repaired_state_from_faces(faces)
+    if result is None:
+        return {
+            "status": "no_legal_repair",
+            **_payload_for_state(None, gt_state),
+            "repairCost": None,
+            "repairChanges": None,
+            "sourceMode": source,
+        }
+    state, cost, changes = result
+    return {
+        "status": "legal_repair_found",
+        **_payload_for_state(state, gt_state),
+        "repairCost": round(float(cost), 4),
+        "repairChanges": int(changes),
+        "sourceMode": source,
+    }
+
+
+def _guarded_broad_payload(broad_payload: Mapping[str, Any], *, gt_state: Optional[str]) -> Dict[str, Any]:
+    cost = broad_payload.get("repairCost")
+    changes = broad_payload.get("repairChanges")
+    accepted = (
+        broad_payload.get("validState") is True
+        and isinstance(cost, (int, float))
+        and isinstance(changes, int)
+        and float(cost) <= GUARDED_BROAD_MAX_REPAIR_COST
+        and int(changes) <= GUARDED_BROAD_MAX_REPAIR_CHANGES
+    )
+    gate = {
+        "maxRepairCost": GUARDED_BROAD_MAX_REPAIR_COST,
+        "maxRepairChanges": GUARDED_BROAD_MAX_REPAIR_CHANGES,
+        "accepted": accepted,
+    }
+    if accepted:
+        out = dict(broad_payload)
+        out["status"] = "accepted_guarded_broad_legal_repair"
+        out["gate"] = gate
+        return out
+    return {
+        "status": "rejected_guarded_broad_legal_repair",
+        **_payload_for_state(None, gt_state),
+        "repairCost": None,
+        "repairChanges": None,
+        "rejectedRepairCost": cost,
+        "rejectedRepairChanges": changes,
+        "sourceMode": broad_payload.get("sourceMode"),
+        "gate": gate,
+    }
+
+
+def evaluate_legal_repair_methods(
+    *,
+    observations: Sequence[StickerObservation],
+    baseline_state: Optional[str],
+    gt_state: Optional[str] = None,
+) -> Dict[str, Dict[str, Any]]:
+    broad = _legal_repair_payload(
+        observations,
+        gt_state=gt_state,
+        source="grid_sample",
+        baseline_state=baseline_state,
+    )
+    guarded = _guarded_broad_payload(broad, gt_state=gt_state)
+    broad = dict(broad)
+    broad["diagnosticOnly"] = True
+    return {
+        "conservative_legal_repaired": _legal_repair_payload(
+            observations,
+            gt_state=gt_state,
+            source="hull_label_sample",
+            baseline_state=baseline_state,
+        ),
+        "guarded_broad_legal_repaired": guarded,
+        "broad_legal_repaired": broad,
+    }
+
+
 def adaptive_palette(observations: Sequence[StickerObservation]) -> Dict[str, Tuple[int, int, int]]:
     anchors: Dict[str, List[Tuple[int, int, int]]] = defaultdict(list)
     for obs in observations:
@@ -355,6 +497,8 @@ def _confidence_for_method(method: Mapping[str, Any]) -> str:
 def choose_recommended_method(methods: Mapping[str, Mapping[str, Any]]) -> str:
     preferred = [
         "canonical_count_repaired",
+        "conservative_legal_repaired",
+        "guarded_broad_legal_repaired",
         "adaptive_count_repaired",
         "canonical_center_forced",
         "adaptive_center_forced",
@@ -392,6 +536,13 @@ def assemble_color_repair_payload(
         gt_state=gt_state,
     )
     methods = {**canonical, **adaptive_methods}
+    methods.update(
+        evaluate_legal_repair_methods(
+            observations=observations,
+            baseline_state=canonical["canonical_count_repaired"].get("state"),
+            gt_state=gt_state,
+        )
+    )
     recommended_name = choose_recommended_method(methods)
     recommended = dict(methods[recommended_name]) if recommended_name else {}
     if recommended:

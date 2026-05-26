@@ -7,8 +7,8 @@
 # invisible until I explicitly poll. This script polls automatically on every session start
 # and prints the result as system-reminder context so I see it before my first action.
 #
-# Output shape: silent if queue is empty (so it doesn't spam routine resumes); otherwise
-# prints PR list per repo + last few audit-log events + the exact Monitor command to re-arm.
+# Output shape: always prints the exact Monitor command to re-arm. If queue is non-empty,
+# it also prints PR list per repo + last few audit-log events.
 #
 # Hard 3s wall-clock budget — never block session startup on flaky network / rate limits.
 
@@ -74,11 +74,10 @@ CTVD_COUNT=$(jq_count_or_zero "$CTVD_TMP")
 TOTAL=$((CS_COUNT + CTVD_COUNT))
 
 if [ "$TOTAL" -eq 0 ]; then
-  # Silent on empty queue — no need to spam every session start with "nothing to do."
-  exit 0
+  echo "[Claude queue sweep — no PRs awaiting Claude review at session start]"
+else
+  echo "[Claude queue sweep — $TOTAL PR(s) awaiting Claude review at session start]"
 fi
-
-echo "[Claude queue sweep — $TOTAL PR(s) awaiting Claude review at session start]"
 echo ""
 
 if [ "$CS_COUNT" -gt 0 ]; then

@@ -94,6 +94,23 @@
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "RRLUUBDDFUUDDRFUFLFBRUFLBRRUBBBDRDLFBLRULRLLLFDDDBFUFB",
+          "status": "accepted_guarded_broad_legal_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
         }
       },
       "panelMeta": {
@@ -528,6 +545,23 @@
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "DRULUDBUFDFRURRFDFDFLLFBLLUBDLUDBDRRBFRRLBRLUBDLBBUUFF",
+          "status": "accepted_guarded_broad_legal_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
         }
       },
       "panelMeta": {
@@ -950,6 +984,23 @@
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "DRULUDDUFLFRDRRFDFLBUFFLBUDULRUDBLRRRBFFLUBRLBDBBBLUFD",
+          "status": "accepted_guarded_broad_legal_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
         }
       },
       "panelMeta": {
@@ -1354,6 +1405,23 @@
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "BFFDUDURUFBRBRUFDBBDLRFRLRDFURBDLRFLLFRBLFDLDUUDLBUULB",
+          "status": "accepted_guarded_broad_legal_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
         }
       },
       "panelMeta": {
@@ -1742,6 +1810,23 @@
           "sourceMode": "hull_label_sample",
           "state": "DUBRUFUDFUURBRUURDFBRDFRDFRLRBFDULLRBDLLLFULFDBLLBBFDB",
           "status": "already_valid_count_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "DUBRUFUDFUURBRUURDFBRDFRDFRLRBFDULLRBDLLLFULFDBLLBBFDB",
+          "status": "accepted_guarded_broad_legal_repair",
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
@@ -2137,6 +2222,23 @@
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "DURRURUDFDBUFRURURFBLDFRULBLFULDLRUDBDLLLFFDBFBLFBBBRD",
+          "status": "accepted_guarded_broad_legal_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
         }
       },
       "panelMeta": {
@@ -2526,6 +2628,23 @@
           "sourceMode": "hull_label_sample",
           "state": "UULBURLDBRFDURBULDDBURFLUDBFLLDDFFFBRLBRLDDFLFBFRBURUR",
           "status": "already_valid_count_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "UULBURLDBRFDURBULDDBURFLUDBFLLDDFFFBRLBRLDDFLFBFRBURUR",
+          "status": "accepted_guarded_broad_legal_repair",
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
@@ -2921,6 +3040,23 @@
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "DUURULUDBUURLRFFDBFBLDFFRRDFURFDLFRRBDLLLFLUUBBLRBBDBD",
+          "status": "accepted_guarded_broad_legal_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
         }
       },
       "panelMeta": {
@@ -3313,6 +3449,23 @@
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "LLBRUFUFLULDDRUDFLRDFRFBRLRBDFFDRRUUFDFRLUBUDLBDBBBBLU",
+          "status": "accepted_guarded_broad_legal_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
         }
       },
       "panelMeta": {
@@ -3702,6 +3855,23 @@
           "sourceMode": "hull_label_sample",
           "state": "DFLBUFDRURDFDRUBLUBDFLFBLFLFRURDUDFRRRLLLBRUDULBBBDBUF",
           "status": "already_valid_count_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "DFLBUFDRURDFDRUBLUBDFLFBLFLFRURDUDFRRRLLLBRUDULBBBDBUF",
+          "status": "accepted_guarded_broad_legal_repair",
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
@@ -4115,6 +4285,23 @@
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "DFLBUFDRURDFDRULFLBDFLFBRUDDRFFDRRUURRLLLBBUFULBBBDBLU",
+          "status": "accepted_guarded_broad_legal_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
         }
       },
       "panelMeta": {
@@ -4503,6 +4690,23 @@
           "sourceMode": "hull_label_sample",
           "state": "RFULURBDLFDFRRFUFLLBDRFUDLRFBBUDRFUUBDDFLBUBRRDDLBUBLL",
           "status": "already_valid_count_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "RFULURBDLFDFRRFUFLLBDRFUDLRFBBUDRFUUBDDFLBUBRRDDLBUBLL",
+          "status": "accepted_guarded_broad_legal_repair",
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
@@ -4910,6 +5114,23 @@
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "BLRDUFLRURDDRRFUFLFDFRFUDLRFBBUDRFUULBDFLBUBRBDDLBUBLL",
+          "status": "accepted_guarded_broad_legal_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
         }
       },
       "panelMeta": {
@@ -5298,6 +5519,23 @@
           "sourceMode": "hull_label_sample",
           "state": "UDDDURDFLFDBLRRRFUFUDRFBUBBFUUUDLLUFLBRLLBBLLRFBFBDRRD",
           "status": "already_valid_count_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "UDDDURDFLFDBLRRRFUFUDRFBUBBFUUUDLLUFLBRLLBBLLRFBFBDRRD",
+          "status": "accepted_guarded_broad_legal_repair",
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
@@ -5705,6 +5943,23 @@
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "RLLDURFLRUDUURDFRDDBBUFBBLDLURUDBURBFBLLLFLRDBDUFBFRFF",
+          "status": "accepted_guarded_broad_legal_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
         }
       },
       "panelMeta": {
@@ -6103,6 +6358,23 @@
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "LRDFURBDUBDRDRBBURLFRRFLLRLFUUBDLRFUUUDBLFDLDFBFDBUFLB",
+          "status": "accepted_guarded_broad_legal_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
         }
       },
       "panelMeta": {
@@ -6491,6 +6763,23 @@
           "sourceMode": "hull_label_sample",
           "state": "BLFDUULRRDRRLRDRFDFDFRFBUBBFUUUDLURBLBDFLBBLLUDDFBURFL",
           "status": "already_valid_count_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "BLFDUULRRDRRLRDRFDFDFRFBUBBFUUUDLURBLBDFLBBLLUDDFBURFL",
+          "status": "accepted_guarded_broad_legal_repair",
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
@@ -6885,6 +7174,23 @@
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "BFDUUDFLBLBRLRRRFLUDDRFBUBBFUUUDLDDDURRRLBBLLFULDBFFFR",
+          "status": "accepted_guarded_broad_legal_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
         }
       },
       "panelMeta": {
@@ -7276,6 +7582,23 @@
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "LRLLUFBDDFUDLRDRFDLBRRFBUBBFUUUDLURBBDDULBFLLFDUFBRRFR",
+          "status": "accepted_guarded_broad_legal_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
         }
       },
       "panelMeta": {
@@ -7664,6 +7987,23 @@
           "sourceMode": "hull_label_sample",
           "state": "UDDDURFLRUDBURRFFUDBBUFBFRURBLUDLLUFLBLLLFBLDRFBFBDRRD",
           "status": "already_valid_count_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "UDDDURFLRUDBURRFFUDBBUFBFRURBLUDLLUFLBLLLFBLDRFBFBDRRD",
+          "status": "accepted_guarded_broad_legal_repair",
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
@@ -8071,6 +8411,23 @@
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "LLFDUBFLDFURRRLDDBDBRUFBBLBLURUDFUDUUBLRLFBRDUFFDBFRRL",
+          "status": "accepted_guarded_broad_legal_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
         }
       },
       "panelMeta": {
@@ -8459,6 +8816,23 @@
           "sourceMode": "hull_label_sample",
           "state": "DRULUDDUFLFRDRRFDFLBUFFLBUDULRUDBLRRRBFFLUBRLBDBBBLUFD",
           "status": "already_valid_count_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "DRULUDDUFLFRDRRFDFLBUFFLBUDULRUDBLRRRBFFLUBRLBDBBBLUFD",
+          "status": "accepted_guarded_broad_legal_repair",
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
@@ -8872,6 +9246,23 @@
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "LRDFURBDUBDRDRBBURLFRRFLLRLFUUBDLRFUUUDBLFDLDFBFDBUFLB",
+          "status": "accepted_guarded_broad_legal_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
         }
       },
       "panelMeta": {
@@ -9282,6 +9673,23 @@
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "BFFDUDURUFBRBRUFDBBDLRFRLRDFURBDLRFLLFRBLFDLDUUDLBUULB",
+          "status": "accepted_guarded_broad_legal_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
         }
       },
       "panelMeta": {
@@ -9670,6 +10078,23 @@
           "sourceMode": "hull_label_sample",
           "state": "URDDUUFFBDBLBRUURDUURDFRDFRLRBFDULLRFBRLLFULFBDLLBBFDB",
           "status": "already_valid_count_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "URDDUUFFBDBLBRUURDUURDFRDFRLRBFDULLRFBRLLFULFBDLLBBFDB",
+          "status": "accepted_guarded_broad_legal_repair",
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
@@ -10062,6 +10487,23 @@
           "sourceMode": "hull_label_sample",
           "state": "BFLLUFLRURDFDRUDFLFDFRFBRLRBDFFDRRUULBDRLUBUDULDBBBBLU",
           "status": "already_valid_count_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "BFLLUFLRURDFDRUDFLFDFRFBRLRBDFFDRRUULBDRLUBUDULDBBBBLU",
+          "status": "accepted_guarded_broad_legal_repair",
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
@@ -10460,6 +10902,23 @@
           "sourceMode": "hull_label_sample",
           "state": "LDBRULRUFUDDLRDRFDDRRRFBUBBFUUUDLURBFDFFLBBLLLBDFBURFL",
           "status": "already_valid_count_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "LDBRULRUFUDDLRDRFDDRRRFBUBBFUUUDLURBFDFFLBBLLLBDFBURFL",
+          "status": "accepted_guarded_broad_legal_repair",
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
@@ -10867,6 +11326,23 @@
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "RLBLULLDFDBURRDDDUUBLUFBBLBLURUDFURBDFFBLFFRDRDFRBULFR",
+          "status": "accepted_guarded_broad_legal_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
         }
       },
       "panelMeta": {
@@ -11266,6 +11742,23 @@
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "RLBLULLDFDBURRDDDUUBLUFBBLBLURUDFURBDFFBLFFRDRDFRBULFR",
+          "status": "accepted_guarded_broad_legal_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
         }
       },
       "panelMeta": {
@@ -11654,6 +12147,23 @@
           "sourceMode": "hull_label_sample",
           "state": "RLBLULLDFDBURRDDDUUBLUFBBLBLURUDFURBDFFBLFFRDRDFRBULFR",
           "status": "already_valid_count_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "RLBLULLDFDBURRDDDUUBLUFBBLBLURUDFURBDFFBLFFRDRDFRBULFR",
+          "status": "accepted_guarded_broad_legal_repair",
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
@@ -12061,6 +12571,23 @@
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "RLBLULLDFDBURRDDDUUBLUFBBLBLURUDFURBDFFBLFFRDRDFRBULFR",
+          "status": "accepted_guarded_broad_legal_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
         }
       },
       "panelMeta": {
@@ -12457,6 +12984,23 @@
           "sourceMode": "hull_label_sample",
           "state": "DLBBUFFRDLUDLRRFRBUBFUFUUFDFLRDDFRLLRDRBLRBFLLBBDBUUDU",
           "status": "already_valid_count_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "DLBBUFFRDLUDLRRFRBUBFUFUUFDFLRDDFRLLRDRBLRBFLLBBDBUUDU",
+          "status": "accepted_guarded_broad_legal_repair",
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
@@ -12858,6 +13402,23 @@
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "DLBBUFFRDLUDLRRFRBUBFUFUUFDFLRDDFRLLRDRBLRBFLLBBDBUUDU",
+          "status": "accepted_guarded_broad_legal_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
         }
       },
       "panelMeta": {
@@ -13246,6 +13807,23 @@
           "sourceMode": "hull_label_sample",
           "state": "RUUFUBFBDBDRLRRDRBDRLFFBDUBFLRUDFULLFULFLLLRRBBUDBDUDF",
           "status": "already_valid_count_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "RUUFUBFBDBDRLRRDRBDRLFFBDUBFLRUDFULLFULFLLLRRBBUDBDUDF",
+          "status": "accepted_guarded_broad_legal_repair",
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
@@ -13653,6 +14231,23 @@
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "RUUFUBFBDBDRLRRDRBDRLFFBDUBFLRUDFULLFULFLLLRRBBUDBDUDF",
+          "status": "accepted_guarded_broad_legal_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
         }
       },
       "panelMeta": {
@@ -14055,6 +14650,23 @@
           "sourceMode": "hull_label_sample",
           "state": "LBBBUUUBRULLRRLFFRFRBFFFDFDLLRUDUDBUDDLRLDBRFUUBDBDFLR",
           "status": "already_valid_count_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "LBBBUUUBRULLRRLFFRFRBFFFDFDLLRUDUDBUDDLRLDBRFUUBDBDFLR",
+          "status": "accepted_guarded_broad_legal_repair",
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
@@ -14465,6 +15077,23 @@
           "sourceMode": "hull_label_sample",
           "state": "LBBBUUUBRULLRRLFFRFRBFFFDFDLLRUDUDBUDDLRLDBRFUUBDBDFLR",
           "status": "already_valid_count_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "LBBBUUUBRULLRRLFFRFRBFFFDFDLLRUDUDBUDDLRLDBRFUUBDBDFLR",
+          "status": "accepted_guarded_broad_legal_repair",
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
@@ -14896,6 +15525,23 @@
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "LBBBUUUBRULLRRLFFRFRBFFFDFDLLRUDUDBUDDLRLDBRFUUBDBDFLR",
+          "status": "accepted_guarded_broad_legal_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
         }
       },
       "panelMeta": {
@@ -15306,6 +15952,23 @@
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "LBBBUUUBRULLRRLFFRFRBFFFDFDLLRUDUDBUDDLRLDBRFUUBDBDFLR",
+          "status": "accepted_guarded_broad_legal_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
         }
       },
       "panelMeta": {
@@ -15707,6 +16370,23 @@
           "sourceMode": "hull_label_sample",
           "state": "LBBBUUUBRULLRRLFFRFRBFFFDFDLLRUDUDBUDDLRLDBRFUUBDBDFLR",
           "status": "already_valid_count_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "LBBBUUUBRULLRRLFFRFRBFFFDFDLLRUDUDBUDDLRLDBRFUUBDBDFLR",
+          "status": "accepted_guarded_broad_legal_repair",
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
@@ -16143,6 +16823,23 @@
           "validationErrors": [
             "not_assembled"
           ]
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 3,
+          "repairCost": 10.0137,
+          "sourceMode": "grid_sample",
+          "state": "LBBBUUUBRULLRRLFFRFRBFFFDFDLLRUDUDBUDDLRLDBRFUUBDBDFLR",
+          "status": "accepted_guarded_broad_legal_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
         }
       },
       "panelMeta": {
@@ -16566,6 +17263,23 @@
           "sourceMode": "hull_label_sample",
           "state": "LRDUUFRUDLRRFRUUBLBFFRFDULRRFBBDLFDUDRDDLDUUFFBBLBLBBL",
           "status": "legal_repair_found",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 1,
+          "repairCost": 3.1484,
+          "sourceMode": "grid_sample",
+          "state": "LRDUUFRUDLRRFRUUBLBFFRFDULRRFBBDLFDUDRDDLDUUFFBBLBLBBL",
+          "status": "accepted_guarded_broad_legal_repair",
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
@@ -17031,6 +17745,27 @@
           "validationErrors": [
             "not_assembled"
           ]
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": false,
+          "gate": {
+            "accepted": false,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": null,
+          "rejectedRepairChanges": 10,
+          "rejectedRepairCost": 33.7985,
+          "repairChanges": null,
+          "repairCost": null,
+          "sourceMode": "grid_sample",
+          "state": null,
+          "status": "rejected_guarded_broad_legal_repair",
+          "stickersCorrect": null,
+          "validState": false,
+          "validationErrors": [
+            "not_assembled"
+          ]
         }
       },
       "panelMeta": {
@@ -17457,6 +18192,23 @@
           "sourceMode": "hull_label_sample",
           "state": "LRDUUFRUDLRRFRUUBLBFFRFDULRRFBBDLFDUDRDDLDUUFFBBLBLBBL",
           "status": "already_valid_count_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "LRDUUFRUDLRRFRUUBLBFFRFDULRRFBBDLFDUDRDDLDUUFFBBLBLBBL",
+          "status": "accepted_guarded_broad_legal_repair",
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
@@ -17909,6 +18661,27 @@
           "sourceMode": "hull_label_sample",
           "state": null,
           "status": "no_legal_repair",
+          "stickersCorrect": null,
+          "validState": false,
+          "validationErrors": [
+            "not_assembled"
+          ]
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": false,
+          "gate": {
+            "accepted": false,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": null,
+          "rejectedRepairChanges": 11,
+          "rejectedRepairCost": 12.6398,
+          "repairChanges": null,
+          "repairCost": null,
+          "sourceMode": "grid_sample",
+          "state": null,
+          "status": "rejected_guarded_broad_legal_repair",
           "stickersCorrect": null,
           "validState": false,
           "validationErrors": [
@@ -18367,6 +19140,23 @@
           "stickersCorrect": 54,
           "validState": true,
           "validationErrors": []
+        },
+        "guarded_broad_legal_repaired": {
+          "exactMatch": true,
+          "gate": {
+            "accepted": true,
+            "maxRepairChanges": 4,
+            "maxRepairCost": 16.0
+          },
+          "hamming": 0,
+          "repairChanges": 0,
+          "repairCost": 0.0,
+          "sourceMode": "grid_sample",
+          "state": "RULUURDFDFBBFRUUBLLRRRFDULRRFBBDLFDUBFFDLDUUFDRDLBLBBL",
+          "status": "accepted_guarded_broad_legal_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
         }
       },
       "panelMeta": {
@@ -18711,8 +19501,8 @@
   ],
   "schema": "hull_label_legal_repair_diagnostic_v1",
   "source": {
-    "generated_at_utc": "2026-05-26T16:43:15.799173+00:00",
-    "git_sha": "fb2cecb939d1c0c9c5a51944d750b5dfb1182ca0",
+    "generated_at_utc": "2026-05-26T17:07:09.588650+00:00",
+    "git_sha": "21a7dd9d4efd5d3c1049fe0e4e07032f06b40803",
     "manifest": "tests/fixtures/corpus_manifest.json",
     "tool": "tools/diagnose_hull_label_legal_repair.py"
   },
@@ -18759,6 +19549,19 @@
         "medianRepairChanges": 0,
         "medianRepairCost": 0.0,
         "within3": 43
+      },
+      "guarded_broad_legal_repaired": {
+        "assembled": 46,
+        "exact": 44,
+        "hammingDistribution": {
+          "0": 44
+        },
+        "legal": 44,
+        "maxRepairChanges": 3,
+        "medianHamming": 0.0,
+        "medianRepairChanges": 0.0,
+        "medianRepairCost": 0.0,
+        "within3": 44
       }
     },
     "pairCount": 46

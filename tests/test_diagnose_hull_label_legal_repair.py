@@ -19,6 +19,13 @@ def test_build_summary_counts_legal_repair_methods():
                 "repairCost": 0.75,
                 "repairChanges": 1,
             },
+            "guarded_broad_legal_repaired": {
+                "hamming": 0,
+                "exactMatch": True,
+                "validState": True,
+                "repairCost": 2.0,
+                "repairChanges": 2,
+            },
             "broad_legal_repaired": {
                 "hamming": 0,
                 "exactMatch": True,
@@ -37,6 +44,7 @@ def test_build_summary_counts_legal_repair_methods():
     assert conservative["exact"] == 1
     assert conservative["medianRepairCost"] == 0.75
     assert conservative["medianRepairChanges"] == 1
+    assert summary["methods"]["guarded_broad_legal_repaired"]["exact"] == 1
 
 
 def test_render_report_marks_broad_repair_as_diagnostic_only():
@@ -55,6 +63,16 @@ def test_render_report_marks_broad_repair_as_diagnostic_only():
                 "validState": False,
                 "repairCost": None,
                 "repairChanges": None,
+            },
+            "guarded_broad_legal_repaired": {
+                "status": "rejected_guarded_broad_legal_repair",
+                "hamming": None,
+                "exactMatch": False,
+                "validState": False,
+                "repairCost": None,
+                "repairChanges": None,
+                "rejectedRepairCost": 22.0,
+                "rejectedRepairChanges": 8,
             },
             "broad_legal_repaired": {
                 "status": "legal_repair_found",
@@ -75,4 +93,5 @@ def test_render_report_marks_broad_repair_as_diagnostic_only():
     report = render_report(payload)
 
     assert "Broad cubie repair is diagnostic-only" in report
-    assert "| 99 | 2 | None | `no_legal_repair` | 0 | 2.5 | 3 |" in report
+    assert "Guarded broad repair applies a provisional no-ground-truth gate" in report
+    assert "| 99 | 2 | None | `no_legal_repair` | None | `rejected_guarded_broad_legal_repair` | 0 | 2.5 | 3 |" in report

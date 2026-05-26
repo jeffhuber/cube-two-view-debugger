@@ -56,6 +56,8 @@ from tools.hull_label_color_repair import (  # noqa: E402
 
 DEFAULT_OUT = REPO_ROOT / "tests" / "fixtures" / "hull_label_legal_repair_diagnostic.json"
 DEFAULT_REPORT = REPO_ROOT / "tools" / "HULL_LABEL_LEGAL_REPAIR_DIAGNOSTIC.md"
+GUARDED_BROAD_MAX_REPAIR_COST = 16.0
+GUARDED_BROAD_MAX_REPAIR_CHANGES = 4
 
 
 def _git_head_sha() -> str:
@@ -160,6 +162,38 @@ def _legal_repair_payload(
     }
 
 
+def _guarded_broad_payload(broad_payload: Mapping[str, Any], *, gt_state: str) -> Dict[str, Any]:
+    cost = broad_payload.get("repairCost")
+    changes = broad_payload.get("repairChanges")
+    accepted = (
+        broad_payload.get("validState") is True
+        and isinstance(cost, (int, float))
+        and isinstance(changes, int)
+        and float(cost) <= GUARDED_BROAD_MAX_REPAIR_COST
+        and int(changes) <= GUARDED_BROAD_MAX_REPAIR_CHANGES
+    )
+    gate = {
+        "maxRepairCost": GUARDED_BROAD_MAX_REPAIR_COST,
+        "maxRepairChanges": GUARDED_BROAD_MAX_REPAIR_CHANGES,
+        "accepted": accepted,
+    }
+    if accepted:
+        out = dict(broad_payload)
+        out["status"] = "accepted_guarded_broad_legal_repair"
+        out["gate"] = gate
+        return out
+    return {
+        "status": "rejected_guarded_broad_legal_repair",
+        **_state_payload(None, gt_state),
+        "repairCost": None,
+        "repairChanges": None,
+        "rejectedRepairCost": cost,
+        "rejectedRepairChanges": changes,
+        "sourceMode": broad_payload.get("sourceMode"),
+        "gate": gate,
+    }
+
+
 def evaluate_observations(observations: Sequence[StickerObservation], *, gt_state: str) -> Dict[str, Any]:
     count_methods = evaluate_palette(
         observations=observations,
@@ -169,6 +203,12 @@ def evaluate_observations(observations: Sequence[StickerObservation], *, gt_stat
     )
     count_repaired = count_methods["canonical_count_repaired"]
     baseline_state = count_repaired.get("state")
+    broad = _legal_repair_payload(
+        observations,
+        gt_state=gt_state,
+        source="grid_sample",
+        baseline_state=baseline_state,
+    )
     return {
         "canonical_count_repaired": count_repaired,
         "conservative_legal_repaired": _legal_repair_payload(
@@ -177,12 +217,8 @@ def evaluate_observations(observations: Sequence[StickerObservation], *, gt_stat
             source="hull_label_sample",
             baseline_state=baseline_state,
         ),
-        "broad_legal_repaired": _legal_repair_payload(
-            observations,
-            gt_state=gt_state,
-            source="grid_sample",
-            baseline_state=baseline_state,
-        ),
+        "broad_legal_repaired": broad,
+        "guarded_broad_legal_repaired": _guarded_broad_payload(broad, gt_state=gt_state),
     }
 
 
@@ -266,6 +302,7 @@ def build_summary(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
     methods = (
         "canonical_count_repaired",
         "conservative_legal_repaired",
+        "guarded_broad_legal_repaired",
         "broad_legal_repaired",
     )
     return {
@@ -310,25 +347,32 @@ def render_report(payload: Mapping[str, Any]) -> str:
         "  so the helper can consider all color fallbacks. A perfect broad result",
         "  proves the true legal state is rankable by existing constraints, but",
         "  it still needs cost/change/margin gates before production use.",
+        f"- Guarded broad repair applies a provisional no-ground-truth gate to that",
+        f"  same broad result: repair cost <= {GUARDED_BROAD_MAX_REPAIR_COST:g}",
+        f"  and repair changes <= {GUARDED_BROAD_MAX_REPAIR_CHANGES}. This is still",
+        "  diagnostic, but it estimates the slice that looks safe enough to consider",
+        "  for production confidence gating.",
         "- This diagnostic does not use ground truth for selection. Ground truth is",
         "  only used after each candidate state is selected to compute hamming and",
         "  exact-match metrics.",
         "",
         "## Non-Exact / No-Repair Rows",
         "",
-        "| Set | Count hamming | Conservative hamming | Conservative status | Broad hamming | Broad cost | Broad changes |",
-        "|---:|---:|---:|---|---:|---:|---:|",
+        "| Set | Count hamming | Conservative hamming | Conservative status | Guarded hamming | Guarded status | Broad hamming | Broad cost | Broad changes |",
+        "|---:|---:|---:|---|---:|---|---:|---:|---:|",
     ])
     for row in rows:
         methods = row.get("methods", {})
         count_h = methods.get("canonical_count_repaired", {}).get("hamming")
         conservative = methods.get("conservative_legal_repaired", {})
+        guarded = methods.get("guarded_broad_legal_repaired", {})
         broad = methods.get("broad_legal_repaired", {})
-        if count_h == 0 and conservative.get("hamming") == 0 and broad.get("hamming") == 0:
+        if count_h == 0 and conservative.get("hamming") == 0 and guarded.get("hamming") == 0 and broad.get("hamming") == 0:
             continue
         lines.append(
             f"| {row['setId']} | {count_h} | {conservative.get('hamming')} | "
-            f"`{conservative.get('status')}` | {broad.get('hamming')} | "
+            f"`{conservative.get('status')}` | {guarded.get('hamming')} | "
+            f"`{guarded.get('status')}` | {broad.get('hamming')} | "
             f"{broad.get('repairCost')} | {broad.get('repairChanges')} |"
         )
     return "\n".join(lines) + "\n"

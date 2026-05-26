@@ -1054,65 +1054,9 @@ def prepare_llm_rectified_input(
 
 
 def _infer_yaw_from_rectified_fits(fits_by_side: Dict[str, Any]) -> Dict[str, Any]:
-    from rubik_recognizer.colors import CLASSIFIER_CANONICAL, classify_rgb_with_mode
-    from tools.hull_label_yaw import score_yaw_candidates
-    from tools.rectify_faces import extract_stickers_from_rectified
+    from tools.hull_label_yaw import infer_yaw_from_rectified_fits
 
-    observed = []
-    observations = []
-    for side in ("A", "B"):
-        fit = fits_by_side.get(side)
-        if fit is None:
-            continue
-        for slot in ("upper", "right", "front"):
-            face_img = fit.rectified_faces.get(slot)
-            if face_img is None:
-                continue
-            center = extract_stickers_from_rectified(face_img)[1][1]
-            rgb = tuple(int(v) for v in center.rgb)
-            match = classify_rgb_with_mode(rgb, CLASSIFIER_CANONICAL)
-            observed.append((side, slot, match.face))
-            observations.append({
-                "side": side,
-                "slot": slot,
-                "centerFace": match.face,
-                "centerColor": match.color,
-                "rgb": list(rgb),
-                "distance": round(float(match.distance), 2),
-                "confidence": round(float(match.confidence), 4),
-            })
-
-    if len(observed) != 6:
-        return {
-            "source": "hull_label_center_colors",
-            "status": "unavailable",
-            "accepted": False,
-            "yawQuarterTurns": None,
-            "reason": "need six slot center observations",
-            "observedCenters": observations,
-        }
-
-    result = score_yaw_candidates(observed)
-    if not result.get("accepted"):
-        side_observed = tuple(item for item in observed if item[1] != "upper")
-        side_result = score_yaw_candidates(
-            side_observed,
-            min_matches=4,
-            min_margin=4,
-        )
-        if side_result.get("accepted"):
-            side_result["status"] = "accepted_side_faces_only"
-            side_result["allCenterBestYawQuarterTurns"] = result.get("bestYawQuarterTurns")
-            side_result["allCenterBestScore"] = result.get("bestScore")
-            side_result["allCenterSecondScore"] = result.get("secondScore")
-            side_result["allCenterMargin"] = result.get("margin")
-            result = side_result
-    result.update({
-        "source": "hull_label_center_colors",
-        "status": result.get("status") or ("accepted" if result["accepted"] else "ambiguous"),
-        "observedCenters": observations,
-    })
-    return result
+    return infer_yaw_from_rectified_fits(fits_by_side)
 
 
 def _image_fingerprint(image_bytes: bytes) -> Dict[str, Any]:

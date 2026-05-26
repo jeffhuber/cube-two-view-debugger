@@ -1009,32 +1009,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.8689,
+                "distance": 13.24,
+                "rgb": [
+                  225,
+                  233,
+                  252
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.5207,
+                "distance": 22.96,
+                "rgb": [
+                  89,
+                  134,
+                  103
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7453,
+                "distance": 30.79,
+                "rgb": [
+                  170,
+                  104,
+                  73
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.7981,
+                "distance": 12.58,
+                "rgb": [
+                  234,
+                  233,
+                  83
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.7499,
+                "distance": 40.39,
+                "rgb": [
+                  141,
+                  81,
+                  73
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.6339,
+                "distance": 20.99,
+                "rgb": [
+                  83,
+                  97,
+                  128
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -2950,32 +2998,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.8664,
+                "distance": 14.3,
+                "rgb": [
+                  224,
+                  230,
+                  251
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.3075,
+                "distance": 43.38,
+                "rgb": [
+                  39,
+                  39,
+                  42
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.4565,
+                "distance": 25.94,
+                "rgb": [
+                  93,
+                  129,
+                  100
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.783,
+                "distance": 15.09,
+                "rgb": [
+                  239,
+                  238,
+                  95
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.7443,
+                "distance": 13.46,
+                "rgb": [
+                  68,
+                  84,
+                  126
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7407,
+                "distance": 27.25,
+                "rgb": [
+                  185,
+                  112,
+                  79
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -4835,32 +4931,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.8629,
+                "distance": 13.2,
+                "rgb": [
+                  220,
+                  226,
+                  244
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.8101,
+                "distance": 36.1,
+                "rgb": [
+                  136,
+                  68,
+                  60
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.469,
+                "distance": 24.75,
+                "rgb": [
+                  95,
+                  134,
+                  104
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.7955,
+                "distance": 13.5,
+                "rgb": [
+                  232,
+                  231,
+                  87
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.7312,
+                "distance": 14.06,
+                "rgb": [
+                  69,
+                  83,
+                  124
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7494,
+                "distance": 28.71,
+                "rgb": [
+                  178,
+                  109,
+                  76
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -6550,32 +6694,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.7977,
+                "distance": 24.63,
+                "rgb": [
+                  172,
+                  169,
+                  167
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7826,
+                "distance": 21.88,
+                "rgb": [
+                  162,
+                  75,
+                  33
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.7514,
+                "distance": 13.58,
+                "rgb": [
+                  74,
+                  94,
+                  137
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.8394,
+                "distance": 27.25,
+                "rgb": [
+                  176,
+                  161,
+                  50
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.6985,
+                "distance": 22.76,
+                "rgb": [
+                  70,
+                  106,
+                  62
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.8075,
+                "distance": 30.5,
+                "rgb": [
+                  148,
+                  70,
+                  59
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -8172,32 +8364,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.8651,
+                "distance": 8.43,
+                "rgb": [
+                  219,
+                  235,
+                  241
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7095,
+                "distance": 33.93,
+                "rgb": [
+                  139,
+                  59,
+                  36
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.7053,
+                "distance": 11.74,
+                "rgb": [
+                  80,
+                  163,
+                  115
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.7747,
+                "distance": 18.03,
+                "rgb": [
+                  248,
+                  254,
+                  85
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.7819,
+                "distance": 11.87,
+                "rgb": [
+                  50,
+                  61,
+                  114
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.8075,
+                "distance": 7.99,
+                "rgb": [
+                  240,
+                  130,
+                  68
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -9777,32 +10017,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.8699,
+                "distance": 8.0,
+                "rgb": [
+                  220,
+                  236,
+                  241
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.7059,
+                "distance": 26.17,
+                "rgb": [
+                  140,
+                  59,
+                  38
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.686,
+                "distance": 13.51,
+                "rgb": [
+                  82,
+                  155,
+                  112
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.7376,
+                "distance": 20.86,
+                "rgb": [
+                  237,
+                  254,
+                  88
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.7545,
+                "distance": 9.84,
+                "rgb": [
+                  62,
+                  75,
+                  124
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.8024,
+                "distance": 6.17,
+                "rgb": [
+                  229,
+                  121,
+                  62
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -11383,32 +11671,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.9035,
+                "distance": 7.8,
+                "rgb": [
+                  230,
+                  239,
+                  247
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7017,
+                "distance": 31.25,
+                "rgb": [
+                  145,
+                  56,
+                  32
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.6844,
+                "distance": 12.31,
+                "rgb": [
+                  92,
+                  156,
+                  107
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.7236,
+                "distance": 21.23,
+                "rgb": [
+                  238,
+                  254,
+                  100
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.8004,
+                "distance": 7.05,
+                "rgb": [
+                  54,
+                  70,
+                  129
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7968,
+                "distance": 6.54,
+                "rgb": [
+                  227,
+                  119,
+                  62
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -12970,32 +13306,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.8668,
+                "distance": 10.65,
+                "rgb": [
+                  225,
+                  241,
+                  253
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7169,
+                "distance": 31.95,
+                "rgb": [
+                  144,
+                  62,
+                  37
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.6941,
+                "distance": 12.77,
+                "rgb": [
+                  86,
+                  166,
+                  118
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.7559,
+                "distance": 19.58,
+                "rgb": [
+                  242,
+                  254,
+                  81
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.7785,
+                "distance": 10.22,
+                "rgb": [
+                  54,
+                  67,
+                  119
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.8036,
+                "distance": 7.83,
+                "rgb": [
+                  237,
+                  128,
+                  68
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -14557,32 +14941,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.8226,
+                "distance": 12.39,
+                "rgb": [
+                  215,
+                  240,
+                  252
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7026,
+                "distance": 33.3,
+                "rgb": [
+                  144,
+                  63,
+                  41
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.6803,
+                "distance": 15.74,
+                "rgb": [
+                  83,
+                  162,
+                  122
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.7848,
+                "distance": 17.2,
+                "rgb": [
+                  250,
+                  253,
+                  81
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.7389,
+                "distance": 12.98,
+                "rgb": [
+                  58,
+                  67,
+                  113
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.8,
+                "distance": 6.83,
+                "rgb": [
+                  240,
+                  123,
+                  60
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -16177,32 +16609,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.9361,
+                "distance": 3.64,
+                "rgb": [
+                  251,
+                  246,
+                  239
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.8021,
+                "distance": 15.45,
+                "rgb": [
+                  42,
+                  50,
+                  109
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.7381,
+                "distance": 20.52,
+                "rgb": [
+                  131,
+                  33,
+                  11
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.7944,
+                "distance": 16.81,
+                "rgb": [
+                  254,
+                  254,
+                  86
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.782,
+                "distance": 10.65,
+                "rgb": [
+                  237,
+                  106,
+                  43
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.7536,
+                "distance": 17.97,
+                "rgb": [
+                  48,
+                  110,
+                  68
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -17916,32 +18396,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.8244,
+                "distance": 17.76,
+                "rgb": [
+                  186,
+                  191,
+                  195
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.7955,
+                "distance": 10.32,
+                "rgb": [
+                  82,
+                  111,
+                  181
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.8137,
+                "distance": 38.38,
+                "rgb": [
+                  115,
+                  50,
+                  44
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.811,
+                "distance": 17.78,
+                "rgb": [
+                  191,
+                  187,
+                  57
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.8194,
+                "distance": 7.87,
+                "rgb": [
+                  241,
+                  132,
+                  66
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.6785,
+                "distance": 27.27,
+                "rgb": [
+                  56,
+                  102,
+                  74
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -19603,32 +20131,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.7752,
+                "distance": 23.24,
+                "rgb": [
+                  191,
+                  193,
+                  220
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.786,
+                "distance": 24.19,
+                "rgb": [
+                  170,
+                  93,
+                  55
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.7604,
+                "distance": 10.06,
+                "rgb": [
+                  76,
+                  97,
+                  147
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.8222,
+                "distance": 15.3,
+                "rgb": [
+                  199,
+                  192,
+                  59
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.6978,
+                "distance": 18.33,
+                "rgb": [
+                  65,
+                  121,
+                  83
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.7478,
+                "distance": 28.85,
+                "rgb": [
+                  175,
+                  91,
+                  76
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -21278,32 +21854,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.8204,
+                "distance": 18.72,
+                "rgb": [
+                  207,
+                  210,
+                  235
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.7487,
+                "distance": 15.17,
+                "rgb": [
+                  60,
+                  74,
+                  114
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.7279,
+                "distance": 35.45,
+                "rgb": [
+                  197,
+                  116,
+                  104
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.8209,
+                "distance": 11.88,
+                "rgb": [
+                  208,
+                  201,
+                  61
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7773,
+                "distance": 26.27,
+                "rgb": [
+                  167,
+                  92,
+                  57
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.5249,
+                "distance": 19.61,
+                "rgb": [
+                  117,
+                  175,
+                  130
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -22934,32 +23558,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.8076,
+                "distance": 21.55,
+                "rgb": [
+                  177,
+                  180,
+                  185
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.8274,
+                "distance": 7.41,
+                "rgb": [
+                  49,
+                  69,
+                  128
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.7664,
+                "distance": 32.2,
+                "rgb": [
+                  110,
+                  28,
+                  24
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.7861,
+                "distance": 17.23,
+                "rgb": [
+                  193,
+                  195,
+                  62
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7928,
+                "distance": 10.63,
+                "rgb": [
+                  195,
+                  94,
+                  42
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.737,
+                "distance": 19.76,
+                "rgb": [
+                  48,
+                  112,
+                  76
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -24567,32 +25239,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.8655,
+                "distance": 11.73,
+                "rgb": [
+                  204,
+                  209,
+                  213
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.796,
+                "distance": 28.55,
+                "rgb": [
+                  152,
+                  71,
+                  58
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.68,
+                "distance": 15.62,
+                "rgb": [
+                  78,
+                  138,
+                  98
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.7944,
+                "distance": 11.17,
+                "rgb": [
+                  226,
+                  226,
+                  73
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.7659,
+                "distance": 10.77,
+                "rgb": [
+                  77,
+                  100,
+                  150
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7931,
+                "distance": 12.66,
+                "rgb": [
+                  195,
+                  100,
+                  51
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -26221,32 +26941,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.8219,
+                "distance": 21.06,
+                "rgb": [
+                  180,
+                  179,
+                  176
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.7403,
+                "distance": 36.89,
+                "rgb": [
+                  119,
+                  56,
+                  42
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.7275,
+                "distance": 6.78,
+                "rgb": [
+                  77,
+                  156,
+                  100
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.8292,
+                "distance": 25.62,
+                "rgb": [
+                  182,
+                  164,
+                  51
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.5261,
+                "distance": 28.78,
+                "rgb": [
+                  65,
+                  73,
+                  91
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7946,
+                "distance": 13.08,
+                "rgb": [
+                  221,
+                  125,
+                  75
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -27854,32 +28622,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.8306,
+                "distance": 17.73,
+                "rgb": [
+                  210,
+                  213,
+                  237
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.7973,
+                "distance": 14.43,
+                "rgb": [
+                  50,
+                  68,
+                  111
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.7351,
+                "distance": 29.3,
+                "rgb": [
+                  199,
+                  108,
+                  92
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.8152,
+                "distance": 18.02,
+                "rgb": [
+                  191,
+                  186,
+                  57
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7881,
+                "distance": 24.15,
+                "rgb": [
+                  159,
+                  79,
+                  39
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.7005,
+                "distance": 12.21,
+                "rgb": [
+                  88,
+                  170,
+                  118
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -29517,32 +30333,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.7805,
+                "distance": 23.64,
+                "rgb": [
+                  191,
+                  191,
+                  218
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.8178,
+                "distance": 26.55,
+                "rgb": [
+                  127,
+                  38,
+                  30
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.7272,
+                "distance": 8.26,
+                "rgb": [
+                  70,
+                  150,
+                  100
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.8237,
+                "distance": 9.72,
+                "rgb": [
+                  223,
+                  215,
+                  71
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.8136,
+                "distance": 12.06,
+                "rgb": [
+                  48,
+                  67,
+                  115
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.8006,
+                "distance": 8.24,
+                "rgb": [
+                  241,
+                  117,
+                  50
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -31103,32 +31967,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.7784,
+                "distance": 22.15,
+                "rgb": [
+                  194,
+                  198,
+                  225
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.8333,
+                "distance": 14.16,
+                "rgb": [
+                  34,
+                  53,
+                  111
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.8429,
+                "distance": 15.47,
+                "rgb": [
+                  162,
+                  54,
+                  42
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.81,
+                "distance": 12.43,
+                "rgb": [
+                  220,
+                  216,
+                  77
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.8011,
+                "distance": 18.88,
+                "rgb": [
+                  179,
+                  96,
+                  51
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.7498,
+                "distance": 8.13,
+                "rgb": [
+                  75,
+                  167,
+                  103
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -32768,32 +33680,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.8631,
+                "distance": 10.69,
+                "rgb": [
+                  207,
+                  214,
+                  219
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.8025,
+                "distance": 4.92,
+                "rgb": [
+                  62,
+                  85,
+                  141
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.8236,
+                "distance": 29.37,
+                "rgb": [
+                  146,
+                  66,
+                  55
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.7944,
+                "distance": 11.58,
+                "rgb": [
+                  218,
+                  218,
+                  71
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7935,
+                "distance": 17.21,
+                "rgb": [
+                  205,
+                  118,
+                  73
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.7359,
+                "distance": 11.93,
+                "rgb": [
+                  59,
+                  130,
+                  85
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -34467,32 +35427,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.8846,
+                "distance": 8.72,
+                "rgb": [
+                  222,
+                  230,
+                  239
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.7924,
+                "distance": 30.97,
+                "rgb": [
+                  155,
+                  77,
+                  66
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.7034,
+                "distance": 17.73,
+                "rgb": [
+                  64,
+                  121,
+                  82
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.6991,
+                "distance": 28.89,
+                "rgb": [
+                  239,
+                  237,
+                  134
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.7185,
+                "distance": 16.88,
+                "rgb": [
+                  86,
+                  104,
+                  144
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7955,
+                "distance": 20.33,
+                "rgb": [
+                  169,
+                  85,
+                  41
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -36875,32 +37883,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.9424,
+                "distance": 5.14,
+                "rgb": [
+                  231,
+                  231,
+                  234
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.8387,
+                "distance": 12.76,
+                "rgb": [
+                  73,
+                  115,
+                  190
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.8192,
+                "distance": 35.01,
+                "rgb": [
+                  123,
+                  54,
+                  44
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.8328,
+                "distance": 9.84,
+                "rgb": [
+                  249,
+                  237,
+                  75
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.8472,
+                "distance": 11.8,
+                "rgb": [
+                  250,
+                  144,
+                  66
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.6963,
+                "distance": 21.51,
+                "rgb": [
+                  73,
+                  112,
+                  70
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -37833,32 +38889,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.7105,
+                "distance": 28.16,
+                "rgb": [
+                  161,
+                  162,
+                  148
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.5722,
+                "distance": 27.77,
+                "rgb": [
+                  49,
+                  61,
+                  83
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.8017,
+                "distance": 31.65,
+                "rgb": [
+                  153,
+                  76,
+                  66
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.8478,
+                "distance": 26.71,
+                "rgb": [
+                  176,
+                  163,
+                  51
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.78,
+                "distance": 25.01,
+                "rgb": [
+                  158,
+                  78,
+                  40
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.7067,
+                "distance": 9.62,
+                "rgb": [
+                  80,
+                  152,
+                  102
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -39554,32 +40658,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.7333,
+                "distance": 27.43,
+                "rgb": [
+                  168,
+                  161,
+                  155
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.782,
+                "distance": 26.28,
+                "rgb": [
+                  152,
+                  73,
+                  35
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.7591,
+                "distance": 13.18,
+                "rgb": [
+                  70,
+                  90,
+                  133
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.8378,
+                "distance": 28.86,
+                "rgb": [
+                  173,
+                  158,
+                  50
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.5308,
+                "distance": 30.11,
+                "rgb": [
+                  60,
+                  88,
+                  50
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.8144,
+                "distance": 28.82,
+                "rgb": [
+                  155,
+                  73,
+                  62
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -41243,32 +42395,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.9082,
+                "distance": 8.05,
+                "rgb": [
+                  231,
+                  238,
+                  247
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7109,
+                "distance": 30.84,
+                "rgb": [
+                  147,
+                  61,
+                  36
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.6777,
+                "distance": 13.95,
+                "rgb": [
+                  104,
+                  165,
+                  113
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.7848,
+                "distance": 17.48,
+                "rgb": [
+                  251,
+                  254,
+                  82
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.7243,
+                "distance": 12.04,
+                "rgb": [
+                  66,
+                  76,
+                  121
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.8097,
+                "distance": 6.45,
+                "rgb": [
+                  238,
+                  126,
+                  62
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -42864,32 +44064,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.98,
+                "distance": 5.18,
+                "rgb": [
+                  252,
+                  252,
+                  249
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.8137,
+                "distance": 22.8,
+                "rgb": [
+                  24,
+                  34,
+                  97
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.7279,
+                "distance": 7.7,
+                "rgb": [
+                  195,
+                  59,
+                  27
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.7944,
+                "distance": 16.83,
+                "rgb": [
+                  254,
+                  254,
+                  85
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7655,
+                "distance": 11.23,
+                "rgb": [
+                  213,
+                  88,
+                  34
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.7255,
+                "distance": 9.28,
+                "rgb": [
+                  79,
+                  166,
+                  110
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -44564,32 +45812,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.8743,
+                "distance": 12.28,
+                "rgb": [
+                  205,
+                  207,
+                  212
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.8104,
+                "distance": 9.4,
+                "rgb": [
+                  51,
+                  70,
+                  122
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.7714,
+                "distance": 17.22,
+                "rgb": [
+                  185,
+                  80,
+                  60
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.8399,
+                "distance": 7.8,
+                "rgb": [
+                  227,
+                  214,
+                  68
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7899,
+                "distance": 22.26,
+                "rgb": [
+                  158,
+                  71,
+                  27
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.7414,
+                "distance": 7.34,
+                "rgb": [
+                  76,
+                  164,
+                  103
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -46274,32 +47570,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.8874,
+                "distance": 9.07,
+                "rgb": [
+                  229,
+                  243,
+                  252
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7176,
+                "distance": 35.84,
+                "rgb": [
+                  133,
+                  58,
+                  35
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.6806,
+                "distance": 13.3,
+                "rgb": [
+                  87,
+                  151,
+                  106
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.7744,
+                "distance": 16.49,
+                "rgb": [
+                  242,
+                  248,
+                  82
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.6963,
+                "distance": 20.36,
+                "rgb": [
+                  68,
+                  71,
+                  103
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7881,
+                "distance": 10.08,
+                "rgb": [
+                  227,
+                  123,
+                  71
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -48661,32 +50005,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.8735,
+                "distance": 9.6,
+                "rgb": [
+                  226,
+                  243,
+                  252
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.6763,
+                "distance": 18.3,
+                "rgb": [
+                  67,
+                  73,
+                  108
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.7305,
+                "distance": 24.68,
+                "rgb": [
+                  161,
+                  75,
+                  55
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.7911,
+                "distance": 15.03,
+                "rgb": [
+                  246,
+                  247,
+                  80
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.8119,
+                "distance": 12.53,
+                "rgb": [
+                  184,
+                  89,
+                  34
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.6976,
+                "distance": 14.72,
+                "rgb": [
+                  97,
+                  148,
+                  100
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -50251,32 +51643,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.8643,
+                "distance": 10.17,
+                "rgb": [
+                  224,
+                  242,
+                  252
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.8216,
+                "distance": 14.18,
+                "rgb": [
+                  182,
+                  94,
+                  40
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.7995,
+                "distance": 3.83,
+                "rgb": [
+                  64,
+                  83,
+                  152
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.7775,
+                "distance": 16.02,
+                "rgb": [
+                  242,
+                  247,
+                  83
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.7168,
+                "distance": 17.09,
+                "rgb": [
+                  73,
+                  118,
+                  69
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.7538,
+                "distance": 25.06,
+                "rgb": [
+                  170,
+                  82,
+                  64
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -51920,32 +53360,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.861,
+                "distance": 9.24,
+                "rgb": [
+                  221,
+                  240,
+                  247
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.7124,
+                "distance": 15.6,
+                "rgb": [
+                  77,
+                  125,
+                  77
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.8068,
+                "distance": 10.62,
+                "rgb": [
+                  224,
+                  126,
+                  71
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.7647,
+                "distance": 17.99,
+                "rgb": [
+                  242,
+                  251,
+                  83
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7628,
+                "distance": 33.49,
+                "rgb": [
+                  149,
+                  83,
+                  55
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.7264,
+                "distance": 6.92,
+                "rgb": [
+                  78,
+                  90,
+                  144
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -53594,32 +55082,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.8429,
+                "distance": 11.52,
+                "rgb": [
+                  215,
+                  205,
+                  201
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.7614,
+                "distance": 4.97,
+                "rgb": [
+                  79,
+                  97,
+                  161
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.7222,
+                "distance": 23.53,
+                "rgb": [
+                  156,
+                  69,
+                  48
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.8062,
+                "distance": 15.08,
+                "rgb": [
+                  234,
+                  207,
+                  83
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.8457,
+                "distance": 12.77,
+                "rgb": [
+                  243,
+                  146,
+                  74
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.611,
+                "distance": 18.69,
+                "rgb": [
+                  91,
+                  141,
+                  103
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -55210,32 +56746,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.8017,
+                "distance": 12.61,
+                "rgb": [
+                  222,
+                  204,
+                  197
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.8486,
+                "distance": 9.26,
+                "rgb": [
+                  237,
+                  137,
+                  64
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.7498,
+                "distance": 15.4,
+                "rgb": [
+                  56,
+                  68,
+                  109
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.7974,
+                "distance": 16.78,
+                "rgb": [
+                  234,
+                  205,
+                  85
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.6487,
+                "distance": 18.09,
+                "rgb": [
+                  106,
+                  171,
+                  128
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.7166,
+                "distance": 17.94,
+                "rgb": [
+                  158,
+                  61,
+                  37
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -56131,32 +57715,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.8491,
+                "distance": 11.45,
+                "rgb": [
+                  213,
+                  205,
+                  201
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.746,
+                "distance": 33.38,
+                "rgb": [
+                  102,
+                  28,
+                  12
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.6927,
+                "distance": 16.79,
+                "rgb": [
+                  67,
+                  134,
+                  98
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.832,
+                "distance": 22.17,
+                "rgb": [
+                  205,
+                  193,
+                  82
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.6844,
+                "distance": 28.08,
+                "rgb": [
+                  14,
+                  24,
+                  72
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.8112,
+                "distance": 4.52,
+                "rgb": [
+                  212,
+                  101,
+                  37
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -58565,32 +60197,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.9278,
+                "distance": 6.54,
+                "rgb": [
+                  226,
+                  224,
+                  227
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.5448,
+                "distance": 30.93,
+                "rgb": [
+                  48,
+                  49,
+                  69
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7165,
+                "distance": 24.39,
+                "rgb": [
+                  163,
+                  61,
+                  30
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.6931,
+                "distance": 24.88,
+                "rgb": [
+                  210,
+                  218,
+                  105
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.8031,
+                "distance": 18.88,
+                "rgb": [
+                  183,
+                  101,
+                  56
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.7124,
+                "distance": 23.2,
+                "rgb": [
+                  49,
+                  114,
+                  86
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -60223,32 +61903,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.7356,
+                "distance": 21.89,
+                "rgb": [
+                  193,
+                  213,
+                  243
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.779,
+                "distance": 17.49,
+                "rgb": [
+                  193,
+                  104,
+                  62
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.8029,
+                "distance": 10.02,
+                "rgb": [
+                  58,
+                  81,
+                  129
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.7188,
+                "distance": 20.0,
+                "rgb": [
+                  205,
+                  223,
+                  84
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.7145,
+                "distance": 13.05,
+                "rgb": [
+                  67,
+                  150,
+                  109
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.7522,
+                "distance": 35.59,
+                "rgb": [
+                  137,
+                  66,
+                  61
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -61188,32 +62916,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.7768,
+                "distance": 15.46,
+                "rgb": [
+                  196,
+                  215,
+                  230
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.6998,
+                "distance": 38.74,
+                "rgb": [
+                  137,
+                  65,
+                  70
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.744,
+                "distance": 9.69,
+                "rgb": [
+                  60,
+                  132,
+                  83
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.7205,
+                "distance": 19.71,
+                "rgb": [
+                  209,
+                  224,
+                  88
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.8244,
+                "distance": 2.92,
+                "rgb": [
+                  57,
+                  82,
+                  142
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7698,
+                "distance": 18.53,
+                "rgb": [
+                  185,
+                  95,
+                  55
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -63686,32 +65462,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.7578,
+                "distance": 20.3,
+                "rgb": [
+                  201,
+                  223,
+                  252
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.791,
+                "distance": 11.8,
+                "rgb": [
+                  60,
+                  82,
+                  127
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.802,
+                "distance": 31.8,
+                "rgb": [
+                  133,
+                  55,
+                  49
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.7194,
+                "distance": 19.95,
+                "rgb": [
+                  206,
+                  222,
+                  86
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7631,
+                "distance": 20.45,
+                "rgb": [
+                  193,
+                  106,
+                  69
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.6968,
+                "distance": 14.68,
+                "rgb": [
+                  71,
+                  134,
+                  93
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -65384,32 +67208,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.7576,
+                "distance": 19.83,
+                "rgb": [
+                  196,
+                  213,
+                  239
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7517,
+                "distance": 22.44,
+                "rgb": [
+                  197,
+                  114,
+                  78
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.7979,
+                "distance": 11.46,
+                "rgb": [
+                  56,
+                  77,
+                  123
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.7404,
+                "distance": 17.33,
+                "rgb": [
+                  203,
+                  217,
+                  73
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.7033,
+                "distance": 14.77,
+                "rgb": [
+                  68,
+                  147,
+                  109
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.7934,
+                "distance": 30.83,
+                "rgb": [
+                  139,
+                  59,
+                  53
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -67072,32 +68944,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.7515,
+                "distance": 20.87,
+                "rgb": [
+                  200,
+                  223,
+                  253
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.6836,
+                "distance": 16.04,
+                "rgb": [
+                  76,
+                  152,
+                  115
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7698,
+                "distance": 13.5,
+                "rgb": [
+                  203,
+                  104,
+                  60
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.737,
+                "distance": 17.54,
+                "rgb": [
+                  203,
+                  218,
+                  73
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.7122,
+                "distance": 41.96,
+                "rgb": [
+                  143,
+                  75,
+                  83
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.7969,
+                "distance": 11.26,
+                "rgb": [
+                  58,
+                  80,
+                  126
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -68087,32 +70007,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.7548,
+                "distance": 20.86,
+                "rgb": [
+                  200,
+                  221,
+                  251
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.6916,
+                "distance": 39.47,
+                "rgb": [
+                  147,
+                  75,
+                  81
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.705,
+                "distance": 13.32,
+                "rgb": [
+                  70,
+                  135,
+                  92
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.7352,
+                "distance": 17.16,
+                "rgb": [
+                  204,
+                  220,
+                  70
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.7889,
+                "distance": 5.19,
+                "rgb": [
+                  69,
+                  92,
+                  149
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7729,
+                "distance": 14.05,
+                "rgb": [
+                  201,
+                  104,
+                  60
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -70803,32 +72771,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.9245,
+                "distance": 10.29,
+                "rgb": [
+                  237,
+                  238,
+                  252
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7686,
+                "distance": 23.94,
+                "rgb": [
+                  154,
+                  61,
+                  20
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.8279,
+                "distance": 40.87,
+                "rgb": [
+                  77,
+                  114,
+                  248
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.8134,
+                "distance": 14.1,
+                "rgb": [
+                  254,
+                  248,
+                  78
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.4835,
+                "distance": 34.72,
+                "rgb": [
+                  45,
+                  71,
+                  30
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.7963,
+                "distance": 19.32,
+                "rgb": [
+                  235,
+                  62,
+                  82
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -72621,32 +74637,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.7836,
+                "distance": 11.61,
+                "rgb": [
+                  243,
+                  219,
+                  203
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.7672,
+                "distance": 11.09,
+                "rgb": [
+                  205,
+                  86,
+                  34
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.7994,
+                "distance": 29.74,
+                "rgb": [
+                  42,
+                  48,
+                  148
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "yellow",
                 "centerFace": "D",
+                "confidence": 0.8109,
+                "distance": 7.3,
+                "rgb": [
+                  250,
+                  219,
+                  68
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.7605,
+                "distance": 12.25,
+                "rgb": [
+                  53,
+                  121,
+                  72
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.8164,
+                "distance": 8.39,
+                "rgb": [
+                  174,
+                  50,
+                  39
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -72672,6 +74736,1040 @@
     {
       "canonicalGroundTruthState": "LRDUUFRUDLRRFRUUBLBFFRFDULRRFBBDLFDUDRDDLDUUFFBBLBLBBL",
       "evaluations": {
+        "hull_label_center_colors": {
+          "adaptivePalette": {
+            "blue": [
+              53,
+              68,
+              132
+            ],
+            "green": [
+              103,
+              230,
+              151
+            ],
+            "orange": [
+              241,
+              141,
+              64
+            ],
+            "red": [
+              152,
+              55,
+              41
+            ],
+            "white": [
+              165,
+              214,
+              253
+            ],
+            "yellow": [
+              211,
+              254,
+              120
+            ]
+          },
+          "methods": {
+            "adaptive": {
+              "countBalanced": false,
+              "counts": {
+                "B": 9,
+                "D": 9,
+                "F": 9,
+                "L": 5,
+                "R": 13,
+                "U": 9
+              },
+              "exactMatch": false,
+              "hamming": 4,
+              "state": "LRDUUFRUDRRRFRUUBRBFFRFDULRRFBBDLFDUDRDDLDUUFFBBLBRBBR",
+              "stickersCorrect": 50,
+              "validState": false,
+              "validationErrors": [
+                "R_count_not_9",
+                "L_count_not_9"
+              ]
+            },
+            "adaptive_center_forced": {
+              "countBalanced": false,
+              "counts": {
+                "B": 9,
+                "D": 9,
+                "F": 9,
+                "L": 5,
+                "R": 13,
+                "U": 9
+              },
+              "exactMatch": false,
+              "hamming": 4,
+              "state": "LRDUUFRUDRRRFRUUBRBFFRFDULRRFBBDLFDUDRDDLDUUFFBBLBRBBR",
+              "stickersCorrect": 50,
+              "validState": false,
+              "validationErrors": [
+                "R_count_not_9",
+                "L_count_not_9"
+              ]
+            },
+            "adaptive_count_repaired": {
+              "countBalanced": true,
+              "counts": {
+                "B": 9,
+                "D": 9,
+                "F": 9,
+                "L": 9,
+                "R": 9,
+                "U": 9
+              },
+              "exactMatch": true,
+              "hamming": 0,
+              "repairMoveCount": 4,
+              "repairMoves": [
+                {
+                  "delta": 0.7783,
+                  "from": "R",
+                  "index": 17,
+                  "to": "L"
+                },
+                {
+                  "delta": 5.992,
+                  "from": "R",
+                  "index": 53,
+                  "to": "L"
+                },
+                {
+                  "delta": 7.6881,
+                  "from": "R",
+                  "index": 50,
+                  "to": "L"
+                },
+                {
+                  "delta": 7.8754,
+                  "from": "R",
+                  "index": 9,
+                  "to": "L"
+                }
+              ],
+              "state": "LRDUUFRUDLRRFRUUBLBFFRFDULRRFBBDLFDUDRDDLDUUFFBBLBLBBL",
+              "stickersCorrect": 54,
+              "validState": true,
+              "validationErrors": []
+            },
+            "broad_legal_repaired": {
+              "countBalanced": true,
+              "counts": {
+                "B": 9,
+                "D": 9,
+                "F": 9,
+                "L": 9,
+                "R": 9,
+                "U": 9
+              },
+              "diagnosticOnly": true,
+              "exactMatch": true,
+              "hamming": 0,
+              "repairChanges": 0,
+              "repairCost": 0.0,
+              "sourceMode": "grid_sample",
+              "state": "LRDUUFRUDLRRFRUUBLBFFRFDULRRFBBDLFDUDRDDLDUUFFBBLBLBBL",
+              "status": "already_valid_count_repair",
+              "stickersCorrect": 54,
+              "validState": true,
+              "validationErrors": []
+            },
+            "canonical": {
+              "countBalanced": false,
+              "counts": {
+                "B": 12,
+                "D": 6,
+                "F": 12,
+                "L": 9,
+                "R": 9,
+                "U": 6
+              },
+              "exactMatch": false,
+              "hamming": 6,
+              "state": "LRFUUFRUFLRRFRBBBLBFFRFFULRRFBBDLFDUDRDDLDBUFFBBLBLBBL",
+              "stickersCorrect": 48,
+              "validState": false,
+              "validationErrors": [
+                "U_count_not_9",
+                "F_count_not_9",
+                "D_count_not_9",
+                "B_count_not_9"
+              ]
+            },
+            "canonical_center_forced": {
+              "countBalanced": false,
+              "counts": {
+                "B": 12,
+                "D": 6,
+                "F": 12,
+                "L": 9,
+                "R": 9,
+                "U": 6
+              },
+              "exactMatch": false,
+              "hamming": 6,
+              "state": "LRFUUFRUFLRRFRBBBLBFFRFFULRRFBBDLFDUDRDDLDBUFFBBLBLBBL",
+              "stickersCorrect": 48,
+              "validState": false,
+              "validationErrors": [
+                "U_count_not_9",
+                "F_count_not_9",
+                "D_count_not_9",
+                "B_count_not_9"
+              ]
+            },
+            "canonical_count_repaired": {
+              "countBalanced": true,
+              "counts": {
+                "B": 9,
+                "D": 9,
+                "F": 9,
+                "L": 9,
+                "R": 9,
+                "U": 9
+              },
+              "exactMatch": true,
+              "hamming": 0,
+              "repairMoveCount": 6,
+              "repairMoves": [
+                {
+                  "delta": 3.319,
+                  "from": "B",
+                  "index": 42,
+                  "to": "U"
+                },
+                {
+                  "delta": 4.7366,
+                  "from": "F",
+                  "index": 2,
+                  "to": "D"
+                },
+                {
+                  "delta": 6.0199,
+                  "from": "F",
+                  "index": 8,
+                  "to": "D"
+                },
+                {
+                  "delta": 6.8605,
+                  "from": "B",
+                  "index": 14,
+                  "to": "U"
+                },
+                {
+                  "delta": 9.744,
+                  "from": "F",
+                  "index": 23,
+                  "to": "D"
+                },
+                {
+                  "delta": 25.1606,
+                  "from": "B",
+                  "index": 15,
+                  "to": "U"
+                }
+              ],
+              "state": "LRDUUFRUDLRRFRUUBLBFFRFDULRRFBBDLFDUDRDDLDUUFFBBLBLBBL",
+              "stickersCorrect": 54,
+              "validState": true,
+              "validationErrors": []
+            },
+            "conservative_legal_repaired": {
+              "countBalanced": true,
+              "counts": {
+                "B": 9,
+                "D": 9,
+                "F": 9,
+                "L": 9,
+                "R": 9,
+                "U": 9
+              },
+              "exactMatch": true,
+              "hamming": 0,
+              "repairChanges": 0,
+              "repairCost": 0.0,
+              "sourceMode": "hull_label_sample",
+              "state": "LRDUUFRUDLRRFRUUBLBFFRFDULRRFBBDLFDUDRDDLDUUFFBBLBLBBL",
+              "status": "already_valid_count_repair",
+              "stickersCorrect": 54,
+              "validState": true,
+              "validationErrors": []
+            },
+            "guarded_broad_legal_repaired": {
+              "countBalanced": true,
+              "counts": {
+                "B": 9,
+                "D": 9,
+                "F": 9,
+                "L": 9,
+                "R": 9,
+                "U": 9
+              },
+              "exactMatch": true,
+              "gate": {
+                "accepted": true,
+                "maxRepairChanges": 4,
+                "maxRepairCost": 20.0
+              },
+              "hamming": 0,
+              "repairChanges": 0,
+              "repairCost": 0.0,
+              "sourceMode": "grid_sample",
+              "state": "LRDUUFRUDLRRFRUUBLBFFRFDULRRFBBDLFDUDRDDLDUUFFBBLBLBBL",
+              "status": "accepted_guarded_broad_legal_repair",
+              "stickersCorrect": 54,
+              "validState": true,
+              "validationErrors": []
+            }
+          },
+          "panelMeta": {
+            "panels": [
+              {
+                "centerFace": "B",
+                "centerRgb": [
+                  160,
+                  214,
+                  253
+                ],
+                "orientation": {
+                  "mirror": false,
+                  "rotQuarter": 3
+                },
+                "rawFaces": "LRFUBFRBF",
+                "side": "A",
+                "slot": "upper",
+                "wcaFace": "U"
+              },
+              {
+                "centerFace": "R",
+                "centerRgb": [
+                  122,
+                  50,
+                  41
+                ],
+                "orientation": {
+                  "mirror": false,
+                  "rotQuarter": 3
+                },
+                "rawFaces": "LRRFRUBBL",
+                "side": "A",
+                "slot": "right",
+                "wcaFace": "R"
+              },
+              {
+                "centerFace": "F",
+                "centerRgb": [
+                  91,
+                  204,
+                  178
+                ],
+                "orientation": {
+                  "mirror": false,
+                  "rotQuarter": 3
+                },
+                "rawFaces": "BFFRFFULR",
+                "side": "A",
+                "slot": "front",
+                "wcaFace": "F"
+              },
+              {
+                "centerFace": "F",
+                "centerRgb": [
+                  211,
+                  254,
+                  120
+                ],
+                "orientation": {
+                  "mirror": false,
+                  "rotQuarter": 2
+                },
+                "rawFaces": "RFBBFLFFU",
+                "side": "B",
+                "slot": "upper",
+                "wcaFace": "D"
+              },
+              {
+                "centerFace": "B",
+                "centerRgb": [
+                  52,
+                  63,
+                  131
+                ],
+                "orientation": {
+                  "mirror": false,
+                  "rotQuarter": 1
+                },
+                "rawFaces": "FBBLBLBBL",
+                "side": "B",
+                "slot": "right",
+                "wcaFace": "B"
+              },
+              {
+                "centerFace": "L",
+                "centerRgb": [
+                  241,
+                  141,
+                  64
+                ],
+                "orientation": {
+                  "mirror": false,
+                  "rotQuarter": 1
+                },
+                "rawFaces": "FRFFLFUUF",
+                "side": "B",
+                "slot": "front",
+                "wcaFace": "L"
+              }
+            ],
+            "slotFaceAssignments": {
+              "A": {
+                "front": "F",
+                "right": "R",
+                "upper": "U"
+              },
+              "B": {
+                "front": "L",
+                "right": "B",
+                "upper": "D"
+              }
+            }
+          },
+          "recommended": {
+            "confidence": "high",
+            "countBalanced": true,
+            "counts": {
+              "B": 9,
+              "D": 9,
+              "F": 9,
+              "L": 9,
+              "R": 9,
+              "U": 9
+            },
+            "exactMatch": true,
+            "hamming": 0,
+            "method": "canonical_count_repaired",
+            "repairMoveCount": 6,
+            "repairMoves": [
+              {
+                "delta": 3.319,
+                "from": "B",
+                "index": 42,
+                "to": "U"
+              },
+              {
+                "delta": 4.7366,
+                "from": "F",
+                "index": 2,
+                "to": "D"
+              },
+              {
+                "delta": 6.0199,
+                "from": "F",
+                "index": 8,
+                "to": "D"
+              },
+              {
+                "delta": 6.8605,
+                "from": "B",
+                "index": 14,
+                "to": "U"
+              },
+              {
+                "delta": 9.744,
+                "from": "F",
+                "index": 23,
+                "to": "D"
+              },
+              {
+                "delta": 25.1606,
+                "from": "B",
+                "index": 15,
+                "to": "U"
+              }
+            ],
+            "state": "LRDUUFRUDLRRFRUUBLBFFRFDULRRFBBDLFDUDRDDLDUUFFBBLBLBBL",
+            "stickersCorrect": 54,
+            "validState": true,
+            "validationErrors": []
+          },
+          "recommendedMethod": "canonical_count_repaired",
+          "sideTraces": {
+            "A": {
+              "accepted": true,
+              "best_any_accepted": true,
+              "best_any_score": 812.2,
+              "best_any_threshold": 224,
+              "hard_failures": [],
+              "hexagon_diameter_px": 714.1988518613006,
+              "mean_sticker_distance": 30.08,
+              "projective_degeneracy": "finite_projective",
+              "projective_residual_norm": 0.0009172215082824336,
+              "selected_mask_threshold": 224,
+              "slot_center_faces": {
+                "front": {
+                  "color": "green",
+                  "face": "F",
+                  "rgb": [
+                    91,
+                    204,
+                    178
+                  ]
+                },
+                "right": {
+                  "color": "red",
+                  "face": "R",
+                  "rgb": [
+                    122,
+                    50,
+                    41
+                  ]
+                },
+                "upper": {
+                  "color": "blue",
+                  "face": "B",
+                  "rgb": [
+                    160,
+                    214,
+                    253
+                  ]
+                }
+              },
+              "status": "accepted",
+              "sticker_score_per_face": {
+                "front": 253.23,
+                "right": 249.6,
+                "upper": 309.37
+              },
+              "sticker_score_total": 812.2,
+              "threshold": 224,
+              "threshold_candidates": [
+                {
+                  "accepted": true,
+                  "hard_failures": [],
+                  "hexagon_diameter_px": 728.175802948711,
+                  "mean_sticker_distance": 30.24,
+                  "projective_degeneracy": "finite_projective",
+                  "projective_residual_norm": 0.004954884358552176,
+                  "status": "accepted",
+                  "sticker_score_per_face": {
+                    "front": 254.41,
+                    "right": 252.05,
+                    "upper": 309.89
+                  },
+                  "sticker_score_total": 816.35,
+                  "threshold": 64,
+                  "vertex_cloud_spread_norm": 0.1885469163098931,
+                  "vertex_cloud_spread_px": 137.2953021774598,
+                  "vertex_source": "affine",
+                  "warnings": [
+                    "sticker_score_total=816.4; warning 700.0"
+                  ]
+                },
+                {
+                  "accepted": true,
+                  "hard_failures": [],
+                  "hexagon_diameter_px": 720.6719087074229,
+                  "mean_sticker_distance": 30.16,
+                  "projective_degeneracy": "finite_projective",
+                  "projective_residual_norm": 0.00021664433025219727,
+                  "status": "accepted",
+                  "sticker_score_per_face": {
+                    "front": 253.28,
+                    "right": 250.49,
+                    "upper": 310.52
+                  },
+                  "sticker_score_total": 814.29,
+                  "threshold": 128,
+                  "vertex_cloud_spread_norm": 0.19052529374244395,
+                  "vertex_cloud_spread_px": 137.3062270984095,
+                  "vertex_source": "affine",
+                  "warnings": [
+                    "sticker_score_total=814.3; warning 700.0"
+                  ]
+                },
+                {
+                  "accepted": true,
+                  "hard_failures": [],
+                  "hexagon_diameter_px": 720.2589812005124,
+                  "mean_sticker_distance": 30.33,
+                  "projective_degeneracy": "finite_projective",
+                  "projective_residual_norm": 0.00669082112413834,
+                  "status": "accepted",
+                  "sticker_score_per_face": {
+                    "front": 253.32,
+                    "right": 253.1,
+                    "upper": 312.37
+                  },
+                  "sticker_score_total": 818.79,
+                  "threshold": 160,
+                  "vertex_cloud_spread_norm": 0.21114934846667244,
+                  "vertex_cloud_spread_px": 152.08221460775746,
+                  "vertex_source": "affine",
+                  "warnings": [
+                    "sticker_score_total=818.8; warning 700.0"
+                  ]
+                },
+                {
+                  "accepted": true,
+                  "hard_failures": [],
+                  "hexagon_diameter_px": 714.5488086897914,
+                  "mean_sticker_distance": 30.18,
+                  "projective_degeneracy": "finite_projective",
+                  "projective_residual_norm": 0.013118218606485717,
+                  "status": "accepted",
+                  "sticker_score_per_face": {
+                    "front": 253.79,
+                    "right": 249.56,
+                    "upper": 311.51
+                  },
+                  "sticker_score_total": 814.86,
+                  "threshold": 192,
+                  "vertex_cloud_spread_norm": 0.21419886732933258,
+                  "vertex_cloud_spread_px": 153.05554547287727,
+                  "vertex_source": "affine",
+                  "warnings": [
+                    "sticker_score_total=814.9; warning 700.0"
+                  ]
+                },
+                {
+                  "accepted": true,
+                  "hard_failures": [],
+                  "hexagon_diameter_px": 714.1988518613006,
+                  "mean_sticker_distance": 30.08,
+                  "projective_degeneracy": "finite_projective",
+                  "projective_residual_norm": 0.0009172215082824336,
+                  "status": "accepted",
+                  "sticker_score_per_face": {
+                    "front": 253.23,
+                    "right": 249.6,
+                    "upper": 309.37
+                  },
+                  "sticker_score_total": 812.2,
+                  "threshold": 224,
+                  "vertex_cloud_spread_norm": 0.19108605437252274,
+                  "vertex_cloud_spread_px": 136.4734406395618,
+                  "vertex_source": "affine",
+                  "warnings": [
+                    "sticker_score_total=812.2; warning 700.0"
+                  ]
+                }
+              ],
+              "thresholds": [
+                64,
+                128,
+                160,
+                192,
+                224
+              ],
+              "vertex_cloud_spread_norm": 0.19108605437252274,
+              "vertex_cloud_spread_px": 136.4734406395618,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=812.2; warning 700.0"
+              ]
+            },
+            "B": {
+              "accepted": true,
+              "best_any_accepted": true,
+              "best_any_score": 754.3,
+              "best_any_threshold": 64,
+              "hard_failures": [],
+              "hexagon_diameter_px": 779.4260709008905,
+              "mean_sticker_distance": 27.94,
+              "projective_degeneracy": "finite_projective",
+              "projective_residual_norm": 0.0064379679165568506,
+              "selected_mask_threshold": 64,
+              "slot_center_faces": {
+                "front": {
+                  "color": "orange",
+                  "face": "L",
+                  "rgb": [
+                    241,
+                    141,
+                    64
+                  ]
+                },
+                "right": {
+                  "color": "blue",
+                  "face": "B",
+                  "rgb": [
+                    52,
+                    63,
+                    131
+                  ]
+                },
+                "upper": {
+                  "color": "green",
+                  "face": "F",
+                  "rgb": [
+                    211,
+                    254,
+                    120
+                  ]
+                }
+              },
+              "status": "accepted",
+              "sticker_score_per_face": {
+                "front": 304.53,
+                "right": 137.71,
+                "upper": 312.06
+              },
+              "sticker_score_total": 754.3,
+              "threshold": 64,
+              "threshold_candidates": [
+                {
+                  "accepted": true,
+                  "hard_failures": [],
+                  "hexagon_diameter_px": 779.4260709008905,
+                  "mean_sticker_distance": 27.94,
+                  "projective_degeneracy": "finite_projective",
+                  "projective_residual_norm": 0.0064379679165568506,
+                  "status": "accepted",
+                  "sticker_score_per_face": {
+                    "front": 304.53,
+                    "right": 137.71,
+                    "upper": 312.06
+                  },
+                  "sticker_score_total": 754.3,
+                  "threshold": 64,
+                  "vertex_cloud_spread_norm": 0.20894318330532477,
+                  "vertex_cloud_spread_px": 162.85576440519384,
+                  "vertex_source": "affine",
+                  "warnings": [
+                    "sticker_score_total=754.3; warning 700.0"
+                  ]
+                },
+                {
+                  "accepted": true,
+                  "hard_failures": [],
+                  "hexagon_diameter_px": 778.7868771364859,
+                  "mean_sticker_distance": 28.78,
+                  "projective_degeneracy": "finite_projective",
+                  "projective_residual_norm": 0.0014053526432957456,
+                  "status": "accepted",
+                  "sticker_score_per_face": {
+                    "front": 311.26,
+                    "right": 153.79,
+                    "upper": 311.96
+                  },
+                  "sticker_score_total": 777.02,
+                  "threshold": 128,
+                  "vertex_cloud_spread_norm": 0.20586863227773358,
+                  "vertex_cloud_spread_px": 160.3277892319357,
+                  "vertex_source": "affine",
+                  "warnings": [
+                    "sticker_score_total=777.0; warning 700.0"
+                  ]
+                },
+                {
+                  "accepted": true,
+                  "hard_failures": [],
+                  "hexagon_diameter_px": 774.9890321804561,
+                  "mean_sticker_distance": 28.16,
+                  "projective_degeneracy": "finite_projective",
+                  "projective_residual_norm": 0.004371922916368952,
+                  "status": "accepted",
+                  "sticker_score_per_face": {
+                    "front": 306.94,
+                    "right": 141.39,
+                    "upper": 311.88
+                  },
+                  "sticker_score_total": 760.21,
+                  "threshold": 160,
+                  "vertex_cloud_spread_norm": 0.21253445248851335,
+                  "vertex_cloud_spread_px": 164.7118696390761,
+                  "vertex_source": "affine",
+                  "warnings": [
+                    "sticker_score_total=760.2; warning 700.0"
+                  ]
+                },
+                {
+                  "accepted": true,
+                  "hard_failures": [],
+                  "hexagon_diameter_px": 772.9094384208282,
+                  "mean_sticker_distance": 27.96,
+                  "projective_degeneracy": "finite_projective",
+                  "projective_residual_norm": 0.0009509007289955041,
+                  "status": "accepted",
+                  "sticker_score_per_face": {
+                    "front": 304.75,
+                    "right": 138.09,
+                    "upper": 312.16
+                  },
+                  "sticker_score_total": 755.0,
+                  "threshold": 192,
+                  "vertex_cloud_spread_norm": 0.20441011351430075,
+                  "vertex_cloud_spread_px": 157.99050604387594,
+                  "vertex_source": "affine",
+                  "warnings": [
+                    "sticker_score_total=755.0; warning 700.0"
+                  ]
+                },
+                {
+                  "accepted": true,
+                  "hard_failures": [],
+                  "hexagon_diameter_px": 768.5004879634105,
+                  "mean_sticker_distance": 28.52,
+                  "projective_degeneracy": "finite_projective",
+                  "projective_residual_norm": 0.0032073748482157006,
+                  "status": "accepted",
+                  "sticker_score_per_face": {
+                    "front": 309.78,
+                    "right": 148.88,
+                    "upper": 311.4
+                  },
+                  "sticker_score_total": 770.06,
+                  "threshold": 224,
+                  "vertex_cloud_spread_norm": 0.21999730161695621,
+                  "vertex_cloud_spread_px": 169.06803364326444,
+                  "vertex_source": "affine",
+                  "warnings": [
+                    "sticker_score_total=770.1; warning 700.0"
+                  ]
+                }
+              ],
+              "thresholds": [
+                64,
+                128,
+                160,
+                192,
+                224
+              ],
+              "vertex_cloud_spread_norm": 0.20894318330532477,
+              "vertex_cloud_spread_px": 162.85576440519384,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=754.3; warning 700.0"
+              ]
+            }
+          },
+          "source": "hull_label_center_colors",
+          "sourceMeta": {
+            "accepted": true,
+            "allCenterBestScore": 4,
+            "allCenterBestYawQuarterTurns": 0,
+            "allCenterMargin": 4,
+            "allCenterSecondScore": 0,
+            "bestScore": 4,
+            "bestYawQuarterTurns": 0,
+            "candidates": [
+              {
+                "matches": [
+                  {
+                    "expected": "R",
+                    "observed": "R",
+                    "side": "A",
+                    "slot": "right"
+                  },
+                  {
+                    "expected": "F",
+                    "observed": "F",
+                    "side": "A",
+                    "slot": "front"
+                  },
+                  {
+                    "expected": "B",
+                    "observed": "B",
+                    "side": "B",
+                    "slot": "right"
+                  },
+                  {
+                    "expected": "L",
+                    "observed": "L",
+                    "side": "B",
+                    "slot": "front"
+                  }
+                ],
+                "mismatches": [],
+                "score": 4,
+                "yawQuarterTurns": 0
+              },
+              {
+                "matches": [],
+                "mismatches": [
+                  {
+                    "expected": "B",
+                    "observed": "R",
+                    "side": "A",
+                    "slot": "right"
+                  },
+                  {
+                    "expected": "R",
+                    "observed": "F",
+                    "side": "A",
+                    "slot": "front"
+                  },
+                  {
+                    "expected": "L",
+                    "observed": "B",
+                    "side": "B",
+                    "slot": "right"
+                  },
+                  {
+                    "expected": "F",
+                    "observed": "L",
+                    "side": "B",
+                    "slot": "front"
+                  }
+                ],
+                "score": 0,
+                "yawQuarterTurns": 1
+              },
+              {
+                "matches": [],
+                "mismatches": [
+                  {
+                    "expected": "L",
+                    "observed": "R",
+                    "side": "A",
+                    "slot": "right"
+                  },
+                  {
+                    "expected": "B",
+                    "observed": "F",
+                    "side": "A",
+                    "slot": "front"
+                  },
+                  {
+                    "expected": "F",
+                    "observed": "B",
+                    "side": "B",
+                    "slot": "right"
+                  },
+                  {
+                    "expected": "R",
+                    "observed": "L",
+                    "side": "B",
+                    "slot": "front"
+                  }
+                ],
+                "score": 0,
+                "yawQuarterTurns": 2
+              },
+              {
+                "matches": [],
+                "mismatches": [
+                  {
+                    "expected": "F",
+                    "observed": "R",
+                    "side": "A",
+                    "slot": "right"
+                  },
+                  {
+                    "expected": "L",
+                    "observed": "F",
+                    "side": "A",
+                    "slot": "front"
+                  },
+                  {
+                    "expected": "R",
+                    "observed": "B",
+                    "side": "B",
+                    "slot": "right"
+                  },
+                  {
+                    "expected": "B",
+                    "observed": "L",
+                    "side": "B",
+                    "slot": "front"
+                  }
+                ],
+                "score": 0,
+                "yawQuarterTurns": 3
+              }
+            ],
+            "margin": 4,
+            "minMargin": 4,
+            "minMatches": 4,
+            "observedCenters": [
+              {
+                "centerColor": "blue",
+                "centerFace": "B",
+                "confidence": 0.6612,
+                "distance": 51.27,
+                "rgb": [
+                  160,
+                  214,
+                  253
+                ],
+                "side": "A",
+                "slot": "upper"
+              },
+              {
+                "centerColor": "red",
+                "centerFace": "R",
+                "confidence": 0.8413,
+                "distance": 33.93,
+                "rgb": [
+                  122,
+                  50,
+                  41
+                ],
+                "side": "A",
+                "slot": "right"
+              },
+              {
+                "centerColor": "green",
+                "centerFace": "F",
+                "confidence": 0.6668,
+                "distance": 31.19,
+                "rgb": [
+                  91,
+                  204,
+                  178
+                ],
+                "side": "A",
+                "slot": "front"
+              },
+              {
+                "centerColor": "green",
+                "centerFace": "F",
+                "confidence": 0.6705,
+                "distance": 52.75,
+                "rgb": [
+                  211,
+                  254,
+                  120
+                ],
+                "side": "B",
+                "slot": "upper"
+              },
+              {
+                "centerColor": "blue",
+                "centerFace": "B",
+                "confidence": 0.7992,
+                "distance": 10.71,
+                "rgb": [
+                  52,
+                  63,
+                  131
+                ],
+                "side": "B",
+                "slot": "right"
+              },
+              {
+                "centerColor": "orange",
+                "centerFace": "L",
+                "confidence": 0.8393,
+                "distance": 10.68,
+                "rgb": [
+                  241,
+                  141,
+                  64
+                ],
+                "side": "B",
+                "slot": "front"
+              }
+            ],
+            "secondScore": 0,
+            "status": "accepted_side_faces_only",
+            "yawQuarterTurns": 0
+          },
+          "status": "assembled",
+          "yawQuarterTurns": 0
+        },
         "white_up_default": {
           "adaptivePalette": {
             "blue": [
@@ -74510,32 +77608,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.5158,
+                "distance": 26.52,
+                "rgb": [
+                  167,
+                  220,
+                  251
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.8413,
+                "distance": 29.65,
+                "rgb": [
+                  130,
+                  50,
+                  40
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.6733,
+                "distance": 26.22,
+                "rgb": [
+                  81,
+                  183,
+                  157
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.6619,
+                "distance": 55.86,
+                "rgb": [
+                  223,
+                  255,
+                  117
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.6954,
+                "distance": 8.33,
+                "rgb": [
+                  73,
+                  77,
+                  130
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.8446,
+                "distance": 5.82,
+                "rgb": [
+                  232,
+                  128,
+                  55
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -76425,32 +79571,80 @@
             "minMatches": 5,
             "observedCenters": [
               {
+                "centerColor": "white",
                 "centerFace": "U",
+                "confidence": 0.4059,
+                "distance": 29.87,
+                "rgb": [
+                  165,
+                  212,
+                  252
+                ],
                 "side": "A",
                 "slot": "upper"
               },
               {
+                "centerColor": "red",
                 "centerFace": "R",
+                "confidence": 0.8095,
+                "distance": 30.32,
+                "rgb": [
+                  123,
+                  45,
+                  33
+                ],
                 "side": "A",
                 "slot": "right"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.6776,
+                "distance": 22.99,
+                "rgb": [
+                  75,
+                  168,
+                  141
+                ],
                 "side": "A",
                 "slot": "front"
               },
               {
+                "centerColor": "green",
                 "centerFace": "F",
+                "confidence": 0.646,
+                "distance": 51.18,
+                "rgb": [
+                  216,
+                  254,
+                  130
+                ],
                 "side": "B",
                 "slot": "upper"
               },
               {
+                "centerColor": "blue",
                 "centerFace": "B",
+                "confidence": 0.7966,
+                "distance": 12.35,
+                "rgb": [
+                  63,
+                  76,
+                  157
+                ],
                 "side": "B",
                 "slot": "right"
               },
               {
+                "centerColor": "orange",
                 "centerFace": "L",
+                "confidence": 0.8311,
+                "distance": 8.2,
+                "rgb": [
+                  212,
+                  118,
+                  57
+                ],
                 "side": "B",
                 "slot": "front"
               }
@@ -77333,8 +80527,8 @@
   ],
   "schema": "hull_label_color_repair_diagnostic_v1",
   "source": {
-    "generated_at_utc": "2026-05-26T18:52:49.694503+00:00",
-    "git_sha": "f699ebf11f54c36bac702db2f52a3089a7fedcc5",
+    "generated_at_utc": "2026-05-26T19:12:13.497392+00:00",
+    "git_sha": "e021b8907fbd8c054c4eeb25f54f58da22fb1ed8",
     "manifest": "tests/fixtures/corpus_manifest.json",
     "tool": "tools/diagnose_hull_label_color_repair.py"
   },
@@ -77401,60 +80595,60 @@
       },
       "hull_label_center_colors": {
         "adaptive": {
-          "assembled": 45,
+          "assembled": 46,
           "exact": 19,
           "legal": 19,
-          "meanStickersCorrect": 51.82,
-          "medianHamming": 1
+          "meanStickersCorrect": 51.78,
+          "medianHamming": 1.0
         },
         "adaptive_center_forced": {
-          "assembled": 45,
+          "assembled": 46,
           "exact": 19,
           "legal": 19,
-          "meanStickersCorrect": 51.84,
-          "medianHamming": 1
+          "meanStickersCorrect": 51.8,
+          "medianHamming": 1.0
         },
         "adaptive_count_repaired": {
-          "assembled": 45,
-          "exact": 36,
-          "legal": 36,
-          "meanStickersCorrect": 52.87,
-          "medianHamming": 0
+          "assembled": 46,
+          "exact": 37,
+          "legal": 37,
+          "meanStickersCorrect": 52.89,
+          "medianHamming": 0.0
         },
         "canonical": {
-          "assembled": 45,
+          "assembled": 46,
           "exact": 18,
           "legal": 18,
-          "meanStickersCorrect": 51.78,
-          "medianHamming": 2
+          "meanStickersCorrect": 51.7,
+          "medianHamming": 2.0
         },
         "canonical_center_forced": {
-          "assembled": 45,
+          "assembled": 46,
           "exact": 18,
           "legal": 18,
-          "meanStickersCorrect": 51.82,
-          "medianHamming": 1
+          "meanStickersCorrect": 51.74,
+          "medianHamming": 1.5
         },
         "canonical_count_repaired": {
-          "assembled": 45,
-          "exact": 42,
-          "legal": 42,
-          "meanStickersCorrect": 53.8,
-          "medianHamming": 0
-        },
-        "conservative_legal_repaired": {
-          "assembled": 45,
+          "assembled": 46,
           "exact": 43,
           "legal": 43,
-          "meanStickersCorrect": 54,
-          "medianHamming": 0
+          "meanStickersCorrect": 53.8,
+          "medianHamming": 0.0
         },
-        "guarded_broad_legal_repaired": {
-          "assembled": 45,
+        "conservative_legal_repaired": {
+          "assembled": 46,
           "exact": 44,
           "legal": 44,
           "meanStickersCorrect": 54,
           "medianHamming": 0.0
+        },
+        "guarded_broad_legal_repaired": {
+          "assembled": 46,
+          "exact": 45,
+          "legal": 45,
+          "meanStickersCorrect": 54,
+          "medianHamming": 0
         }
       },
       "manifest_expectedYaw": {

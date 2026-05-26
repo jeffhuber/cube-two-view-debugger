@@ -16,8 +16,8 @@ Two scores are reported:
   This isolates slot/yaw face identity from in-plane face rotation and
   should be read as an upper bound, not production behavior.
 
-Git head: `13b470fe728e0e818260fa4918184a13b79b70f7`
-Generated: `2026-05-26T07:15:04.408950+00:00`
+Git head: `e021b8907fbd8c054c4eeb25f54f58da22fb1ed8`
+Generated: `2026-05-26T19:20:39.129861+00:00`
 
 ## Summary By Yaw Source
 

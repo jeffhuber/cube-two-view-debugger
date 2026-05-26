@@ -6,17 +6,17 @@ This diagnostic probes the next constraint layer after deterministic
 9-per-color count repair: cubie legality. It reuses the existing
 recognizer cubie repair helper on hull-label rectified Lab evidence.
 
-Git head: `f699ebf11f54c36bac702db2f52a3089a7fedcc5`
-Generated: `2026-05-26T18:53:39.976983+00:00`
+Git head: `e021b8907fbd8c054c4eeb25f54f58da22fb1ed8`
+Generated: `2026-05-26T19:12:59.047344+00:00`
 
 ## Summary
 
 | Method | Assembled | Legal | Exact | <=3 stickers | Median hamming | Hamming distribution | Median repair cost | Median changes | Max changes |
 |---|---:|---:|---:|---:|---:|---|---:|---:|---:|
-| `canonical_count_repaired` | 45 | 42 | 42 | 44 | 0 | `{0: 42, 2: 1, 3: 1, 4: 1}` | None | None | None |
-| `conservative_legal_repaired` | 45 | 43 | 43 | 43 | 0 | `{0: 43}` | 0.0 | 0 | 1 |
-| `guarded_broad_legal_repaired` | 45 | 44 | 44 | 44 | 0.0 | `{0: 44}` | 0.0 | 0.0 | 4 |
-| `broad_legal_repaired` | 45 | 45 | 44 | 44 | 0 | `{0: 44, 4: 1}` | 0.0 | 0 | 5 |
+| `canonical_count_repaired` | 46 | 43 | 43 | 45 | 0.0 | `{0: 43, 2: 1, 3: 1, 4: 1}` | None | None | None |
+| `conservative_legal_repaired` | 46 | 44 | 44 | 44 | 0.0 | `{0: 44}` | 0.0 | 0.0 | 1 |
+| `guarded_broad_legal_repaired` | 46 | 45 | 45 | 45 | 0 | `{0: 45}` | 0.0 | 0 | 4 |
+| `broad_legal_repaired` | 46 | 46 | 45 | 45 | 0.0 | `{0: 45, 4: 1}` | 0.0 | 0.0 | 5 |
 
 ## Interpretation
 
@@ -42,4 +42,3 @@ Generated: `2026-05-26T18:53:39.976983+00:00`
 | 14 | 4 | None | `no_legal_repair` | None | `rejected_guarded_broad_legal_repair` | 4 | 26.6913 | 5 |
 | 65 | 2 | None | `no_legal_repair` | 0 | `accepted_guarded_broad_legal_repair` | 0 | 19.5798 | 4 |
 | 69 | 3 | 0 | `legal_repair_found` | 0 | `accepted_guarded_broad_legal_repair` | 0 | 3.1484 | 1 |
-| 71 | None | None | `None` | None | `None` | None | None | None |

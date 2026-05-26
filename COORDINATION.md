@@ -22,13 +22,13 @@ without coordinating in this doc first.
 convention-aware silhouette-corner labeling pipeline from PRs
 #282/#284/#286/#288/#289/#291) is now the **foundation** of the
 rectification + repair stack — no longer the next deliverable. The
-shadow-trace analyzer (#292) landed and the current corpus run reports
-**70/70 accept, 0 rejections, 0 hard failures** on the 70-row axis
-corpus (2 advisory warnings on 14_A `sticker_score_total` and 37_A
-`vertex_cloud_spread_px`). The earlier "69/70 accept + 30_A rejected
-on `projective_residual_norm`" was the empirical floor at #292 first
-run; subsequent regenerations now accept all 70. See
-`tools/SHADOW_TRACE_ANALYSIS.md` for current numbers. Operator handoff:
+shadow-trace analyzer (#292) landed; the current corpus run accepts
+the whole 70-row axis corpus with no hard failures, with a small
+number of accepted-with-warnings rows clustered on
+`vertex_cloud_spread_px` and `sticker_score_total`. For current
+numbers (acceptance, warnings, gate distributions) read
+`tools/SHADOW_TRACE_ANALYSIS.md` directly — it's the source of truth
+and regenerates with the corpus. Operator handoff:
 `tools/HULL_LABEL_TIER1_WIRING.md`.
 
 Active focus has shifted to **constrained cube-state inference** as
@@ -44,13 +44,16 @@ Recent additions on top of the rectification foundation:
 - **Color repair API (#324)** — deterministic color-conflict repair
   surface on the rectified hull-label samples. Foundation for the
   scoreboard and legality probes below.
-- **Post-repair scoreboard (#325)** — 46-pair shadow corpus evaluated
-  across 5 repair variants. The 0/46 → 20/46 → 42/46 → 43/46 → 46/46
-  progression is now the calibration spine for graduating variants.
-  `broad_legal_repaired` at 46/46 is a **diagnostic upper-bound**, NOT
-  the recognition number.
-- **Legality repair probe (#326)** — conservative variant at 43/46,
-  broad variant at 46/46. Probe-only, no production wire-up yet.
+- **Post-repair scoreboard (#325)** + **legality repair probes
+  (#326, #329)** — 46-pair shadow corpus evaluated across multiple
+  repair variants (canonical-count → conservative-legal → guarded-broad
+  → broad). The progression is the calibration spine for graduating
+  variants. `broad_legal_repaired` is a **diagnostic upper-bound**,
+  NOT the recognition number; `guarded_broad_legal_repaired` adds a
+  no-ground-truth cost/changes gate as the first defensible
+  promotion-candidate slice. Read
+  `tools/HULL_LABEL_LEGAL_REPAIR_DIAGNOSTIC.md` for current exact-match
+  counts and per-row hamming.
 
 Open levers, approximate descending leverage:
 
@@ -135,7 +138,7 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 ### Proposed for Codex (please pick up or push back)
 
-- **Gate calibration in shadow mode against real traffic.** The 70-row corpus shadow-trace analyzer (#292) shows 69/70 accept + 1/70 reject (30_A on `projective_residual_norm`). 13 rows accepted-with-warnings cluster on `sticker_score_worst_face` (6) and `vertex_cloud_spread_px` (4). Before flipping the default from `shadow` → `prefer`: (1) collect shadow traces from production traffic to confirm distribution matches corpus, (2) validate gate accepts ARE the right rows (cross-reference vs ground-truth rectification quality), (3) decide whether the unexercised hard thresholds on `projective_residual_norm` and `sticker_score_total` need calibration against synthetic bad cases or wait for real-traffic data.
+- **Gate calibration in shadow mode against real traffic.** The 70-row corpus shadow-trace analyzer (#292) is the calibration baseline; current acceptance + accepted-with-warnings counts and gate distributions live in `tools/SHADOW_TRACE_ANALYSIS.md` (regenerates with the corpus — read it for current numbers rather than relying on this prose). Before flipping the default from `shadow` → `prefer`: (1) collect shadow traces from production traffic to confirm distribution matches corpus, (2) validate gate accepts ARE the right rows (cross-reference vs ground-truth rectification quality), (3) decide whether the unexercised hard thresholds on `projective_residual_norm` and `sticker_score_total` need calibration against synthetic bad cases or wait for real-traffic data.
 
 *(Either side: populate your row when you start something.)*
 
@@ -192,9 +195,9 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 Newest first. Each entry: date, decision, one-line why.
 
-- **2026-05-26** — **Architectural reframe: constrained cube-state inference, not LLM-as-oracle.** Codified in both repos' `CLAUDE.md` (ctvd #327 / cube-snap #188). The recognizer's job is to combine evidence sources (LLM color reads + hull-label rectified samples + deterministic color/legality repair + (next lever) two-view consistency on shared cubies) under cube-state constraints — not to clean up an LLM oracle. Empirical state: 46-pair shadow corpus reaches 42-46/46 exact across 5 repair variants (0/46 → 20/46 → 42/46 → 43/46 → 46/46); `broad_legal_repaired` at 46/46 is a diagnostic upper-bound, NOT the recognition number. Open levers in approximate descending leverage: two-view consistency, Lab+LLM ensemble, confidence-gated auto-merge, graduating repair to default.
+- **2026-05-26** — **Architectural reframe: constrained cube-state inference, not LLM-as-oracle.** Codified in both repos' `CLAUDE.md` (ctvd #327 / cube-snap #188). The recognizer's job is to combine evidence sources (LLM color reads + hull-label rectified samples + deterministic color/legality repair + (next lever) two-view consistency on shared cubies) under cube-state constraints — not to clean up an LLM oracle. Empirical state on the 46-pair shadow corpus: a graduated set of repair variants (canonical-count → conservative-legal → guarded-broad → broad) covers the climb from a stuck baseline up to a `broad_legal_repaired` upper-bound. The upper-bound is a diagnostic ceiling, NOT the recognition number; the guarded slice is the first defensible promotion candidate. See `tools/HULL_LABEL_LEGAL_REPAIR_DIAGNOSTIC.md` for current exact-match counts. Open levers in approximate descending leverage: two-view consistency, Lab+LLM ensemble, confidence-gated auto-merge, graduating repair to default.
 
-- **2026-05-26** — **Color-repair / legality / scoreboard wave landed.** #324 exposes the deterministic color-conflict repair API on rectified hull-label samples; #325 establishes the 5-variant scoreboard as the calibration spine; #326 probes legality repair (conservative 43/46, broad 46/46); Codex #322 lands the production-shape mask threshold selector. Production recognizer default unchanged; these are the building blocks behind the constrained-inference reframe.
+- **2026-05-26** — **Color-repair / legality / scoreboard wave landed.** #324 exposes the deterministic color-conflict repair API on rectified hull-label samples; #325 establishes the multi-variant scoreboard as the calibration spine; #326 + #329 add the legality and guarded-broad probes; Codex #322 lands the production-shape mask threshold selector. Production recognizer default unchanged; these are the building blocks behind the constrained-inference reframe. Current scoreboard exact-match counts live in `tools/HULL_LABEL_LEGAL_REPAIR_DIAGNOSTIC.md`.
 
 - **2026-05-25** — **Hull-labels Tier 1 candidate path landed feature-flagged in `fit_global_cube_model` (Codex #291, default off).** Three modes (`off` / `shadow` / `prefer`) controlled by `CUBE_RECOGNIZER_HULL_LABEL_TIER1` env var. Operator handoff in `tools/HULL_LABEL_TIER1_WIRING.md`. The candidate path uses Claude's `tools/rectify_via_hull_labels.py` + acceptance gates; the dispatcher / feature flag is Codex's. **Empirical floor numbers pending PR #292** (shadow-trace analyzer, open at time of writing — first run shows 69/70 accept + 1/70 reject on 30_A bad-hull; will be cited here once #292 merges). **Next: gate calibration in shadow mode against real traffic before flipping `shadow → prefer` default.**
 

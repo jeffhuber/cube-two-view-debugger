@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import os
 import subprocess
+import sys
 import warnings
 from pathlib import Path
 from typing import Any, Dict, List
@@ -1158,6 +1159,7 @@ def test_wrapper_propagates_python_failure_exit_code_to_audit_log(tmp_path, monk
             **{k: v for k, v in os.environ.items()
                if k not in ("CODEX_AUDIT_REPO_PATHS", "GITHUB_TOKEN")},
             "AUDIT_HANDOFF_LOG_DIR": str(tmp_path),
+            "CODEX_AUDIT_PYTHON": sys.executable,
         },
     )
 

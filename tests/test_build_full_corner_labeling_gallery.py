@@ -144,6 +144,19 @@ def test_initial_prefill_contains_all_points_inside_image():
         assert 0 <= point[1] <= 4000
 
 
+def test_initial_prefill_uses_flipped_side_b_corner_order():
+    prefill_a = _initial_full_corner_prefill((3000, 4000), side="A")
+    prefill_b = _initial_full_corner_prefill((3000, 4000), side="B")
+
+    assert prefill_b["vertex"] == prefill_a["vertex"]
+    assert prefill_b["corner_3"] == prefill_a["corner_0"]
+    assert prefill_b["corner_2"] == prefill_a["corner_1"]
+    assert prefill_b["corner_1"] == prefill_a["corner_2"]
+    assert prefill_b["corner_0"] == prefill_a["corner_3"]
+    assert prefill_b["corner_5"] == prefill_a["corner_4"]
+    assert prefill_b["corner_4"] == prefill_a["corner_5"]
+
+
 def test_resolve_pair_paths_expands_user_home_from_manifest():
     manifests = [
         {

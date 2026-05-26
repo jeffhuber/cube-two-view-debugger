@@ -108,19 +108,41 @@ def _full_image_display(img_size: Tuple[int, int]) -> Tuple[Tuple[int, int, int,
     return (0, 0, width, height), 1.0, (width, height)
 
 
-def _initial_full_corner_prefill(img_size: Tuple[int, int]) -> Dict[str, List[float]]:
+def _initial_full_corner_prefill(img_size: Tuple[int, int], side: str = "A") -> Dict[str, List[float]]:
     width, height = img_size
     cx, cy = width / 2.0, height / 2.0
     radius = max(120.0, min(width, height) * 0.22)
-    return {
+    positions = {
         "vertex": [round(cx, 1), round(cy, 1)],
-        "corner_0": [round(cx, 1), round(cy - radius, 1)],
-        "corner_1": [round(cx + 0.82 * radius, 1), round(cy - 0.48 * radius, 1)],
-        "corner_2": [round(cx + 0.82 * radius, 1), round(cy + 0.48 * radius, 1)],
-        "corner_3": [round(cx, 1), round(cy + radius, 1)],
-        "corner_4": [round(cx - 0.82 * radius, 1), round(cy + 0.48 * radius, 1)],
-        "corner_5": [round(cx - 0.82 * radius, 1), round(cy - 0.48 * radius, 1)],
+        "top": [round(cx, 1), round(cy - radius, 1)],
+        "upper_right": [round(cx + 0.82 * radius, 1), round(cy - 0.48 * radius, 1)],
+        "lower_right": [round(cx + 0.82 * radius, 1), round(cy + 0.48 * radius, 1)],
+        "bottom": [round(cx, 1), round(cy + radius, 1)],
+        "lower_left": [round(cx - 0.82 * radius, 1), round(cy + 0.48 * radius, 1)],
+        "upper_left": [round(cx - 0.82 * radius, 1), round(cy - 0.48 * radius, 1)],
     }
+    if side == "B":
+        # Side B uses the flipped-side human convention:
+        # top=3, upper-right=2, lower-right=1, bottom=0,
+        # lower-left=5, upper-left=4.
+        mapping = {
+            "corner_0": "bottom",
+            "corner_1": "lower_right",
+            "corner_2": "upper_right",
+            "corner_3": "top",
+            "corner_4": "upper_left",
+            "corner_5": "lower_left",
+        }
+    else:
+        mapping = {
+            "corner_0": "top",
+            "corner_1": "upper_right",
+            "corner_2": "lower_right",
+            "corner_3": "bottom",
+            "corner_4": "lower_left",
+            "corner_5": "upper_left",
+        }
+    return {"vertex": positions["vertex"], **{name: positions[position] for name, position in mapping.items()}}
 
 
 def _load_truth_prefill(path: Optional[Path]) -> Dict[str, Dict[str, Any]]:
@@ -163,7 +185,7 @@ def _build_case_data(
         prefill = truth_prefill[key]
         prefill_source = "truth"
     else:
-        prefill = _initial_full_corner_prefill(img.size)
+        prefill = _initial_full_corner_prefill(img.size, side=side)
         prefill_source = "layout"
     return {
         "key": key,

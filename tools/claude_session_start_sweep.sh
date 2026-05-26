@@ -50,6 +50,14 @@ CS_TMP=$(mktemp -t cs-pending.XXXX)
 CTVD_TMP=$(mktemp -t ctvd-pending.XXXX)
 trap 'rm -f "$CS_TMP" "$CTVD_TMP"' EXIT
 
+jq_count_or_zero() {
+  count=$(jq 'length' < "$1" 2>/dev/null)
+  case "$count" in
+    ''|*[!0-9]*) echo 0 ;;
+    *) echo "$count" ;;
+  esac
+}
+
 # Parallel fetch, 2s each. Empty file on timeout/failure is fine — jq length returns 0.
 {
   run_with_timeout 2 gh pr list --repo jeffhuber/cube-snap --state open \
@@ -61,8 +69,8 @@ trap 'rm -f "$CS_TMP" "$CTVD_TMP"' EXIT
   wait
 }
 
-CS_COUNT=$(jq 'length' < "$CS_TMP" 2>/dev/null || echo 0)
-CTVD_COUNT=$(jq 'length' < "$CTVD_TMP" 2>/dev/null || echo 0)
+CS_COUNT=$(jq_count_or_zero "$CS_TMP")
+CTVD_COUNT=$(jq_count_or_zero "$CTVD_TMP")
 TOTAL=$((CS_COUNT + CTVD_COUNT))
 
 if [ "$TOTAL" -eq 0 ]; then

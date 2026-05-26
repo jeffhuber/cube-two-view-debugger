@@ -8,16 +8,15 @@ shared slot/yaw convention, then compares deterministic color repair stages:
 * `canonical`: nearest canonical Rubik color per sticker.
 * `canonical_center_forced`: same, but WCA centers are forced to U/R/F/D/L/B.
 * `canonical_count_repaired`: greedy count repair to exactly 9 stickers per
-  WCA face, with centers fixed.
+  WCA face color, with centers fixed.
 * `adaptive_center_forced`: adaptive Lab palette anchored by the six known
   WCA centers.
 * `adaptive_count_repaired`: count repair using that adaptive palette.
 
-The proving ground is Sets 69-73 because their rectified contact sheets make
-the main failure mode obvious: geometry often gives usable panels, while raw
-LLM/color reads duplicate or miss colors. This diagnostic keeps geometry and
-color bookkeeping deterministic and leaves LLMs as helpers rather than the
-source of cube-state authority.
+Sets 69-73 exposed the main failure mode clearly: geometry often gives usable
+panels, while raw LLM/color reads duplicate or miss colors. This diagnostic now
+runs on the full manifest corpus so the repair layer can be compared against
+the broader hull-label shadow/prefer baseline.
 """
 from __future__ import annotations
 
@@ -468,7 +467,29 @@ def _best_method(row: Mapping[str, Any], source: str) -> Optional[Tuple[str, int
     return name, int(hamming)
 
 
+def _method_hamming_values(rows: Sequence[Mapping[str, Any]], source: str, method: str) -> List[int]:
+    values: List[int] = []
+    for row in rows:
+        evaluation = row.get("evaluations", {}).get(source)
+        if not evaluation or evaluation.get("status") != "assembled":
+            continue
+        hamming = evaluation.get("methods", {}).get(method, {}).get("hamming")
+        if isinstance(hamming, int):
+            values.append(hamming)
+    return values
+
+
+def _hamming_distribution(values: Sequence[int]) -> str:
+    if not values:
+        return "{}"
+    counts = Counter(values)
+    return "{" + ", ".join(f"{key}: {counts[key]}" for key in sorted(counts)) + "}"
+
+
 def render_report(payload: Mapping[str, Any]) -> str:
+    rows = payload["rows"]
+    primary_source = "hull_label_center_colors"
+    primary_methods = payload["summary"]["yawSources"].get(primary_source, {})
     lines = [
         "# Hull-Label Color Repair Diagnostic",
         "",
@@ -478,16 +499,52 @@ def render_report(payload: Mapping[str, Any]) -> str:
         "up hull-label rectified panels before involving an LLM. It uses the",
         "same slot/yaw WCA assignment as the hull-label path, then compares",
         "plain Lab nearest-color classification, center forcing, and exact",
-        "9-per-face count repair.",
+        "9-per-color count repair.",
         "",
         f"Git head: `{payload['source']['git_sha']}`",
         f"Generated: `{payload['source']['generated_at_utc']}`",
         "",
-        "## Summary",
+        "## Headline",
+        "",
+        "The production-like yaw source is `hull_label_center_colors`, because it",
+        "does not use ground-truth yaw metadata and is available for every pair.",
+        "On the 46-pair manifest corpus, count repair changes the story from",
+        "mostly-correct panels to mostly-exact cubes:",
+        "",
+        "| Stage | Assembled | Exact | Legal | Mean stickers | Median hamming | Hamming distribution |",
+        "|---|---:|---:|---:|---:|---:|---|",
+    ]
+    for method in (
+        "canonical",
+        "canonical_center_forced",
+        "canonical_count_repaired",
+        "adaptive",
+        "adaptive_count_repaired",
+    ):
+        summary = primary_methods.get(method, {})
+        values = _method_hamming_values(rows, primary_source, method)
+        lines.append(
+            f"| `{method}` | {summary.get('assembled')} | {summary.get('exact')} | "
+            f"{summary.get('legal')} | {summary.get('meanStickersCorrect')} | "
+            f"{summary.get('medianHamming')} | `{_hamming_distribution(values)}` |"
+        )
+
+    canonical_count = primary_methods.get("canonical_count_repaired", {})
+    canonical_count_values = _method_hamming_values(rows, primary_source, "canonical_count_repaired")
+    above_three = sum(value > 3 for value in canonical_count_values)
+    above_three_label = "row" if above_three == 1 else "rows"
+    lines.extend([
+        "",
+        "`canonical_count_repaired` is the current best deterministic candidate:",
+        f"{canonical_count.get('exact')}/{canonical_count.get('assembled')} exact/legal, "
+        f"{sum(value <= 3 for value in canonical_count_values)}/{len(canonical_count_values)} within 3 stickers, "
+        f"and only {above_three} {above_three_label} above 3 stickers.",
+        "",
+        "## Full Summary By Yaw Source",
         "",
         "| Yaw source | Method | Assembled | Exact | Legal | Mean stickers | Median hamming |",
         "|---|---|---:|---:|---:|---:|---:|",
-    ]
+    ])
     for source, methods in payload["summary"]["yawSources"].items():
         for method, row in methods.items():
             lines.append(
@@ -495,26 +552,23 @@ def render_report(payload: Mapping[str, Any]) -> str:
                 f"{row['legal']} | {row['meanStickersCorrect']} | {row['medianHamming']} |"
             )
 
-    rows = payload["rows"]
-    preferred_source = "ground_truth_captureYaw"
-    if not any(preferred_source in row.get("evaluations", {}) for row in rows):
-        preferred_source = "white_up_default"
     lines.extend([
         "",
-        "## Sets 69-73",
+        "## Per-Set Snapshot",
         "",
-        "| Set | Preferred yaw source | Best method | Best hamming | Canonical hamming | Adaptive+count hamming | Status |",
-        "|---:|---|---|---:|---:|---:|---|",
+        "| Set | Source | Best method | Best hamming | Canonical | Canonical+count | Adaptive+count | Status |",
+        "|---:|---|---|---:|---:|---:|---:|---|",
     ])
     for row in rows:
-        source = preferred_source if preferred_source in row.get("evaluations", {}) else next(iter(row.get("evaluations", {})), "")
+        source = primary_source if primary_source in row.get("evaluations", {}) else next(iter(row.get("evaluations", {})), "")
         evaluation = row.get("evaluations", {}).get(source, {})
         best = _best_method(row, source)
         canonical = evaluation.get("methods", {}).get("canonical", {}).get("hamming")
+        canonical_count = evaluation.get("methods", {}).get("canonical_count_repaired", {}).get("hamming")
         adaptive_count = evaluation.get("methods", {}).get("adaptive_count_repaired", {}).get("hamming")
         lines.append(
             f"| {row['setId']} | `{source}` | `{best[0] if best else 'n/a'}` | "
-            f"{best[1] if best else 'n/a'} | {canonical} | {adaptive_count} | "
+            f"{best[1] if best else 'n/a'} | {canonical} | {canonical_count} | {adaptive_count} | "
             f"`{evaluation.get('status', 'missing')}` |"
         )
 
@@ -522,17 +576,18 @@ def render_report(payload: Mapping[str, Any]) -> str:
         "",
         "## Current Run Notes",
         "",
-        "- Sets 71 and 73 become exact legal cubes after the best deterministic",
-        "  count-repair variant in this run; Set 72 is left with two sticker",
-        "  errors. These are the cases where the rectified panels are visually",
-        "  good and the remaining problem is mostly duplicated/missing color",
-        "  reads.",
-        "- Set 69 improves under canonical count repair but adaptive-center repair",
-        "  is worse, which is useful evidence that adaptive palettes should be",
-        "  gated rather than blindly preferred.",
-        "- Set 70 does not reach color repair because its A-side hull-label model",
-        "  is rejected by the existing acceptance gates. That is the right failure",
-        "  class: do not count-repair bad geometry.",
+        "- The raw `canonical` classifier is already close: 17/46 exact, 36/46",
+        "  within 3 stickers. The dominant issue is duplicated/missing color",
+        "  counts, not WCA face assignment.",
+        "- Greedy count repair is a large deterministic jump: 42/46 exact/legal",
+        "  with the production-like yaw source. This supersedes the older",
+        "  20/46 exact headline for raw hull-label `prefer` panels.",
+        "- Canonical Lab count repair beats the adaptive-palette count repair in",
+        "  this run (42/46 exact versus 36/46). Adaptive palettes should stay",
+        "  diagnostic or gated; do not blindly prefer them.",
+        "- Sets 69-73 remain useful stress cases: Set 69 is 3 stickers off after",
+        "  canonical count repair, Set 70 is 6 off, Set 72 is 2 off, and Sets",
+        "  71/73 are exact.",
         "- The muddy side-face panels in these rows are photometric failures,",
         "  not rembg failures. rembg supplies the silhouette mask; the rectified",
         "  panels sample the original RGB image. Grazing side faces stretch shadow,",

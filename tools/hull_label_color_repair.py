@@ -6,7 +6,8 @@ LLM is treated as the source of truth:
 
 * classify each oriented sticker in CIELAB space against canonical Rubik colors;
 * force the six known WCA centers;
-* greedily repair duplicated/missing colors to exactly nine stickers per face;
+* greedily repair duplicated/missing colors to exactly nine stickers per WCA
+  face color;
 * expose the trace as a JSON-safe payload that Fixer can use as a draft.
 
 It is intentionally not a cube legality solver. If the repaired state is not a

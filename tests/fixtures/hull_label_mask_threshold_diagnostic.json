@@ -1,0 +1,937 @@
+{
+  "rows": [
+    {
+      "setId": "69",
+      "sides": {
+        "A": {
+          "bestAcceptedScore": 793.14,
+          "bestAcceptedThreshold": 64,
+          "bestAnyAccepted": true,
+          "bestAnyScore": 793.14,
+          "bestAnyThreshold": 64,
+          "candidates": [
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 29.38,
+              "projective_residual_norm": 0.019763741890179928,
+              "status": "accepted",
+              "sticker_score_total": 793.14,
+              "threshold": 64,
+              "vertex_cloud_spread_norm": 0.23096614283081046,
+              "vertex_cloud_spread_px": 127.534309109353,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=793.1; warning 700.0",
+                "projective_residual_norm=0.0198; warning 0.0180"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 29.42,
+              "projective_residual_norm": 0.00864802865557579,
+              "status": "accepted",
+              "sticker_score_total": 794.45,
+              "threshold": 128,
+              "vertex_cloud_spread_norm": 0.20628183166866446,
+              "vertex_cloud_spread_px": 112.72976536833562,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=794.5; warning 700.0",
+                "sticker_score_worst_face=351.3; warning 350.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 29.41,
+              "projective_residual_norm": 0.0004110055405285118,
+              "status": "accepted",
+              "sticker_score_total": 794.0,
+              "threshold": 160,
+              "vertex_cloud_spread_norm": 0.22226092705842962,
+              "vertex_cloud_spread_px": 121.0,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=794.0; warning 700.0",
+                "sticker_score_worst_face=351.4; warning 350.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 29.46,
+              "projective_residual_norm": 0.007693860304174266,
+              "status": "accepted",
+              "sticker_score_total": 795.54,
+              "threshold": 192,
+              "vertex_cloud_spread_norm": 0.2233158383193765,
+              "vertex_cloud_spread_px": 121.03718436910205,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=795.5; warning 700.0",
+                "sticker_score_worst_face=352.2; warning 350.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 29.44,
+              "projective_residual_norm": 0.012322730884103223,
+              "status": "accepted",
+              "sticker_score_total": 794.77,
+              "threshold": 224,
+              "vertex_cloud_spread_norm": 0.20746447464675707,
+              "vertex_cloud_spread_px": 111.89280584559492,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=794.8; warning 700.0",
+                "sticker_score_worst_face=350.7; warning 350.0"
+              ]
+            }
+          ],
+          "image": "/Users/jhuber/cube-corpus/Set 69 - A - white-up IMG_7596.JPG",
+          "side": "A"
+        },
+        "B": {
+          "bestAcceptedScore": 755.91,
+          "bestAcceptedThreshold": 160,
+          "bestAnyAccepted": true,
+          "bestAnyScore": 755.91,
+          "bestAnyThreshold": 160,
+          "candidates": [
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 28.18,
+              "projective_residual_norm": 0.00901817918678888,
+              "status": "accepted",
+              "sticker_score_total": 760.95,
+              "threshold": 64,
+              "vertex_cloud_spread_norm": 0.20882585769241832,
+              "vertex_cloud_spread_px": 109.7679370308106,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=761.0; warning 700.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 28.06,
+              "projective_residual_norm": 0.01383065126176244,
+              "status": "accepted",
+              "sticker_score_total": 757.51,
+              "threshold": 128,
+              "vertex_cloud_spread_norm": 0.21283075511034125,
+              "vertex_cloud_spread_px": 111.40017953306898,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=757.5; warning 700.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 28.0,
+              "projective_residual_norm": 0.012827084785454794,
+              "status": "accepted",
+              "sticker_score_total": 755.91,
+              "threshold": 160,
+              "vertex_cloud_spread_norm": 0.1899443814363849,
+              "vertex_cloud_spread_px": 99.24716620639605,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=755.9; warning 700.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 28.1,
+              "projective_residual_norm": 0.016939687567487205,
+              "status": "accepted",
+              "sticker_score_total": 758.68,
+              "threshold": 192,
+              "vertex_cloud_spread_norm": 0.21271892417823934,
+              "vertex_cloud_spread_px": 110.21796586763884,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=758.7; warning 700.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 28.06,
+              "projective_residual_norm": 0.0060126178309888876,
+              "status": "accepted",
+              "sticker_score_total": 757.5,
+              "threshold": 224,
+              "vertex_cloud_spread_norm": 0.21185866819010044,
+              "vertex_cloud_spread_px": 109.1146186356347,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=757.5; warning 700.0"
+              ]
+            }
+          ],
+          "image": "/Users/jhuber/cube-corpus/Set 69 - B - white-up IMG_7597.JPG",
+          "side": "B"
+        }
+      },
+      "source": "corpus"
+    },
+    {
+      "setId": "70",
+      "sides": {
+        "A": {
+          "bestAcceptedScore": 837.56,
+          "bestAcceptedThreshold": 192,
+          "bestAnyAccepted": false,
+          "bestAnyScore": 739.99,
+          "bestAnyThreshold": 224,
+          "candidates": [
+            {
+              "accepted": false,
+              "hard_failures": [
+                "sticker_score_total=926.7; max 900.0"
+              ],
+              "mean_sticker_distance": 34.32,
+              "projective_residual_norm": 0.016456117531127846,
+              "status": "rejected",
+              "sticker_score_total": 926.73,
+              "threshold": 64,
+              "vertex_cloud_spread_norm": 0.26973297722256123,
+              "vertex_cloud_spread_px": 149.91330828182,
+              "vertex_source": "projective",
+              "warnings": [
+                "sticker_score_worst_face=439.7; warning 350.0"
+              ]
+            },
+            {
+              "accepted": false,
+              "hard_failures": [
+                "sticker_score_total=922.5; max 900.0"
+              ],
+              "mean_sticker_distance": 34.17,
+              "projective_residual_norm": 0.008464778681080556,
+              "status": "rejected",
+              "sticker_score_total": 922.5,
+              "threshold": 128,
+              "vertex_cloud_spread_norm": 0.28599619759813166,
+              "vertex_cloud_spread_px": 156.4736399525492,
+              "vertex_source": "projective",
+              "warnings": [
+                "sticker_score_worst_face=412.1; warning 350.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 31.51,
+              "projective_residual_norm": 0.002249880666435385,
+              "status": "accepted",
+              "sticker_score_total": 850.66,
+              "threshold": 160,
+              "vertex_cloud_spread_norm": 0.2375448596060249,
+              "vertex_cloud_spread_px": 130.92364186807515,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=850.7; warning 700.0",
+                "sticker_score_worst_face=412.7; warning 350.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 31.02,
+              "projective_residual_norm": 0.0020137960640497442,
+              "status": "accepted",
+              "sticker_score_total": 837.56,
+              "threshold": 192,
+              "vertex_cloud_spread_norm": 0.2589014904920969,
+              "vertex_cloud_spread_px": 142.24275025462634,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=837.6; warning 700.0",
+                "sticker_score_worst_face=434.9; warning 350.0"
+              ]
+            },
+            {
+              "accepted": false,
+              "hard_failures": [
+                "projective_residual_norm=0.0272; max 0.0250"
+              ],
+              "mean_sticker_distance": 27.41,
+              "projective_residual_norm": 0.027216719238743397,
+              "status": "rejected",
+              "sticker_score_total": 739.99,
+              "threshold": 224,
+              "vertex_cloud_spread_norm": 0.2684667532957204,
+              "vertex_cloud_spread_px": 145.67086187704115,
+              "vertex_source": "projective",
+              "warnings": [
+                "sticker_score_total=740.0; warning 700.0"
+              ]
+            }
+          ],
+          "image": "/Users/jhuber/cube-corpus/Set 70 - A - white-up IMG_7598.JPG",
+          "side": "A"
+        },
+        "B": {
+          "bestAcceptedScore": 556.04,
+          "bestAcceptedThreshold": 224,
+          "bestAnyAccepted": true,
+          "bestAnyScore": 556.04,
+          "bestAnyThreshold": 224,
+          "candidates": [
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 21.02,
+              "projective_residual_norm": 0.00464060745752174,
+              "status": "accepted",
+              "sticker_score_total": 567.48,
+              "threshold": 64,
+              "vertex_cloud_spread_norm": 0.20294913465588843,
+              "vertex_cloud_spread_px": 109.22453936730518,
+              "vertex_source": "affine",
+              "warnings": []
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 23.89,
+              "projective_residual_norm": 0.020669478968163967,
+              "status": "accepted",
+              "sticker_score_total": 645.11,
+              "threshold": 128,
+              "vertex_cloud_spread_norm": 0.24086869377111012,
+              "vertex_cloud_spread_px": 129.79984591670362,
+              "vertex_source": "affine",
+              "warnings": [
+                "projective_residual_norm=0.0207; warning 0.0180"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 22.65,
+              "projective_residual_norm": 0.015748245573629388,
+              "status": "accepted",
+              "sticker_score_total": 611.66,
+              "threshold": 160,
+              "vertex_cloud_spread_norm": 0.22020502653739407,
+              "vertex_cloud_spread_px": 118.20744477400736,
+              "vertex_source": "affine",
+              "warnings": []
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 20.69,
+              "projective_residual_norm": 0.003059008040053913,
+              "status": "accepted",
+              "sticker_score_total": 558.5,
+              "threshold": 192,
+              "vertex_cloud_spread_norm": 0.21386168575436199,
+              "vertex_cloud_spread_px": 114.5294721894762,
+              "vertex_source": "affine",
+              "warnings": []
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 20.59,
+              "projective_residual_norm": 0.00540211439629586,
+              "status": "accepted",
+              "sticker_score_total": 556.04,
+              "threshold": 224,
+              "vertex_cloud_spread_norm": 0.2036879099102737,
+              "vertex_cloud_spread_px": 108.07404868885037,
+              "vertex_source": "affine",
+              "warnings": []
+            }
+          ],
+          "image": "/Users/jhuber/cube-corpus/Set 70 - B - white-up IMG_7599.JPG",
+          "side": "B"
+        }
+      },
+      "source": "corpus"
+    },
+    {
+      "setId": "71",
+      "sides": {
+        "A": {
+          "bestAcceptedScore": 798.85,
+          "bestAcceptedThreshold": 224,
+          "bestAnyAccepted": true,
+          "bestAnyScore": 798.85,
+          "bestAnyThreshold": 224,
+          "candidates": [
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 30.29,
+              "projective_residual_norm": 0.002453156453996737,
+              "status": "accepted",
+              "sticker_score_total": 817.89,
+              "threshold": 64,
+              "vertex_cloud_spread_norm": 0.20631452506453662,
+              "vertex_cloud_spread_px": 107.70329614269008,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=817.9; warning 700.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 30.27,
+              "projective_residual_norm": 0.005854949349774131,
+              "status": "accepted",
+              "sticker_score_total": 817.17,
+              "threshold": 128,
+              "vertex_cloud_spread_norm": 0.18744368523675353,
+              "vertex_cloud_spread_px": 97.082439194738,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=817.2; warning 700.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 29.63,
+              "projective_residual_norm": 0.003595756965585832,
+              "status": "accepted",
+              "sticker_score_total": 800.09,
+              "threshold": 160,
+              "vertex_cloud_spread_norm": 0.22356630638770764,
+              "vertex_cloud_spread_px": 115.10864433221339,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=800.1; warning 700.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 29.69,
+              "projective_residual_norm": 0.010342387044351442,
+              "status": "accepted",
+              "sticker_score_total": 801.65,
+              "threshold": 192,
+              "vertex_cloud_spread_norm": 0.20725614836507195,
+              "vertex_cloud_spread_px": 106.3296760081587,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=801.6; warning 700.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 29.59,
+              "projective_residual_norm": 0.006376161773648023,
+              "status": "accepted",
+              "sticker_score_total": 798.85,
+              "threshold": 224,
+              "vertex_cloud_spread_norm": 0.22837961741144133,
+              "vertex_cloud_spread_px": 117.23907198540937,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=798.9; warning 700.0"
+              ]
+            }
+          ],
+          "image": "/Users/jhuber/cube-corpus/Set 71 - A - white-up IMG_7600.JPG",
+          "side": "A"
+        },
+        "B": {
+          "bestAcceptedScore": 760.61,
+          "bestAcceptedThreshold": 64,
+          "bestAnyAccepted": true,
+          "bestAnyScore": 760.61,
+          "bestAnyThreshold": 64,
+          "candidates": [
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 28.17,
+              "projective_residual_norm": 0.0021202999862314563,
+              "status": "accepted",
+              "sticker_score_total": 760.61,
+              "threshold": 64,
+              "vertex_cloud_spread_norm": 0.22236214964874243,
+              "vertex_cloud_spread_px": 125.29964086141668,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=760.6; warning 700.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 28.21,
+              "projective_residual_norm": 0.005086528240468843,
+              "status": "accepted",
+              "sticker_score_total": 761.71,
+              "threshold": 128,
+              "vertex_cloud_spread_norm": 0.20194057302057647,
+              "vertex_cloud_spread_px": 113.1591799192624,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=761.7; warning 700.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 28.74,
+              "projective_residual_norm": 0.00047798361184547925,
+              "status": "accepted",
+              "sticker_score_total": 776.03,
+              "threshold": 160,
+              "vertex_cloud_spread_norm": 0.2019406551477751,
+              "vertex_cloud_spread_px": 112.80514172678478,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=776.0; warning 700.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 28.86,
+              "projective_residual_norm": 8.310434012815728e-05,
+              "status": "accepted",
+              "sticker_score_total": 779.25,
+              "threshold": 192,
+              "vertex_cloud_spread_norm": 0.20193951952354877,
+              "vertex_cloud_spread_px": 112.40106761058811,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=779.2; warning 700.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 28.36,
+              "projective_residual_norm": 0.005818432627590193,
+              "status": "accepted",
+              "sticker_score_total": 765.81,
+              "threshold": 224,
+              "vertex_cloud_spread_norm": 0.2105952429951741,
+              "vertex_cloud_spread_px": 116.46887996370532,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=765.8; warning 700.0"
+              ]
+            }
+          ],
+          "image": "/Users/jhuber/cube-corpus/Set 71 - B - white-up IMG_7601.JPG",
+          "side": "B"
+        }
+      },
+      "source": "corpus"
+    },
+    {
+      "setId": "72",
+      "sides": {
+        "A": {
+          "bestAcceptedScore": 665.28,
+          "bestAcceptedThreshold": 160,
+          "bestAnyAccepted": true,
+          "bestAnyScore": 665.28,
+          "bestAnyThreshold": 160,
+          "candidates": [
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 28.44,
+              "projective_residual_norm": 0.0011987063842103143,
+              "status": "accepted",
+              "sticker_score_total": 767.98,
+              "threshold": 64,
+              "vertex_cloud_spread_norm": 0.21239330740531276,
+              "vertex_cloud_spread_px": 113.63538181394033,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=768.0; warning 700.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 26.36,
+              "projective_residual_norm": 0.001975544512173057,
+              "status": "accepted",
+              "sticker_score_total": 711.6,
+              "threshold": 128,
+              "vertex_cloud_spread_norm": 0.23151160252691041,
+              "vertex_cloud_spread_px": 123.4382436686459,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=711.6; warning 700.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 24.64,
+              "projective_residual_norm": 0.0007749573550680081,
+              "status": "accepted",
+              "sticker_score_total": 665.28,
+              "threshold": 160,
+              "vertex_cloud_spread_norm": 0.22103965116658045,
+              "vertex_cloud_spread_px": 116.9700816448377,
+              "vertex_source": "affine",
+              "warnings": []
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 24.9,
+              "projective_residual_norm": 0.0026311753587095676,
+              "status": "accepted",
+              "sticker_score_total": 672.4,
+              "threshold": 192,
+              "vertex_cloud_spread_norm": 0.22842590828852855,
+              "vertex_cloud_spread_px": 121.1486689980538,
+              "vertex_source": "affine",
+              "warnings": []
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 26.01,
+              "projective_residual_norm": 0.0013501288162923802,
+              "status": "accepted",
+              "sticker_score_total": 702.37,
+              "threshold": 224,
+              "vertex_cloud_spread_norm": 0.22632697362997786,
+              "vertex_cloud_spread_px": 119.57006314291216,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=702.4; warning 700.0"
+              ]
+            }
+          ],
+          "image": "/Users/jhuber/cube-corpus/Set 72 - A - white-up IMG_7602.JPG",
+          "side": "A"
+        },
+        "B": {
+          "bestAcceptedScore": 794.7,
+          "bestAcceptedThreshold": 128,
+          "bestAnyAccepted": true,
+          "bestAnyScore": 794.7,
+          "bestAnyThreshold": 128,
+          "candidates": [
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 29.68,
+              "projective_residual_norm": 0.002341560423358775,
+              "status": "accepted",
+              "sticker_score_total": 801.47,
+              "threshold": 64,
+              "vertex_cloud_spread_norm": 0.2300597249921076,
+              "vertex_cloud_spread_px": 137.0109484676316,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=801.5; warning 700.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 29.43,
+              "projective_residual_norm": 0.010794884070781868,
+              "status": "accepted",
+              "sticker_score_total": 794.7,
+              "threshold": 128,
+              "vertex_cloud_spread_norm": 0.23822169653537884,
+              "vertex_cloud_spread_px": 140.2640367307315,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=794.7; warning 700.0"
+              ]
+            },
+            {
+              "accepted": false,
+              "hard_failures": [
+                "sticker_score_total=986.4; max 900.0"
+              ],
+              "mean_sticker_distance": 36.53,
+              "projective_residual_norm": 0.008017370133979101,
+              "status": "rejected",
+              "sticker_score_total": 986.41,
+              "threshold": 160,
+              "vertex_cloud_spread_norm": 0.22075590927317654,
+              "vertex_cloud_spread_px": 130.6981254647518,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_worst_face=415.7; warning 350.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 29.86,
+              "projective_residual_norm": 0.005389317720094896,
+              "status": "accepted",
+              "sticker_score_total": 806.26,
+              "threshold": 192,
+              "vertex_cloud_spread_norm": 0.22128213624611584,
+              "vertex_cloud_spread_px": 129.79984591670362,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=806.3; warning 700.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 30.12,
+              "projective_residual_norm": 0.0031615482350092045,
+              "status": "accepted",
+              "sticker_score_total": 813.25,
+              "threshold": 224,
+              "vertex_cloud_spread_norm": 0.22593226081330756,
+              "vertex_cloud_spread_px": 133.13526955694348,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=813.2; warning 700.0"
+              ]
+            }
+          ],
+          "image": "/Users/jhuber/cube-corpus/Set 72 - B - white-up IMG_7603.JPG",
+          "side": "B"
+        }
+      },
+      "source": "corpus"
+    },
+    {
+      "setId": "73",
+      "sides": {
+        "A": {
+          "bestAcceptedScore": 710.29,
+          "bestAcceptedThreshold": 64,
+          "bestAnyAccepted": true,
+          "bestAnyScore": 710.29,
+          "bestAnyThreshold": 64,
+          "candidates": [
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 26.31,
+              "projective_residual_norm": 0.003596893969932797,
+              "status": "accepted",
+              "sticker_score_total": 710.29,
+              "threshold": 64,
+              "vertex_cloud_spread_norm": 0.23064463188383907,
+              "vertex_cloud_spread_px": 140.00357138301865,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=710.3; warning 700.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 26.35,
+              "projective_residual_norm": 0.00266869540061565,
+              "status": "accepted",
+              "sticker_score_total": 711.32,
+              "threshold": 128,
+              "vertex_cloud_spread_norm": 0.24182338880325488,
+              "vertex_cloud_spread_px": 147.03060905811415,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=711.3; warning 700.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 26.48,
+              "projective_residual_norm": 0.0071560934145279784,
+              "status": "accepted",
+              "sticker_score_total": 715.08,
+              "threshold": 160,
+              "vertex_cloud_spread_norm": 0.2105277807104732,
+              "vertex_cloud_spread_px": 127.75758294520134,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=715.1; warning 700.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 29.47,
+              "projective_residual_norm": 0.0011792301684249136,
+              "status": "accepted",
+              "sticker_score_total": 795.77,
+              "threshold": 192,
+              "vertex_cloud_spread_norm": 0.21696787888190855,
+              "vertex_cloud_spread_px": 131.24404748406687,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=795.8; warning 700.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 26.47,
+              "projective_residual_norm": 0.0005168825477389548,
+              "status": "accepted",
+              "sticker_score_total": 714.76,
+              "threshold": 224,
+              "vertex_cloud_spread_norm": 0.22746001921491968,
+              "vertex_cloud_spread_px": 136.7808466123821,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=714.8; warning 700.0"
+              ]
+            }
+          ],
+          "image": "/Users/jhuber/cube-corpus/Set 73 - A - white-up IMG_7604.JPG",
+          "side": "A"
+        },
+        "B": {
+          "bestAcceptedScore": 741.3,
+          "bestAcceptedThreshold": 160,
+          "bestAnyAccepted": true,
+          "bestAnyScore": 741.3,
+          "bestAnyThreshold": 160,
+          "candidates": [
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 27.8,
+              "projective_residual_norm": 0.016080000880656992,
+              "status": "accepted",
+              "sticker_score_total": 750.54,
+              "threshold": 64,
+              "vertex_cloud_spread_norm": 0.22812326053223672,
+              "vertex_cloud_spread_px": 142.414886862294,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=750.5; warning 700.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 27.91,
+              "projective_residual_norm": 0.0032891072762166315,
+              "status": "accepted",
+              "sticker_score_total": 753.5,
+              "threshold": 128,
+              "vertex_cloud_spread_norm": 0.22721398899748577,
+              "vertex_cloud_spread_px": 141.40014144264495,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=753.5; warning 700.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 27.46,
+              "projective_residual_norm": 0.005346839067593127,
+              "status": "accepted",
+              "sticker_score_total": 741.3,
+              "threshold": 160,
+              "vertex_cloud_spread_norm": 0.22884499896712862,
+              "vertex_cloud_spread_px": 142.1724305201258,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=741.3; warning 700.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 27.75,
+              "projective_residual_norm": 0.012219374653473124,
+              "status": "accepted",
+              "sticker_score_total": 749.17,
+              "threshold": 192,
+              "vertex_cloud_spread_norm": 0.219668331619365,
+              "vertex_cloud_spread_px": 136.88316185711082,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=749.2; warning 700.0"
+              ]
+            },
+            {
+              "accepted": true,
+              "hard_failures": [],
+              "mean_sticker_distance": 27.76,
+              "projective_residual_norm": 0.013332872405741703,
+              "status": "accepted",
+              "sticker_score_total": 749.6,
+              "threshold": 224,
+              "vertex_cloud_spread_norm": 0.22848899655497407,
+              "vertex_cloud_spread_px": 141.4496376806954,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=749.6; warning 700.0"
+              ]
+            }
+          ],
+          "image": "/Users/jhuber/cube-corpus/Set 73 - B - white-up IMG_7605.JPG",
+          "side": "B"
+        }
+      },
+      "source": "corpus"
+    }
+  ],
+  "schema": "hull_label_mask_threshold_diagnostic_v1",
+  "source": {
+    "generated_at_utc": "2026-05-26T04:57:01.860908+00:00",
+    "git_sha": "942bdfa89bb958426845f1e5d5489f0a28566553",
+    "manifest": "tests/fixtures/corpus_manifest.json",
+    "thresholds": [
+      64,
+      128,
+      160,
+      192,
+      224
+    ],
+    "tool": "tools/diagnose_hull_label_mask_thresholds.py"
+  },
+  "summary": {
+    "acceptedSideCountByThreshold": {
+      "128": 9,
+      "160": 9,
+      "192": 10,
+      "224": 9,
+      "64": 9
+    },
+    "bestAcceptedThresholdCounts": {
+      "128": 1,
+      "160": 3,
+      "192": 1,
+      "224": 2,
+      "64": 3
+    },
+    "bestAnyThresholdCounts": {
+      "128": 1,
+      "160": 3,
+      "224": 3,
+      "64": 3
+    },
+    "meanScoreImprovementVs128": 35.35,
+    "medianScoreImprovementVs128": 6.900000000000034,
+    "pairCount": 5,
+    "sideCount": 10
+  }
+}

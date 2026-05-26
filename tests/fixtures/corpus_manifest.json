@@ -606,7 +606,7 @@
       "groundTruth_sha256_expected": "1275e2f5146ca3c89dd2d3d381ac83d4a5fc40583e4f76cdfa558c8e097b1c38",
       "expectedCategory": "reject_retake",
       "currentScoreObserved": 0,
-      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus GT expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54. Source files use Set GAN 50 naming; manifest setId kept numeric for corpus tooling.",
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus GT expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54. Source files use Set GAN 50 naming; manifest setId kept numeric for corpus tooling. GAN-brand cube; intentionally checkerboard-pattern case. Useful brand/material/pattern stress case, not a WCA-brand baseline.",
       "expectedScoreFloor": null
     },
     {
@@ -619,7 +619,7 @@
       "groundTruth_sha256_expected": "8452c011684ae09596ea396f79860a6a58bd07534b5ea03609669e197e32b7eb",
       "expectedCategory": "reject_retake",
       "currentScoreObserved": 0,
-      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus GT expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54. Source files use Set GAN 51 naming; manifest setId kept numeric for corpus tooling.",
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus GT expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54. Source files use Set GAN 51 naming; manifest setId kept numeric for corpus tooling. GAN-brand cube. Useful brand/material stress case, not a WCA-brand baseline.",
       "expectedScoreFloor": null
     },
     {

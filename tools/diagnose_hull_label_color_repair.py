@@ -16,7 +16,10 @@ shared slot/yaw convention, then compares deterministic color repair stages:
 Sets 69-73 exposed the main failure mode clearly: geometry often gives usable
 panels, while raw LLM/color reads duplicate or miss colors. This diagnostic now
 runs on the full manifest corpus so the repair layer can be compared against
-the broader hull-label shadow/prefer baseline.
+the broader hull-label shadow/prefer baseline. It intentionally uses the same
+1600px image-prep and threshold-selector geometry path as the Fixer
+``/api/llm-rectified-input`` endpoint; older 1150px diagnostic geometry can
+change the selected hull and misstate the real Fixer behavior.
 """
 from __future__ import annotations
 
@@ -32,6 +35,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 import numpy as np
+from PIL import Image, ImageOps
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
@@ -51,20 +55,22 @@ from tools.audit_recognition_pair import parse_ground_truth as parse_pair_ground
 from tools.diagnose_slot_yaw_assignment import (  # noqa: E402
     DEFAULT_MANIFEST,
     SLOT_TO_LEGACY_FACE,
-    _fit_hull_side,
     _hull_label_center_yaw_source,
     manifest_yaw_source,
     slot_face_assignments,
 )
 from tools.extract_color_samples import PairTask, load_corpus_tasks  # noqa: E402
+from tools.global_cube_model import _slot_center_faces_from_rectified  # noqa: E402
 from tools.hull_label_color_repair import repair_from_hull_label_fits  # noqa: E402
 from tools.hull_label_assembly import convention_orientation_for_slot  # noqa: E402
 from tools.rectify_faces import DEFAULT_FACE_SIZE, extract_stickers_from_rectified, rectify_face  # noqa: E402
+from tools.rectify_via_hull_labels import select_hull_label_threshold_fit  # noqa: E402
 from tools.sample_stickers_from_hull import apply_orientation  # noqa: E402
 
 
 DEFAULT_OUT = REPO_ROOT / "tests" / "fixtures" / "hull_label_color_repair_diagnostic.json"
 DEFAULT_REPORT = REPO_ROOT / "tools" / "HULL_LABEL_COLOR_REPAIR_DIAGNOSTIC.md"
+FIXER_MAX_SIDE = 1600
 
 
 @dataclass(frozen=True)
@@ -129,6 +135,45 @@ def _metadata_yaw_source(task: PairTask, manifest_pair: Mapping[str, Any]) -> Di
         "source": "white_up_default",
         "yawQuarterTurns": 0,
         "status": "assumed_from_capture_protocol",
+    }
+
+
+def _load_fixer_processing_image(image_path: Path) -> Image.Image:
+    """Load image with the same max-side geometry scale used by Fixer."""
+    with Image.open(image_path) as raw:
+        image = ImageOps.exif_transpose(raw).convert("RGB")
+    natural_max = max(image.size)
+    if natural_max > FIXER_MAX_SIDE:
+        scale = FIXER_MAX_SIDE / float(natural_max)
+        image = image.resize(
+            (round(image.width * scale), round(image.height * scale)),
+            Image.Resampling.LANCZOS,
+        )
+    return image
+
+
+def _fit_hull_side(image_path: Path, side: str, sess: Any) -> Dict[str, Any]:
+    """Fit one side through the same rembg + threshold-selector path as Fixer."""
+    from rembg import remove  # noqa: E402
+
+    image = _load_fixer_processing_image(image_path)
+    rgba = remove(image, session=sess).convert("RGBA")
+    alpha = np.asarray(rgba.split()[-1], dtype=np.uint8)
+    selection = select_hull_label_threshold_fit(
+        image,
+        alpha,
+        side,
+        face_size_px=DEFAULT_FACE_SIZE,
+    )
+    fit = selection.fit
+    trace = dict(selection.trace)
+    if fit is not None:
+        trace["slot_center_faces"] = _slot_center_faces_from_rectified(fit.rectified_faces)
+    return {
+        "image": image,
+        "fit": fit,
+        "model": fit,
+        "trace": trace,
     }
 
 
@@ -509,7 +554,9 @@ def render_report(payload: Mapping[str, Any]) -> str:
         "## Headline",
         "",
         "The production-like yaw source is `hull_label_center_colors`, because it",
-        "does not use ground-truth yaw metadata and is available for every pair.",
+        "does not use ground-truth yaw metadata. It is available for most pairs;",
+        "rows without an accepted center-yaw inference are still shown with their",
+        "metadata/default yaw fallback in the per-set table.",
         "On the 46-pair manifest corpus, count repair changes the story from",
         "mostly-correct panels to mostly-exact cubes:",
         "",
@@ -533,7 +580,11 @@ def render_report(payload: Mapping[str, Any]) -> str:
             f"{summary.get('medianHamming')} | `{_hamming_distribution(values)}` |"
         )
 
-    canonical_count = primary_methods.get("canonical_count_repaired", {})
+    canonical_summary = primary_methods.get("canonical", {})
+    canonical_count_summary = primary_methods.get("canonical_count_repaired", {})
+    guarded_legal_summary = primary_methods.get("guarded_broad_legal_repaired", {})
+    adaptive_count_summary = primary_methods.get("adaptive_count_repaired", {})
+    canonical_values = _method_hamming_values(rows, primary_source, "canonical")
     canonical_count_values = _method_hamming_values(rows, primary_source, "canonical_count_repaired")
     recommended_values = [
         evaluation.get("recommended", {}).get("hamming")
@@ -546,7 +597,7 @@ def render_report(payload: Mapping[str, Any]) -> str:
     lines.extend([
         "",
         "`canonical_count_repaired` is the stable deterministic baseline:",
-        f"{canonical_count.get('exact')}/{canonical_count.get('assembled')} exact/legal, "
+        f"{canonical_count_summary.get('exact')}/{canonical_count_summary.get('assembled')} exact/legal, "
         f"{sum(value <= 3 for value in canonical_count_values)}/{len(canonical_count_values)} within 3 stickers, "
         f"and only {above_three} {above_three_label} above 3 stickers.",
         f"The payload's recommended-method selector is now "
@@ -601,21 +652,28 @@ def render_report(payload: Mapping[str, Any]) -> str:
         "",
         "## Current Run Notes",
         "",
-        "- The raw `canonical` classifier is already close: 17/46 exact, 36/46",
+        f"- The raw `canonical` classifier is already close: "
+        f"{canonical_summary.get('exact')}/{canonical_summary.get('assembled')} exact, "
+        f"{sum(value <= 3 for value in canonical_values)}/{len(canonical_values)}",
         "  within 3 stickers. The dominant issue is duplicated/missing color",
         "  counts, not WCA face assignment.",
-        "- Greedy count repair is a large deterministic jump: 42/46 exact/legal",
+        f"- Greedy count repair is a large deterministic jump: "
+        f"{canonical_count_summary.get('exact')}/{canonical_count_summary.get('assembled')} exact/legal",
         "  with the production-like yaw source. This supersedes the older",
         "  20/46 exact headline for raw hull-label `prefer` panels.",
         "- Guarded cubie-legality repair is now part of the color-repair payload:",
-        "  it exposes conservative and guarded-broad legal candidates, while the",
+        f"  it is {guarded_legal_summary.get('exact')}/{guarded_legal_summary.get('assembled')} exact here and exposes",
+        "  conservative and guarded-broad legal candidates, while the",
         "  ungated broad legal candidate remains diagnostic-only.",
         "- Canonical Lab count repair beats the adaptive-palette count repair in",
-        "  this run (42/46 exact versus 36/46). Adaptive palettes should stay",
+        f"  this run ({canonical_count_summary.get('exact')}/{canonical_count_summary.get('assembled')} exact versus "
+        f"{adaptive_count_summary.get('exact')}/{adaptive_count_summary.get('assembled')}). Adaptive palettes should stay",
         "  diagnostic or gated; do not blindly prefer them.",
-        "- Sets 69-73 remain useful stress cases: Set 69 is 3 stickers off after",
-        "  canonical count repair, Set 70 is 6 off, Set 72 is 2 off, and Sets",
-        "  71/73 are exact.",
+        "- Sets 69-73 remain useful stress cases. With the Fixer-equivalent 1600px",
+        "  geometry path, Sets 70-73 are exact after count repair; Set 69 still",
+        "  needs the conservative legal layer to resolve a 3-sticker count-repair",
+        "  ambiguity. This replaces the older lower-res diagnostic read where",
+        "  Sets 70 and 72 looked like remaining tails.",
         "- The muddy side-face panels in these rows are photometric failures,",
         "  not rembg failures. rembg supplies the silhouette mask; the rectified",
         "  panels sample the original RGB image. Grazing side faces stretch shadow,",

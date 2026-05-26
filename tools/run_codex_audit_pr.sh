@@ -11,9 +11,47 @@ die() {
   exit 1
 }
 
-choose_python_from_repo_paths() {
+# Parse CLI args FIRST so Python discovery (below) can fall back to the
+# --repo-paths CLI arg when CODEX_AUDIT_REPO_PATHS env var isn't set and
+# the script's own repo lacks .venv (the common case: invoking the wrapper
+# from cube-snap to audit a cube-two-view-debugger PR, where ctvd has the
+# venv but cube-snap doesn't).
+audit_args=("$@")
+repo_arg=""
+pr_arg=""
+repo_paths_arg=""
+idx=0
+while [ "${idx}" -lt "${#audit_args[@]}" ]; do
+  arg="${audit_args[${idx}]}"
+  case "${arg}" in
+    --repo)
+      idx=$((idx + 1))
+      repo_arg="${audit_args[${idx}]:-}"
+      ;;
+    --repo=*)
+      repo_arg="${arg#--repo=}"
+      ;;
+    --pr)
+      idx=$((idx + 1))
+      pr_arg="${audit_args[${idx}]:-}"
+      ;;
+    --pr=*)
+      pr_arg="${arg#--pr=}"
+      ;;
+    --repo-paths)
+      idx=$((idx + 1))
+      repo_paths_arg="${audit_args[${idx}]:-}"
+      ;;
+    --repo-paths=*)
+      repo_paths_arg="${arg#--repo-paths=}"
+      ;;
+  esac
+  idx=$((idx + 1))
+done
+
+choose_python_from_entries() {
   local entries entry path candidate
-  entries="${CODEX_AUDIT_REPO_PATHS:-}"
+  entries="$1"
   [ -n "${entries}" ] || return 1
 
   IFS=',' read -r -a repo_entries <<< "${entries}"
@@ -35,37 +73,15 @@ if [ -x "${repo_root}/.venv/bin/python" ]; then
 elif [ -n "${CODEX_AUDIT_PYTHON:-}" ]; then
   python_bin="${CODEX_AUDIT_PYTHON}"
   [ -x "${python_bin}" ] || die "CODEX_AUDIT_PYTHON is not executable: ${python_bin}"
-elif python_bin="$(choose_python_from_repo_paths)"; then
-  printf 'warning: %s has no local .venv/bin/python; using %s from CODEX_AUDIT_REPO_PATHS\n' \
+elif python_bin="$(choose_python_from_entries "${CODEX_AUDIT_REPO_PATHS:-}")"; then
+  printf 'warning: %s has no local .venv/bin/python; using %s from CODEX_AUDIT_REPO_PATHS env\n' \
+    "${repo_root}" "${python_bin}" >&2
+elif python_bin="$(choose_python_from_entries "${repo_paths_arg}")"; then
+  printf 'warning: %s has no local .venv/bin/python; using %s from --repo-paths CLI arg\n' \
     "${repo_root}" "${python_bin}" >&2
 else
-  die "no controlled Python found. Create ${repo_root}/.venv, set CODEX_AUDIT_PYTHON=/path/to/venv/bin/python, or include a repo with .venv in CODEX_AUDIT_REPO_PATHS. Refusing to use ambient python3."
+  die "no controlled Python found. Create ${repo_root}/.venv, set CODEX_AUDIT_PYTHON=/path/to/venv/bin/python, pass --repo-paths <owner/repo>:<path-with-.venv>, or set CODEX_AUDIT_REPO_PATHS in the env. Refusing to use ambient python3."
 fi
-
-audit_args=("$@")
-repo_arg=""
-pr_arg=""
-idx=0
-while [ "${idx}" -lt "${#audit_args[@]}" ]; do
-  arg="${audit_args[${idx}]}"
-  case "${arg}" in
-    --repo)
-      idx=$((idx + 1))
-      repo_arg="${audit_args[${idx}]:-}"
-      ;;
-    --repo=*)
-      repo_arg="${arg#--repo=}"
-      ;;
-    --pr)
-      idx=$((idx + 1))
-      pr_arg="${audit_args[${idx}]:-}"
-      ;;
-    --pr=*)
-      pr_arg="${arg#--pr=}"
-      ;;
-  esac
-  idx=$((idx + 1))
-done
 
 lock_id=""
 if [ -n "${repo_arg}" ] && [ -n "${pr_arg}" ]; then

@@ -15,8 +15,17 @@ import sys
 from pathlib import Path
 from typing import Callable, Optional, Sequence
 
-
-RunFn = Callable[..., subprocess.CompletedProcess[str]]
+# NOTE: the `RunFn` type alias is intentionally a forward-reference string
+# (not a real `Callable[..., subprocess.CompletedProcess[str]]` value).
+# Module-level assignments are evaluated at import time regardless of
+# `from __future__ import annotations`, and `subprocess.CompletedProcess[str]`
+# uses PEP 585 generic subscript which requires Python 3.9+. macOS often
+# ships an older interpreter (e.g. Anaconda 3.7) as ambient `python3`, so
+# storing the alias as a string keeps the file importable under any 3.x
+# while still giving type-checkers (which evaluate annotations as strings
+# under `from __future__ import annotations`) the precise type. Same
+# treatment for the `dict[str, str]` payload annotation below.
+RunFn = "Callable[..., subprocess.CompletedProcess[str]]"
 
 
 def _read_body(*, body_file: Optional[Path], stdin_text: Optional[str] = None) -> str:
@@ -37,7 +46,7 @@ def _repo_from_gh(run: RunFn = subprocess.run) -> str:
     return result.stdout.strip()
 
 
-def _run_gh_api(args: Sequence[str], payload: dict[str, str], run: RunFn = subprocess.run) -> None:
+def _run_gh_api(args: Sequence[str], payload: "dict[str, str]", run: RunFn = subprocess.run) -> None:
     run(
         ["gh", "api", *args, "--input", "-"],
         input=json.dumps(payload),

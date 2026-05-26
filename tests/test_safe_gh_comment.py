@@ -85,3 +85,34 @@ def test_main_reports_clean_error_for_missing_body_file(capsys):
     captured = capsys.readouterr()
     assert status == 1
     assert captured.err.startswith("error: ")
+
+
+def test_module_imports_under_pep585_incompatible_python():
+    """Regression: `RunFn = Callable[..., subprocess.CompletedProcess[str]]`
+    was a module-level assignment evaluated at import time. PEP 585 generic
+    subscript on `subprocess.CompletedProcess` requires Python 3.9+, but
+    macOS often ships an older interpreter (e.g. anaconda 3.7) as ambient
+    `python3` — so the assignment failed at import and the helper was
+    unusable from any cwd without a 3.9+ venv on PATH.
+
+    Note that `from __future__ import annotations` (at the top of
+    safe_gh_comment.py) only affects annotations IN function signatures
+    and class attributes — NOT module-level assignments. So the alias
+    must be a forward-reference string to stay sub-3.9-importable.
+
+    This test enforces that RunFn remains a string. If a future refactor
+    turns it back into a runtime-evaluated Callable, this test fails fast
+    rather than waiting for an operator to hit the import error from
+    ambient python3.
+    """
+    assert isinstance(safe_gh_comment.RunFn, str), (
+        f"RunFn must remain a forward-reference string for sub-3.9 import "
+        f"compatibility; got {type(safe_gh_comment.RunFn).__name__}: "
+        f"{safe_gh_comment.RunFn!r}"
+    )
+    # Spot-check content so a future refactor that swaps it for an
+    # unrelated string (e.g. accidentally "Any") gets flagged.
+    assert "subprocess.CompletedProcess" in safe_gh_comment.RunFn, (
+        f"RunFn forward-ref must still describe the CompletedProcess "
+        f"return type; got {safe_gh_comment.RunFn!r}"
+    )

@@ -288,6 +288,20 @@ def test_probe_manifest_records_hashes_observed_baselines_and_contracts():
         assert "currentScoreObserved" in row
 
 
+def test_non_white_up_candidates_are_excluded_from_normal_corpus_manifest():
+    fixture_dir = Path(__file__).parent / "fixtures"
+    manifest = load_manifest(fixture_dir / "corpus_manifest.json")
+    manifest_ids = {row["setId"] for row in manifest}
+    candidates = json.loads((fixture_dir / "non_white_up_candidate_manifest.json").read_text())
+
+    assert {row["setId"] for row in candidates["pairs"]} == {"1", "2", "3", "4", "5", "6", "7"}
+    assert not ({row["setId"] for row in candidates["pairs"]} & manifest_ids)
+    for row in candidates["pairs"]:
+        assert row["declaredUpperFaceA"] != "white"
+        assert row["declaredUpperFaceB"] != "yellow"
+        assert "groundTruthPath" not in row
+
+
 def test_probe_manifest_covers_approved_axis_truth_sets():
     """Every approved two-view axis-truth set must be runnable from the
     corpus manifest.

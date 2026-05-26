@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "description": "Images captured before the white-up convention. These are intentionally excluded from corpus_manifest.json and should be used only for negative-orientation/capture-guidance diagnostics.",
+  "pairs": [
+    {
+      "setId": "1",
+      "imageAPath": "/Users/jhuber/cube-corpus/set 1 - A blue-up IMG_6671.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/set 1 - B blue-up IMG_6672.JPG",
+      "imageA_sha256_expected": "a3556e98ff87d602bf7565c97fd9146c727e26265bc605a349db06c0aa2b9c27",
+      "imageB_sha256_expected": "ac366ed6334f84417de1f1aa51ee1c61e07e32d4cabfdee57c3d98566f1f52d4",
+      "declaredUpperFaceA": "blue",
+      "declaredUpperFaceB": "blue",
+      "reasonExcludedFromCorpusManifest": "Pre-convention capture; not white-up/yellow-up after flip, so no canonical GT is expected for the normal corpus contract.",
+      "intendedUse": "Negative-orientation / capture-guidance candidate for testing rejection or user-facing orientation feedback."
+    },
+    {
+      "setId": "2",
+      "imageAPath": "/Users/jhuber/cube-corpus/set 2 - A green-up IMG_6673.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/set 2 - B green-up IMG_6674.JPG",
+      "imageA_sha256_expected": "179e3ac92a3a618c6c2ba302651aff2b3afda5af688349c43612cbf5895399fc",
+      "imageB_sha256_expected": "bea31bda78c814a27153861476da20c73990cefacb8a6b9968dbaa78d653d88c",
+      "declaredUpperFaceA": "green",
+      "declaredUpperFaceB": "green",
+      "reasonExcludedFromCorpusManifest": "Pre-convention capture; not white-up/yellow-up after flip, so no canonical GT is expected for the normal corpus contract.",
+      "intendedUse": "Negative-orientation / capture-guidance candidate for testing rejection or user-facing orientation feedback."
+    },
+    {
+      "setId": "3",
+      "imageAPath": "/Users/jhuber/cube-corpus/set 3 - A blue-up IMG_6676.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/set 3 - B blue-up IMG_6677.JPG",
+      "imageA_sha256_expected": "7668b6eb8665af961269bbcbe835b681966006b54ece7b1f7bce71f98bc81d78",
+      "imageB_sha256_expected": "312e5761ba995f2fce45b50699590b43c8a92ff84291e0e4cafd638de6995b69",
+      "declaredUpperFaceA": "blue",
+      "declaredUpperFaceB": "blue",
+      "reasonExcludedFromCorpusManifest": "Pre-convention capture; not white-up/yellow-up after flip, so no canonical GT is expected for the normal corpus contract.",
+      "intendedUse": "Negative-orientation / capture-guidance candidate for testing rejection or user-facing orientation feedback."
+    },
+    {
+      "setId": "4",
+      "imageAPath": "/Users/jhuber/cube-corpus/set 4 - A green-up IMG_6678.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/set 4 - B green-up IMG_6679.JPG",
+      "imageA_sha256_expected": "1d8bc1087e5b6b3574c635e9267b431a70468831b70d0225d4dfa39a43010a49",
+      "imageB_sha256_expected": "782dec213627b424f31def5840e3e3786d8be12c6250936e3195fd784509695b",
+      "declaredUpperFaceA": "green",
+      "declaredUpperFaceB": "green",
+      "reasonExcludedFromCorpusManifest": "Pre-convention capture; not white-up/yellow-up after flip, so no canonical GT is expected for the normal corpus contract.",
+      "intendedUse": "Negative-orientation / capture-guidance candidate for testing rejection or user-facing orientation feedback."
+    },
+    {
+      "setId": "5",
+      "imageAPath": "/Users/jhuber/cube-corpus/set 5 - A red-up IMG_6681.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/set 5 - B red-up IMG_6682.JPG",
+      "imageA_sha256_expected": "93c20e7a1af75f5392c46c6f29920b0c4fb2fd70d8826bd42f67c27adaf96611",
+      "imageB_sha256_expected": "83998a973d9e877941acdacdae3ec3256fa289d6678de6d478b8c1cafb3ecf66",
+      "declaredUpperFaceA": "red",
+      "declaredUpperFaceB": "red",
+      "reasonExcludedFromCorpusManifest": "Pre-convention capture; not white-up/yellow-up after flip, so no canonical GT is expected for the normal corpus contract.",
+      "intendedUse": "Negative-orientation / capture-guidance candidate for testing rejection or user-facing orientation feedback."
+    },
+    {
+      "setId": "6",
+      "imageAPath": "/Users/jhuber/cube-corpus/set 6 - A red-up IMG_6683.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/set 6 - B red-up IMG_6684.JPG",
+      "imageA_sha256_expected": "fc5a6a1f5279fd1223534c063964c64056d10a4686a22eb64a9fdfa0b74006d8",
+      "imageB_sha256_expected": "1c205b1f12dd5ab4eeaeeba94642c522f0a0adfbbaf5223bf9970d8f93423473",
+      "declaredUpperFaceA": "red",
+      "declaredUpperFaceB": "red",
+      "reasonExcludedFromCorpusManifest": "Pre-convention capture; not white-up/yellow-up after flip, so no canonical GT is expected for the normal corpus contract.",
+      "intendedUse": "Negative-orientation / capture-guidance candidate for testing rejection or user-facing orientation feedback."
+    },
+    {
+      "setId": "7",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 7 - A red-up IMG_6687.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 7 - B red-up IMG_6688.JPG",
+      "imageA_sha256_expected": "72dbef24670177343bbe7ef3173417f6c6b1335769071ce86058cfd8b10f85b1",
+      "imageB_sha256_expected": "e09f7f5666f831b2b9b66a1ad44000b70643e1d2a8d8bf29042011da82140a64",
+      "declaredUpperFaceA": "red",
+      "declaredUpperFaceB": "red",
+      "reasonExcludedFromCorpusManifest": "Pre-convention capture; not white-up/yellow-up after flip, so no canonical GT is expected for the normal corpus contract.",
+      "intendedUse": "Negative-orientation / capture-guidance candidate for testing rejection or user-facing orientation feedback."
+    }
+  ]
+}

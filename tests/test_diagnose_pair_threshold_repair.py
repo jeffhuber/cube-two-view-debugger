@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from tools.diagnose_pair_threshold_repair import choose_guarded_pair
+from tools.hull_label_pair_selector import choose_guarded_pair
 
 
 def test_guarded_pair_keeps_current_when_current_repair_is_valid():

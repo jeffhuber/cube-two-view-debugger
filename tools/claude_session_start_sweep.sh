@@ -48,7 +48,9 @@ run_with_timeout() {
 
 CS_TMP=$(mktemp -t cs-pending.XXXX)
 CTVD_TMP=$(mktemp -t ctvd-pending.XXXX)
-trap 'rm -f "$CS_TMP" "$CTVD_TMP"' EXIT
+CS_STATUS=$(mktemp -t cs-status.XXXX)
+CTVD_STATUS=$(mktemp -t ctvd-status.XXXX)
+trap 'rm -f "$CS_TMP" "$CTVD_TMP" "$CS_STATUS" "$CTVD_STATUS"' EXIT
 
 jq_count_or_zero() {
   count=$(jq 'length' < "$1" 2>/dev/null)
@@ -58,36 +60,68 @@ jq_count_or_zero() {
   esac
 }
 
-# Parallel fetch, 2s each. Empty file on timeout/failure is fine — jq length returns 0.
+fetch_queue() {
+  repo="$1"
+  out="$2"
+  status="$3"
+  tmp="$out.raw"
+
+  if run_with_timeout 2 gh pr list --repo "$repo" --state open \
+    --label needs-claude-review \
+    --json number,headRefOid,updatedAt 2>/dev/null > "$tmp" &&
+    jq empty "$tmp" >/dev/null 2>&1; then
+    mv "$tmp" "$out"
+    echo ok > "$status"
+  else
+    rm -f "$tmp"
+    : > "$out"
+    echo failed > "$status"
+  fi
+}
+
+# Parallel fetch, 2s each. Fetch failures are reported as unknown, not empty.
 {
-  run_with_timeout 2 gh pr list --repo jeffhuber/cube-snap --state open \
-    --label needs-claude-review \
-    --json number,headRefOid,title,updatedAt 2>/dev/null > "$CS_TMP" &
-  run_with_timeout 2 gh pr list --repo jeffhuber/cube-two-view-debugger --state open \
-    --label needs-claude-review \
-    --json number,headRefOid,title,updatedAt 2>/dev/null > "$CTVD_TMP" &
+  fetch_queue jeffhuber/cube-snap "$CS_TMP" "$CS_STATUS" &
+  fetch_queue jeffhuber/cube-two-view-debugger "$CTVD_TMP" "$CTVD_STATUS" &
   wait
 }
 
-CS_COUNT=$(jq_count_or_zero "$CS_TMP")
-CTVD_COUNT=$(jq_count_or_zero "$CTVD_TMP")
+CS_FETCH=$(cat "$CS_STATUS" 2>/dev/null || echo failed)
+CTVD_FETCH=$(cat "$CTVD_STATUS" 2>/dev/null || echo failed)
+CS_COUNT=0
+CTVD_COUNT=0
+if [ "$CS_FETCH" = ok ]; then
+  CS_COUNT=$(jq_count_or_zero "$CS_TMP")
+fi
+if [ "$CTVD_FETCH" = ok ]; then
+  CTVD_COUNT=$(jq_count_or_zero "$CTVD_TMP")
+fi
 TOTAL=$((CS_COUNT + CTVD_COUNT))
 
-if [ "$TOTAL" -eq 0 ]; then
+if [ "$CS_FETCH" != ok ] || [ "$CTVD_FETCH" != ok ]; then
+  echo "[Claude queue sweep — queue fetch incomplete; re-arm Monitor and poll GitHub manually]"
+elif [ "$TOTAL" -eq 0 ]; then
   echo "[Claude queue sweep — no PRs awaiting Claude review at session start]"
 else
   echo "[Claude queue sweep — $TOTAL PR(s) awaiting Claude review at session start]"
 fi
 echo ""
 
+if [ "$CS_FETCH" != ok ]; then
+  echo "cube-snap: fetch failed or timed out"
+fi
+if [ "$CTVD_FETCH" != ok ]; then
+  echo "cube-two-view-debugger: fetch failed or timed out"
+fi
+
 if [ "$CS_COUNT" -gt 0 ]; then
   echo "cube-snap:"
-  jq -r '.[] | "  - #\(.number) @ \(.headRefOid[0:7]) — \(.title) (updated \(.updatedAt))"' < "$CS_TMP"
+  jq -r '.[] | "  - #\(.number) @ \(.headRefOid[0:7]) (updated \(.updatedAt))"' < "$CS_TMP"
 fi
 
 if [ "$CTVD_COUNT" -gt 0 ]; then
   echo "cube-two-view-debugger:"
-  jq -r '.[] | "  - #\(.number) @ \(.headRefOid[0:7]) — \(.title) (updated \(.updatedAt))"' < "$CTVD_TMP"
+  jq -r '.[] | "  - #\(.number) @ \(.headRefOid[0:7]) (updated \(.updatedAt))"' < "$CTVD_TMP"
 fi
 
 echo ""

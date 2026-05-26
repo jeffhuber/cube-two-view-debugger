@@ -94,7 +94,11 @@ fi
 echo ""
 if [ -f "$LOG" ]; then
   echo "Recent audit-log events (last 5):"
-  tail -5 "$LOG" 2>/dev/null | jq -r '"  \(.time.pt // "—") \(.actor // "—") \(.event // "—") \(.repo // "—" | sub("jeffhuber/"; ""))#\(.pr // "?") @ \((.head // "—")[0:7]) verdict=\(.verdict // "—")"' 2>/dev/null
+  tail -5 "$LOG" 2>/dev/null | jq -r '
+    . as $event |
+    ($event.lock // $event.active // $event.stale // {}) as $nested |
+    "  \(($event.time.pt // $event.started.pt // $nested.started.pt // "—")) \(($event.actor // $nested.actor // "—")) \($event.event // "—") \((($event.repo // $nested.repo // "—") | sub("jeffhuber/"; "")))#\($event.pr // $nested.pr // "?") @ \((($event.head // $nested.head // "—")[0:7])) verdict=\($event.verdict // "—")"
+  ' 2>/dev/null
 fi
 
 echo ""

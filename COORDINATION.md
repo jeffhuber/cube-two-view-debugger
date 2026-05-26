@@ -18,26 +18,53 @@ edit any section. To minimize edit conflicts, keep entries terse
 Strict ownership boundaries. Avoid touching anything outside your lane
 without coordinating in this doc first.
 
-**Current posture (2026-05-25):** Hull-labels Tier 1 (the
+**Current posture (2026-05-26):** Hull-labels Tier 1 (the
 convention-aware silhouette-corner labeling pipeline from PRs
-#282/#284/#286/#288/#289) landed as a feature-flagged candidate
-path in `fit_global_cube_model` via Codex PR #291. Default is
-`off`; the env var `CUBE_RECOGNIZER_HULL_LABEL_TIER1=shadow`
-turns on the trace surface. Operator handoff:
+#282/#284/#286/#288/#289/#291) is now the **foundation** of the
+rectification + repair stack — no longer the next deliverable. The
+shadow-trace analyzer (#292) landed; the current corpus run accepts
+the whole 70-row axis corpus with no hard failures, with a small
+number of accepted-with-warnings rows clustered on
+`vertex_cloud_spread_px` and `sticker_score_total`. For current
+numbers (acceptance, warnings, gate distributions) read
+`tools/SHADOW_TRACE_ANALYSIS.md` directly — it's the source of truth
+and regenerates with the corpus. Operator handoff:
 `tools/HULL_LABEL_TIER1_WIRING.md`.
 
-The next deliverable is the shadow-trace analyzer (PR #292,
-open at time of writing — this docs PR is intentionally not
-stacked on it). Empirical floor when #292 lands: 69/70 accept
-+ 1/70 reject (30_A bad-hull, correctly caught by the
-`projective_residual_norm` hard gate). The accompanying report
-`tools/SHADOW_TRACE_ANALYSIS.md` and the fixture
-`tests/fixtures/shadow_trace_corpus.json` arrive with that PR;
-they are NOT on `main` yet. Update the cross-references in this
-section once #292 merges.
+Active focus has shifted to **constrained cube-state inference** as
+the architectural frame: LLMs are one evidence source in a constrained
+solver, not the source of truth. See both repos' `CLAUDE.md` for the
+deeper write-up (codified in ctvd #327 / cube-snap #188).
 
-Next milestones after #292: gate calibration in shadow mode
-against real traffic, then the `shadow → prefer` default flip.
+Recent additions on top of the rectification foundation:
+
+- **Hull-label mask threshold selector (#322)** — production-shaped
+  threshold picker (Codex); replaces the prior single-threshold
+  heuristic in the mask path.
+- **Color repair API (#324)** — deterministic color-conflict repair
+  surface on the rectified hull-label samples. Foundation for the
+  scoreboard and legality probes below.
+- **Post-repair scoreboard (#325)** + **legality repair probes
+  (#326, #329)** — 46-pair shadow corpus evaluated across multiple
+  repair variants (canonical-count → conservative-legal → guarded-broad
+  → broad). The progression is the calibration spine for graduating
+  variants. `broad_legal_repaired` is a **diagnostic upper-bound**,
+  NOT the recognition number; `guarded_broad_legal_repaired` adds a
+  no-ground-truth cost/changes gate as the first defensible
+  promotion-candidate slice. Read
+  `tools/HULL_LABEL_LEGAL_REPAIR_DIAGNOSTIC.md` for current exact-match
+  counts and per-row hamming.
+
+Open levers, approximate descending leverage:
+
+1. **Two-view consistency** on the six cubies visible in both photos
+   (the next un-pulled lever; cross-view agreement is a free signal
+   independent of color or mask quality).
+2. **Lab + LLM ensemble** for per-sticker color reads.
+3. **Confidence-gated auto-merge** of repair variants based on
+   inter-variant agreement.
+4. **Graduating deterministic repair to the default recognizer** once
+   confidence calibration is settled.
 
 The 2026-05-22 strategic shift still holds: Claude's geometry
 research is **scaffolding around** Codex's production `cv-local`,
@@ -84,11 +111,11 @@ not a replacement for it. The role split:
 - `tools/BENCHMARK_INDEX.md` — fixture/report/script lookup.
 - `tools/POST_218_BASELINE_AND_TAXONOMY.md` — the decision spine. Updates happen only via committed re-baseline runs of `baseline_post_218.py`.
 - `tools/HULL_LABEL_TIER1_WIRING.md` — operator handoff for the Tier 1 feature-flagged candidate path. Modes / gates / trace surface. Owned jointly: Codex wired it (#291), Claude maintains the candidate pipeline + analyzer.
-- `tools/SHADOW_TRACE_ANALYSIS.md` — markdown report from `tools/analyze_shadow_traces.py`. Auto-regenerated; commit on substantive corpus changes. **PENDING:** ships with PR #292 (open at time of writing); both files are NOT yet on main. Promote this entry to a non-pending Shared item once #292 merges.
+- `tools/SHADOW_TRACE_ANALYSIS.md` — markdown report from `tools/analyze_shadow_traces.py`. Auto-regenerated; commit on substantive corpus changes. (Landed in PR #292.)
 - `tools/FULL_CORNER_LABELING.md` / `tools/corner_conventions.py` / `tests/fixtures/full_corner_ground_truth.json` — canonical `Va/Vb + 0..5` corner convention, A/B face outlines, flattened facelet mapping, and seed full-corner truth. Update these before touching any downstream geometry convention. **Schema rename 2026-05-23 (#286):** `near_x/y/z` → `axis_x/y/z` with backward-compat read shim — same FAR-corner positions, naming clarified.
 - `tests/fixtures/gcm_axis_ground_truth.json` — user-labeled axis fixture. The label fields now read `axis_x/y/z` (was `near_x/y/z`). Sits at FAR-corner positions per side-specific convention.
 - `tests/fixtures/post_218_baseline.json` — legacy accuracy snapshot derived from the axis fixture. Regenerate when global model semantics change.
-- `tests/fixtures/hard_case_manifest.json` + `tests/fixtures/corpus_manifest.json` — paired manifests. Both are needed by tools that iterate the 70-row axis-truth corpus: corpus_manifest covers more setIds than the axis truth uses (e.g. it includes sets 63-68 which have no axis labels), hard_case_manifest covers the hard-case sets the axis truth specifically labels (17/21/22/25/30/39/44/46-49/57-58/61-62). Set 44 appears in both; tools should resolve collisions deterministically (e.g. `dict.setdefault` with corpus_manifest first). Tools that consume the axis truth should load both manifests and let `_resolve_image_path`'s pattern-search fallback handle any remaining gaps. (The shadow-trace analyzer is the first tool to follow this pattern explicitly — see PR #292, pending merge.)
+- `tests/fixtures/hard_case_manifest.json` + `tests/fixtures/corpus_manifest.json` — paired manifests. Both are needed by tools that iterate the 70-row axis-truth corpus: corpus_manifest covers more setIds than the axis truth uses (e.g. it includes sets 63-68 which have no axis labels), hard_case_manifest covers the hard-case sets the axis truth specifically labels (17/21/22/25/30/39/44/46-49/57-58/61-62). Set 44 appears in both; tools should resolve collisions deterministically (e.g. `dict.setdefault` with corpus_manifest first). Tools that consume the axis truth should load both manifests and let `_resolve_image_path`'s pattern-search fallback handle any remaining gaps. (The shadow-trace analyzer is the first tool to follow this pattern explicitly — see PR #292.)
 - `tools/extract_color_samples.py` — Claude's, but Codex added the `white[- ]up` regex fix in #135. **Coordinate before editing.**
 - `tests/test_auto_geometry_metrics.py` — Claude's, but a growing surface. **Coordinate before adding tests that interact with discovery/geometry.**
 - `tools/global_cube_model.py` — was previously Claude-only; PR #291 wired Tier 1 hull-label paths into it. Now joint: Claude owns the hull-label candidate code; Codex owns the dispatcher / feature-flag wiring. Coordinate before changing the public signature of `fit_global_cube_model`.
@@ -107,13 +134,11 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 | Owner | Branch | PR | What | Touches | ETA |
 |---|---|---|---|---|---|
-| Claude | `claude/shadow-trace-analyzer` | #292 | Shadow-trace analyzer for Tier 1 hull-label gates. New `tools/analyze_shadow_traces.py` + `tools/SHADOW_TRACE_ANALYSIS.md` baseline report + `tests/fixtures/shadow_trace_corpus.json` artifact. Answers "if we flipped `shadow` → `prefer` today, what would change?" Headline: 69/70 accept, 1/70 reject (30_A bad-hull). Diagnostic-only — no production changes. | `tools/analyze_shadow_traces.py`, `tools/SHADOW_TRACE_ANALYSIS.md`, `tests/fixtures/shadow_trace_corpus.json`, `tests/test_analyze_shadow_traces.py` | open |
-| Claude | `claude/docs-scrub` | TBD | Cross-repo doc scrub (this PR): COORDINATION.md current-state refresh + Recently Shipped catch-up + Decision Log additions. ctvd CLAUDE.md hull-label section. cube-snap CLAUDE.md / PRD.md / README.md updates land in a sibling cube-snap PR. | `COORDINATION.md`, `CLAUDE.md` | open |
-| Codex | `codex/hull-label-shadow-validation` (local) | TBD | Shadow-mode validation of Tier 1 hull-label candidate against production traffic / corpus. Parallel concern to Claude's #292 analyzer. | TBD | in flight |
+| Claude | `claude/coordination-refresh` / `claude/readme-current-state` | TBD / TBD | This PR pair: COORDINATION.md current-state refresh (ctvd) + README.md v0.2 description + iOS phase update (cube-snap), catching up to 2026-05-26 reality after the color-repair / legality / scoreboard / threshold-selector wave. Doc-only. | `COORDINATION.md`, `README.md` | open |
 
 ### Proposed for Codex (please pick up or push back)
 
-- **Gate calibration in shadow mode against real traffic.** The 70-row corpus shadow-trace analyzer (#292) shows 69/70 accept + 1/70 reject (30_A on `projective_residual_norm`). 13 rows accepted-with-warnings cluster on `sticker_score_worst_face` (6) and `vertex_cloud_spread_px` (4). Before flipping the default from `shadow` → `prefer`: (1) collect shadow traces from production traffic to confirm distribution matches corpus, (2) validate gate accepts ARE the right rows (cross-reference vs ground-truth rectification quality), (3) decide whether the unexercised hard thresholds on `projective_residual_norm` and `sticker_score_total` need calibration against synthetic bad cases or wait for real-traffic data.
+- **Gate calibration in shadow mode against real traffic.** The 70-row corpus shadow-trace analyzer (#292) is the calibration baseline; current acceptance + accepted-with-warnings counts and gate distributions live in `tools/SHADOW_TRACE_ANALYSIS.md` (regenerates with the corpus — read it for current numbers rather than relying on this prose). Before flipping the default from `shadow` → `prefer`: (1) collect shadow traces from production traffic to confirm distribution matches corpus, (2) validate gate accepts ARE the right rows (cross-reference vs ground-truth rectification quality), (3) decide whether the unexercised hard thresholds on `projective_residual_norm` and `sticker_score_total` need calibration against synthetic bad cases or wait for real-traffic data.
 
 *(Either side: populate your row when you start something.)*
 
@@ -125,6 +150,16 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 ### Claude
 
+- **#328** — Use flipped B-side prefill in full-corner labeling gallery. Side B prefill now matches the corner order a human labeler sees in the 180°-rotated image (corner_0 at bottom-of-image, etc.); Side A defaults preserved. Pure labeling-tool ergonomics; production recognizer untouched.
+- **#327 / cube-snap #188** — Document audit-wrapper loud-failure contract (defensive comments at `post_pr_comment` call sites) + new CLAUDE.md sections in both repos codifying the 2026-05-26 constrained-cube-state-inference shift. The wrapper change is mirror-invariant; the CLAUDE.md updates are repo-specific.
+- **#326** — Legality repair probe on hull-label corpus. Conservative variant at 43/46 exact; broad variant at 46/46 exact (diagnostic upper-bound, NOT the production recognition number). Probe-only — no production wire-up.
+- **#325** — Post-repair scoreboard on 46-pair shadow corpus across 5 repair variants. Establishes the 0/46 → 20/46 → 42/46 → 43/46 → 46/46 progression as the calibration spine for graduating variants.
+- **#324** — Expose hull-label color repair draft as a deterministic API surface on the rectified samples. Foundation for #325 scoreboard + #326 legality probe.
+- **#323 / cube-snap #186** — Fix `run_codex_audit_pr.sh` silently swallowing Python failures. Wrapper's `finish_lock` was logging `status="completed"` on every run because `local rc; rc=$?` captures the exit of `local`, not the prior command. Structural fix; #327/#188 added defensive comments at the Python call sites.
+- **#321** — Claude session-start queue sweep hook (mirrored as cube-snap #185). On session resume, sweep both repos for `needs-claude-review` PRs and re-arm the audit-log monitor; closes the "monitor died, missed PR" failure mode.
+- **#316** — Label rectified LLM cells by WCA facelet. Center-color yaw inference + per-cell WCA labels in the rectified contact sheet handed to the cloud LLM.
+- **#315** — Harden rectified LLM yaw prep. Edge cases in the yaw inference path that previously silently produced mis-oriented contact sheets now raise or fall back deterministically.
+- **#292** — Shadow-trace analyzer for Tier 1 hull-label gates. `tools/analyze_shadow_traces.py` + `tools/SHADOW_TRACE_ANALYSIS.md` baseline + `tests/fixtures/shadow_trace_corpus.json` artifact. Headline: 69/70 accept, 1/70 reject (30_A bad-hull, caught by `projective_residual_norm`).
 - **#289** — Hybrid affine/projective vertex switch in `rectify_via_hull_labels` (normalized threshold + projective_residual_norm bad-input gate). Resolution-independent: `vertex_cloud_spread_norm > 0.26` switches to projective vertex. 69/70 corpus rectifications clean (was 68/70); 37_B recovered; 30_A still flagged via new `projective_residual_norm` hard gate (correct — bad hull input).
 - **#288** — Projective vertex via vanishing-point construction (diagnostic). `tools/projective_vertex.py` computes the analytically-correct cube-vertex from parallel-edge intersections; preserved as diagnostic before the #289 hybrid wiring decided when to use it.
 - **#286** — Schema rename `near_x/y/z` → `axis_x/y/z` in axis-truth + doc. Reader shims in 4 places preserve backward-compat; positions unchanged. Removes the misnomer that "near" labels actually sit at FAR-corner positions per side convention.
@@ -133,17 +168,6 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 - **#277/#278** — Hull-labels rectification standalone pipeline (`tools/rectify_via_hull_labels.py`): convention-aware silhouette → 6 corners → 3 face quads with per-side `SILHOUETTE_TO_CORNER` mapping derived from `FACE_DEFS_BY_SIDE`. Initial 12/12 oracle-quality on the full-corner corpus.
 - **#275** — Production-vs-oracle contact sheet for 12 oracle rows. Visual diagnostic that motivated the hull-labels pivot.
 - **#271** — Bezel-alignment second-signal chirality disambiguator (V4 with post-ensemble scoring). Production fix for Mode A near_far_phase failures.
-- **#268** — Axis-correctness diagnostic (Procrustes search + Procrustes chirality tiebreaker).
-- **#259** — Oracle-rectified-faces tool (diagnostic-only). Implements the design from #257.
-- **#256** — Yaw fixture for two-view consistency math.
-- **#255** — Pipeline phase-parity diagnostic.
-- **#249** — Two-view canonicalization v2 (carries canonicalized_deg + raw_deg + canon_gap_deg).
-- **#245** — Two-view consistency math fix: axis-of-rotation = single 180° around camera X.
-- **#243** — Two-view consistency primitive (math only, diagnostics-only).
-- **#235** — Greptile audit lane: labeler + workflow + protocol.
-- **#234** — Codex audit lane v1: CLI + labeler + workflow + protocol.
-- **#231** — Qwen v2 CLI with local-checkout context + chunking + strict severity. (Qwen lane subsequently paused — see CLAUDE.md.)
-- **#225** — Phase 1: cv-local baseline on the 58-case axis-labeled gallery.
 
 ### Infra (Devin-authored, mirrored across both repos)
 
@@ -170,6 +194,10 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 ## Decision Log
 
 Newest first. Each entry: date, decision, one-line why.
+
+- **2026-05-26** — **Architectural reframe: constrained cube-state inference, not LLM-as-oracle.** Codified in both repos' `CLAUDE.md` (ctvd #327 / cube-snap #188). The recognizer's job is to combine evidence sources (LLM color reads + hull-label rectified samples + deterministic color/legality repair + (next lever) two-view consistency on shared cubies) under cube-state constraints — not to clean up an LLM oracle. Empirical state on the 46-pair shadow corpus: a graduated set of repair variants (canonical-count → conservative-legal → guarded-broad → broad) covers the climb from a stuck baseline up to a `broad_legal_repaired` upper-bound. The upper-bound is a diagnostic ceiling, NOT the recognition number; the guarded slice is the first defensible promotion candidate. See `tools/HULL_LABEL_LEGAL_REPAIR_DIAGNOSTIC.md` for current exact-match counts. Open levers in approximate descending leverage: two-view consistency, Lab+LLM ensemble, confidence-gated auto-merge, graduating repair to default.
+
+- **2026-05-26** — **Color-repair / legality / scoreboard wave landed.** #324 exposes the deterministic color-conflict repair API on rectified hull-label samples; #325 establishes the multi-variant scoreboard as the calibration spine; #326 + #329 add the legality and guarded-broad probes; Codex #322 lands the production-shape mask threshold selector. Production recognizer default unchanged; these are the building blocks behind the constrained-inference reframe. Current scoreboard exact-match counts live in `tools/HULL_LABEL_LEGAL_REPAIR_DIAGNOSTIC.md`.
 
 - **2026-05-25** — **Hull-labels Tier 1 candidate path landed feature-flagged in `fit_global_cube_model` (Codex #291, default off).** Three modes (`off` / `shadow` / `prefer`) controlled by `CUBE_RECOGNIZER_HULL_LABEL_TIER1` env var. Operator handoff in `tools/HULL_LABEL_TIER1_WIRING.md`. The candidate path uses Claude's `tools/rectify_via_hull_labels.py` + acceptance gates; the dispatcher / feature flag is Codex's. **Empirical floor numbers pending PR #292** (shadow-trace analyzer, open at time of writing — first run shows 69/70 accept + 1/70 reject on 30_A bad-hull; will be cited here once #292 merges). **Next: gate calibration in shadow mode against real traffic before flipping `shadow → prefer` default.**
 

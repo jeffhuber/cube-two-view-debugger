@@ -100,7 +100,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -559,7 +559,7 @@
           "gate": {
             "accepted": false,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": null,
           "rejectedRepairChanges": 5,
@@ -997,7 +997,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -1418,7 +1418,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -1826,7 +1826,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -2235,7 +2235,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -2643,7 +2643,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -3052,7 +3052,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -3461,7 +3461,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -3870,7 +3870,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -4297,7 +4297,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -4705,7 +4705,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -5126,7 +5126,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -5534,7 +5534,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -5955,7 +5955,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -6370,7 +6370,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -6778,7 +6778,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -7186,7 +7186,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -7594,7 +7594,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -8002,7 +8002,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -8423,7 +8423,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -8831,7 +8831,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -9252,7 +9252,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -9679,7 +9679,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -10087,7 +10087,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -10496,7 +10496,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -10911,7 +10911,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -11332,7 +11332,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -11748,7 +11748,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -12156,7 +12156,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -12571,7 +12571,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -12987,7 +12987,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -13395,7 +13395,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -13803,7 +13803,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -14224,7 +14224,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -14646,7 +14646,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -15073,7 +15073,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -15520,25 +15520,21 @@
           ]
         },
         "guarded_broad_legal_repaired": {
-          "exactMatch": false,
+          "exactMatch": true,
           "gate": {
-            "accepted": false,
+            "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
-          "hamming": null,
-          "rejectedRepairChanges": 4,
-          "rejectedRepairCost": 19.5798,
-          "repairChanges": null,
-          "repairCost": null,
+          "hamming": 0,
+          "repairChanges": 4,
+          "repairCost": 19.5798,
           "sourceMode": "grid_sample",
-          "state": null,
-          "status": "rejected_guarded_broad_legal_repair",
-          "stickersCorrect": null,
-          "validState": false,
-          "validationErrors": [
-            "not_assembled"
-          ]
+          "state": "LBBBUUUBRULLRRLFFRFRBFFFDFDLLRUDUDBUDDLRLDBRFUUBDBDFLR",
+          "status": "accepted_guarded_broad_legal_repair",
+          "stickersCorrect": 54,
+          "validState": true,
+          "validationErrors": []
         }
       },
       "panelMeta": {
@@ -15961,7 +15957,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -16382,7 +16378,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -16821,7 +16817,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -17266,7 +17262,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 1,
@@ -17705,7 +17701,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -18401,7 +18397,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -18871,7 +18867,7 @@
           "gate": {
             "accepted": true,
             "maxRepairChanges": 4,
-            "maxRepairCost": 16.0
+            "maxRepairCost": 20.0
           },
           "hamming": 0,
           "repairChanges": 0,
@@ -19226,8 +19222,8 @@
   ],
   "schema": "hull_label_legal_repair_diagnostic_v1",
   "source": {
-    "generated_at_utc": "2026-05-26T18:42:03.495986+00:00",
-    "git_sha": "43266e6da4b6be515414c006d282cc8ecd249fbd",
+    "generated_at_utc": "2026-05-26T18:53:39.976983+00:00",
+    "git_sha": "f699ebf11f54c36bac702db2f52a3089a7fedcc5",
     "manifest": "tests/fixtures/corpus_manifest.json",
     "tool": "tools/diagnose_hull_label_legal_repair.py"
   },
@@ -19278,16 +19274,16 @@
       },
       "guarded_broad_legal_repaired": {
         "assembled": 45,
-        "exact": 43,
+        "exact": 44,
         "hammingDistribution": {
-          "0": 43
+          "0": 44
         },
-        "legal": 43,
-        "maxRepairChanges": 1,
-        "medianHamming": 0,
-        "medianRepairChanges": 0,
+        "legal": 44,
+        "maxRepairChanges": 4,
+        "medianHamming": 0.0,
+        "medianRepairChanges": 0.0,
         "medianRepairCost": 0.0,
-        "within3": 43
+        "within3": 44
       }
     },
     "pairCount": 46

@@ -6,8 +6,8 @@ This diagnostic probes the next constraint layer after deterministic
 9-per-color count repair: cubie legality. It reuses the existing
 recognizer cubie repair helper on hull-label rectified Lab evidence.
 
-Git head: `43266e6da4b6be515414c006d282cc8ecd249fbd`
-Generated: `2026-05-26T18:42:03.495986+00:00`
+Git head: `f699ebf11f54c36bac702db2f52a3089a7fedcc5`
+Generated: `2026-05-26T18:53:39.976983+00:00`
 
 ## Summary
 
@@ -15,7 +15,7 @@ Generated: `2026-05-26T18:42:03.495986+00:00`
 |---|---:|---:|---:|---:|---:|---|---:|---:|---:|
 | `canonical_count_repaired` | 45 | 42 | 42 | 44 | 0 | `{0: 42, 2: 1, 3: 1, 4: 1}` | None | None | None |
 | `conservative_legal_repaired` | 45 | 43 | 43 | 43 | 0 | `{0: 43}` | 0.0 | 0 | 1 |
-| `guarded_broad_legal_repaired` | 45 | 43 | 43 | 43 | 0 | `{0: 43}` | 0.0 | 0 | 1 |
+| `guarded_broad_legal_repaired` | 45 | 44 | 44 | 44 | 0.0 | `{0: 44}` | 0.0 | 0.0 | 4 |
 | `broad_legal_repaired` | 45 | 45 | 44 | 44 | 0 | `{0: 44, 4: 1}` | 0.0 | 0 | 5 |
 
 ## Interpretation
@@ -27,7 +27,7 @@ Generated: `2026-05-26T18:42:03.495986+00:00`
   proves the true legal state is rankable by existing constraints, but
   it still needs cost/change/margin gates before production use.
 - Guarded broad repair applies a provisional no-ground-truth gate to that
-  same broad result: repair cost <= 16
+  same broad result: repair cost <= 20
   and repair changes <= 4. This is still
   diagnostic, but it estimates the slice that looks safe enough to consider
   for production confidence gating.
@@ -40,6 +40,6 @@ Generated: `2026-05-26T18:42:03.495986+00:00`
 | Set | Count hamming | Conservative hamming | Conservative status | Guarded hamming | Guarded status | Broad hamming | Broad cost | Broad changes |
 |---:|---:|---:|---|---:|---|---:|---:|---:|
 | 14 | 4 | None | `no_legal_repair` | None | `rejected_guarded_broad_legal_repair` | 4 | 26.6913 | 5 |
-| 65 | 2 | None | `no_legal_repair` | None | `rejected_guarded_broad_legal_repair` | 0 | 19.5798 | 4 |
+| 65 | 2 | None | `no_legal_repair` | 0 | `accepted_guarded_broad_legal_repair` | 0 | 19.5798 | 4 |
 | 69 | 3 | 0 | `legal_repair_found` | 0 | `accepted_guarded_broad_legal_repair` | 0 | 3.1484 | 1 |
 | 71 | None | None | `None` | None | `None` | None | None | None |

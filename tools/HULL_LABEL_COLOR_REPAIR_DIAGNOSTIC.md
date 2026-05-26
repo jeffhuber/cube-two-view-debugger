@@ -8,8 +8,8 @@ same slot/yaw WCA assignment as the hull-label path, then compares
 plain Lab nearest-color classification, center forcing, exact
 9-per-color count repair, and guarded cubie-legality repair.
 
-Git head: `43266e6da4b6be515414c006d282cc8ecd249fbd`
-Generated: `2026-05-26T18:46:30.098234+00:00`
+Git head: `f699ebf11f54c36bac702db2f52a3089a7fedcc5`
+Generated: `2026-05-26T18:52:49.694503+00:00`
 
 ## Headline
 
@@ -26,13 +26,13 @@ mostly-correct panels to mostly-exact cubes:
 | `canonical_center_forced` | 45 | 18 | 18 | 51.82 | 1 | `{0: 18, 1: 5, 2: 9, 3: 3, 4: 2, 5: 2, 6: 1, 7: 2, 9: 2, 10: 1}` |
 | `canonical_count_repaired` | 45 | 42 | 42 | 53.8 | 0 | `{0: 42, 2: 1, 3: 1, 4: 1}` |
 | `conservative_legal_repaired` | 45 | 43 | 43 | 54 | 0 | `{0: 43}` |
-| `guarded_broad_legal_repaired` | 45 | 43 | 43 | 54 | 0 | `{0: 43}` |
+| `guarded_broad_legal_repaired` | 45 | 44 | 44 | 54 | 0.0 | `{0: 44}` |
 | `adaptive` | 45 | 19 | 19 | 51.82 | 1 | `{0: 19, 1: 5, 2: 6, 3: 7, 4: 2, 5: 2, 7: 1, 11: 1, 12: 2}` |
 | `adaptive_count_repaired` | 45 | 36 | 36 | 52.87 | 0 | `{0: 36, 2: 4, 4: 1, 6: 1, 8: 1, 11: 1, 14: 1}` |
 
 `canonical_count_repaired` is the stable deterministic baseline:
 42/45 exact/legal, 44/45 within 3 stickers, and only 1 row above 3 stickers.
-The payload's recommended-method selector is now 43/45 exact with hamming distribution `{0: 43, 2: 1, 4: 1}`.
+The payload's recommended-method selector is now 44/45 exact with hamming distribution `{0: 44, 4: 1}`.
 
 ## Full Summary By Yaw Source
 
@@ -42,7 +42,7 @@ The payload's recommended-method selector is now 43/45 exact with hamming distri
 | `ground_truth_captureYaw` | `canonical_center_forced` | 13 | 3 | 3 | 51.62 | 2 |
 | `ground_truth_captureYaw` | `canonical_count_repaired` | 13 | 11 | 11 | 53.62 | 0 |
 | `ground_truth_captureYaw` | `conservative_legal_repaired` | 13 | 12 | 12 | 54 | 0.0 |
-| `ground_truth_captureYaw` | `guarded_broad_legal_repaired` | 13 | 12 | 12 | 54 | 0.0 |
+| `ground_truth_captureYaw` | `guarded_broad_legal_repaired` | 13 | 13 | 13 | 54 | 0 |
 | `ground_truth_captureYaw` | `adaptive` | 13 | 3 | 3 | 50.54 | 3 |
 | `ground_truth_captureYaw` | `adaptive_center_forced` | 13 | 3 | 3 | 50.54 | 3 |
 | `ground_truth_captureYaw` | `adaptive_count_repaired` | 13 | 7 | 7 | 51.69 | 0 |
@@ -50,7 +50,7 @@ The payload's recommended-method selector is now 43/45 exact with hamming distri
 | `hull_label_center_colors` | `canonical_center_forced` | 45 | 18 | 18 | 51.82 | 1 |
 | `hull_label_center_colors` | `canonical_count_repaired` | 45 | 42 | 42 | 53.8 | 0 |
 | `hull_label_center_colors` | `conservative_legal_repaired` | 45 | 43 | 43 | 54 | 0 |
-| `hull_label_center_colors` | `guarded_broad_legal_repaired` | 45 | 43 | 43 | 54 | 0 |
+| `hull_label_center_colors` | `guarded_broad_legal_repaired` | 45 | 44 | 44 | 54 | 0.0 |
 | `hull_label_center_colors` | `adaptive` | 45 | 19 | 19 | 51.82 | 1 |
 | `hull_label_center_colors` | `adaptive_center_forced` | 45 | 19 | 19 | 51.84 | 1 |
 | `hull_label_center_colors` | `adaptive_count_repaired` | 45 | 36 | 36 | 52.87 | 0 |
@@ -120,7 +120,7 @@ The payload's recommended-method selector is now 43/45 exact with hamming distri
 | 62 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical_count_repaired` | 0 | 2 | 0 | 0 | 2 | `assembled` |
 | 63 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 2 | 0 | 0 | 0 | `assembled` |
 | 64 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 3 | 0 | 0 | 0 | `assembled` |
-| 65 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical_count_repaired` | 2 | 7 | 2 | None | 4 | `assembled` |
+| 65 | `hull_label_center_colors` | `guarded_broad_legal_repaired` | `guarded_broad_legal_repaired` | 0 | 7 | 2 | 0 | 4 | `assembled` |
 | 66 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 4 | 0 | 0 | 0 | `assembled` |
 | 67 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 2 | 0 | 0 | 0 | `assembled` |
 | 68 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 5 | 0 | 0 | 0 | `assembled` |
@@ -139,7 +139,7 @@ The payload's recommended-method selector is now 43/45 exact with hamming distri
   with the production-like yaw source. This supersedes the older
   20/46 exact headline for raw hull-label `prefer` panels.
 - Guarded cubie-legality repair is now part of the color-repair payload:
-  it is 43/45 exact here and exposes
+  it is 44/45 exact here and exposes
   conservative and guarded-broad legal candidates, while the
   ungated broad legal candidate remains diagnostic-only.
 - Canonical Lab count repair beats the adaptive-palette count repair in

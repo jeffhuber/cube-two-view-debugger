@@ -56,7 +56,7 @@ from tools.hull_label_color_repair import (  # noqa: E402
 
 DEFAULT_OUT = REPO_ROOT / "tests" / "fixtures" / "hull_label_legal_repair_diagnostic.json"
 DEFAULT_REPORT = REPO_ROOT / "tools" / "HULL_LABEL_LEGAL_REPAIR_DIAGNOSTIC.md"
-GUARDED_BROAD_MAX_REPAIR_COST = 16.0
+GUARDED_BROAD_MAX_REPAIR_COST = 20.0
 GUARDED_BROAD_MAX_REPAIR_CHANGES = 4
 
 

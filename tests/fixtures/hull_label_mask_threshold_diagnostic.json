@@ -896,8 +896,8 @@
   ],
   "schema": "hull_label_mask_threshold_diagnostic_v1",
   "source": {
-    "generated_at_utc": "2026-05-26T04:57:01.860908+00:00",
-    "git_sha": "942bdfa89bb958426845f1e5d5489f0a28566553",
+    "generated_at_utc": "2026-05-26T06:53:35.910152+00:00",
+    "git_sha": "13b470fe728e0e818260fa4918184a13b79b70f7",
     "manifest": "tests/fixtures/corpus_manifest.json",
     "thresholds": [
       64,

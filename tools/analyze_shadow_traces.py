@@ -27,7 +27,8 @@ It complements but doesn't duplicate ``measure_hull_labels_corpus.py``:
 Pipeline per row:
   1. EXIF-correct + resize image (``_processing_image``).
   2. rembg silhouette (cached session across the corpus).
-  3. Call ``_fit_hull_label_tier1_model(image, mask, side=side,
+  3. Call the production-shaped alpha-threshold selector via
+     ``_fit_hull_label_tier1_model_from_alpha(image, alpha, side=side,
      mode="shadow")`` to get (model_or_none, trace).
   4. Aggregate trace by status / hard_failures / vertex_source /
      side. Surface the rejected-with-clean-rectification cases for
@@ -66,7 +67,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from tools.diagnose_pipeline_phase_parity import _processing_image  # noqa: E402
-from tools.global_cube_model import _fit_hull_label_tier1_model  # noqa: E402
+from tools.global_cube_model import _fit_hull_label_tier1_model_from_alpha  # noqa: E402
 from tools.measure_axis_correctness import (  # noqa: E402
     _candidate_image_roots,
     _resolve_image_path,
@@ -151,11 +152,10 @@ def analyze_row(
         image, _scale = _processing_image(image_path, max_image_dim)
         rgba = remove(image, session=sess)
         alpha = np.array(rgba.split()[-1], dtype=np.uint8)
-        mask = alpha > 128
         # Convert PIL → np.ndarray for the Tier 1 helper.
         image_rgb = np.array(image.convert("RGB"), dtype=np.uint8)
-        _model, trace = _fit_hull_label_tier1_model(
-            image_rgb, mask, side=side, mode="shadow",
+        _model, trace = _fit_hull_label_tier1_model_from_alpha(
+            image_rgb, alpha, side=side, mode="shadow",
         )
     except Exception as exc:  # noqa: BLE001
         rec["status"] = "harness_error"

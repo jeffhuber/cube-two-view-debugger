@@ -8,30 +8,30 @@ same slot/yaw WCA assignment as the hull-label path, then compares
 plain Lab nearest-color classification, center forcing, and exact
 9-per-face count repair.
 
-Git head: `8f8cf23d3a063e6cfc2a1d5072a5314716f8ac0d`
-Generated: `2026-05-26T04:36:43.058103+00:00`
+Git head: `13b470fe728e0e818260fa4918184a13b79b70f7`
+Generated: `2026-05-26T06:53:47.958235+00:00`
 
 ## Summary
 
 | Yaw source | Method | Assembled | Exact | Legal | Mean stickers | Median hamming |
 |---|---|---:|---:|---:|---:|---:|
-| `ground_truth_captureYaw` | `canonical` | 1 | 0 | 0 | 48 | 6 |
-| `ground_truth_captureYaw` | `canonical_center_forced` | 1 | 0 | 0 | 48 | 6 |
-| `ground_truth_captureYaw` | `canonical_count_repaired` | 1 | 0 | 0 | 51 | 3 |
-| `ground_truth_captureYaw` | `adaptive` | 1 | 0 | 0 | 42 | 12 |
-| `ground_truth_captureYaw` | `adaptive_center_forced` | 1 | 0 | 0 | 42 | 12 |
-| `ground_truth_captureYaw` | `adaptive_count_repaired` | 1 | 0 | 0 | 40 | 14 |
-| `hull_label_center_colors` | `canonical` | 3 | 0 | 0 | 45 | 10 |
-| `hull_label_center_colors` | `canonical_center_forced` | 3 | 0 | 0 | 45 | 10 |
-| `hull_label_center_colors` | `canonical_count_repaired` | 3 | 0 | 0 | 51 | 3 |
-| `hull_label_center_colors` | `adaptive` | 3 | 0 | 0 | 48 | 3 |
-| `hull_label_center_colors` | `adaptive_center_forced` | 3 | 0 | 0 | 48 | 3 |
-| `hull_label_center_colors` | `adaptive_count_repaired` | 3 | 1 | 1 | 48.67 | 2 |
-| `white_up_default` | `canonical` | 3 | 0 | 0 | 45 | 10 |
-| `white_up_default` | `canonical_center_forced` | 3 | 0 | 0 | 45 | 10 |
-| `white_up_default` | `canonical_count_repaired` | 3 | 1 | 1 | 52 | 2 |
-| `white_up_default` | `adaptive` | 3 | 0 | 0 | 50.67 | 3 |
-| `white_up_default` | `adaptive_center_forced` | 3 | 0 | 0 | 50.67 | 3 |
+| `ground_truth_captureYaw` | `canonical` | 2 | 0 | 0 | 45 | 9.0 |
+| `ground_truth_captureYaw` | `canonical_center_forced` | 2 | 0 | 0 | 45.5 | 8.5 |
+| `ground_truth_captureYaw` | `canonical_count_repaired` | 2 | 0 | 0 | 49.5 | 4.5 |
+| `ground_truth_captureYaw` | `adaptive` | 2 | 0 | 0 | 40.5 | 13.5 |
+| `ground_truth_captureYaw` | `adaptive_center_forced` | 2 | 0 | 0 | 41 | 13.0 |
+| `ground_truth_captureYaw` | `adaptive_count_repaired` | 2 | 0 | 0 | 38.5 | 15.5 |
+| `hull_label_center_colors` | `canonical` | 5 | 0 | 0 | 45.2 | 10 |
+| `hull_label_center_colors` | `canonical_center_forced` | 5 | 0 | 0 | 45.4 | 10 |
+| `hull_label_center_colors` | `canonical_count_repaired` | 5 | 2 | 2 | 51.8 | 2 |
+| `hull_label_center_colors` | `adaptive` | 5 | 0 | 0 | 47 | 4 |
+| `hull_label_center_colors` | `adaptive_center_forced` | 5 | 0 | 0 | 47.2 | 4 |
+| `hull_label_center_colors` | `adaptive_count_repaired` | 5 | 2 | 2 | 47.4 | 2 |
+| `white_up_default` | `canonical` | 3 | 0 | 0 | 45.33 | 10 |
+| `white_up_default` | `canonical_center_forced` | 3 | 0 | 0 | 45.33 | 10 |
+| `white_up_default` | `canonical_count_repaired` | 3 | 2 | 2 | 53.33 | 0 |
+| `white_up_default` | `adaptive` | 3 | 0 | 0 | 51.33 | 2 |
+| `white_up_default` | `adaptive_center_forced` | 3 | 0 | 0 | 51.33 | 2 |
 | `white_up_default` | `adaptive_count_repaired` | 3 | 2 | 2 | 53.33 | 0 |
 
 ## Sets 69-73
@@ -39,9 +39,9 @@ Generated: `2026-05-26T04:36:43.058103+00:00`
 | Set | Preferred yaw source | Best method | Best hamming | Canonical hamming | Adaptive+count hamming | Status |
 |---:|---|---|---:|---:|---:|---|
 | 69 | `ground_truth_captureYaw` | `canonical_count_repaired` | 3 | 6 | 14 | `assembled` |
-| 70 | `ground_truth_captureYaw` | `n/a` | n/a | None | None | `sample_failed` |
+| 70 | `ground_truth_captureYaw` | `canonical_count_repaired` | 6 | 12 | 17 | `assembled` |
 | 71 | `white_up_default` | `adaptive_count_repaired` | 0 | 6 | 0 | `assembled` |
-| 72 | `white_up_default` | `adaptive_count_repaired` | 2 | 11 | 2 | `assembled` |
+| 72 | `white_up_default` | `adaptive` | 2 | 10 | 2 | `assembled` |
 | 73 | `white_up_default` | `adaptive_count_repaired` | 0 | 10 | 0 | `assembled` |
 
 ## Current Run Notes
@@ -54,9 +54,10 @@ Generated: `2026-05-26T04:36:43.058103+00:00`
 - Set 69 improves under canonical count repair but adaptive-center repair
   is worse, which is useful evidence that adaptive palettes should be
   gated rather than blindly preferred.
-- Set 70 does not reach color repair because its A-side hull-label model
-  is rejected by the existing acceptance gates. That is the right failure
-  class: do not count-repair bad geometry.
+- Set 70 now reaches color repair after the mask-threshold selector, but still
+  lands six stickers from GT under canonical count repair. That is an
+  important distinction: the selector fixed the geometry gate; the remaining
+  failure is panel/color quality.
 - The muddy side-face panels in these rows are photometric failures,
   not rembg failures. rembg supplies the silhouette mask; the rectified
   panels sample the original RGB image. Grazing side faces stretch shadow,

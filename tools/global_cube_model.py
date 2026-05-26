@@ -493,6 +493,102 @@ def _fit_hull_label_tier1_model(
         )
 
 
+def _fit_hull_label_tier1_model_from_alpha(
+    image_rgb: Optional[np.ndarray],
+    alpha: np.ndarray,
+    *,
+    side: Optional[str],
+    mode: str,
+    thresholds: Optional[Sequence[int]] = None,
+) -> Tuple[Optional[GlobalCubeModel], Dict[str, Any]]:
+    """Attempt hull-label Tier 1 using a small alpha-threshold candidate set.
+
+    This is the production-shaped selector for the rembg silhouette path. It
+    keeps the old single-rembg-call behavior, but avoids hard-coding
+    ``alpha > 128`` when shadows or background edges make a neighboring
+    threshold produce cleaner hull geometry.
+    """
+    if mode == "off":
+        return None, _hull_label_trace_payload(side=side, mode=mode, status="disabled")
+    if side not in {"A", "B"}:
+        return None, _hull_label_trace_payload(
+            side=side,
+            mode=mode,
+            status="skipped_missing_or_unsupported_side",
+            error="hull_label_side must be 'A' or 'B'",
+        )
+    if image_rgb is None:
+        return None, _hull_label_trace_payload(
+            side=side,
+            mode=mode,
+            status="skipped_no_image",
+            error="image_rgb is required for hull-label sticker scoring",
+        )
+
+    try:
+        from PIL import Image
+        from tools.rectify_via_hull_labels import (
+            DEFAULT_MASK_THRESHOLDS,
+            select_hull_label_threshold_fit,
+        )
+
+        image = Image.fromarray(np.asarray(image_rgb, dtype=np.uint8)).convert("RGB")
+        selection = select_hull_label_threshold_fit(
+            image,
+            alpha,
+            side,
+            thresholds=thresholds or DEFAULT_MASK_THRESHOLDS,
+        )
+        if selection.fit is None:
+            trace = _hull_label_trace_payload(
+                side=side,
+                mode=mode,
+                status="rejected",
+                selected=False,
+                error="no alpha threshold candidate accepted",
+            )
+            trace.update(selection.trace)
+            trace["side"] = side
+            trace["mode"] = mode
+            trace["selected"] = False
+            return None, trace
+
+        fit = selection.fit
+        score = selection.score or {}
+        decision = selection.decision
+        vertex_estimates = selection.vertex_estimates or []
+        slot_center_faces = _slot_center_faces_from_rectified(fit.rectified_faces)
+        trace = _hull_label_trace_payload(
+            side=side,
+            mode=mode,
+            status="accepted",
+            selected=mode == "prefer",
+            decision=decision,
+            score=score,
+            fit=fit,
+            slot_center_faces=slot_center_faces,
+            vertex_estimates=vertex_estimates,
+        )
+        trace.update({
+            "selected_mask_threshold": selection.threshold,
+            "thresholds": list(selection.trace.get("thresholds") or []),
+            "threshold_candidates": list(selection.trace.get("threshold_candidates") or []),
+            "best_any_threshold": selection.trace.get("best_any_threshold"),
+            "best_any_accepted": selection.trace.get("best_any_accepted"),
+            "best_any_score": selection.trace.get("best_any_score"),
+        })
+        return _global_model_from_hull_label_fit(
+            fit, side, score=score, decision=decision, trace=trace,
+        ), trace
+    except Exception as exc:  # noqa: BLE001
+        return None, _hull_label_trace_payload(
+            side=side,
+            mode=mode,
+            status="error",
+            error=f"{type(exc).__name__}: {exc}",
+        )
+
+
 # ----------------- anchor point detection -----------------
 
 

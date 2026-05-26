@@ -20,7 +20,7 @@ ground-truth rows (per the empirical comparison in
 ## Pipeline
 
 1. rembg silhouette (production rembg path: `remove(image, session=sess)`
-   → alpha channel → mask > 128)
+   → alpha channel → mask threshold selector)
 2. `detect_hexagon_anchors(mask)` → 6 hull-extreme corners
 3. Label corners by silhouette position (TOP, upper-right, lower-right,
    BOTTOM, lower-left, upper-left) via `_label_corners_by_position`
@@ -75,7 +75,7 @@ import sys
 import traceback
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 import datetime as _dt
 
 import numpy as np
@@ -103,6 +103,7 @@ DEFAULT_REPORT = REPO_ROOT / "tools" / "RECTIFY_VIA_HULL_LABELS_REPORT.md"
 DEFAULT_GALLERY_DIR = Path("/tmp/rectify_via_hull_labels")
 DEFAULT_MAX_IMAGE_DIM = 1600
 DEFAULT_FACE_SIZE_PX = 300
+DEFAULT_MASK_THRESHOLDS = (64, 128, 160, 192, 224)
 
 
 # Per-side silhouette-position → corner-number mapping. Derived from
@@ -187,6 +188,19 @@ class RectifiedFit:
     vertex_source: Optional[str] = None
     """`"affine"` or `"projective"` — which candidate the spread-gate
     selected for the active `vertex`."""
+
+
+@dataclass
+class ThresholdFitSelection:
+    """Result of trying multiple rembg alpha thresholds for one side."""
+
+    fit: Optional[RectifiedFit]
+    threshold: Optional[int]
+    candidates: List[Dict[str, Any]]
+    decision: Optional[Any]
+    score: Optional[Dict[str, Any]]
+    vertex_estimates: Optional[List[Point]]
+    trace: Dict[str, Any]
 
 
 def _label_corners_by_position(
@@ -378,9 +392,10 @@ def rectify_via_hull_labels(
     rectified faces. Returns None on failure (e.g. <6 hexagon corners).
 
     `image` must be the processing-resolution PIL image; `mask` the
-    rembg silhouette mask (boolean array, same H×W as image) — caller
-    is responsible for choosing the rembg path (production uses
-    `remove(image, session=sess)` → split RGBA → alpha > 128).
+    rembg silhouette mask (boolean array, same H×W as image). Callers
+    that have the raw rembg alpha channel should prefer
+    ``select_hull_label_threshold_fit`` so the production-shaped path can
+    choose among the calibrated candidate alpha thresholds.
 
     The vertex is selected by ``_choose_hybrid_vertex`` — affine
     (parallelogram completion mean) by default, projective (vanishing-
@@ -450,6 +465,195 @@ def _score_rectified_faces(faces: Dict[str, Image.Image]) -> Dict[str, Any]:
     }
 
 
+def _threshold_candidate_sort_key(candidate: Mapping[str, Any]) -> Tuple[float, int]:
+    score = candidate.get("sticker_score_total")
+    numeric_score = float(score) if isinstance(score, (int, float)) else float("inf")
+    return numeric_score, int(candidate.get("threshold", 9999))
+
+
+def choose_best_threshold_candidate(
+    candidates: Sequence[Mapping[str, Any]],
+    *,
+    accepted_only: bool,
+) -> Optional[Mapping[str, Any]]:
+    """Choose the lowest sticker-score candidate, optionally after gates.
+
+    This is deliberately the same policy as the mask-threshold diagnostic:
+    prefer a candidate that passed the existing hull-label acceptance gates;
+    use the rejected pool only for telemetry when nothing passed.
+    """
+    pool = [row for row in candidates if row.get("accepted")] if accepted_only else list(candidates)
+    if not pool:
+        return None
+    return min(pool, key=_threshold_candidate_sort_key)
+
+
+def _threshold_candidate_from_fit(
+    *,
+    threshold: int,
+    side: str,
+    fit: RectifiedFit,
+) -> Tuple[Dict[str, Any], Any, Dict[str, Any], List[Point]]:
+    from tools.hull_label_acceptance import evaluate_hull_label_acceptance
+
+    _affine_vertex, vertex_estimates = _derive_vertex_from_corners(
+        fit.corners_by_num, side,
+    )
+    score = _score_rectified_faces(fit.rectified_faces)
+    decision = evaluate_hull_label_acceptance(
+        side=side,
+        hexagon_corner_count=6,
+        vertex_estimates=vertex_estimates,
+        rectified_face_slots=fit.rectified_faces.keys(),
+        sticker_score_total=float(score["total_distance"]),
+        sticker_score_per_face=score["per_face"],
+        projective_residual_norm=fit.projective_residual_norm,
+    )
+    candidate = {
+        "threshold": int(threshold),
+        "status": "accepted" if decision.accepted else "rejected",
+        "accepted": bool(decision.accepted),
+        "vertex_source": fit.vertex_source,
+        "sticker_score_total": score.get("total_distance"),
+        "sticker_score_per_face": score.get("per_face"),
+        "mean_sticker_distance": score.get("mean_sticker_distance"),
+        "vertex_cloud_spread_px": fit.vertex_cloud_spread_px,
+        "vertex_cloud_spread_norm": fit.vertex_cloud_spread_norm,
+        "hexagon_diameter_px": fit.hexagon_diameter_px,
+        "projective_residual_norm": fit.projective_residual_norm,
+        "projective_degeneracy": fit.projective_degeneracy,
+        "hard_failures": list(decision.hard_failures),
+        "warnings": list(decision.warnings),
+    }
+    return candidate, decision, score, vertex_estimates
+
+
+def _threshold_failure_candidate(
+    threshold: int,
+    status: str,
+    message: str,
+) -> Dict[str, Any]:
+    return {
+        "threshold": int(threshold),
+        "status": status,
+        "accepted": False,
+        "sticker_score_total": None,
+        "mean_sticker_distance": None,
+        "hard_failures": [message],
+        "warnings": [],
+    }
+
+
+def select_hull_label_threshold_fit(
+    image: Image.Image,
+    alpha: np.ndarray,
+    side: str,
+    *,
+    thresholds: Sequence[int] = DEFAULT_MASK_THRESHOLDS,
+    face_size_px: int = DEFAULT_FACE_SIZE_PX,
+) -> ThresholdFitSelection:
+    """Try multiple rembg alpha thresholds and choose the best accepted fit.
+
+    The old production-shaped path used a single ``alpha > 128`` mask. Set 70
+    showed that shadows can distort that mask enough to poison the hull. This
+    selector runs rembg once, tries a small threshold set, applies the existing
+    hull-label gates to each candidate, and returns the lowest sticker-score
+    candidate among accepted fits. If no threshold passes the gates, callers
+    should fall back to the legacy path.
+    """
+    if not thresholds:
+        raise ValueError("thresholds must contain at least one alpha value")
+
+    fit_by_threshold: Dict[int, RectifiedFit] = {}
+    decision_by_threshold: Dict[int, Any] = {}
+    score_by_threshold: Dict[int, Dict[str, Any]] = {}
+    estimates_by_threshold: Dict[int, List[Point]] = {}
+    candidates: List[Dict[str, Any]] = []
+
+    for raw_threshold in thresholds:
+        threshold = int(raw_threshold)
+        mask = np.asarray(alpha, dtype=np.uint8) > threshold
+        if not mask.any():
+            candidates.append(
+                _threshold_failure_candidate(threshold, "rejected", "empty cube mask")
+            )
+            continue
+
+        fit = rectify_via_hull_labels(image, mask, side, face_size_px=face_size_px)
+        if fit is None:
+            candidates.append(
+                _threshold_failure_candidate(
+                    threshold,
+                    "rejected",
+                    "rectify_via_hull_labels returned None",
+                )
+            )
+            continue
+
+        candidate, decision, score, vertex_estimates = _threshold_candidate_from_fit(
+            threshold=threshold,
+            side=side,
+            fit=fit,
+        )
+        candidates.append(candidate)
+        fit_by_threshold[threshold] = fit
+        decision_by_threshold[threshold] = decision
+        score_by_threshold[threshold] = score
+        estimates_by_threshold[threshold] = vertex_estimates
+
+    best_any = choose_best_threshold_candidate(candidates, accepted_only=False)
+    best_accepted = choose_best_threshold_candidate(candidates, accepted_only=True)
+    selected_threshold = (
+        int(best_accepted["threshold"]) if best_accepted is not None else None
+    )
+    trace: Dict[str, Any] = {
+        "thresholds": [int(value) for value in thresholds],
+        "threshold_candidates": candidates,
+        "best_any_threshold": int(best_any["threshold"]) if best_any is not None else None,
+        "best_any_accepted": bool(best_any and best_any.get("accepted")),
+        "best_any_score": (
+            best_any.get("sticker_score_total") if best_any is not None else None
+        ),
+        "selected_mask_threshold": selected_threshold,
+    }
+
+    if selected_threshold is None:
+        trace.update({
+            "status": "rejected",
+            "accepted": False,
+            "hard_failures": ["no alpha threshold candidate accepted"],
+            "warnings": [],
+        })
+        if best_any is not None:
+            trace["best_any_hard_failures"] = list(best_any.get("hard_failures") or [])
+            trace["best_any_warnings"] = list(best_any.get("warnings") or [])
+        return ThresholdFitSelection(
+            fit=None,
+            threshold=None,
+            candidates=candidates,
+            decision=None,
+            score=None,
+            vertex_estimates=None,
+            trace=trace,
+        )
+
+    chosen = fit_by_threshold[selected_threshold]
+    selected_candidate = next(
+        row for row in candidates if int(row.get("threshold", -1)) == selected_threshold
+    )
+    trace.update(selected_candidate)
+    trace["selected_mask_threshold"] = selected_threshold
+    return ThresholdFitSelection(
+        fit=chosen,
+        threshold=selected_threshold,
+        candidates=candidates,
+        decision=decision_by_threshold[selected_threshold],
+        score=score_by_threshold[selected_threshold],
+        vertex_estimates=estimates_by_threshold[selected_threshold],
+        trace=trace,
+    )
+
+
 def evaluate_row(
     sess: Any,
     key: str,
@@ -465,11 +669,14 @@ def evaluate_row(
         image, scale = _processing_image(image_path, max_image_dim)
         rgba = remove(image, session=sess)
         alpha = np.array(rgba.split()[-1], dtype=np.uint8)
-        mask = alpha > 128
-        fit = rectify_via_hull_labels(image, mask, side)
+        selection = select_hull_label_threshold_fit(image, alpha, side)
+        fit = selection.fit
         if fit is None:
-            rec.update({"status": "no_hexagon",
-                        "error": "detect_hexagon_anchors returned <6"})
+            rec.update({
+                "status": "no_accepted_threshold",
+                "error": "no alpha threshold candidate accepted",
+                "threshold_trace": selection.trace,
+            })
             return rec
         # Compare against ground truth
         gt_vertex = (truth_row["vertex"][0] * scale, truth_row["vertex"][1] * scale)
@@ -506,6 +713,8 @@ def evaluate_row(
             )
         rec.update({
             "status": "rectified",
+            "selected_mask_threshold": selection.threshold,
+            "threshold_candidates": selection.candidates,
             "labeling_mean_corner_err_px": round(mean_corner_err, 1),
             "per_corner_err_px": per_corner_err,
             "derived_vertex_error_processing_px": round(vertex_err, 1),

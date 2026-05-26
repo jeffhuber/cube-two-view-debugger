@@ -13,7 +13,7 @@ This tool answers: **does the hull-labels approach hold up on the
 ``tools/measure_axis_correctness.py``)?
 
 Pipeline per row:
-  1. Run ``rectify_via_hull_labels`` with the production rembg path.
+  1. Run the production-shaped alpha-threshold selector with the rembg alpha.
   2. Classify into a failure bucket:
        - ``mask_failure``     : rembg + ``detect_hexagon_anchors``
          couldn't return 6 hull corners
@@ -80,11 +80,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from rubik_recognizer.colors import classify_rgb  # noqa: E402
-from tools.corner_conventions import (  # noqa: E402
-    FACE_DEFS_BY_SIDE,
-    FAR_CORNERS_BY_SIDE,
-    ONE_EDGE_CORNERS_BY_SIDE,
-)
+from tools.corner_conventions import FAR_CORNERS_BY_SIDE  # noqa: E402
 from tools.diagnose_pipeline_phase_parity import _processing_image  # noqa: E402
 from tools.measure_axis_correctness import (  # noqa: E402
     _candidate_image_roots,
@@ -93,13 +89,7 @@ from tools.measure_axis_correctness import (  # noqa: E402
     _scale_point,
 )
 from tools.rectify_faces import extract_stickers_from_rectified  # noqa: E402
-from tools.rectify_via_hull_labels import (  # noqa: E402
-    SILHOUETTE_TO_CORNER,
-    _derive_vertex_from_corners,
-    _label_corners_by_position,
-    rectify_via_hull_labels,
-)
-from tools.global_cube_model import detect_hexagon_anchors  # noqa: E402
+from tools.rectify_via_hull_labels import select_hull_label_threshold_fit  # noqa: E402
 
 Point = Tuple[float, float]
 
@@ -240,28 +230,21 @@ def evaluate_row(
         image, scale = _processing_image(image_path, max_image_dim)
         rgba = remove(image, session=sess)
         alpha = np.array(rgba.split()[-1], dtype=np.uint8)
-        mask = alpha > 128
-        hexagon = detect_hexagon_anchors(mask)
-        rec["hexagon_corner_count"] = len(hexagon)
-        if len(hexagon) != 6:
-            rec.update({"status": "mask_failure",
-                        "bucket": "mask_failure",
-                        "error": "detect_hexagon_anchors returned "
-                                 f"{len(hexagon)} corners (need 6)"})
+        selection = select_hull_label_threshold_fit(image, alpha, side)
+        rec["selected_mask_threshold"] = selection.threshold
+        rec["threshold_candidates"] = selection.candidates
+        if selection.fit is None:
+            rec.update({
+                "status": "no_accepted_threshold",
+                "bucket": "no_accepted_threshold",
+                "error": "no alpha threshold candidate passed hull-label gates",
+                "threshold_trace": selection.trace,
+            })
             return rec
-        # Hand-roll the pipeline so we can intercept the 3 vertex
-        # estimates for cloud-spread analysis instead of re-running.
-        try:
-            corners_by_num = _label_corners_by_position(hexagon, side)
-        except Exception as exc:  # noqa: BLE001
-            rec.update({"status": "label_failure",
-                        "bucket": "label_failure",
-                        "error": f"{type(exc).__name__}: {exc}"})
-            return rec
-        vertex, estimates = _derive_vertex_from_corners(corners_by_num, side)
-        # Vertex-cloud spread: max pairwise distance between the 3
-        # estimates. Bigger = projection is less iso = our derived
-        # vertex is less trustworthy.
+        fit = selection.fit
+        estimates = selection.vertex_estimates or []
+        # Vertex-cloud spread: max pairwise distance between the 3 estimates.
+        # Bigger = projection is less iso = our derived vertex is less trustworthy.
         spread = 0.0
         for i in range(len(estimates)):
             for j in range(i + 1, len(estimates)):
@@ -269,15 +252,6 @@ def evaluate_row(
                                estimates[i][1] - estimates[j][1])
                 if d > spread:
                     spread = d
-        # Re-run via the canonical pipeline to make sure the rectified
-        # faces match what the production caller would see.
-        fit = rectify_via_hull_labels(image, mask, side)
-        if fit is None:  # defensive — shouldn't happen given 6 corners
-            rec.update({"status": "label_failure",
-                        "bucket": "label_failure",
-                        "error": "rectify_via_hull_labels returned None "
-                                 "after detect_hexagon_anchors succeeded"})
-            return rec
         # GT axes + vertex (from the 70-row axis truth schema)
         gt_vertex_proc, gt_axes = _ground_truth_axes_from_axis_truth(
             axis_truth_row, scale,

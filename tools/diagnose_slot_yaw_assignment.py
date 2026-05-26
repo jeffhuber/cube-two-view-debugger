@@ -53,7 +53,7 @@ from tools.audit_recognition_pair import parse_ground_truth as parse_pair_ground
 from tools.corner_conventions import FACE_DEFS_BY_SIDE, wca_face_by_slot, wca_facelets_for_label  # noqa: E402
 from tools.evaluate_hybrid_pipeline import DEFAULT_FACE_SIZE, _load_processing_image  # noqa: E402
 from tools.extract_color_samples import PairTask, face_colors_from_state, load_corpus_tasks  # noqa: E402
-from tools.global_cube_model import _fit_hull_label_tier1_model  # noqa: E402
+from tools.global_cube_model import _fit_hull_label_tier1_model_from_alpha  # noqa: E402
 from tools.hull_label_yaw import infer_yaw_from_side_traces  # noqa: E402
 from tools.rectify_faces import extract_stickers_from_rectified, rectify_face  # noqa: E402
 from tools.sample_stickers_from_hull import apply_orientation, canonical_corner_order, discover_orientation  # noqa: E402
@@ -187,6 +187,9 @@ def _compact_trace(model: Optional[Any], trace: Optional[Mapping[str, Any]]) -> 
         "sticker_score_total",
         "mean_sticker_distance",
         "slot_center_faces",
+        "selected_mask_threshold",
+        "best_any_threshold",
+        "best_any_score",
     )
     out = {key: trace.get(key) for key in keys if key in trace}
     if model is None and "status" not in out:
@@ -212,10 +215,9 @@ def _fit_hull_side(image_path: Path, side: str, sess: Any) -> Dict[str, Any]:
     if rgba.mode != "RGBA":
         rgba = rgba.convert("RGBA")
     alpha = np.asarray(rgba.split()[-1], dtype=np.uint8)
-    mask = alpha > 128
-    model, trace = _fit_hull_label_tier1_model(
+    model, trace = _fit_hull_label_tier1_model_from_alpha(
         arr,
-        mask,
+        alpha,
         side=side,
         mode="prefer",
     )

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import os
 import subprocess
+import sys
 import warnings
 from pathlib import Path
 from typing import Any, Dict, List
@@ -1117,4 +1118,70 @@ def test_audit_pr_auto_discovery_returns_absolute_venv_path(
     assert discovered.is_absolute(), (
         f"discovered venv path must be absolute (PR #264 round-4 P2); "
         f"got {discovered!r}"
+    )
+
+
+# ----- Wrapper regression: silent-success-on-Python-failure bug -----
+
+
+def test_wrapper_propagates_python_failure_exit_code_to_audit_log(tmp_path, monkeypatch):
+    """Regression: `tools/run_codex_audit_pr.sh` previously logged
+    `exitCode=0, status=completed` even when `codex_audit_pr.py` exited 1
+    (e.g. missing --repo-paths). Root cause: bash trap captured `local`'s
+    own exit code (always 0) instead of the failing Python script's.
+
+    Caught on cube-snap#184 where three audit runs all logged as completed
+    but never posted a GitHub comment because Python failed each time.
+
+    Fix: capture `$?` in the SAME statement as `local rc=$?`. This test
+    invokes the real wrapper with conditions guaranteed to make Python
+    exit 1 (no --repo-paths, no env var), and asserts the audit log
+    correctly records the failure.
+    """
+    import json
+    repo_root = Path(__file__).resolve().parents[1]
+    wrapper = repo_root / "tools" / "run_codex_audit_pr.sh"
+    assert wrapper.exists(), f"wrapper not found at {wrapper}"
+
+    # Redirect the audit log to a tmp dir so we don't touch the user's
+    # real ~/.cache/cube-agent-audits/.
+    monkeypatch.setenv("AUDIT_HANDOFF_LOG_DIR", str(tmp_path))
+    monkeypatch.delenv("CODEX_AUDIT_REPO_PATHS", raising=False)
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+
+    # Force-fail Python: no --repo-paths arg + no env var + no token.
+    # Use the repo's own .venv so the wrapper's controlled-Python check
+    # passes (we want to test the wrapper's exit-code propagation, not
+    # its venv-discovery logic).
+    result = subprocess.run(
+        [str(wrapper), "--repo", "jeffhuber/cube-snap", "--pr", "999999"],
+        capture_output=True, text=True, env={
+            **{k: v for k, v in os.environ.items()
+               if k not in ("CODEX_AUDIT_REPO_PATHS", "GITHUB_TOKEN")},
+            "AUDIT_HANDOFF_LOG_DIR": str(tmp_path),
+            "CODEX_AUDIT_PYTHON": sys.executable,
+        },
+    )
+
+    # The wrapper itself must exit non-zero — that's the signal callers
+    # use to detect failure. Before the fix this was 0.
+    assert result.returncode != 0, (
+        f"wrapper exited 0 despite Python failure; stderr={result.stderr!r}"
+    )
+
+    # The audit log must record exitCode != 0 and status='failed'.
+    # Before the fix this recorded exitCode=0, status=completed.
+    events_path = tmp_path / "events.jsonl"
+    assert events_path.exists(), f"no events.jsonl created at {events_path}"
+    events = [json.loads(line) for line in events_path.read_text().splitlines() if line]
+    finished = [e for e in events if e.get("event") == "finished"]
+    assert len(finished) >= 1, f"no finished event in log; events={events!r}"
+    last_finished = finished[-1]
+    assert last_finished.get("exitCode") != 0, (
+        f"audit log recorded exitCode=0 despite Python failure — the "
+        f"`local rc status; rc=$?` bash trap bug. Event: {last_finished!r}"
+    )
+    assert last_finished.get("status") == "failed", (
+        f"audit log recorded status={last_finished.get('status')!r} "
+        f"despite Python failure; expected 'failed'. Event: {last_finished!r}"
     )

@@ -87,9 +87,17 @@ if [ -n "${repo_arg}" ] && [ -n "${pr_arg}" ]; then
   fi
 
   finish_lock() {
-    local rc status
-    rc=$?
-    status="completed"
+    # CRITICAL: capture $? in the SAME statement as `local`, not afterward.
+    # `local rc; rc=$?` always captures 0 because `local` is a builtin that
+    # succeeds, resetting $? before we read it. That bug caused exit code 1
+    # from `codex_audit_pr.py` (missing --repo-paths, etc.) to be silently
+    # logged as exitCode=0/status=completed and the wrapper to exit 0 — the
+    # canonical "success and failure look the same" failure mode. Caught on
+    # cube-snap#184 where three audit runs all reported success but never
+    # posted a GitHub comment because Python exited 1 each time. See
+    # ~/.claude/projects/-Users-jhuber-cube-snap/memory/feedback_silent_success_silent_failure.md.
+    local rc=$?
+    local status="completed"
     if [ "${rc}" -ne 0 ]; then
       status="failed"
     fi

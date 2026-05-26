@@ -14055,12 +14055,1786 @@
       "rawGroundTruthState": "LBBBUUUBRULLRRLFFRFRBFFFDFDLLRUDUDBUDDLRLDBRFUUBDBDFLR",
       "setId": "68",
       "source": "corpus"
+    },
+    {
+      "canonicalGroundTruthState": "LRDUUFRUDLRRFRUUBLBFFRFDULRRFBBDLFDUDRDDLDUUFFBBLBLBBL",
+      "groundTruthCanonicalized": false,
+      "images": {
+        "A": "/Users/jhuber/cube-corpus/Set 69 - A - white-up IMG_7596.JPG",
+        "B": "/Users/jhuber/cube-corpus/Set 69 - B - white-up IMG_7597.JPG",
+        "groundTruth": "/Users/jhuber/cube-corpus/Set 69 - cube-ground-truth-1779745145900.json"
+      },
+      "modes": {
+        "off": {
+          "assembledState": "BBFBBBBUBBRUBBBBBDBBBUBBBLBFFBFBUBBRLFDBBBRUBBFBLFRBRB",
+          "exactMatch": false,
+          "facesRecovered": 6,
+          "hamming": 42,
+          "jointScore": 27,
+          "jointStatus": "ambiguous",
+          "mode": "off",
+          "perFace": [
+            {
+              "correct": 1,
+              "labelFace": "U",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "U"
+            },
+            {
+              "correct": 2,
+              "labelFace": "R",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "F"
+            },
+            {
+              "correct": 2,
+              "labelFace": "F",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "R"
+            },
+            {
+              "correct": 2,
+              "labelFace": "D",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "D"
+            },
+            {
+              "correct": 2,
+              "labelFace": "L",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "L"
+            },
+            {
+              "correct": 3,
+              "labelFace": "B",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "B"
+            }
+          ],
+          "perStickerAccuracy": 0.2222,
+          "perStickerMatchesAssembled": 12,
+          "sideApproach": {
+            "A": "procrustes_template_fit+mean3_vertex",
+            "B": "procrustes_template_fit+mean3_vertex"
+          },
+          "sideCubeCenterSource": {
+            "A": "mean3_ensemble+image_refined",
+            "B": "mean3_ensemble+image_refined"
+          },
+          "sideTraces": {
+            "A": null,
+            "B": null
+          },
+          "status": "assembled",
+          "stickersCorrect": 12,
+          "stickersSampled": 54,
+          "validState": false,
+          "validationErrors": [
+            "U_count_not_9",
+            "R_count_not_9",
+            "F_count_not_9",
+            "D_count_not_9",
+            "L_count_not_9",
+            "B_count_not_9",
+            "U_center_invalid",
+            "R_center_invalid",
+            "F_center_invalid",
+            "D_center_invalid",
+            "L_center_invalid",
+            "B_center_invalid"
+          ]
+        },
+        "prefer": {
+          "assembledState": "LRDUUFRUDLRRFRUUBLBFFRFDLLRRFBBDLFDUDRDDLDUUFFBBLBLBBL",
+          "exactMatch": false,
+          "facesRecovered": 6,
+          "hamming": 1,
+          "jointScore": 53,
+          "jointStatus": "ok",
+          "mode": "prefer",
+          "perFace": [
+            {
+              "correct": 9,
+              "labelFace": "U",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "U"
+            },
+            {
+              "correct": 9,
+              "labelFace": "R",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "L"
+            },
+            {
+              "correct": 9,
+              "labelFace": "F",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "B"
+            },
+            {
+              "correct": 9,
+              "labelFace": "D",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "D"
+            },
+            {
+              "correct": 9,
+              "labelFace": "L",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "R"
+            },
+            {
+              "correct": 8,
+              "labelFace": "B",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "F"
+            }
+          ],
+          "perStickerAccuracy": 0.9815,
+          "perStickerMatchesAssembled": 53,
+          "sideApproach": {
+            "A": "hull_label_tier1",
+            "B": "hull_label_tier1"
+          },
+          "sideCubeCenterSource": {
+            "A": "hull_label_affine",
+            "B": "hull_label_affine"
+          },
+          "sideTraces": {
+            "A": {
+              "accepted": true,
+              "hard_failures": [],
+              "hexagon_diameter_px": 546.4842175214212,
+              "mean_sticker_distance": 29.42,
+              "metrics": {
+                "projective_residual_norm": 0.0086,
+                "sticker_score_total": 794.45,
+                "sticker_score_worst_face": 351.34,
+                "vertex_cloud_spread_px": 112.73
+              },
+              "mode": "prefer",
+              "projective_residual_norm": 0.00864802865557579,
+              "selected": true,
+              "side": "A",
+              "status": "accepted",
+              "sticker_score_total": 794.45,
+              "vertex_cloud_spread_norm": 0.20628183166866446,
+              "vertex_cloud_spread_px": 112.72976536833562,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=794.5; warning 700.0",
+                "sticker_score_worst_face=351.3; warning 350.0"
+              ]
+            },
+            "B": {
+              "accepted": true,
+              "hard_failures": [],
+              "hexagon_diameter_px": 523.4214363206765,
+              "mean_sticker_distance": 28.06,
+              "metrics": {
+                "projective_residual_norm": 0.0138,
+                "sticker_score_total": 757.51,
+                "sticker_score_worst_face": 325.95,
+                "vertex_cloud_spread_px": 111.4
+              },
+              "mode": "prefer",
+              "projective_residual_norm": 0.01383065126176244,
+              "selected": true,
+              "side": "B",
+              "status": "accepted",
+              "sticker_score_total": 757.51,
+              "vertex_cloud_spread_norm": 0.21283075511034125,
+              "vertex_cloud_spread_px": 111.40017953306898,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=757.5; warning 700.0"
+              ]
+            }
+          },
+          "status": "assembled",
+          "stickersCorrect": 53,
+          "stickersSampled": 54,
+          "validState": false,
+          "validationErrors": [
+            "U_count_not_9",
+            "L_count_not_9"
+          ]
+        },
+        "shadow": {
+          "assembledState": "BBFBBBBUBBRUBBBBBDBBBUBBBLBFFBFBUBBRLFDBBBRUBBFBLFRBRB",
+          "exactMatch": false,
+          "facesRecovered": 6,
+          "hamming": 42,
+          "jointScore": 27,
+          "jointStatus": "ambiguous",
+          "mode": "shadow",
+          "perFace": [
+            {
+              "correct": 1,
+              "labelFace": "U",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "U"
+            },
+            {
+              "correct": 2,
+              "labelFace": "R",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "F"
+            },
+            {
+              "correct": 2,
+              "labelFace": "F",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "R"
+            },
+            {
+              "correct": 2,
+              "labelFace": "D",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "D"
+            },
+            {
+              "correct": 2,
+              "labelFace": "L",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "L"
+            },
+            {
+              "correct": 3,
+              "labelFace": "B",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "B"
+            }
+          ],
+          "perStickerAccuracy": 0.2222,
+          "perStickerMatchesAssembled": 12,
+          "sideApproach": {
+            "A": "procrustes_template_fit+mean3_vertex",
+            "B": "procrustes_template_fit+mean3_vertex"
+          },
+          "sideCubeCenterSource": {
+            "A": "mean3_ensemble+image_refined",
+            "B": "mean3_ensemble+image_refined"
+          },
+          "sideTraces": {
+            "A": {
+              "accepted": true,
+              "hard_failures": [],
+              "hexagon_diameter_px": 546.4842175214212,
+              "mean_sticker_distance": 29.42,
+              "metrics": {
+                "projective_residual_norm": 0.0086,
+                "sticker_score_total": 794.45,
+                "sticker_score_worst_face": 351.34,
+                "vertex_cloud_spread_px": 112.73
+              },
+              "mode": "shadow",
+              "projective_residual_norm": 0.00864802865557579,
+              "selected": false,
+              "shadow_returned_legacy": true,
+              "side": "A",
+              "status": "accepted",
+              "sticker_score_total": 794.45,
+              "vertex_cloud_spread_norm": 0.20628183166866446,
+              "vertex_cloud_spread_px": 112.72976536833562,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=794.5; warning 700.0",
+                "sticker_score_worst_face=351.3; warning 350.0"
+              ]
+            },
+            "B": {
+              "accepted": true,
+              "hard_failures": [],
+              "hexagon_diameter_px": 523.4214363206765,
+              "mean_sticker_distance": 28.06,
+              "metrics": {
+                "projective_residual_norm": 0.0138,
+                "sticker_score_total": 757.51,
+                "sticker_score_worst_face": 325.95,
+                "vertex_cloud_spread_px": 111.4
+              },
+              "mode": "shadow",
+              "projective_residual_norm": 0.01383065126176244,
+              "selected": false,
+              "shadow_returned_legacy": true,
+              "side": "B",
+              "status": "accepted",
+              "sticker_score_total": 757.51,
+              "vertex_cloud_spread_norm": 0.21283075511034125,
+              "vertex_cloud_spread_px": 111.40017953306898,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=757.5; warning 700.0"
+              ]
+            }
+          },
+          "status": "assembled",
+          "stickersCorrect": 12,
+          "stickersSampled": 54,
+          "validState": false,
+          "validationErrors": [
+            "U_count_not_9",
+            "R_count_not_9",
+            "F_count_not_9",
+            "D_count_not_9",
+            "L_count_not_9",
+            "B_count_not_9",
+            "U_center_invalid",
+            "R_center_invalid",
+            "F_center_invalid",
+            "D_center_invalid",
+            "L_center_invalid",
+            "B_center_invalid"
+          ]
+        }
+      },
+      "rawGroundTruthState": "LRDUUFRUDLRRFRUUBLBFFRFDULRRFBBDLFDUDRDDLDUUFFBBLBLBBL",
+      "setId": "69",
+      "source": "corpus"
+    },
+    {
+      "canonicalGroundTruthState": "LRDUUFRUDLRRFRUUBLBFFRFDULRRFBBDLFDUDRDDLDUUFFBBLBLBBL",
+      "groundTruthCanonicalized": false,
+      "images": {
+        "A": "/Users/jhuber/cube-corpus/Set 70 - A - white-up IMG_7598.JPG",
+        "B": "/Users/jhuber/cube-corpus/Set 70 - B - white-up IMG_7599.JPG",
+        "groundTruth": "/Users/jhuber/cube-corpus/Set 70 - cube-ground-truth-1779750099146.json"
+      },
+      "modes": {
+        "off": {
+          "assembledState": "BBBBDBBLUURRLLBDBBBLBBRDUBDLLBBFLFDRBFRLDBUFBRBBBUBBBB",
+          "exactMatch": false,
+          "facesRecovered": 6,
+          "hamming": 38,
+          "jointScore": 31,
+          "jointStatus": "ambiguous",
+          "mode": "off",
+          "perFace": [
+            {
+              "correct": 0,
+              "labelFace": "U",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "U"
+            },
+            {
+              "correct": 3,
+              "labelFace": "R",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "F"
+            },
+            {
+              "correct": 3,
+              "labelFace": "F",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "R"
+            },
+            {
+              "correct": 5,
+              "labelFace": "D",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "D"
+            },
+            {
+              "correct": 4,
+              "labelFace": "L",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "B"
+            },
+            {
+              "correct": 1,
+              "labelFace": "B",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "L"
+            }
+          ],
+          "perStickerAccuracy": 0.2963,
+          "perStickerMatchesAssembled": 16,
+          "sideApproach": {
+            "A": "procrustes_template_fit+mean3_vertex",
+            "B": "procrustes_template_fit+mean3_vertex"
+          },
+          "sideCubeCenterSource": {
+            "A": "mean3_ensemble+image_refined",
+            "B": "mean3_ensemble"
+          },
+          "sideTraces": {
+            "A": null,
+            "B": null
+          },
+          "status": "assembled",
+          "stickersCorrect": 16,
+          "stickersSampled": 54,
+          "validState": false,
+          "validationErrors": [
+            "U_count_not_9",
+            "R_count_not_9",
+            "F_count_not_9",
+            "D_count_not_9",
+            "L_count_not_9",
+            "B_count_not_9",
+            "U_center_invalid",
+            "R_center_invalid",
+            "F_center_invalid",
+            "D_center_invalid",
+            "L_center_invalid",
+            "B_center_invalid"
+          ]
+        },
+        "prefer": {
+          "assembledState": "BBBBDBBLULRRBRUBBLBFFRFDULRRFBBDLFDUUBDBRDBLBDBBLLBURR",
+          "exactMatch": false,
+          "facesRecovered": 6,
+          "hamming": 24,
+          "jointScore": 42,
+          "jointStatus": "ambiguous",
+          "mode": "prefer",
+          "perFace": [
+            {
+              "correct": 0,
+              "labelFace": "U",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "U"
+            },
+            {
+              "correct": 2,
+              "labelFace": "R",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "L"
+            },
+            {
+              "correct": 3,
+              "labelFace": "F",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "B"
+            },
+            {
+              "correct": 9,
+              "labelFace": "D",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "D"
+            },
+            {
+              "correct": 7,
+              "labelFace": "L",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "R"
+            },
+            {
+              "correct": 9,
+              "labelFace": "B",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "F"
+            }
+          ],
+          "perStickerAccuracy": 0.5556,
+          "perStickerMatchesAssembled": 30,
+          "sideApproach": {
+            "A": "procrustes_template_fit+mean3_vertex",
+            "B": "hull_label_tier1"
+          },
+          "sideCubeCenterSource": {
+            "A": "mean3_ensemble+image_refined",
+            "B": "hull_label_affine"
+          },
+          "sideTraces": {
+            "A": {
+              "accepted": false,
+              "fallback_to_legacy": true,
+              "hard_failures": [
+                "sticker_score_total=922.5; max 900.0"
+              ],
+              "hexagon_diameter_px": 547.1179031982047,
+              "mean_sticker_distance": 34.17,
+              "metrics": {
+                "projective_residual_norm": 0.0085,
+                "sticker_score_total": 922.5,
+                "sticker_score_worst_face": 412.1,
+                "vertex_cloud_spread_px": 156.474
+              },
+              "mode": "prefer",
+              "projective_residual_norm": 0.008464778681080556,
+              "selected": false,
+              "side": "A",
+              "status": "rejected",
+              "sticker_score_total": 922.5,
+              "vertex_cloud_spread_norm": 0.28599619759813166,
+              "vertex_cloud_spread_px": 156.4736399525492,
+              "vertex_source": "projective",
+              "warnings": [
+                "sticker_score_worst_face=412.1; warning 350.0"
+              ]
+            },
+            "B": {
+              "accepted": true,
+              "hard_failures": [],
+              "hexagon_diameter_px": 538.8821763614009,
+              "mean_sticker_distance": 23.89,
+              "metrics": {
+                "projective_residual_norm": 0.0207,
+                "sticker_score_total": 645.11,
+                "sticker_score_worst_face": 250.66,
+                "vertex_cloud_spread_px": 129.8
+              },
+              "mode": "prefer",
+              "projective_residual_norm": 0.020669478968163967,
+              "selected": true,
+              "side": "B",
+              "status": "accepted",
+              "sticker_score_total": 645.11,
+              "vertex_cloud_spread_norm": 0.24086869377111012,
+              "vertex_cloud_spread_px": 129.79984591670362,
+              "vertex_source": "affine",
+              "warnings": [
+                "projective_residual_norm=0.0207; warning 0.0180"
+              ]
+            }
+          },
+          "status": "assembled",
+          "stickersCorrect": 30,
+          "stickersSampled": 54,
+          "validState": false,
+          "validationErrors": [
+            "U_count_not_9",
+            "F_count_not_9",
+            "D_count_not_9",
+            "L_count_not_9",
+            "B_count_not_9",
+            "U_center_invalid",
+            "L_center_invalid",
+            "B_center_invalid"
+          ]
+        },
+        "shadow": {
+          "assembledState": "BBBBDBBLUURRLLBDBBBLBBRDUBDLLBBFLFDRBFRLDBUFBRBBBUBBBB",
+          "exactMatch": false,
+          "facesRecovered": 6,
+          "hamming": 38,
+          "jointScore": 31,
+          "jointStatus": "ambiguous",
+          "mode": "shadow",
+          "perFace": [
+            {
+              "correct": 0,
+              "labelFace": "U",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "U"
+            },
+            {
+              "correct": 3,
+              "labelFace": "R",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "F"
+            },
+            {
+              "correct": 3,
+              "labelFace": "F",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "R"
+            },
+            {
+              "correct": 5,
+              "labelFace": "D",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "D"
+            },
+            {
+              "correct": 4,
+              "labelFace": "L",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "B"
+            },
+            {
+              "correct": 1,
+              "labelFace": "B",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "L"
+            }
+          ],
+          "perStickerAccuracy": 0.2963,
+          "perStickerMatchesAssembled": 16,
+          "sideApproach": {
+            "A": "procrustes_template_fit+mean3_vertex",
+            "B": "procrustes_template_fit+mean3_vertex"
+          },
+          "sideCubeCenterSource": {
+            "A": "mean3_ensemble+image_refined",
+            "B": "mean3_ensemble"
+          },
+          "sideTraces": {
+            "A": {
+              "accepted": false,
+              "hard_failures": [
+                "sticker_score_total=922.5; max 900.0"
+              ],
+              "hexagon_diameter_px": 547.1179031982047,
+              "mean_sticker_distance": 34.17,
+              "metrics": {
+                "projective_residual_norm": 0.0085,
+                "sticker_score_total": 922.5,
+                "sticker_score_worst_face": 412.1,
+                "vertex_cloud_spread_px": 156.474
+              },
+              "mode": "shadow",
+              "projective_residual_norm": 0.008464778681080556,
+              "selected": false,
+              "shadow_returned_legacy": true,
+              "side": "A",
+              "status": "rejected",
+              "sticker_score_total": 922.5,
+              "vertex_cloud_spread_norm": 0.28599619759813166,
+              "vertex_cloud_spread_px": 156.4736399525492,
+              "vertex_source": "projective",
+              "warnings": [
+                "sticker_score_worst_face=412.1; warning 350.0"
+              ]
+            },
+            "B": {
+              "accepted": true,
+              "hard_failures": [],
+              "hexagon_diameter_px": 538.8821763614009,
+              "mean_sticker_distance": 23.89,
+              "metrics": {
+                "projective_residual_norm": 0.0207,
+                "sticker_score_total": 645.11,
+                "sticker_score_worst_face": 250.66,
+                "vertex_cloud_spread_px": 129.8
+              },
+              "mode": "shadow",
+              "projective_residual_norm": 0.020669478968163967,
+              "selected": false,
+              "shadow_returned_legacy": true,
+              "side": "B",
+              "status": "accepted",
+              "sticker_score_total": 645.11,
+              "vertex_cloud_spread_norm": 0.24086869377111012,
+              "vertex_cloud_spread_px": 129.79984591670362,
+              "vertex_source": "affine",
+              "warnings": [
+                "projective_residual_norm=0.0207; warning 0.0180"
+              ]
+            }
+          },
+          "status": "assembled",
+          "stickersCorrect": 16,
+          "stickersSampled": 54,
+          "validState": false,
+          "validationErrors": [
+            "U_count_not_9",
+            "R_count_not_9",
+            "F_count_not_9",
+            "D_count_not_9",
+            "L_count_not_9",
+            "B_count_not_9",
+            "U_center_invalid",
+            "R_center_invalid",
+            "F_center_invalid",
+            "D_center_invalid",
+            "L_center_invalid",
+            "B_center_invalid"
+          ]
+        }
+      },
+      "rawGroundTruthState": "LRDUUFRUDLRRFRUUBLBFFRFDULRRFBBDLFDUDRDDLDUUFFBBLBLBBL",
+      "setId": "70",
+      "source": "corpus"
+    },
+    {
+      "canonicalGroundTruthState": "LRDUUFRUDLRRFRUUBLBFFRFDULRRFBBDLFDUDRDDLDUUFFBBLBLBBL",
+      "groundTruthCanonicalized": false,
+      "images": {
+        "A": "/Users/jhuber/cube-corpus/Set 71 - A - white-up IMG_7600.JPG",
+        "B": "/Users/jhuber/cube-corpus/Set 71 - B - white-up IMG_7601.JPG",
+        "groundTruth": "/Users/jhuber/cube-corpus/Set 71 - cube-ground-truth-1779750325949.json"
+      },
+      "modes": {
+        "off": {
+          "assembledState": "LBBBBFBBBRFRFBRBRLBFFBBBBBBBBBFBLUBUFBBFBBBFFUBBLBLBBL",
+          "exactMatch": false,
+          "facesRecovered": 6,
+          "hamming": 34,
+          "jointScore": 27,
+          "jointStatus": "ambiguous",
+          "mode": "off",
+          "perFace": [
+            {
+              "correct": 2,
+              "labelFace": "U",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "U"
+            },
+            {
+              "correct": 3,
+              "labelFace": "R",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "F"
+            },
+            {
+              "correct": 3,
+              "labelFace": "F",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "R"
+            },
+            {
+              "correct": 3,
+              "labelFace": "D",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "D"
+            },
+            {
+              "correct": 8,
+              "labelFace": "L",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "B"
+            },
+            {
+              "correct": 1,
+              "labelFace": "B",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "L"
+            }
+          ],
+          "perStickerAccuracy": 0.3704,
+          "perStickerMatchesAssembled": 20,
+          "sideApproach": {
+            "A": "procrustes_template_fit+mean3_vertex",
+            "B": "procrustes_template_fit+mean3_vertex"
+          },
+          "sideCubeCenterSource": {
+            "A": "mean3_ensemble+image_refined",
+            "B": "mean3_ensemble+image_refined"
+          },
+          "sideTraces": {
+            "A": null,
+            "B": null
+          },
+          "status": "assembled",
+          "stickersCorrect": 20,
+          "stickersSampled": 54,
+          "validState": false,
+          "validationErrors": [
+            "U_count_not_9",
+            "R_count_not_9",
+            "F_count_not_9",
+            "D_count_not_9",
+            "L_count_not_9",
+            "B_count_not_9",
+            "U_center_invalid",
+            "R_center_invalid",
+            "F_center_invalid",
+            "D_center_invalid",
+            "L_center_invalid"
+          ]
+        },
+        "prefer": {
+          "assembledState": "LRFUBFRBFLRRFRUBBLBFFRFFULRRFBBFLFFUFRFFLFUUFFBBLBLBBL",
+          "exactMatch": false,
+          "facesRecovered": 6,
+          "hamming": 12,
+          "jointScore": 42,
+          "jointStatus": "ok",
+          "mode": "prefer",
+          "perFace": [
+            {
+              "correct": 5,
+              "labelFace": "U",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "U"
+            },
+            {
+              "correct": 8,
+              "labelFace": "R",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "R"
+            },
+            {
+              "correct": 8,
+              "labelFace": "F",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "F"
+            },
+            {
+              "correct": 7,
+              "labelFace": "D",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "D"
+            },
+            {
+              "correct": 5,
+              "labelFace": "L",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "L"
+            },
+            {
+              "correct": 9,
+              "labelFace": "B",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "B"
+            }
+          ],
+          "perStickerAccuracy": 0.7778,
+          "perStickerMatchesAssembled": 42,
+          "sideApproach": {
+            "A": "hull_label_tier1",
+            "B": "hull_label_tier1"
+          },
+          "sideCubeCenterSource": {
+            "A": "hull_label_affine",
+            "B": "hull_label_affine"
+          },
+          "sideTraces": {
+            "A": {
+              "accepted": true,
+              "hard_failures": [],
+              "hexagon_diameter_px": 517.9285665031424,
+              "mean_sticker_distance": 30.27,
+              "metrics": {
+                "projective_residual_norm": 0.0059,
+                "sticker_score_total": 817.17,
+                "sticker_score_worst_face": 310.49,
+                "vertex_cloud_spread_px": 97.082
+              },
+              "mode": "prefer",
+              "projective_residual_norm": 0.005854949349774131,
+              "selected": true,
+              "side": "A",
+              "status": "accepted",
+              "sticker_score_total": 817.17,
+              "vertex_cloud_spread_norm": 0.18744368523675353,
+              "vertex_cloud_spread_px": 97.082439194738,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=817.2; warning 700.0"
+              ]
+            },
+            "B": {
+              "accepted": true,
+              "hard_failures": [],
+              "hexagon_diameter_px": 560.3588136185599,
+              "mean_sticker_distance": 28.21,
+              "metrics": {
+                "projective_residual_norm": 0.0051,
+                "sticker_score_total": 761.71,
+                "sticker_score_worst_face": 311.75,
+                "vertex_cloud_spread_px": 113.159
+              },
+              "mode": "prefer",
+              "projective_residual_norm": 0.005086528240468843,
+              "selected": true,
+              "side": "B",
+              "status": "accepted",
+              "sticker_score_total": 761.71,
+              "vertex_cloud_spread_norm": 0.20194057302057647,
+              "vertex_cloud_spread_px": 113.1591799192624,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=761.7; warning 700.0"
+              ]
+            }
+          },
+          "status": "assembled",
+          "stickersCorrect": 42,
+          "stickersSampled": 54,
+          "validState": false,
+          "validationErrors": [
+            "U_count_not_9",
+            "F_count_not_9",
+            "D_count_not_9",
+            "B_count_not_9",
+            "U_center_invalid",
+            "D_center_invalid"
+          ]
+        },
+        "shadow": {
+          "assembledState": "LBBBBFBBBRFRFBRBRLBFFBBBBBBBBBFBLUBUFBBFBBBFFUBBLBLBBL",
+          "exactMatch": false,
+          "facesRecovered": 6,
+          "hamming": 34,
+          "jointScore": 27,
+          "jointStatus": "ambiguous",
+          "mode": "shadow",
+          "perFace": [
+            {
+              "correct": 2,
+              "labelFace": "U",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "U"
+            },
+            {
+              "correct": 3,
+              "labelFace": "R",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "F"
+            },
+            {
+              "correct": 3,
+              "labelFace": "F",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "R"
+            },
+            {
+              "correct": 3,
+              "labelFace": "D",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "D"
+            },
+            {
+              "correct": 8,
+              "labelFace": "L",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "B"
+            },
+            {
+              "correct": 1,
+              "labelFace": "B",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "L"
+            }
+          ],
+          "perStickerAccuracy": 0.3704,
+          "perStickerMatchesAssembled": 20,
+          "sideApproach": {
+            "A": "procrustes_template_fit+mean3_vertex",
+            "B": "procrustes_template_fit+mean3_vertex"
+          },
+          "sideCubeCenterSource": {
+            "A": "mean3_ensemble+image_refined",
+            "B": "mean3_ensemble+image_refined"
+          },
+          "sideTraces": {
+            "A": {
+              "accepted": true,
+              "hard_failures": [],
+              "hexagon_diameter_px": 517.9285665031424,
+              "mean_sticker_distance": 30.27,
+              "metrics": {
+                "projective_residual_norm": 0.0059,
+                "sticker_score_total": 817.17,
+                "sticker_score_worst_face": 310.49,
+                "vertex_cloud_spread_px": 97.082
+              },
+              "mode": "shadow",
+              "projective_residual_norm": 0.005854949349774131,
+              "selected": false,
+              "shadow_returned_legacy": true,
+              "side": "A",
+              "status": "accepted",
+              "sticker_score_total": 817.17,
+              "vertex_cloud_spread_norm": 0.18744368523675353,
+              "vertex_cloud_spread_px": 97.082439194738,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=817.2; warning 700.0"
+              ]
+            },
+            "B": {
+              "accepted": true,
+              "hard_failures": [],
+              "hexagon_diameter_px": 560.3588136185599,
+              "mean_sticker_distance": 28.21,
+              "metrics": {
+                "projective_residual_norm": 0.0051,
+                "sticker_score_total": 761.71,
+                "sticker_score_worst_face": 311.75,
+                "vertex_cloud_spread_px": 113.159
+              },
+              "mode": "shadow",
+              "projective_residual_norm": 0.005086528240468843,
+              "selected": false,
+              "shadow_returned_legacy": true,
+              "side": "B",
+              "status": "accepted",
+              "sticker_score_total": 761.71,
+              "vertex_cloud_spread_norm": 0.20194057302057647,
+              "vertex_cloud_spread_px": 113.1591799192624,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=761.7; warning 700.0"
+              ]
+            }
+          },
+          "status": "assembled",
+          "stickersCorrect": 20,
+          "stickersSampled": 54,
+          "validState": false,
+          "validationErrors": [
+            "U_count_not_9",
+            "R_count_not_9",
+            "F_count_not_9",
+            "D_count_not_9",
+            "L_count_not_9",
+            "B_count_not_9",
+            "U_center_invalid",
+            "R_center_invalid",
+            "F_center_invalid",
+            "D_center_invalid",
+            "L_center_invalid"
+          ]
+        }
+      },
+      "rawGroundTruthState": "LRDUUFRUDLRRFRUUBLBFFRFDULRRFBBDLFDUDRDDLDUUFFBBLBLBBL",
+      "setId": "71",
+      "source": "corpus"
+    },
+    {
+      "canonicalGroundTruthState": "RULUURDFDFBBFRUUBLLRRRFDULRRFBBDLFDUBFFDLDUUFDRDLBLBBL",
+      "groundTruthCanonicalized": false,
+      "images": {
+        "A": "/Users/jhuber/cube-corpus/Set 72 - A - white-up IMG_7602.JPG",
+        "B": "/Users/jhuber/cube-corpus/Set 72 - B - white-up IMG_7603.JPG",
+        "groundTruth": "/Users/jhuber/cube-corpus/Set 72 - cube-ground-truth-1779747336734.json"
+      },
+      "modes": {
+        "off": {
+          "assembledState": "UUULUBUBBFBBFBRBUUBFFULBFLBRFBBFLBBBBLFBBBBUBFRBBBBBBB",
+          "exactMatch": false,
+          "facesRecovered": 6,
+          "hamming": 35,
+          "jointScore": 31,
+          "jointStatus": "ambiguous",
+          "mode": "off",
+          "perFace": [
+            {
+              "correct": 2,
+              "labelFace": "U",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "U"
+            },
+            {
+              "correct": 4,
+              "labelFace": "R",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "B"
+            },
+            {
+              "correct": 4,
+              "labelFace": "F",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "R"
+            },
+            {
+              "correct": 5,
+              "labelFace": "D",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "D"
+            },
+            {
+              "correct": 3,
+              "labelFace": "L",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "L"
+            },
+            {
+              "correct": 1,
+              "labelFace": "B",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "F"
+            }
+          ],
+          "perStickerAccuracy": 0.3519,
+          "perStickerMatchesAssembled": 19,
+          "sideApproach": {
+            "A": "procrustes_template_fit+mean3_vertex",
+            "B": "procrustes_template_fit+mean3_vertex"
+          },
+          "sideCubeCenterSource": {
+            "A": "mean3_ensemble+image_refined",
+            "B": "mean3_ensemble+image_refined"
+          },
+          "sideTraces": {
+            "A": null,
+            "B": null
+          },
+          "status": "assembled",
+          "stickersCorrect": 19,
+          "stickersSampled": 54,
+          "validState": false,
+          "validationErrors": [
+            "R_count_not_9",
+            "D_count_not_9",
+            "L_count_not_9",
+            "B_count_not_9",
+            "R_center_invalid",
+            "F_center_invalid",
+            "D_center_invalid",
+            "L_center_invalid"
+          ]
+        },
+        "prefer": {
+          "assembledState": "RULUURFFFBBBFRUUBLLRRRFFULRRFBBFLFFUBFFFLFUUFDLDLBLBBB",
+          "exactMatch": false,
+          "facesRecovered": 6,
+          "hamming": 10,
+          "jointScore": 44,
+          "jointStatus": "ambiguous",
+          "mode": "prefer",
+          "perFace": [
+            {
+              "correct": 7,
+              "labelFace": "U",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "U"
+            },
+            {
+              "correct": 8,
+              "labelFace": "R",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "R"
+            },
+            {
+              "correct": 8,
+              "labelFace": "F",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "F"
+            },
+            {
+              "correct": 7,
+              "labelFace": "D",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "D"
+            },
+            {
+              "correct": 7,
+              "labelFace": "L",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "L"
+            },
+            {
+              "correct": 7,
+              "labelFace": "B",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "B"
+            }
+          ],
+          "perStickerAccuracy": 0.8148,
+          "perStickerMatchesAssembled": 44,
+          "sideApproach": {
+            "A": "hull_label_tier1",
+            "B": "hull_label_tier1"
+          },
+          "sideCubeCenterSource": {
+            "A": "hull_label_affine",
+            "B": "hull_label_affine"
+          },
+          "sideTraces": {
+            "A": {
+              "accepted": true,
+              "hard_failures": [],
+              "hexagon_diameter_px": 533.1838332132736,
+              "mean_sticker_distance": 26.36,
+              "metrics": {
+                "projective_residual_norm": 0.002,
+                "sticker_score_total": 711.6,
+                "sticker_score_worst_face": 259.92,
+                "vertex_cloud_spread_px": 123.438
+              },
+              "mode": "prefer",
+              "projective_residual_norm": 0.001975544512173057,
+              "selected": true,
+              "side": "A",
+              "status": "accepted",
+              "sticker_score_total": 711.6,
+              "vertex_cloud_spread_norm": 0.23151160252691041,
+              "vertex_cloud_spread_px": 123.4382436686459,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=711.6; warning 700.0"
+              ]
+            },
+            "B": {
+              "accepted": true,
+              "hard_failures": [],
+              "hexagon_diameter_px": 588.7962296074933,
+              "mean_sticker_distance": 29.43,
+              "metrics": {
+                "projective_residual_norm": 0.0108,
+                "sticker_score_total": 794.7,
+                "sticker_score_worst_face": 312.83,
+                "vertex_cloud_spread_px": 140.264
+              },
+              "mode": "prefer",
+              "projective_residual_norm": 0.010794884070781868,
+              "selected": true,
+              "side": "B",
+              "status": "accepted",
+              "sticker_score_total": 794.7,
+              "vertex_cloud_spread_norm": 0.23822169653537884,
+              "vertex_cloud_spread_px": 140.2640367307315,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=794.7; warning 700.0"
+              ]
+            }
+          },
+          "status": "assembled",
+          "stickersCorrect": 44,
+          "stickersSampled": 54,
+          "validState": false,
+          "validationErrors": [
+            "R_count_not_9",
+            "F_count_not_9",
+            "D_count_not_9",
+            "B_count_not_9",
+            "D_center_invalid"
+          ]
+        },
+        "shadow": {
+          "assembledState": "UUULUBUBBFBBFBRBUUBFFULBFLBRFBBFLBBBBLFBBBBUBFRBBBBBBB",
+          "exactMatch": false,
+          "facesRecovered": 6,
+          "hamming": 35,
+          "jointScore": 31,
+          "jointStatus": "ambiguous",
+          "mode": "shadow",
+          "perFace": [
+            {
+              "correct": 2,
+              "labelFace": "U",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "U"
+            },
+            {
+              "correct": 4,
+              "labelFace": "R",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "B"
+            },
+            {
+              "correct": 4,
+              "labelFace": "F",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "R"
+            },
+            {
+              "correct": 5,
+              "labelFace": "D",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "D"
+            },
+            {
+              "correct": 3,
+              "labelFace": "L",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "L"
+            },
+            {
+              "correct": 1,
+              "labelFace": "B",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "F"
+            }
+          ],
+          "perStickerAccuracy": 0.3519,
+          "perStickerMatchesAssembled": 19,
+          "sideApproach": {
+            "A": "procrustes_template_fit+mean3_vertex",
+            "B": "procrustes_template_fit+mean3_vertex"
+          },
+          "sideCubeCenterSource": {
+            "A": "mean3_ensemble+image_refined",
+            "B": "mean3_ensemble+image_refined"
+          },
+          "sideTraces": {
+            "A": {
+              "accepted": true,
+              "hard_failures": [],
+              "hexagon_diameter_px": 533.1838332132736,
+              "mean_sticker_distance": 26.36,
+              "metrics": {
+                "projective_residual_norm": 0.002,
+                "sticker_score_total": 711.6,
+                "sticker_score_worst_face": 259.92,
+                "vertex_cloud_spread_px": 123.438
+              },
+              "mode": "shadow",
+              "projective_residual_norm": 0.001975544512173057,
+              "selected": false,
+              "shadow_returned_legacy": true,
+              "side": "A",
+              "status": "accepted",
+              "sticker_score_total": 711.6,
+              "vertex_cloud_spread_norm": 0.23151160252691041,
+              "vertex_cloud_spread_px": 123.4382436686459,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=711.6; warning 700.0"
+              ]
+            },
+            "B": {
+              "accepted": true,
+              "hard_failures": [],
+              "hexagon_diameter_px": 588.7962296074933,
+              "mean_sticker_distance": 29.43,
+              "metrics": {
+                "projective_residual_norm": 0.0108,
+                "sticker_score_total": 794.7,
+                "sticker_score_worst_face": 312.83,
+                "vertex_cloud_spread_px": 140.264
+              },
+              "mode": "shadow",
+              "projective_residual_norm": 0.010794884070781868,
+              "selected": false,
+              "shadow_returned_legacy": true,
+              "side": "B",
+              "status": "accepted",
+              "sticker_score_total": 794.7,
+              "vertex_cloud_spread_norm": 0.23822169653537884,
+              "vertex_cloud_spread_px": 140.2640367307315,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=794.7; warning 700.0"
+              ]
+            }
+          },
+          "status": "assembled",
+          "stickersCorrect": 19,
+          "stickersSampled": 54,
+          "validState": false,
+          "validationErrors": [
+            "R_count_not_9",
+            "D_count_not_9",
+            "L_count_not_9",
+            "B_count_not_9",
+            "R_center_invalid",
+            "F_center_invalid",
+            "D_center_invalid",
+            "L_center_invalid"
+          ]
+        }
+      },
+      "rawGroundTruthState": "RULUURDFDFBBFRUUBLLRRRFDULRRFBBDLFDUBFFDLDUUFDRDLBLBBL",
+      "setId": "72",
+      "source": "corpus"
+    },
+    {
+      "canonicalGroundTruthState": "RULUURDFDFBBFRUUBLLRRRFDULRRFBBDLFDUBFFDLDUUFDRDLBLBBL",
+      "groundTruthCanonicalized": false,
+      "images": {
+        "A": "/Users/jhuber/cube-corpus/Set 73 - A - white-up IMG_7604.JPG",
+        "B": "/Users/jhuber/cube-corpus/Set 73 - B - white-up IMG_7605.JPG",
+        "groundTruth": "/Users/jhuber/cube-corpus/Set 73 - cube-ground-truth-1779750578235 copy.json"
+      },
+      "modes": {
+        "off": {
+          "assembledState": "RFBFBBBBBUBBFBBBRRBBRBBBFFRBFBBBLBBDBFFUBBLUBBRUFBBBBB",
+          "exactMatch": false,
+          "facesRecovered": 6,
+          "hamming": 36,
+          "jointScore": 25,
+          "jointStatus": "ambiguous",
+          "mode": "off",
+          "perFace": [
+            {
+              "correct": 1,
+              "labelFace": "U",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "U"
+            },
+            {
+              "correct": 3,
+              "labelFace": "R",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "R"
+            },
+            {
+              "correct": 2,
+              "labelFace": "F",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "F"
+            },
+            {
+              "correct": 4,
+              "labelFace": "D",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "D"
+            },
+            {
+              "correct": 4,
+              "labelFace": "L",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "B"
+            },
+            {
+              "correct": 4,
+              "labelFace": "B",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "L"
+            }
+          ],
+          "perStickerAccuracy": 0.3333,
+          "perStickerMatchesAssembled": 18,
+          "sideApproach": {
+            "A": "procrustes_template_fit+mean3_vertex",
+            "B": "procrustes_template_fit+mean3_vertex"
+          },
+          "sideCubeCenterSource": {
+            "A": "mean3_ensemble+image_refined",
+            "B": "mean3_ensemble+image_refined"
+          },
+          "sideTraces": {
+            "A": null,
+            "B": null
+          },
+          "status": "assembled",
+          "stickersCorrect": 18,
+          "stickersSampled": 54,
+          "validState": false,
+          "validationErrors": [
+            "U_count_not_9",
+            "R_count_not_9",
+            "D_count_not_9",
+            "L_count_not_9",
+            "B_count_not_9",
+            "U_center_invalid",
+            "R_center_invalid",
+            "F_center_invalid",
+            "D_center_invalid",
+            "L_center_invalid"
+          ]
+        },
+        "prefer": {
+          "assembledState": "RULUURFFFFBBFRUBBLLRRRFFULRRFBBFLFFUBFFFLFBUFFRFLBLBBL",
+          "exactMatch": false,
+          "facesRecovered": 6,
+          "hamming": 11,
+          "jointScore": 43,
+          "jointStatus": "ambiguous",
+          "mode": "prefer",
+          "perFace": [
+            {
+              "correct": 7,
+              "labelFace": "U",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "U"
+            },
+            {
+              "correct": 8,
+              "labelFace": "R",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "R"
+            },
+            {
+              "correct": 8,
+              "labelFace": "F",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "F"
+            },
+            {
+              "correct": 7,
+              "labelFace": "D",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "D"
+            },
+            {
+              "correct": 6,
+              "labelFace": "L",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "L"
+            },
+            {
+              "correct": 7,
+              "labelFace": "B",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "B"
+            }
+          ],
+          "perStickerAccuracy": 0.7963,
+          "perStickerMatchesAssembled": 43,
+          "sideApproach": {
+            "A": "hull_label_tier1",
+            "B": "hull_label_tier1"
+          },
+          "sideCubeCenterSource": {
+            "A": "hull_label_affine",
+            "B": "hull_label_affine"
+          },
+          "sideTraces": {
+            "A": {
+              "accepted": true,
+              "hard_failures": [],
+              "hexagon_diameter_px": 608.0082236285954,
+              "mean_sticker_distance": 26.35,
+              "metrics": {
+                "projective_residual_norm": 0.0027,
+                "sticker_score_total": 711.32,
+                "sticker_score_worst_face": 265.01,
+                "vertex_cloud_spread_px": 147.031
+              },
+              "mode": "prefer",
+              "projective_residual_norm": 0.00266869540061565,
+              "selected": true,
+              "side": "A",
+              "status": "accepted",
+              "sticker_score_total": 711.32,
+              "vertex_cloud_spread_norm": 0.24182338880325488,
+              "vertex_cloud_spread_px": 147.03060905811415,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=711.3; warning 700.0"
+              ]
+            },
+            "B": {
+              "accepted": true,
+              "hard_failures": [],
+              "hexagon_diameter_px": 622.3214603402329,
+              "mean_sticker_distance": 27.91,
+              "metrics": {
+                "projective_residual_norm": 0.0033,
+                "sticker_score_total": 753.5,
+                "sticker_score_worst_face": 315.77,
+                "vertex_cloud_spread_px": 141.4
+              },
+              "mode": "prefer",
+              "projective_residual_norm": 0.0032891072762166315,
+              "selected": true,
+              "side": "B",
+              "status": "accepted",
+              "sticker_score_total": 753.5,
+              "vertex_cloud_spread_norm": 0.22721398899748577,
+              "vertex_cloud_spread_px": 141.40014144264495,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=753.5; warning 700.0"
+              ]
+            }
+          },
+          "status": "assembled",
+          "stickersCorrect": 43,
+          "stickersSampled": 54,
+          "validState": false,
+          "validationErrors": [
+            "U_count_not_9",
+            "F_count_not_9",
+            "D_count_not_9",
+            "B_count_not_9",
+            "D_center_invalid"
+          ]
+        },
+        "shadow": {
+          "assembledState": "RFBFBBBBBUBBFBBBRRBBRBBBFFRBFBBBLBBDBFFUBBLUBBRUFBBBBB",
+          "exactMatch": false,
+          "facesRecovered": 6,
+          "hamming": 36,
+          "jointScore": 25,
+          "jointStatus": "ambiguous",
+          "mode": "shadow",
+          "perFace": [
+            {
+              "correct": 1,
+              "labelFace": "U",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "U"
+            },
+            {
+              "correct": 3,
+              "labelFace": "R",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "R"
+            },
+            {
+              "correct": 2,
+              "labelFace": "F",
+              "ofTotal": 9,
+              "side": "A",
+              "trueFace": "F"
+            },
+            {
+              "correct": 4,
+              "labelFace": "D",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "D"
+            },
+            {
+              "correct": 4,
+              "labelFace": "L",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "B"
+            },
+            {
+              "correct": 4,
+              "labelFace": "B",
+              "ofTotal": 9,
+              "side": "B",
+              "trueFace": "L"
+            }
+          ],
+          "perStickerAccuracy": 0.3333,
+          "perStickerMatchesAssembled": 18,
+          "sideApproach": {
+            "A": "procrustes_template_fit+mean3_vertex",
+            "B": "procrustes_template_fit+mean3_vertex"
+          },
+          "sideCubeCenterSource": {
+            "A": "mean3_ensemble+image_refined",
+            "B": "mean3_ensemble+image_refined"
+          },
+          "sideTraces": {
+            "A": {
+              "accepted": true,
+              "hard_failures": [],
+              "hexagon_diameter_px": 608.0082236285954,
+              "mean_sticker_distance": 26.35,
+              "metrics": {
+                "projective_residual_norm": 0.0027,
+                "sticker_score_total": 711.32,
+                "sticker_score_worst_face": 265.01,
+                "vertex_cloud_spread_px": 147.031
+              },
+              "mode": "shadow",
+              "projective_residual_norm": 0.00266869540061565,
+              "selected": false,
+              "shadow_returned_legacy": true,
+              "side": "A",
+              "status": "accepted",
+              "sticker_score_total": 711.32,
+              "vertex_cloud_spread_norm": 0.24182338880325488,
+              "vertex_cloud_spread_px": 147.03060905811415,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=711.3; warning 700.0"
+              ]
+            },
+            "B": {
+              "accepted": true,
+              "hard_failures": [],
+              "hexagon_diameter_px": 622.3214603402329,
+              "mean_sticker_distance": 27.91,
+              "metrics": {
+                "projective_residual_norm": 0.0033,
+                "sticker_score_total": 753.5,
+                "sticker_score_worst_face": 315.77,
+                "vertex_cloud_spread_px": 141.4
+              },
+              "mode": "shadow",
+              "projective_residual_norm": 0.0032891072762166315,
+              "selected": false,
+              "shadow_returned_legacy": true,
+              "side": "B",
+              "status": "accepted",
+              "sticker_score_total": 753.5,
+              "vertex_cloud_spread_norm": 0.22721398899748577,
+              "vertex_cloud_spread_px": 141.40014144264495,
+              "vertex_source": "affine",
+              "warnings": [
+                "sticker_score_total=753.5; warning 700.0"
+              ]
+            }
+          },
+          "status": "assembled",
+          "stickersCorrect": 18,
+          "stickersSampled": 54,
+          "validState": false,
+          "validationErrors": [
+            "U_count_not_9",
+            "R_count_not_9",
+            "D_count_not_9",
+            "L_count_not_9",
+            "B_count_not_9",
+            "U_center_invalid",
+            "R_center_invalid",
+            "F_center_invalid",
+            "D_center_invalid",
+            "L_center_invalid"
+          ]
+        }
+      },
+      "rawGroundTruthState": "RULUURDFDFBBFRUUBLLRRRFDULRRFBBDLFDUBFFDLDUUFDRDLBLBBL",
+      "setId": "73",
+      "source": "corpus"
     }
   ],
   "schema": "hull_label_tier1_shadow_validation_v1",
   "source": {
-    "generated_at_utc": "2026-05-25T07:26:01.642841+00:00",
-    "git_sha": "8de0941ce1f4b7fa7c2f524b4e021edc19dc7aad",
+    "generated_at_utc": "2026-05-26T00:04:54.427745+00:00",
+    "git_sha": "87f9282d38b3aad7ff4de733fe54adcb4f458dd7",
     "manifest": "tests/fixtures/corpus_manifest.json",
     "mode_order": [
       "off",
@@ -14072,52 +15846,64 @@
   "summary": {
     "byMode": {
       "off": {
-        "assembled": 41,
-        "assembledStickerAccuracy": 0.330623,
+        "assembled": 46,
+        "assembledStickerAccuracy": 0.328905,
         "exact": 0,
         "legal": 0,
-        "pairs": 41,
-        "rectifiedStickerAccuracy": 0.330623
+        "pairs": 46,
+        "rectifiedStickerAccuracy": 0.328905
       },
       "prefer": {
-        "assembled": 41,
-        "assembledStickerAccuracy": 0.958898,
+        "assembled": 46,
+        "assembledStickerAccuracy": 0.940016,
         "exact": 19,
         "legal": 19,
-        "pairs": 41,
-        "rectifiedStickerAccuracy": 0.958898
+        "pairs": 46,
+        "rectifiedStickerAccuracy": 0.940016
       },
       "shadow": {
-        "assembled": 41,
-        "assembledStickerAccuracy": 0.330623,
+        "assembled": 46,
+        "assembledStickerAccuracy": 0.328905,
         "exact": 0,
         "legal": 0,
-        "pairs": 41,
-        "rectifiedStickerAccuracy": 0.330623
+        "pairs": 46,
+        "rectifiedStickerAccuracy": 0.328905
       }
     },
-    "pairCount": 41,
+    "pairCount": 46,
     "preferTrace": {
-      "acceptedSides": 81,
+      "acceptedSides": 90,
       "hardFailureCounts": {
-        "projective_residual_norm=0.0273; max 0.0250": 1
+        "projective_residual_norm=0.0273; max 0.0250": 1,
+        "sticker_score_total=922.5; max 900.0": 1
       },
-      "selectedSides": 81,
-      "sideTraces": 82,
+      "selectedSides": 90,
+      "sideTraces": 92,
       "statusCounts": {
-        "accepted": 81,
-        "rejected": 1
+        "accepted": 90,
+        "rejected": 2
       },
       "warningCounts": {
         "projective_residual_norm=0.0189; warning 0.0180": 1,
+        "projective_residual_norm=0.0207; warning 0.0180": 1,
         "projective_residual_norm=0.0229; warning 0.0180": 1,
         "sticker_score_total=706.5; warning 700.0": 1,
+        "sticker_score_total=711.3; warning 700.0": 1,
+        "sticker_score_total=711.6; warning 700.0": 1,
         "sticker_score_total=712.6; warning 700.0": 1,
         "sticker_score_total=728.7; warning 700.0": 1,
+        "sticker_score_total=753.5; warning 700.0": 1,
+        "sticker_score_total=757.5; warning 700.0": 1,
+        "sticker_score_total=761.7; warning 700.0": 1,
+        "sticker_score_total=794.5; warning 700.0": 1,
+        "sticker_score_total=794.7; warning 700.0": 1,
+        "sticker_score_total=817.2; warning 700.0": 1,
+        "sticker_score_worst_face=351.3; warning 350.0": 1,
         "sticker_score_worst_face=351.6; warning 350.0": 1,
         "sticker_score_worst_face=357.4; warning 350.0": 1,
         "sticker_score_worst_face=360.3; warning 350.0": 1,
-        "sticker_score_worst_face=372.5; warning 350.0": 1
+        "sticker_score_worst_face=372.5; warning 350.0": 1,
+        "sticker_score_worst_face=412.1; warning 350.0": 1
       }
     },
     "preferVsOff": {
@@ -14408,6 +16194,41 @@
           "preferExact": false,
           "preferHamming": 4,
           "setId": "68"
+        },
+        {
+          "offExact": false,
+          "offHamming": 42,
+          "preferExact": false,
+          "preferHamming": 1,
+          "setId": "69"
+        },
+        {
+          "offExact": false,
+          "offHamming": 38,
+          "preferExact": false,
+          "preferHamming": 24,
+          "setId": "70"
+        },
+        {
+          "offExact": false,
+          "offHamming": 34,
+          "preferExact": false,
+          "preferHamming": 12,
+          "setId": "71"
+        },
+        {
+          "offExact": false,
+          "offHamming": 35,
+          "preferExact": false,
+          "preferHamming": 10,
+          "setId": "72"
+        },
+        {
+          "offExact": false,
+          "offHamming": 36,
+          "preferExact": false,
+          "preferHamming": 11,
+          "setId": "73"
         }
       ],
       "incompleteChanged": [],
@@ -14415,26 +16236,38 @@
       "sameCount": 0
     },
     "shadowTrace": {
-      "acceptedSides": 81,
+      "acceptedSides": 90,
       "hardFailureCounts": {
-        "projective_residual_norm=0.0273; max 0.0250": 1
+        "projective_residual_norm=0.0273; max 0.0250": 1,
+        "sticker_score_total=922.5; max 900.0": 1
       },
       "selectedSides": 0,
-      "sideTraces": 82,
+      "sideTraces": 92,
       "statusCounts": {
-        "accepted": 81,
-        "rejected": 1
+        "accepted": 90,
+        "rejected": 2
       },
       "warningCounts": {
         "projective_residual_norm=0.0189; warning 0.0180": 1,
+        "projective_residual_norm=0.0207; warning 0.0180": 1,
         "projective_residual_norm=0.0229; warning 0.0180": 1,
         "sticker_score_total=706.5; warning 700.0": 1,
+        "sticker_score_total=711.3; warning 700.0": 1,
+        "sticker_score_total=711.6; warning 700.0": 1,
         "sticker_score_total=712.6; warning 700.0": 1,
         "sticker_score_total=728.7; warning 700.0": 1,
+        "sticker_score_total=753.5; warning 700.0": 1,
+        "sticker_score_total=757.5; warning 700.0": 1,
+        "sticker_score_total=761.7; warning 700.0": 1,
+        "sticker_score_total=794.5; warning 700.0": 1,
+        "sticker_score_total=794.7; warning 700.0": 1,
+        "sticker_score_total=817.2; warning 700.0": 1,
+        "sticker_score_worst_face=351.3; warning 350.0": 1,
         "sticker_score_worst_face=351.6; warning 350.0": 1,
         "sticker_score_worst_face=357.4; warning 350.0": 1,
         "sticker_score_worst_face=360.3; warning 350.0": 1,
-        "sticker_score_worst_face=372.5; warning 350.0": 1
+        "sticker_score_worst_face=372.5; warning 350.0": 1,
+        "sticker_score_worst_face=412.1; warning 350.0": 1
       }
     }
   }

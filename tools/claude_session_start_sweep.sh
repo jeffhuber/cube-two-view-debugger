@@ -19,16 +19,43 @@ LOG="$HOME/.cache/cube-agent-audits/events.jsonl"
 command -v gh >/dev/null 2>&1 || exit 0
 command -v jq >/dev/null 2>&1 || exit 0
 
+run_with_timeout() {
+  seconds="$1"
+  shift
+
+  if command -v timeout >/dev/null 2>&1; then
+    timeout "$seconds" "$@"
+    return $?
+  fi
+  if command -v gtimeout >/dev/null 2>&1; then
+    gtimeout "$seconds" "$@"
+    return $?
+  fi
+
+  "$@" &
+  cmd_pid=$!
+  (
+    sleep "$seconds"
+    kill "$cmd_pid" 2>/dev/null
+  ) &
+  watchdog_pid=$!
+  wait "$cmd_pid"
+  rc=$?
+  kill "$watchdog_pid" 2>/dev/null
+  wait "$watchdog_pid" 2>/dev/null || true
+  return "$rc"
+}
+
 CS_TMP=$(mktemp -t cs-pending.XXXX)
 CTVD_TMP=$(mktemp -t ctvd-pending.XXXX)
 trap 'rm -f "$CS_TMP" "$CTVD_TMP"' EXIT
 
 # Parallel fetch, 2s each. Empty file on timeout/failure is fine — jq length returns 0.
 {
-  timeout 2 gh pr list --repo jeffhuber/cube-snap --state open \
+  run_with_timeout 2 gh pr list --repo jeffhuber/cube-snap --state open \
     --label needs-claude-review \
     --json number,headRefOid,title,updatedAt 2>/dev/null > "$CS_TMP" &
-  timeout 2 gh pr list --repo jeffhuber/cube-two-view-debugger --state open \
+  run_with_timeout 2 gh pr list --repo jeffhuber/cube-two-view-debugger --state open \
     --label needs-claude-review \
     --json number,headRefOid,title,updatedAt 2>/dev/null > "$CTVD_TMP" &
   wait

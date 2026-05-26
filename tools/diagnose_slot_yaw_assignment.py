@@ -54,7 +54,7 @@ from tools.corner_conventions import FACE_DEFS_BY_SIDE, wca_face_by_slot, wca_fa
 from tools.evaluate_hybrid_pipeline import DEFAULT_FACE_SIZE, _load_processing_image  # noqa: E402
 from tools.extract_color_samples import PairTask, face_colors_from_state, load_corpus_tasks  # noqa: E402
 from tools.global_cube_model import _fit_hull_label_tier1_model_from_alpha  # noqa: E402
-from tools.hull_label_yaw import infer_yaw_from_side_traces  # noqa: E402
+from tools.hull_label_yaw import infer_yaw_from_rectified_fits, infer_yaw_from_side_traces  # noqa: E402
 from tools.rectify_faces import extract_stickers_from_rectified, rectify_face  # noqa: E402
 from tools.sample_stickers_from_hull import apply_orientation, canonical_corner_order, discover_orientation  # noqa: E402
 
@@ -200,10 +200,12 @@ def _compact_trace(model: Optional[Any], trace: Optional[Mapping[str, Any]]) -> 
 def _hull_label_center_yaw_source(
     side_fits: Mapping[str, Mapping[str, Any]],
 ) -> Dict[str, Any]:
-    result = infer_yaw_from_side_traces(
-        side_fits["A"].get("trace") or {},
-        side_fits["B"].get("trace") or {},
-    )
+    result = infer_yaw_from_rectified_fits(side_fits)
+    if not result.get("accepted"):
+        result = infer_yaw_from_side_traces(
+            side_fits["A"].get("trace") or {},
+            side_fits["B"].get("trace") or {},
+        )
     return dict(result)
 
 

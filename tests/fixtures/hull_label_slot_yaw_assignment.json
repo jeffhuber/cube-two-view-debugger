@@ -46268,8 +46268,8 @@
   "schema": "hull_label_slot_yaw_assignment_v1",
   "source": {
     "detected_yaw_enabled": true,
-    "generated_at_utc": "2026-05-26T07:15:04.408950+00:00",
-    "git_sha": "13b470fe728e0e818260fa4918184a13b79b70f7",
+    "generated_at_utc": "2026-05-26T19:20:39.129861+00:00",
+    "git_sha": "e021b8907fbd8c054c4eeb25f54f58da22fb1ed8",
     "manifest": "tests/fixtures/corpus_manifest.json",
     "tool": "tools/diagnose_slot_yaw_assignment.py"
   },

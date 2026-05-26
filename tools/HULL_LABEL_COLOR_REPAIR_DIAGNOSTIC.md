@@ -8,8 +8,8 @@ same slot/yaw WCA assignment as the hull-label path, then compares
 plain Lab nearest-color classification, center forcing, exact
 9-per-color count repair, and guarded cubie-legality repair.
 
-Git head: `f699ebf11f54c36bac702db2f52a3089a7fedcc5`
-Generated: `2026-05-26T18:52:49.694503+00:00`
+Git head: `e021b8907fbd8c054c4eeb25f54f58da22fb1ed8`
+Generated: `2026-05-26T19:12:13.497392+00:00`
 
 ## Headline
 
@@ -22,17 +22,17 @@ mostly-correct panels to mostly-exact cubes:
 
 | Stage | Assembled | Exact | Legal | Mean stickers | Median hamming | Hamming distribution |
 |---|---:|---:|---:|---:|---:|---|
-| `canonical` | 45 | 18 | 18 | 51.78 | 2 | `{0: 18, 1: 4, 2: 10, 3: 3, 4: 2, 5: 2, 6: 1, 7: 2, 9: 1, 10: 2}` |
-| `canonical_center_forced` | 45 | 18 | 18 | 51.82 | 1 | `{0: 18, 1: 5, 2: 9, 3: 3, 4: 2, 5: 2, 6: 1, 7: 2, 9: 2, 10: 1}` |
-| `canonical_count_repaired` | 45 | 42 | 42 | 53.8 | 0 | `{0: 42, 2: 1, 3: 1, 4: 1}` |
-| `conservative_legal_repaired` | 45 | 43 | 43 | 54 | 0 | `{0: 43}` |
-| `guarded_broad_legal_repaired` | 45 | 44 | 44 | 54 | 0.0 | `{0: 44}` |
-| `adaptive` | 45 | 19 | 19 | 51.82 | 1 | `{0: 19, 1: 5, 2: 6, 3: 7, 4: 2, 5: 2, 7: 1, 11: 1, 12: 2}` |
-| `adaptive_count_repaired` | 45 | 36 | 36 | 52.87 | 0 | `{0: 36, 2: 4, 4: 1, 6: 1, 8: 1, 11: 1, 14: 1}` |
+| `canonical` | 46 | 18 | 18 | 51.7 | 2.0 | `{0: 18, 1: 4, 2: 10, 3: 3, 4: 2, 5: 2, 6: 2, 7: 2, 9: 1, 10: 2}` |
+| `canonical_center_forced` | 46 | 18 | 18 | 51.74 | 1.5 | `{0: 18, 1: 5, 2: 9, 3: 3, 4: 2, 5: 2, 6: 2, 7: 2, 9: 2, 10: 1}` |
+| `canonical_count_repaired` | 46 | 43 | 43 | 53.8 | 0.0 | `{0: 43, 2: 1, 3: 1, 4: 1}` |
+| `conservative_legal_repaired` | 46 | 44 | 44 | 54 | 0.0 | `{0: 44}` |
+| `guarded_broad_legal_repaired` | 46 | 45 | 45 | 54 | 0 | `{0: 45}` |
+| `adaptive` | 46 | 19 | 19 | 51.78 | 1.0 | `{0: 19, 1: 5, 2: 6, 3: 7, 4: 3, 5: 2, 7: 1, 11: 1, 12: 2}` |
+| `adaptive_count_repaired` | 46 | 37 | 37 | 52.89 | 0.0 | `{0: 37, 2: 4, 4: 1, 6: 1, 8: 1, 11: 1, 14: 1}` |
 
 `canonical_count_repaired` is the stable deterministic baseline:
-42/45 exact/legal, 44/45 within 3 stickers, and only 1 row above 3 stickers.
-The payload's recommended-method selector is now 44/45 exact with hamming distribution `{0: 44, 4: 1}`.
+43/46 exact/legal, 45/46 within 3 stickers, and only 1 row above 3 stickers.
+The payload's recommended-method selector is now 45/46 exact with hamming distribution `{0: 45, 4: 1}`.
 
 ## Full Summary By Yaw Source
 
@@ -46,14 +46,14 @@ The payload's recommended-method selector is now 44/45 exact with hamming distri
 | `ground_truth_captureYaw` | `adaptive` | 13 | 3 | 3 | 50.54 | 3 |
 | `ground_truth_captureYaw` | `adaptive_center_forced` | 13 | 3 | 3 | 50.54 | 3 |
 | `ground_truth_captureYaw` | `adaptive_count_repaired` | 13 | 7 | 7 | 51.69 | 0 |
-| `hull_label_center_colors` | `canonical` | 45 | 18 | 18 | 51.78 | 2 |
-| `hull_label_center_colors` | `canonical_center_forced` | 45 | 18 | 18 | 51.82 | 1 |
-| `hull_label_center_colors` | `canonical_count_repaired` | 45 | 42 | 42 | 53.8 | 0 |
-| `hull_label_center_colors` | `conservative_legal_repaired` | 45 | 43 | 43 | 54 | 0 |
-| `hull_label_center_colors` | `guarded_broad_legal_repaired` | 45 | 44 | 44 | 54 | 0.0 |
-| `hull_label_center_colors` | `adaptive` | 45 | 19 | 19 | 51.82 | 1 |
-| `hull_label_center_colors` | `adaptive_center_forced` | 45 | 19 | 19 | 51.84 | 1 |
-| `hull_label_center_colors` | `adaptive_count_repaired` | 45 | 36 | 36 | 52.87 | 0 |
+| `hull_label_center_colors` | `canonical` | 46 | 18 | 18 | 51.7 | 2.0 |
+| `hull_label_center_colors` | `canonical_center_forced` | 46 | 18 | 18 | 51.74 | 1.5 |
+| `hull_label_center_colors` | `canonical_count_repaired` | 46 | 43 | 43 | 53.8 | 0.0 |
+| `hull_label_center_colors` | `conservative_legal_repaired` | 46 | 44 | 44 | 54 | 0.0 |
+| `hull_label_center_colors` | `guarded_broad_legal_repaired` | 46 | 45 | 45 | 54 | 0 |
+| `hull_label_center_colors` | `adaptive` | 46 | 19 | 19 | 51.78 | 1.0 |
+| `hull_label_center_colors` | `adaptive_center_forced` | 46 | 19 | 19 | 51.8 | 1.0 |
+| `hull_label_center_colors` | `adaptive_count_repaired` | 46 | 37 | 37 | 52.89 | 0.0 |
 | `manifest_expectedYaw` | `canonical` | 7 | 2 | 2 | 51.29 | 2 |
 | `manifest_expectedYaw` | `canonical_center_forced` | 7 | 2 | 2 | 51.29 | 2 |
 | `manifest_expectedYaw` | `canonical_count_repaired` | 7 | 7 | 7 | 54 | 0 |
@@ -126,24 +126,24 @@ The payload's recommended-method selector is now 44/45 exact with hamming distri
 | 68 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 5 | 0 | 0 | 0 | `assembled` |
 | 69 | `hull_label_center_colors` | `conservative_legal_repaired` | `conservative_legal_repaired` | 0 | 6 | 3 | 0 | 14 | `assembled` |
 | 70 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 5 | 0 | 0 | 0 | `assembled` |
-| 71 | `white_up_default` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 6 | 0 | 0 | 0 | `assembled` |
+| 71 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 6 | 0 | 0 | 0 | `assembled` |
 | 72 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 9 | 0 | 0 | 0 | `assembled` |
 | 73 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 10 | 0 | 0 | 0 | `assembled` |
 
 ## Current Run Notes
 
-- The raw `canonical` classifier is already close: 18/45 exact, 35/45
+- The raw `canonical` classifier is already close: 18/46 exact, 35/46
   within 3 stickers. The dominant issue is duplicated/missing color
   counts, not WCA face assignment.
-- Greedy count repair is a large deterministic jump: 42/45 exact/legal
+- Greedy count repair is a large deterministic jump: 43/46 exact/legal
   with the production-like yaw source. This supersedes the older
   20/46 exact headline for raw hull-label `prefer` panels.
 - Guarded cubie-legality repair is now part of the color-repair payload:
-  it is 44/45 exact here and exposes
+  it is 45/46 exact here and exposes
   conservative and guarded-broad legal candidates, while the
   ungated broad legal candidate remains diagnostic-only.
 - Canonical Lab count repair beats the adaptive-palette count repair in
-  this run (42/45 exact versus 36/45). Adaptive palettes should stay
+  this run (43/46 exact versus 37/46). Adaptive palettes should stay
   diagnostic or gated; do not blindly prefer them.
 - Sets 69-73 remain useful stress cases. With the Fixer-equivalent 1600px
   geometry path, Sets 70-73 are exact after count repair; Set 69 still

@@ -118,3 +118,78 @@ def infer_yaw_from_side_traces(
         ],
     })
     return result
+
+
+def _fit_from_entry(entry: Any) -> Any:
+    if isinstance(entry, Mapping):
+        return entry.get("fit") or entry.get("model")
+    return entry
+
+
+def infer_yaw_from_rectified_fits(fits_by_side: Mapping[str, Any]) -> Dict[str, Any]:
+    """Infer capture yaw directly from selected hull-label rectified fits.
+
+    This is the production/Fixer path: classify the six rectified slot centers
+    and score yaw candidates. If all six centers are ambiguous because an
+    upper/D center is photometrically weak, fall back to the four side-face
+    centers with a stricter unanimous-side match gate.
+    """
+    from rubik_recognizer.colors import CLASSIFIER_CANONICAL, classify_rgb_with_mode
+    from tools.rectify_faces import extract_stickers_from_rectified
+
+    observed = []
+    observations = []
+    for side in ("A", "B"):
+        fit = _fit_from_entry(fits_by_side.get(side))
+        rectified_faces = getattr(fit, "rectified_faces", None)
+        if not isinstance(rectified_faces, Mapping):
+            continue
+        for slot in ("upper", "right", "front"):
+            face_img = rectified_faces.get(slot)
+            if face_img is None:
+                continue
+            center = extract_stickers_from_rectified(face_img)[1][1]
+            rgb = tuple(int(v) for v in center.rgb)
+            match = classify_rgb_with_mode(rgb, CLASSIFIER_CANONICAL)
+            observed.append((side, slot, match.face))
+            observations.append({
+                "side": side,
+                "slot": slot,
+                "centerFace": match.face,
+                "centerColor": match.color,
+                "rgb": list(rgb),
+                "distance": round(float(match.distance), 2),
+                "confidence": round(float(match.confidence), 4),
+            })
+
+    if len(observed) != 6:
+        return {
+            "source": "hull_label_center_colors",
+            "status": "unavailable",
+            "accepted": False,
+            "yawQuarterTurns": None,
+            "reason": "need six slot center observations",
+            "observedCenters": observations,
+        }
+
+    result = score_yaw_candidates(observed)
+    if not result.get("accepted"):
+        side_observed = tuple(item for item in observed if item[1] != "upper")
+        side_result = score_yaw_candidates(
+            side_observed,
+            min_matches=4,
+            min_margin=4,
+        )
+        if side_result.get("accepted"):
+            side_result["status"] = "accepted_side_faces_only"
+            side_result["allCenterBestYawQuarterTurns"] = result.get("bestYawQuarterTurns")
+            side_result["allCenterBestScore"] = result.get("bestScore")
+            side_result["allCenterSecondScore"] = result.get("secondScore")
+            side_result["allCenterMargin"] = result.get("margin")
+            result = side_result
+    result.update({
+        "source": "hull_label_center_colors",
+        "status": result.get("status") or ("accepted" if result["accepted"] else "ambiguous"),
+        "observedCenters": observations,
+    })
+    return result

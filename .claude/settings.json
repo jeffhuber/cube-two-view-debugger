@@ -200,5 +200,19 @@
       "Edit(/Users/jhuber/**/.aws/**)",
       "Edit(/Users/jhuber/**/.config/**)"
     ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/jhuber/cube-two-view-debugger/tools/claude_session_start_sweep.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
   }
 }

@@ -891,6 +891,7 @@ Mirror invariant — these files MUST stay byte-identical across
 - `tools/codex_audit_labeler.py`
 - `tools/post_review.sh`
 - `tools/safe_gh_comment.py`
+- `tools/claude_session_start_sweep.sh`
 - `tools/CODEX_AUDIT_PROTOCOL.md`
 - `.github/workflows/codex-audit-labeler.yml`
 

@@ -204,11 +204,11 @@
   "hooks": {
     "SessionStart": [
       {
-        "matcher": "startup|resume|compact",
+        "matcher": "startup|resume|compact|clear",
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/jhuber/cube-two-view-debugger/tools/claude_session_start_sweep.sh",
+            "command": "$CLAUDE_PROJECT_DIR/tools/claude_session_start_sweep.sh",
             "timeout": 5
           }
         ]

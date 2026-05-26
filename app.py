@@ -19,7 +19,7 @@ import traceback
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 from urllib.parse import unquote
 
 import numpy as _np  # noqa: F401  -- needed for runtime diag block
@@ -836,6 +836,89 @@ def _llm_rectified_session() -> Any:
         return _LLM_RECTIFIED_SESSION
 
 
+def _llm_rectified_repair_valid(evaluation: Mapping[str, Any]) -> bool:
+    repair = evaluation.get("repair")
+    if not isinstance(repair, Mapping):
+        return False
+    recommended = repair.get("recommended")
+    return bool(isinstance(recommended, Mapping) and recommended.get("validState"))
+
+
+def _llm_rectified_repair_rank(evaluation: Mapping[str, Any]) -> Tuple[int, int, float, int, int]:
+    """Rank a threshold-pair evaluation using production-available signals."""
+    repair = evaluation.get("repair")
+    if not isinstance(repair, Mapping):
+        return (9, 99, 999.0, 99, int(evaluation.get("yawQuarterTurns") or 0))
+
+    methods = repair.get("methods") if isinstance(repair.get("methods"), Mapping) else {}
+    canonical = methods.get("canonical_count_repaired") if isinstance(methods.get("canonical_count_repaired"), Mapping) else {}
+    conservative = methods.get("conservative_legal_repaired") if isinstance(methods.get("conservative_legal_repaired"), Mapping) else {}
+    guarded = methods.get("guarded_broad_legal_repaired") if isinstance(methods.get("guarded_broad_legal_repaired"), Mapping) else {}
+    recommended = repair.get("recommended") if isinstance(repair.get("recommended"), Mapping) else {}
+
+    if canonical.get("validState"):
+        tier = 0
+        primary = int(canonical.get("repairMoveCount") or 0)
+        cost = 0.0
+        changes = primary
+    elif conservative.get("validState"):
+        tier = 1
+        primary = int(conservative.get("repairChanges") or conservative.get("repairMoveCount") or 0)
+        cost = float(conservative.get("repairCost") or 0.0)
+        changes = primary
+    elif guarded.get("validState"):
+        tier = 2
+        primary = int(guarded.get("repairChanges") or guarded.get("repairMoveCount") or 0)
+        cost = float(guarded.get("repairCost") or 0.0)
+        changes = primary
+    elif canonical.get("countBalanced"):
+        tier = 3
+        primary = int(canonical.get("repairMoveCount") or 99)
+        cost = 0.0
+        changes = primary
+    else:
+        tier = 4
+        primary = int(recommended.get("repairMoveCount") or 99)
+        cost = float(recommended.get("repairCost") or 999.0)
+        changes = int(recommended.get("repairChanges") or primary)
+    return (tier, primary, cost, changes, int(evaluation.get("yawQuarterTurns") or 0))
+
+
+def _choose_llm_rectified_pair_threshold(
+    *,
+    current_combo: Mapping[str, Any],
+    candidates: Sequence[Mapping[str, Any]],
+) -> Dict[str, Any]:
+    """Conservative A/B threshold selection for rectified Fixer input."""
+    current_eval = current_combo.get("evaluation")
+    if isinstance(current_eval, Mapping) and _llm_rectified_repair_valid(current_eval):
+        selected = dict(current_combo)
+        selected["selectionReason"] = "kept_current_valid_repair"
+        return selected
+
+    assembled = [
+        combo for combo in candidates
+        if isinstance(combo.get("evaluation"), Mapping)
+        and combo["evaluation"].get("status") == "assembled"
+    ]
+    if not assembled:
+        selected = dict(current_combo)
+        selected["selectionReason"] = "kept_current_no_assembled_alternative"
+        return selected
+
+    selected = dict(min(
+        assembled,
+        key=lambda combo: (
+            _llm_rectified_repair_rank(combo["evaluation"]),
+            float(combo.get("stickerScoreTotal") or 999999.0),
+            int(combo.get("thresholds", {}).get("A") or 9999),
+            int(combo.get("thresholds", {}).get("B") or 9999),
+        ),
+    ))
+    selected["selectionReason"] = "current_invalid_selected_best_pair"
+    return selected
+
+
 def prepare_llm_rectified_input(
     image_a_bytes: bytes,
     image_b_bytes: bytes,
@@ -858,9 +941,10 @@ def prepare_llm_rectified_input(
     from rembg import remove
 
     from tools.corner_conventions import wca_face_by_slot
+    from tools.global_cube_model import _slot_center_faces_from_rectified
     from tools.hull_label_color_repair import repair_from_hull_label_fits
     from tools.hull_label_assembly import convention_orientation_for_slot
-    from tools.rectify_via_hull_labels import select_hull_label_threshold_fit
+    from tools.rectify_via_hull_labels import DEFAULT_MASK_THRESHOLDS, select_hull_label_threshold_fit
 
     def load_image(payload: bytes) -> Image.Image:
         with Image.open(io.BytesIO(payload)) as img:
@@ -942,45 +1026,181 @@ def prepare_llm_rectified_input(
         data = out.getvalue()
         return base64.b64encode(data).decode("ascii"), len(data)
 
+    def fit_threshold_candidates(
+        side: str,
+        image: Image.Image,
+        alpha: _np.ndarray,
+    ) -> Tuple[Dict[int, Dict[str, Any]], Dict[str, Any]]:
+        accepted: Dict[int, Dict[str, Any]] = {}
+        candidates: List[Dict[str, Any]] = []
+        for threshold in DEFAULT_MASK_THRESHOLDS:
+            selection = select_hull_label_threshold_fit(
+                image,
+                alpha,
+                side,
+                thresholds=[int(threshold)],
+                face_size_px=panel_size,
+            )
+            candidate_rows = selection.trace.get("threshold_candidates") or []
+            candidate = dict(candidate_rows[0] if candidate_rows else selection.trace)
+            candidates.append(candidate)
+            if selection.fit is None:
+                continue
+            trace = dict(selection.trace)
+            trace["slot_center_faces"] = _slot_center_faces_from_rectified(selection.fit.rectified_faces)
+            accepted[int(threshold)] = {
+                "fit": selection.fit,
+                "image": image,
+                "trace": trace,
+            }
+        aggregate_trace = {
+            "thresholds": [int(value) for value in DEFAULT_MASK_THRESHOLDS],
+            "threshold_candidates": candidates,
+            "accepted_thresholds": sorted(accepted),
+        }
+        return accepted, aggregate_trace
+
+    def current_entry(entries: Mapping[int, Mapping[str, Any]]) -> Tuple[int, Dict[str, Any]]:
+        threshold, entry = min(
+            entries.items(),
+            key=lambda item: (
+                float((item[1].get("trace") or {}).get("sticker_score_total") or 999999.0),
+                int(item[0]),
+            ),
+        )
+        return int(threshold), dict(entry)
+
+    def evaluate_pair(side_entries: Mapping[str, Mapping[str, Any]]) -> Dict[str, Any]:
+        fits_for_yaw = {side: side_entries[side]["fit"] for side in ("A", "B")}
+        yaw_inference = _infer_yaw_from_rectified_fits(fits_for_yaw)
+        if yaw_quarter_turns is None:
+            if not yaw_inference.get("accepted"):
+                return {
+                    "status": "yaw_unavailable",
+                    "yawInference": yaw_inference,
+                    "yawQuarterTurns": None,
+                    "yawSource": "center-inference",
+                }
+            selected = int(yaw_inference["yawQuarterTurns"])
+            source = "center-inference"
+        else:
+            selected = yaw_quarter_turns % 4
+            source = "explicit"
+        try:
+            repair = repair_from_hull_label_fits(
+                side_fits=side_entries,
+                yaw_quarter_turns=selected,
+            )
+        except Exception as exc:  # noqa: BLE001
+            return {
+                "status": "repair_error",
+                "yawInference": yaw_inference,
+                "yawQuarterTurns": selected,
+                "yawSource": source,
+                "repair": {
+                    "schema": "hull_label_color_repair_v1",
+                    "status": "error",
+                    "error": f"{type(exc).__name__}: {exc}",
+                },
+            }
+        return {
+            "status": "assembled",
+            "yawInference": yaw_inference,
+            "yawQuarterTurns": selected,
+            "yawSource": source,
+            "repair": repair,
+        }
+
+    def compact_combo(
+        thresholds: Mapping[str, int],
+        side_entries: Mapping[str, Mapping[str, Any]],
+    ) -> Dict[str, Any]:
+        evaluation = evaluate_pair(side_entries)
+        score_total = sum(
+            float((side_entries[side].get("trace") or {}).get("sticker_score_total") or 0.0)
+            for side in ("A", "B")
+        )
+        return {
+            "thresholds": {"A": int(thresholds["A"]), "B": int(thresholds["B"])},
+            "sideFits": {side: dict(side_entries[side]) for side in ("A", "B")},
+            "evaluation": evaluation,
+            "productionRank": list(_llm_rectified_repair_rank(evaluation)),
+            "stickerScoreTotal": round(score_total, 2),
+        }
+
     image_a = load_image(image_a_bytes)
     image_b = load_image(image_b_bytes)
     session = _llm_rectified_session()
-    fits_by_side: Dict[str, Any] = {}
-    threshold_traces_by_side: Dict[str, Any] = {}
+    threshold_entries_by_side: Dict[str, Dict[int, Dict[str, Any]]] = {}
+    threshold_diagnostics_by_side: Dict[str, Any] = {}
     for side, image in (("A", image_a), ("B", image_b)):
         rgba = remove(image, session=session).convert("RGBA")
         alpha = _np.asarray(rgba.split()[-1], dtype=_np.uint8)
-        selection = select_hull_label_threshold_fit(
-            image,
-            alpha,
-            side,
-            face_size_px=panel_size,
-        )
-        fit = selection.fit
-        if fit is None:
+        entries, threshold_diagnostics = fit_threshold_candidates(side, image, alpha)
+        if not entries:
             raise RuntimeError(
                 f"hull-label rectification failed for side {side}: "
-                f"{selection.trace.get('hard_failures')}"
+                "no alpha threshold candidate accepted"
             )
-        fits_by_side[side] = fit
-        threshold_traces_by_side[side] = selection.trace
+        threshold_entries_by_side[side] = entries
+        threshold_diagnostics_by_side[side] = threshold_diagnostics
 
-    yaw_inference = _infer_yaw_from_rectified_fits(fits_by_side)
-    if yaw_quarter_turns is None:
-        if not yaw_inference.get("accepted"):
-            raise LlmRectifiedYawInferenceError(
-                "could not infer capture yaw from rectified center colors "
-                f"(best={yaw_inference.get('bestYawQuarterTurns')}, "
-                f"score={yaw_inference.get('bestScore')}, "
-                f"second={yaw_inference.get('secondScore')}, "
-                f"margin={yaw_inference.get('margin')})",
-                yaw_inference,
-            )
-        selected_yaw = int(yaw_inference["yawQuarterTurns"])
-        yaw_source = "center-inference"
-    else:
-        selected_yaw = yaw_quarter_turns % 4
-        yaw_source = "explicit"
+    current_thresholds: Dict[str, int] = {}
+    current_side_entries: Dict[str, Dict[str, Any]] = {}
+    for side in ("A", "B"):
+        threshold, entry = current_entry(threshold_entries_by_side[side])
+        current_thresholds[side] = threshold
+        current_side_entries[side] = entry
+
+    current_combo = compact_combo(current_thresholds, current_side_entries)
+    pair_candidates: List[Dict[str, Any]] = [current_combo]
+    if not _llm_rectified_repair_valid(current_combo["evaluation"]):
+        pair_candidates = []
+        for threshold_a, entry_a in sorted(threshold_entries_by_side["A"].items()):
+            for threshold_b, entry_b in sorted(threshold_entries_by_side["B"].items()):
+                pair_candidates.append(compact_combo(
+                    {"A": threshold_a, "B": threshold_b},
+                    {"A": entry_a, "B": entry_b},
+                ))
+    selected_combo = _choose_llm_rectified_pair_threshold(
+        current_combo=current_combo,
+        candidates=pair_candidates,
+    )
+    selected_eval = selected_combo["evaluation"]
+    yaw_inference = selected_eval.get("yawInference") or {}
+    if selected_eval.get("status") == "yaw_unavailable" and yaw_quarter_turns is None:
+        raise LlmRectifiedYawInferenceError(
+            "could not infer capture yaw from rectified center colors "
+            f"(best={yaw_inference.get('bestYawQuarterTurns')}, "
+            f"score={yaw_inference.get('bestScore')}, "
+            f"second={yaw_inference.get('secondScore')}, "
+            f"margin={yaw_inference.get('margin')})",
+            dict(yaw_inference),
+        )
+    selected_yaw = int(selected_eval.get("yawQuarterTurns") or 0)
+    yaw_source = str(selected_eval.get("yawSource") or "center-inference")
+    selected_side_entries = selected_combo["sideFits"]
+    fits_by_side = {side: selected_side_entries[side]["fit"] for side in ("A", "B")}
+    threshold_traces_by_side = {
+        side: dict(selected_side_entries[side].get("trace") or {})
+        for side in ("A", "B")
+    }
+    for side in ("A", "B"):
+        threshold_traces_by_side[side]["threshold_candidates"] = threshold_diagnostics_by_side[side]["threshold_candidates"]
+        threshold_traces_by_side[side]["accepted_thresholds"] = threshold_diagnostics_by_side[side]["accepted_thresholds"]
+        threshold_traces_by_side[side]["pair_selected_mask_threshold"] = selected_combo["thresholds"][side]
+    pair_threshold_selection = {
+        "strategy": "guarded_pair_when_current_invalid",
+        "selectionReason": selected_combo.get("selectionReason"),
+        "currentThresholds": current_thresholds,
+        "selectedThresholds": selected_combo.get("thresholds"),
+        "currentRepairValid": _llm_rectified_repair_valid(current_combo["evaluation"]),
+        "selectedRepairValid": _llm_rectified_repair_valid(selected_eval),
+        "evaluatedPairCount": len(pair_candidates),
+        "possiblePairCount": (
+            len(threshold_entries_by_side["A"]) * len(threshold_entries_by_side["B"])
+        ),
+    }
 
     panels_by_face: Dict[str, Image.Image] = {}
     panel_metadata: List[Dict[str, Any]] = []
@@ -1015,28 +1235,10 @@ def prepare_llm_rectified_input(
     image_a_b64, image_a_size = jpeg_base64(image_a_sheet)
     image_b_b64, image_b_size = jpeg_base64(image_b_sheet)
     panel_metadata.sort(key=lambda item: "URFDLB".index(str(item["wcaFace"])))
-    try:
-        deterministic_repair = repair_from_hull_label_fits(
-            side_fits={
-                "A": {
-                    "fit": fits_by_side["A"],
-                    "image": image_a,
-                    "trace": threshold_traces_by_side.get("A"),
-                },
-                "B": {
-                    "fit": fits_by_side["B"],
-                    "image": image_b,
-                    "trace": threshold_traces_by_side.get("B"),
-                },
-            },
-            yaw_quarter_turns=selected_yaw,
-        )
-    except Exception as exc:  # noqa: BLE001
-        deterministic_repair = {
-            "schema": "hull_label_color_repair_v1",
-            "status": "error",
-            "error": f"{type(exc).__name__}: {exc}",
-        }
+    deterministic_repair = selected_eval.get("repair") or {
+        "schema": "hull_label_color_repair_v1",
+        "status": selected_eval.get("status", "unavailable"),
+    }
     return {
         "status": "success",
         "prompt": "rectified",
@@ -1049,6 +1251,7 @@ def prepare_llm_rectified_input(
         "yawInference": yaw_inference,
         "panels": panel_metadata,
         "hullLabelMaskThresholds": threshold_traces_by_side,
+        "hullLabelPairThresholdSelection": pair_threshold_selection,
         "deterministicColorRepair": deterministic_repair,
     }
 

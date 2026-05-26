@@ -14,6 +14,7 @@ from tools.hull_label_color_repair import (
     FACE_TO_COLOR,
     StickerObservation,
     assemble_color_repair_payload,
+    choose_recommended_method,
     _face_index,
     greedy_count_repair,
 )
@@ -127,7 +128,9 @@ def test_render_report_highlights_hull_label_center_color_scoreboard():
 
     assert "The production-like yaw source is `hull_label_center_colors`" in report
     assert "9-per-color count repair" in report
-    assert "`canonical_count_repaired` is the current best deterministic candidate" in report
+    assert "`canonical_count_repaired` is the stable deterministic baseline" in report
+    assert "The payload's recommended-method selector is now" in report
+    assert "Guarded cubie-legality repair is now part of the color-repair payload" in report
 
 
 def test_assemble_color_repair_payload_exposes_repaired_draft():
@@ -159,3 +162,17 @@ def test_assemble_color_repair_payload_exposes_repaired_draft():
     assert payload["recommended"]["validState"] is True
     assert payload["recommended"]["repairMoveCount"] == 0
     assert payload["recommended"]["confidence"] == "high"
+    assert payload["methods"]["conservative_legal_repaired"]["status"] == "already_valid_count_repair"
+    assert payload["methods"]["guarded_broad_legal_repaired"]["gate"]["accepted"] is True
+    assert payload["methods"]["broad_legal_repaired"]["diagnosticOnly"] is True
+
+
+def test_choose_recommended_method_uses_guarded_legal_before_balanced_fallback():
+    methods = {
+        "canonical_count_repaired": {"validState": False, "countBalanced": True},
+        "conservative_legal_repaired": {"validState": False, "countBalanced": False},
+        "guarded_broad_legal_repaired": {"validState": True, "countBalanced": True},
+        "broad_legal_repaired": {"validState": True, "countBalanced": True},
+    }
+
+    assert choose_recommended_method(methods) == "guarded_broad_legal_repaired"

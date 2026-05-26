@@ -436,6 +436,8 @@ def build_summary(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
         "canonical",
         "canonical_center_forced",
         "canonical_count_repaired",
+        "conservative_legal_repaired",
+        "guarded_broad_legal_repaired",
         "adaptive",
         "adaptive_center_forced",
         "adaptive_count_repaired",
@@ -459,7 +461,7 @@ def _best_method(row: Mapping[str, Any], source: str) -> Optional[Tuple[str, int
     scored = [
         (name, method.get("hamming"))
         for name, method in evaluation.get("methods", {}).items()
-        if method.get("hamming") is not None
+        if name != "broad_legal_repaired" and method.get("hamming") is not None
     ]
     if not scored:
         return None
@@ -498,8 +500,8 @@ def render_report(payload: Mapping[str, Any]) -> str:
         "This diagnostic asks whether deterministic color bookkeeping can clean",
         "up hull-label rectified panels before involving an LLM. It uses the",
         "same slot/yaw WCA assignment as the hull-label path, then compares",
-        "plain Lab nearest-color classification, center forcing, and exact",
-        "9-per-color count repair.",
+        "plain Lab nearest-color classification, center forcing, exact",
+        "9-per-color count repair, and guarded cubie-legality repair.",
         "",
         f"Git head: `{payload['source']['git_sha']}`",
         f"Generated: `{payload['source']['generated_at_utc']}`",
@@ -518,6 +520,8 @@ def render_report(payload: Mapping[str, Any]) -> str:
         "canonical",
         "canonical_center_forced",
         "canonical_count_repaired",
+        "conservative_legal_repaired",
+        "guarded_broad_legal_repaired",
         "adaptive",
         "adaptive_count_repaired",
     ):
@@ -531,14 +535,23 @@ def render_report(payload: Mapping[str, Any]) -> str:
 
     canonical_count = primary_methods.get("canonical_count_repaired", {})
     canonical_count_values = _method_hamming_values(rows, primary_source, "canonical_count_repaired")
+    recommended_values = [
+        evaluation.get("recommended", {}).get("hamming")
+        for row in rows
+        for evaluation in [row.get("evaluations", {}).get(primary_source, {})]
+        if isinstance(evaluation.get("recommended", {}).get("hamming"), int)
+    ]
     above_three = sum(value > 3 for value in canonical_count_values)
     above_three_label = "row" if above_three == 1 else "rows"
     lines.extend([
         "",
-        "`canonical_count_repaired` is the current best deterministic candidate:",
+        "`canonical_count_repaired` is the stable deterministic baseline:",
         f"{canonical_count.get('exact')}/{canonical_count.get('assembled')} exact/legal, "
         f"{sum(value <= 3 for value in canonical_count_values)}/{len(canonical_count_values)} within 3 stickers, "
         f"and only {above_three} {above_three_label} above 3 stickers.",
+        f"The payload's recommended-method selector is now "
+        f"{sum(value == 0 for value in recommended_values)}/{len(recommended_values)} exact "
+        f"with hamming distribution `{_hamming_distribution(recommended_values)}`.",
         "",
         "## Full Summary By Yaw Source",
         "",
@@ -546,7 +559,17 @@ def render_report(payload: Mapping[str, Any]) -> str:
         "|---|---|---:|---:|---:|---:|---:|",
     ])
     for source, methods in payload["summary"]["yawSources"].items():
-        for method, row in methods.items():
+        for method in (
+            "canonical",
+            "canonical_center_forced",
+            "canonical_count_repaired",
+            "conservative_legal_repaired",
+            "guarded_broad_legal_repaired",
+            "adaptive",
+            "adaptive_center_forced",
+            "adaptive_count_repaired",
+        ):
+            row = methods[method]
             lines.append(
                 f"| `{source}` | `{method}` | {row['assembled']} | {row['exact']} | "
                 f"{row['legal']} | {row['meanStickersCorrect']} | {row['medianHamming']} |"
@@ -556,8 +579,8 @@ def render_report(payload: Mapping[str, Any]) -> str:
         "",
         "## Per-Set Snapshot",
         "",
-        "| Set | Source | Best method | Best hamming | Canonical | Canonical+count | Adaptive+count | Status |",
-        "|---:|---|---|---:|---:|---:|---:|---|",
+        "| Set | Source | Recommended | Best safe method | Best hamming | Canonical | Canonical+count | Guarded legal | Adaptive+count | Status |",
+        "|---:|---|---|---|---:|---:|---:|---:|---:|---|",
     ])
     for row in rows:
         source = primary_source if primary_source in row.get("evaluations", {}) else next(iter(row.get("evaluations", {})), "")
@@ -565,10 +588,12 @@ def render_report(payload: Mapping[str, Any]) -> str:
         best = _best_method(row, source)
         canonical = evaluation.get("methods", {}).get("canonical", {}).get("hamming")
         canonical_count = evaluation.get("methods", {}).get("canonical_count_repaired", {}).get("hamming")
+        guarded_legal = evaluation.get("methods", {}).get("guarded_broad_legal_repaired", {}).get("hamming")
         adaptive_count = evaluation.get("methods", {}).get("adaptive_count_repaired", {}).get("hamming")
         lines.append(
-            f"| {row['setId']} | `{source}` | `{best[0] if best else 'n/a'}` | "
-            f"{best[1] if best else 'n/a'} | {canonical} | {canonical_count} | {adaptive_count} | "
+            f"| {row['setId']} | `{source}` | `{evaluation.get('recommendedMethod', 'n/a')}` | "
+            f"`{best[0] if best else 'n/a'}` | {best[1] if best else 'n/a'} | "
+            f"{canonical} | {canonical_count} | {guarded_legal} | {adaptive_count} | "
             f"`{evaluation.get('status', 'missing')}` |"
         )
 
@@ -582,6 +607,9 @@ def render_report(payload: Mapping[str, Any]) -> str:
         "- Greedy count repair is a large deterministic jump: 42/46 exact/legal",
         "  with the production-like yaw source. This supersedes the older",
         "  20/46 exact headline for raw hull-label `prefer` panels.",
+        "- Guarded cubie-legality repair is now part of the color-repair payload:",
+        "  it exposes conservative and guarded-broad legal candidates, while the",
+        "  ungated broad legal candidate remains diagnostic-only.",
         "- Canonical Lab count repair beats the adaptive-palette count repair in",
         "  this run (42/46 exact versus 36/46). Adaptive palettes should stay",
         "  diagnostic or gated; do not blindly prefer them.",
@@ -609,6 +637,10 @@ def render_report(payload: Mapping[str, Any]) -> str:
         "  the physical requirement that each WCA face color appears exactly nine",
         "  times. This catches duplicated/missing color reads while preserving the",
         "  sampled geometry.",
+        "- `conservative_legal_repaired` and `guarded_broad_legal_repaired` add the",
+        "  next constraint layer: cubie legality. The guarded broad method uses",
+        "  the same no-ground-truth cost/change gate as the legal-repair diagnostic;",
+        "  the raw `broad_legal_repaired` method is emitted only for traceability.",
         "- The adaptive palette uses the six known center samples as anchors. It is",
         "  still deterministic and local to the two input photos; no GT colors or",
         "  LLM output are used.",

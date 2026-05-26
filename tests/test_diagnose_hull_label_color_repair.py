@@ -6,6 +6,7 @@ from pathlib import Path
 from tools.diagnose_hull_label_color_repair import (
     _metadata_yaw_source,
     build_summary,
+    render_report,
 )
 from tools.hull_label_color_repair import (
     FACE_ORDER,
@@ -98,6 +99,35 @@ def test_build_summary_counts_repair_methods():
     assert repaired["exact"] == 1
     assert repaired["legal"] == 1
     assert repaired["meanStickersCorrect"] == 54
+
+
+def test_render_report_highlights_hull_label_center_color_scoreboard():
+    row = {
+        "setId": "99",
+        "evaluations": {
+            "hull_label_center_colors": {
+                "status": "assembled",
+                "methods": {
+                    "canonical": {"hamming": 2, "exactMatch": False, "validState": False},
+                    "canonical_center_forced": {"hamming": 2, "exactMatch": False, "validState": False},
+                    "canonical_count_repaired": {"hamming": 0, "exactMatch": True, "validState": True},
+                    "adaptive": {"hamming": 1, "exactMatch": False, "validState": False},
+                    "adaptive_count_repaired": {"hamming": 0, "exactMatch": True, "validState": True},
+                },
+            }
+        },
+    }
+    payload = {
+        "source": {"git_sha": "abc123", "generated_at_utc": "2026-05-26T00:00:00+00:00"},
+        "summary": build_summary([row]),
+        "rows": [row],
+    }
+
+    report = render_report(payload)
+
+    assert "The production-like yaw source is `hull_label_center_colors`" in report
+    assert "9-per-color count repair" in report
+    assert "`canonical_count_repaired` is the current best deterministic candidate" in report
 
 
 def test_assemble_color_repair_payload_exposes_repaired_draft():

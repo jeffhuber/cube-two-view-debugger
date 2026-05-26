@@ -115,6 +115,112 @@ discipline from the EXIF section above to *any* comparative claim.
 The EXIF rule is "view the photo before reading it"; this rule is
 "view both photos before comparing them."
 
+## Recognizer architecture: from LLM-as-oracle to constrained inference (2026-05-26)
+
+The recognizer architecture has shifted significantly over the past
+week. **The current direction is constrained cube-state inference,
+not LLM-as-oracle.** Future contributors should orient around this
+framing rather than the older "LLM reads colors, deterministic repair
+cleans up" mental model.
+
+### The shift, in one paragraph
+
+The old framing treated recognition as "extract 54 colored stickers
+from two photos, run a solver." The LLM (claude-sonnet-rectified)
+was the color extractor; deterministic post-processing was an
+afterthought. That framing implicitly assumed per-sticker
+independence: P(98% cube exact) requires P(99.96% sticker accuracy).
+At the empirical ~96.4% per-sticker we were stuck — too few exact
+cubes to ship as a no-touch recognizer.
+
+The reframe (credit to Codex's 2026-05-26 strategic exchange with
+Claude) is: treat recognition as a **constrained cube-state
+inference problem**. Each sticker has top-N color candidates with
+confidence — from Lab distance to known WCA centers AND from the
+LLM read — two independent evidence sources. Hard constraints
+(9-per-color, fixed centers, cubie legality from valid corner
+orientations + edge permutation parity, two-view consistency on
+shared cubies) slash the solution space. Find the most-likely valid
+cube state given the noisy evidence. **LLMs become one input to a
+constrained solver, not the source of truth.**
+
+### Empirical state (46-pair shadow corpus)
+
+| Variant | Exact / 46 | Within 3 stickers |
+|---|---|---|
+| Old fixed-α-mask + LLM | 0 | 0 |
+| Hull-label + LLM raw (`prefer`) | 20 (43%) | 38 (83%) |
+| `canonical_count_repaired` | 42 (91%) | 45 (98%) |
+| `conservative_legal_repaired` | 43 (93%) | 45 (98%) |
+| `broad_legal_repaired` *(diagnostic-only)* | 46 (100%) | 46 (100%) |
+
+PR trail: #318 hull-label validation refresh · #319 color repair
+diagnostic · #320 mask threshold diagnostic · #322 production
+threshold selector · #324 color-repair helper + API · #325
+post-repair scoreboard · #326 legal-repair probe.
+
+The `broad_legal_repaired` 46/46 is **NOT** a recognition number —
+it's an upper-bound diagnostic showing a legal cube exists within
+the search cap (some rows require 8-11 sticker changes). The
+production-candidate number is `canonical_count_repaired` at 42/46
+exact, or `conservative_legal_repaired` at 43/46.
+
+### What's currently wired
+
+- **`/api/recognize` (default)**: still the original cloud-LLM
+  passthrough on raw photos. **Unchanged.** Production behavior
+  preserved while we iterate on the constrained-inference stack.
+- **`/api/llm-rectified-input`** (Fixer-side endpoint): serves
+  hull-label-rectified panels + `deterministicColorRepair` per pair.
+  Consumed by cube-snap's "claude-sonnet-rectified" Fixer option
+  (cube-snap#187).
+- **`tools/hull_label_color_repair.py`**: the deterministic repair
+  helper. Extracted from the diagnostic into a reusable module by
+  ctvd#324. Used by both the API endpoint and the 69-73 diagnostic
+  so they stay aligned.
+- **Diagnostic suite**: `diagnose_hull_label_color_repair.py`,
+  `diagnose_hull_label_legal_repair.py`, `diagnose_hull_label_mask_thresholds.py`,
+  + their committed JSON/markdown fixtures. Read these for current
+  per-set behavior before opening a recognizer PR.
+
+### Open levers (approximate descending leverage)
+
+1. **Two-view consistency on shared cubies.** Image A's R-face center
+   and image B's L-face center are unrelated, but image A's
+   front-right-top corner sticker IS image B's back-right-top corner
+   sticker — same physical sticker, two reads. Hard constraint.
+   Not yet pulled. Likely the single biggest accuracy lever
+   remaining.
+2. **Lab + LLM evidence ensemble per sticker.** Currently LLM-only;
+   adding a Lab-distance read as a second independent evidence
+   source would tighten the per-sticker posterior before any
+   constraint solving. Cheap to add (Lab classification is already
+   used in the diagnostic pipeline) and probably the next-largest
+   per-sticker accuracy lift.
+3. **Confidence-gated auto-merge as production policy.** high →
+   auto-recognize; med → flag uncertain stickers; low → Fixer with
+   draft. The `recommended.confidence` field on the repair output
+   already exists; needs to be threaded into `/api/recognize`.
+4. **Graduate `canonical_count_repaired` (or `conservative_legal_repaired`)
+   to the default recognizer.** Currently Fixer-side opt-in only.
+   Wiring as a post-processor on `/api/recognize` with confidence
+   gating is the natural next production move once two-view consistency
+   lands.
+
+### What this section is NOT for
+
+- Replacing recognizer source-code documentation. Pipeline-stage
+  explanations live inline in `rubik_recognizer/`.
+- Freezing the architecture. Constrained inference is the current
+  best framing; if two-view consistency turns out to over- or
+  underclaim, or a new color-evidence source materializes, the
+  framing will evolve. Treat this as the 2026-05-26 snapshot.
+
+Read this if you're about to: open a recognizer-architecture PR,
+scope new diagnostic work, claim an accuracy number in external
+documents, or pick the next strategic lever. Otherwise the procedural
+sections below are likely more relevant to your task.
+
 ## Geometry Labeler conventions
 
 The Geometry Labeler is a diagnostic annotation surface only; saved

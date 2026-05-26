@@ -705,6 +705,18 @@ def audit_pr(config: AuditConfig, repo: str, pr_number: int) -> AuditResult:
                 comment_body=comment_body, codex_stdout="", codex_stderr="",
             )
             if not config.dry_run:
+                # Loud-failure contract: post_pr_comment() raises on any
+                # HTTP error or network failure. DO NOT catch here. The
+                # wrapper (tools/run_codex_audit_pr.sh) relies on this
+                # script exiting non-zero when posting fails so its
+                # finish_lock trap can log status="failed" instead of
+                # "completed". A silent catch would re-create the
+                # cube-snap#184 silent-failure mode where three audit
+                # runs reported exitCode=0 but never posted a GitHub
+                # comment. See run_codex_audit_pr.sh's finish_lock
+                # comment for the wrapper-side history and the memory
+                # file feedback_silent_success_silent_failure.md for the
+                # general lesson.
                 posted = post_pr_comment(repo, pr_number, comment_body,
                                           token=config.github_token)
                 result.posted_comment_url = posted.get("html_url")
@@ -762,6 +774,10 @@ def audit_pr(config: AuditConfig, repo: str, pr_number: int) -> AuditResult:
     )
 
     if not config.dry_run:
+        # Loud-failure contract: see the matching comment ~70 lines above
+        # at the STALE-handler call site. tl;dr: post_pr_comment() raising
+        # is the only signal the wrapper's finish_lock has that posting
+        # failed. Do not catch the exception here.
         posted = post_pr_comment(repo, pr_number, comment_body,
                                   token=config.github_token)
         result.posted_comment_url = posted.get("html_url")

@@ -1185,3 +1185,104 @@ def test_wrapper_propagates_python_failure_exit_code_to_audit_log(tmp_path, monk
         f"audit log recorded status={last_finished.get('status')!r} "
         f"despite Python failure; expected 'failed'. Event: {last_finished!r}"
     )
+
+
+def test_wrapper_finds_python_via_repo_paths_cli_arg(tmp_path, monkeypatch):
+    """Regression: when the wrapper runs from a checkout without `.venv`
+    (e.g. cube-snap invoking the wrapper to audit a ctvd PR), and the
+    operator passes `--repo-paths owner/repo:/path-with-.venv` on the
+    CLI rather than via the `CODEX_AUDIT_REPO_PATHS` env var, the
+    wrapper should discover the Python interpreter from the CLI arg.
+
+    Before this fix the wrapper only looked at `CODEX_AUDIT_REPO_PATHS`
+    in the environment and died with "no controlled Python found" even
+    when `--repo-paths` was on the CLI — forcing the operator to either
+    set the env var or `cd` into the repo with `.venv`.
+
+    Caught when the cube-snap session ran the wrapper from cube-snap's
+    root to audit ctvd#330 and got refused, despite passing --repo-paths
+    pointing at ctvd's `.venv`.
+    """
+    repo_root = Path(__file__).resolve().parents[1]
+
+    # Build a fake "no-venv" repo that holds copies of the wrapper +
+    # codex_audit_pr.py + audit_handoff_log.py under tools/, so we can
+    # invoke the wrapper there without touching the real repo's wrapper.
+    fake_repo = tmp_path / "fake_no_venv_repo"
+    fake_tools = fake_repo / "tools"
+    fake_tools.mkdir(parents=True)
+    for name in ("run_codex_audit_pr.sh", "codex_audit_pr.py", "audit_handoff_log.py"):
+        (fake_tools / name).write_bytes((repo_root / "tools" / name).read_bytes())
+    (fake_tools / "run_codex_audit_pr.sh").chmod(0o755)
+    assert not (fake_repo / ".venv").exists(), "test setup invariant: fake repo must not have .venv"
+
+    # Build a fake "with-venv" repo that just exposes a .venv/bin/python
+    # symlink pointing at the running test's interpreter.
+    fake_venv_repo = tmp_path / "fake_venv_repo"
+    (fake_venv_repo / ".venv" / "bin").mkdir(parents=True)
+    (fake_venv_repo / ".venv" / "bin" / "python").symlink_to(Path(sys.executable))
+
+    monkeypatch.setenv("AUDIT_HANDOFF_LOG_DIR", str(tmp_path / "audit_log"))
+
+    # Run wrapper from fake "no-venv" with --repo-paths pointing at the
+    # fake "with-venv" repo. Use a bogus PR number so the Python script
+    # will fail fast — we only care that the wrapper got past Python
+    # discovery, not that the audit succeeded.
+    result = subprocess.run(
+        [
+            str(fake_tools / "run_codex_audit_pr.sh"),
+            "--repo", "jeffhuber/cube-two-view-debugger",
+            "--pr", "999999",
+            "--repo-paths", f"jeffhuber/cube-two-view-debugger:{fake_venv_repo}",
+        ],
+        capture_output=True, text=True,
+        env={
+            **{k: v for k, v in os.environ.items()
+               if k not in ("CODEX_AUDIT_REPO_PATHS", "CODEX_AUDIT_PYTHON")},
+            "AUDIT_HANDOFF_LOG_DIR": str(tmp_path / "audit_log"),
+        },
+    )
+
+    assert "Refusing to use ambient python3" not in result.stderr, (
+        f"wrapper refused to start despite --repo-paths providing a venv path; "
+        f"stderr={result.stderr!r}"
+    )
+    assert "from --repo-paths CLI arg" in result.stderr, (
+        f"wrapper did not log the --repo-paths CLI Python discovery message "
+        f"(expected the 'using ... from --repo-paths CLI arg' warning); "
+        f"stderr={result.stderr!r}"
+    )
+
+
+def test_wrapper_still_refuses_when_neither_env_nor_cli_provides_python(tmp_path, monkeypatch):
+    """Defensive: the --repo-paths CLI fallback (above) must not weaken
+    the wrapper's refusal when neither path provides a venv. The wrapper
+    must still die loudly rather than silently use ambient python3."""
+    repo_root = Path(__file__).resolve().parents[1]
+
+    fake_repo = tmp_path / "fake_no_venv_repo"
+    fake_tools = fake_repo / "tools"
+    fake_tools.mkdir(parents=True)
+    for name in ("run_codex_audit_pr.sh", "codex_audit_pr.py", "audit_handoff_log.py"):
+        (fake_tools / name).write_bytes((repo_root / "tools" / name).read_bytes())
+    (fake_tools / "run_codex_audit_pr.sh").chmod(0o755)
+
+    monkeypatch.setenv("AUDIT_HANDOFF_LOG_DIR", str(tmp_path / "audit_log"))
+
+    # No --repo-paths, no env vars — should refuse.
+    result = subprocess.run(
+        [str(fake_tools / "run_codex_audit_pr.sh"),
+         "--repo", "jeffhuber/cube-two-view-debugger", "--pr", "999999"],
+        capture_output=True, text=True,
+        env={
+            **{k: v for k, v in os.environ.items()
+               if k not in ("CODEX_AUDIT_REPO_PATHS", "CODEX_AUDIT_PYTHON")},
+            "AUDIT_HANDOFF_LOG_DIR": str(tmp_path / "audit_log"),
+        },
+    )
+
+    assert result.returncode != 0, "wrapper must die when no Python source provided"
+    assert "Refusing to use ambient python3" in result.stderr, (
+        f"wrapper must explicitly refuse rather than silently using ambient python3; "
+        f"stderr={result.stderr!r}"
+    )

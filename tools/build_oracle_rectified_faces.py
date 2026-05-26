@@ -14,8 +14,8 @@ and emits:
 
   /tmp/oracle_rectified_faces_v1/                  (default; ephemeral)
     by_row/{key}/{wca_face}.png                    (36 face PNGs)
-    by_observation/{key}/{wca_facelet_id}.png      (324 sticker PNGs)
-    patch_png/{key}_{wca_facelet_id}.png           (324 raw 41x41 patches)
+    by_observation/{key}/{wca_facelet_id}.png      (one sticker PNG per row/sticker)
+    patch_png/{key}_{wca_facelet_id}.png           (one raw 41x41 patch per row/sticker)
     by_facelet/{wca_facelet_id}/{key}.png          (grouped comparison view)
     index.json                                     (full metadata)
     gallery.html                                   (visual inspection grid)

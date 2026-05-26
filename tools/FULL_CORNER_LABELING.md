@@ -1,8 +1,8 @@
 # Full Corner Labeling
 
-Status: active convention-reset labeling tool. The first canonical fixture is
-`tests/fixtures/full_corner_ground_truth.json` (sets 20, 38, 40, 41, 43, and
-45; both A/B photos).
+Status: active convention-reset labeling tool. The canonical fixture is
+`tests/fixtures/full_corner_ground_truth.json` (sets 20, 38, 40, 41, 43, 45,
+and the first tail/failure set 70; both A/B photos).
 
 Seed fixture review on 2026-05-23:
 
@@ -13,6 +13,11 @@ Seed fixture review on 2026-05-23:
 - The one-edge distance ratio across the seed rows is 1.151 / 1.222 / 1.419
   (min / median / max), which is plausible under the perspective range in the
   sample.
+
+Tail-label expansion:
+
+- 2026-05-26: Set 70 A/B added as the first targeted tail/failure geometry
+  label. Both rows are approved, schema-clean, and carry yaw_quarter_turns=2.
 
 The full-corner label format is the source of truth for visible cube geometry.
 It labels the seven human-visible points directly and avoids model-axis names
@@ -242,8 +247,8 @@ Image A: axis_x/y/z -> some permutation of {corner_0, corner_2, corner_4}
 Image B: axis_x/y/z -> some permutation of {corner_1, corner_3, corner_5}
 ```
 
-Verified empirically on all 12 rows that overlap with the full-corner
-truth (median nearest-corner offset ~20 px).
+Verified empirically on the original 12 seed rows that overlap with the
+full-corner truth (median nearest-corner offset ~20 px).
 
 **Why FAR not NEAR:** the labeling tool prefills these positions from
 the global cube model's `visible_corners["h_x" / "h_y" / "h_z"]`, which

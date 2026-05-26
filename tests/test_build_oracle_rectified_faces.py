@@ -193,16 +193,14 @@ def test_sample_stickers_oracle_recovers_face_colors_on_synthetic_grid():
 # --------------- output-path uniqueness ---------------
 
 
-def test_observation_id_is_globally_unique_across_324_observations():
-    """The 12 rows x 3 faces x 9 stickers = 324 observations must NOT
+def test_observation_id_is_globally_unique_across_fixture_observations():
+    """The full-corner rows x 3 faces x 9 stickers observations must NOT
     collapse to 54 distinct facelet IDs in the output paths — repeated
     observations of the same WCA facelet across rows MUST have unique
     paths or they overwrite each other. Pin the `key_facelet` shape."""
     seen = set()
-    truth_keys = [
-        "20_A", "20_B", "38_A", "38_B", "40_A", "40_B",
-        "41_A", "41_B", "43_A", "43_B", "45_A", "45_B",
-    ]
+    truth = json.loads(orf.DEFAULT_TRUTH.read_text(encoding="utf-8"))
+    truth_keys = sorted(key for key, row in truth.items() if row.get("approved"))
     for key in truth_keys:
         _, side = orf._row_key_set_side(key)
         for slot in orf.SLOTS:
@@ -214,8 +212,7 @@ def test_observation_id_is_globally_unique_across_324_observations():
                     f"duplicate observation_id {observation_id!r}"
                 )
                 seen.add(observation_id)
-    # 12 rows * 27 stickers per row = 324 unique observations.
-    assert len(seen) == 324
+    assert len(seen) == len(truth_keys) * 27
 
 
 # --------------- end-to-end smoke ---------------

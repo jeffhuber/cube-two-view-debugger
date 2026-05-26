@@ -17,9 +17,9 @@ Diagnostic-only. Not a production-recognizer change.
 
 ## Inputs
 
-- `tests/fixtures/full_corner_ground_truth.json` — 12 rows × {vertex,
-  corner_0..corner_5, yaw_quarter_turns, approved} (yaw added in #256;
-  this design assumes that PR lands first).
+- `tests/fixtures/full_corner_ground_truth.json` — approved rows × {vertex,
+  corner_0..corner_5, optional yaw_quarter_turns, approved}. The fixture began
+  as a 12-row seed and now includes targeted tail labels such as Set 70.
 - `tools/corner_conventions.py` — `FACE_DEFS_BY_SIDE`, `YAW0_CORNER_FACELETS`,
   `wca_facelets_for_label()`, `wca_face_by_slot()`.
 - `tests/fixtures/corpus_manifest.json` — image paths.
@@ -29,10 +29,9 @@ Diagnostic-only. Not a production-recognizer change.
 
 ```
 /tmp/oracle_rectified_faces_v1/        (ephemeral, not committed)
-  ├─ by_row/{key}/{wca_face}.png              (36 face PNGs: 12 rows × 3 faces)
-  ├─ by_observation/{key}/{wca_facelet_id}.png (324 sticker PNGs: 36 × 9)
-  ├─ patch_png/{key}_{wca_facelet_id}.png     (324 patch PNGs — the central
-  │                                            40% raw pixel patch per sticker)
+  ├─ by_row/{key}/{wca_face}.png              (one face PNG per row/visible face)
+  ├─ by_observation/{key}/{wca_facelet_id}.png (one sticker PNG per row/sticker)
+  ├─ patch_png/{key}_{wca_facelet_id}.png     (one central raw patch PNG per row/sticker)
   ├─ by_facelet/{wca_facelet_id}/{key}.png    (optional grouped comparison view;
   │                                            still observation-unique)
   ├─ index.json                                (full metadata; see schema below)
@@ -218,8 +217,8 @@ runtime. Do not hard-code yaw=0 tables and then rename faces.
    flag, default ON), so downstream color tools can re-derive any statistic
    (median / mean / mode / trimmed mean / percentile etc.) without re-running
    the rectifier. Paths must include row identity so repeated observations of
-   the same WCA facelet do not overwrite each other. Cost: ~324 small PNGs
-   (~5-10 KB each = ~3 MB), ephemeral in `/tmp/`.
+   the same WCA facelet do not overwrite each other. Cost scales with approved
+   rows and remains ephemeral in `/tmp/`.
 
 ## Test plan
 
@@ -228,8 +227,8 @@ runtime. Do not hard-code yaw=0 tables and then rename faces.
 - 1 pinning test for `(row, col)` → URFDLB sticker number
 - 2 yaw-integration tests where slot stays visually fixed but facelet corner
   assignment rotates (at minimum A/upper yaw=1 and B/upper yaw=1)
-- 1 output-path uniqueness test proving 324 sticker/patch observations do not
-  collapse to 54 facelet IDs
+- 1 output-path uniqueness test proving row/sticker observations do not collapse
+  to 54 facelet IDs
 - 1 color-output test proving the tool imports `rgb_to_hsv`, `rgb_to_lab`, and
   `classify_rgb` from `rubik_recognizer.colors`
 - 1 perspective round-trip test: warp a known-colored synthetic face, sample,
@@ -250,9 +249,8 @@ runtime. Do not hard-code yaw=0 tables and then rename faces.
 - Sticker numbering convention: I assumed standard URFDLB `1 2 3 / 4 5 6 / 7 8 9`
   row-major. I'll verify against `src/cube.ts` `PLACEMENTS` before pinning, but
   if the project uses a different convention let me know.
-- Per-sticker PNG count (324 files): ephemeral so disk cost is low. Use
-  observation-unique paths; an atlas can be added later only if file count
-  becomes annoying.
+- Per-sticker PNG count scales with approved rows. Use observation-unique paths;
+  an atlas can be added later only if file count becomes annoying.
 - Patch fraction default of 0.40 (40% of cell width central): matches existing
   `rectify_faces.extract_stickers_from_rectified` default. Adequate for color
   sampling without bezel contamination, but is there a more conservative

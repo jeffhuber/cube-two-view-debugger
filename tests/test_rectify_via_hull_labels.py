@@ -26,6 +26,7 @@ from tools.rectify_via_hull_labels import (  # noqa: E402
     _derive_vertex_from_corners,
     _label_corners_by_position,
     _score_rectified_faces,
+    choose_best_threshold_candidate,
 )
 
 
@@ -244,6 +245,20 @@ def test_silhouette_to_corner_consistent_with_face_defs():
                 f"side {side} face {slot} corners {corner_nums} → positions "
                 f"{positions} → not 3-consecutive in CCW order"
             )
+
+
+# ---------------- mask threshold candidate selector ----------------
+
+
+def test_choose_best_threshold_candidate_prefers_accepted_lowest_score():
+    candidates = [
+        {"threshold": 128, "accepted": True, "sticker_score_total": 900.0},
+        {"threshold": 224, "accepted": False, "sticker_score_total": 700.0},
+        {"threshold": 192, "accepted": True, "sticker_score_total": 800.0},
+    ]
+
+    assert choose_best_threshold_candidate(candidates, accepted_only=False)["threshold"] == 224
+    assert choose_best_threshold_candidate(candidates, accepted_only=True)["threshold"] == 192
 
 
 # ---------------- _choose_hybrid_vertex (affine ↔ projective switch) ----

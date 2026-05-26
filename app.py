@@ -859,7 +859,7 @@ def prepare_llm_rectified_input(
 
     from tools.corner_conventions import wca_face_by_slot
     from tools.hull_label_assembly import convention_orientation_for_slot
-    from tools.rectify_via_hull_labels import rectify_via_hull_labels
+    from tools.rectify_via_hull_labels import select_hull_label_threshold_fit
 
     def load_image(payload: bytes) -> Image.Image:
         with Image.open(io.BytesIO(payload)) as img:
@@ -945,13 +945,24 @@ def prepare_llm_rectified_input(
     image_b = load_image(image_b_bytes)
     session = _llm_rectified_session()
     fits_by_side: Dict[str, Any] = {}
+    threshold_traces_by_side: Dict[str, Any] = {}
     for side, image in (("A", image_a), ("B", image_b)):
         rgba = remove(image, session=session).convert("RGBA")
-        mask = _np.asarray(rgba.split()[-1]) > 128
-        fit = rectify_via_hull_labels(image, mask, side, face_size_px=panel_size)
+        alpha = _np.asarray(rgba.split()[-1], dtype=_np.uint8)
+        selection = select_hull_label_threshold_fit(
+            image,
+            alpha,
+            side,
+            face_size_px=panel_size,
+        )
+        fit = selection.fit
         if fit is None:
-            raise RuntimeError(f"hull-label rectification failed for side {side}")
+            raise RuntimeError(
+                f"hull-label rectification failed for side {side}: "
+                f"{selection.trace.get('hard_failures')}"
+            )
         fits_by_side[side] = fit
+        threshold_traces_by_side[side] = selection.trace
 
     yaw_inference = _infer_yaw_from_rectified_fits(fits_by_side)
     if yaw_quarter_turns is None:
@@ -1014,6 +1025,7 @@ def prepare_llm_rectified_input(
         "yawSource": yaw_source,
         "yawInference": yaw_inference,
         "panels": panel_metadata,
+        "hullLabelMaskThresholds": threshold_traces_by_side,
     }
 
 

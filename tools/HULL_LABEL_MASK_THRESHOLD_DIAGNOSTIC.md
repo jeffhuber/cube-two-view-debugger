@@ -7,8 +7,8 @@ is too fragile for hull-label geometry. It sweeps candidate thresholds
 after one rembg pass per image and records hull-label acceptance and
 sticker-score quality.
 
-Git head: `942bdfa89bb958426845f1e5d5489f0a28566553`
-Generated: `2026-05-26T04:57:01.860908+00:00`
+Git head: `13b470fe728e0e818260fa4918184a13b79b70f7`
+Generated: `2026-05-26T06:53:35.910152+00:00`
 Thresholds: `[64, 128, 160, 192, 224]`
 
 ## Summary

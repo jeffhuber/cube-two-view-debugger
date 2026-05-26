@@ -260,7 +260,7 @@ def _hull_label_tier1_if_enabled(
 
     try:
         from rembg import remove
-        from tools.global_cube_model import _fit_hull_label_tier1_model
+        from tools.global_cube_model import _fit_hull_label_tier1_model_from_alpha
     except ImportError as exc:
         return {
             "mode": resolved_mode,
@@ -282,8 +282,7 @@ def _hull_label_tier1_if_enabled(
         if rgba.mode != "RGBA":
             rgba = rgba.convert("RGBA")
         alpha = np.asarray(rgba.split()[-1], dtype=np.uint8)
-        mask = alpha > 128
-        if not mask.any():
+        if not (alpha > 0).any():
             return {
                 "mode": resolved_mode,
                 "side": side,
@@ -292,9 +291,9 @@ def _hull_label_tier1_if_enabled(
                 "selected": False,
                 "hard_failures": ["empty cube mask"],
             }
-        model, trace = _fit_hull_label_tier1_model(
+        model, trace = _fit_hull_label_tier1_model_from_alpha(
             arr,
-            mask,
+            alpha,
             side=side,
             mode=resolved_mode,
         )

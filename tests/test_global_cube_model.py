@@ -246,6 +246,84 @@ def test_hull_label_prefer_bypasses_missing_legacy_detection(monkeypatch):
     assert calls == [("A", "prefer", (20, 30, 3), (20, 30))]
 
 
+def test_hull_label_alpha_selector_records_selected_threshold(monkeypatch):
+    from tools import global_cube_model as mod
+    from tools import rectify_via_hull_labels as rect_mod
+
+    selected_fit = SimpleNamespace(
+        rectified_faces={},
+        vertex_source="affine",
+        vertex=(1.0, 2.0),
+        affine_vertex=(1.0, 2.0),
+        projective_vertex=None,
+        hexagon_diameter_px=100.0,
+        vertex_cloud_spread_px=10.0,
+        vertex_cloud_spread_norm=0.1,
+        projective_residual_norm=None,
+        projective_degeneracy=None,
+        corners_by_num={},
+        face_quads={},
+    )
+    selected_decision = SimpleNamespace(
+        accepted=True,
+        hard_failures=(),
+        warnings=(),
+        metrics={},
+    )
+    selection = SimpleNamespace(
+        fit=selected_fit,
+        threshold=224,
+        score={"total_distance": 123.0},
+        decision=selected_decision,
+        vertex_estimates=[(1.0, 2.0), (3.0, 4.0)],
+        trace={
+            "thresholds": [64, 128, 224],
+            "threshold_candidates": [
+                {"threshold": 128, "accepted": False, "sticker_score_total": 999.0},
+                {"threshold": 224, "accepted": True, "sticker_score_total": 123.0},
+            ],
+            "best_any_threshold": 224,
+            "best_any_accepted": True,
+            "best_any_score": 123.0,
+        },
+    )
+    calls = []
+
+    def fake_select(image, alpha, side, *, thresholds):
+        calls.append((image.size, alpha.shape, side, tuple(thresholds)))
+        return selection
+
+    def fake_model_from_fit(fit, side, *, score, decision, trace):
+        assert fit is selected_fit
+        assert side == "B"
+        assert score == selection.score
+        assert decision is selected_decision
+        assert trace["selected_mask_threshold"] == 224
+        return SimpleNamespace(debug={"hull_label_tier1": trace})
+
+    monkeypatch.setattr(rect_mod, "select_hull_label_threshold_fit", fake_select)
+    monkeypatch.setattr(mod, "_slot_center_faces_from_rectified", lambda _faces: {})
+    monkeypatch.setattr(mod, "_global_model_from_hull_label_fit", fake_model_from_fit)
+
+    rgb = np.zeros((20, 30, 3), dtype=np.uint8)
+    alpha = np.full((20, 30), 255, dtype=np.uint8)
+    model, trace = mod._fit_hull_label_tier1_model_from_alpha(
+        rgb,
+        alpha,
+        side="B",
+        mode="prefer",
+        thresholds=[64, 128, 224],
+    )
+
+    assert model is not None
+    assert trace["status"] == "accepted"
+    assert trace["selected"] is True
+    assert trace["selected_mask_threshold"] == 224
+    assert trace["best_any_threshold"] == 224
+    assert len(trace["threshold_candidates"]) == 2
+    assert calls == [((30, 20), (20, 30), "B", (64, 128, 224))]
+
+
 def test_hull_label_shadow_keeps_legacy_model_and_attaches_trace(monkeypatch):
     from tools import global_cube_model as mod
     from tools.interior_bezel_detection import InteriorBezelDetection

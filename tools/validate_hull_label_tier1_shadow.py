@@ -50,7 +50,10 @@ from tools.extract_color_samples import (  # noqa: E402
     face_colors_from_state,
     load_corpus_tasks,
 )
-from tools.global_cube_model import fit_global_cube_model  # noqa: E402
+from tools.global_cube_model import (  # noqa: E402
+    _fit_hull_label_tier1_model_from_alpha,
+    fit_global_cube_model,
+)
 from tools.interior_bezel_detection import detect_interior_bezel_lines  # noqa: E402
 from tools.rectify_faces import rectify_face  # noqa: E402
 from tools.sample_stickers_from_hull import identify_faces_jointly  # noqa: E402
@@ -103,6 +106,10 @@ def _compact_trace(model: Optional[Any]) -> Optional[Dict[str, Any]]:
     trace = (getattr(model, "debug", {}) or {}).get("hull_label_tier1")
     if not isinstance(trace, dict):
         return None
+    return _compact_trace_payload(trace)
+
+
+def _compact_trace_payload(trace: Mapping[str, Any]) -> Dict[str, Any]:
     keys = (
         "mode",
         "side",
@@ -120,6 +127,9 @@ def _compact_trace(model: Optional[Any]) -> Optional[Dict[str, Any]]:
         "projective_residual_norm",
         "sticker_score_total",
         "mean_sticker_distance",
+        "selected_mask_threshold",
+        "best_any_threshold",
+        "best_any_score",
     )
     out = {key: trace.get(key) for key in keys if key in trace}
     metrics = trace.get("metrics")
@@ -154,20 +164,43 @@ def _fit_side_modes(
     mask = alpha > 128
     detection = detect_interior_bezel_lines(arr, mask)
 
+    legacy_model = fit_global_cube_model(detection, arr, mask, hull_label_mode="off")
+
+    def _legacy_row(trace: Optional[Mapping[str, Any]] = None) -> Dict[str, Any]:
+        if legacy_model is None:
+            return {
+                "status": "fit_failed",
+                "quads": {},
+                "trace": _compact_trace_payload(trace) if trace else None,
+                "approach": None,
+            }
+        return {
+            "status": "fit_ok",
+            "quads": _face_quads_by_label(legacy_model, side),
+            "trace": _compact_trace_payload(trace) if trace else _compact_trace(legacy_model),
+            "approach": (legacy_model.debug or {}).get("approach"),
+            "cube_center_source": (legacy_model.debug or {}).get("cube_center_source"),
+        }
+
     out: Dict[str, Dict[str, Any]] = {}
     for mode in MODES:
         try:
-            kwargs = {}
-            if mode != "off":
-                kwargs.update({"hull_label_side": side, "hull_label_mode": mode})
-            model = fit_global_cube_model(detection, arr, mask, **kwargs)
+            if mode == "off":
+                out[mode] = _legacy_row()
+                continue
+
+            model, trace = _fit_hull_label_tier1_model_from_alpha(
+                arr,
+                alpha,
+                side=side,
+                mode=mode,
+            )
+            if mode == "shadow":
+                out[mode] = _legacy_row(trace)
+                continue
             if model is None:
-                out[mode] = {
-                    "status": "fit_failed",
-                    "quads": {},
-                    "trace": None,
-                    "approach": None,
-                }
+                out[mode] = _legacy_row(trace)
+                out[mode]["fallback_to_legacy"] = True
                 continue
             out[mode] = {
                 "status": "fit_ok",

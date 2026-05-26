@@ -16,25 +16,25 @@ Two scores are reported:
   This isolates slot/yaw face identity from in-plane face rotation and
   should be read as an upper bound, not production behavior.
 
-Git head: `18ec7d5370478f6719d8ab620a447f004a94f0cb`
-Generated: `2026-05-25T18:19:05.376787+00:00`
+Git head: `13b470fe728e0e818260fa4918184a13b79b70f7`
+Generated: `2026-05-26T07:15:04.408950+00:00`
 
 ## Summary By Yaw Source
 
 | Yaw source | Rows | Assembled | Yaw counts | Raw exact | Raw mean stickers | Convention exact | Convention legal | Convention mean stickers | GT-aligned exact | GT-aligned mean stickers |
 |---|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|
-| `assumed_zero` | 41 | 40 | `{'0': 41}` | 0 | 11.6 | 5 | 5 | 26.32 | 5 | 36.8 |
-| `detected` | 41 | 27 | `{'0': 11, '1': 10, '2': 5, '3': 2, 'None': 13}` | 0 | 15.52 | 14 | 14 | 52.11 | 14 | 52.15 |
-| `hull_label_center_colors` | 41 | 40 | `{'0': 16, '1': 15, '2': 7, '3': 3}` | 0 | 15.45 | 19 | 19 | 52.15 | 19 | 52.17 |
-| `manifest_expectedYaw` | 9 | 9 | `{'0': 1, '1': 3, '2': 3, '3': 2}` | 0 | 15.44 | 5 | 5 | 51.44 | 5 | 51.44 |
-| `manifest_notes` | 5 | 5 | `{'0': 2, '1': 1, '2': 1, '3': 1}` | 0 | 15.4 | 0 | 0 | 50.8 | 0 | 50.8 |
+| `assumed_zero` | 46 | 46 | `{'0': 46}` | 0 | 11.93 | 6 | 6 | 26.46 | 6 | 36.83 |
+| `detected` | 46 | 28 | `{'0': 11, '1': 10, '2': 5, '3': 2, 'None': 18}` | 0 | 16.11 | 15 | 15 | 53 | 15 | 53 |
+| `hull_label_center_colors` | 46 | 46 | `{'0': 19, '1': 15, '2': 9, '3': 3}` | 0 | 15.43 | 20 | 20 | 52.04 | 20 | 52.04 |
+| `manifest_expectedYaw` | 9 | 9 | `{'0': 1, '1': 3, '2': 3, '3': 2}` | 0 | 17.44 | 6 | 6 | 53.33 | 6 | 53.33 |
+| `manifest_notes` | 7 | 7 | `{'0': 2, '1': 1, '2': 3, '3': 1}` | 0 | 14.71 | 1 | 1 | 50.71 | 1 | 50.71 |
 
 ## Key Findings
 
 - Convention-derived in-plane orientation tracks the oracle orientation
   closely when yaw is right. In this run, the preferred yaw source produced
-  19 convention-exact rows versus
-  19 oracle-exact rows under `gt_aligned`
+  20 convention-exact rows versus
+  20 oracle-exact rows under `gt_aligned`
   for `hull_label_center_colors`.
 - Capture yaw is load-bearing. `assumed_zero` exact rows are much lower
   than detected/manifest yaw on non-zero-yaw captures, and wrong yaw
@@ -65,27 +65,27 @@ Generated: `2026-05-25T18:19:05.376787+00:00`
 | 12 | `manifest_expectedYaw` | 3 | 41 | 0 | True | 0 | True |
 | 12 | `hull_label_center_colors` | 3 | 41 | 0 | True | 0 | True |
 | 12 | `detected` | 3 | 41 | 0 | True | 0 | True |
-| 14 | `assumed_zero` | 0 | 39 | 6 | False | 5 | False |
-| 14 | `hull_label_center_colors` | 0 | 39 | 6 | False | 5 | False |
-| 14 | `detected` | 0 | 39 | 6 | False | 5 | False |
-| 15 | `assumed_zero` | 0 | 37 | 0 | True | 0 | True |
-| 15 | `hull_label_center_colors` | 0 | 37 | 0 | True | 0 | True |
-| 15 | `detected` | 0 | 37 | 0 | True | 0 | True |
-| 23 | `assumed_zero` | 0 | 42 | 44 | False | 30 | False |
-| 23 | `manifest_expectedYaw` | 2 | 29 | 0 | True | 0 | True |
-| 23 | `hull_label_center_colors` | 2 | 29 | 0 | True | 0 | True |
-| 23 | `detected` | 2 | 29 | 0 | True | 0 | True |
-| 24 | `assumed_zero` | 0 | 35 | 3 | False | 3 | False |
-| 24 | `hull_label_center_colors` | 0 | 35 | 3 | False | 3 | False |
-| 24 | `detected` | 0 | 35 | 3 | False | 3 | False |
-| 26 | `assumed_zero` | 0 | 46 | 3 | False | 3 | False |
-| 26 | `hull_label_center_colors` | 0 | 46 | 3 | False | 3 | False |
-| 26 | `detected` | 0 | 46 | 3 | False | 3 | False |
-| 27 | `assumed_zero` | 0 | 45 | 1 | False | 1 | False |
-| 27 | `hull_label_center_colors` | 0 | 45 | 1 | False | 1 | False |
-| 27 | `detected` | 0 | 45 | 1 | False | 1 | False |
-| 28 | `assumed_zero` | 0 | 38 | 3 | False | 3 | False |
-| 28 | `hull_label_center_colors` | 0 | 38 | 3 | False | 3 | False |
+| 14 | `assumed_zero` | 0 | 38 | 0 | True | 0 | True |
+| 14 | `hull_label_center_colors` | 0 | 38 | 0 | True | 0 | True |
+| 14 | `detected` | 0 | 38 | 0 | True | 0 | True |
+| 15 | `assumed_zero` | 0 | 44 | 1 | False | 1 | False |
+| 15 | `hull_label_center_colors` | 0 | 44 | 1 | False | 1 | False |
+| 15 | `detected` | 0 | 44 | 1 | False | 1 | False |
+| 23 | `assumed_zero` | 0 | 50 | 44 | False | 30 | False |
+| 23 | `manifest_expectedYaw` | 2 | 37 | 0 | True | 0 | True |
+| 23 | `hull_label_center_colors` | 2 | 37 | 0 | True | 0 | True |
+| 23 | `detected` | 2 | 37 | 0 | True | 0 | True |
+| 24 | `assumed_zero` | 0 | 43 | 3 | False | 3 | False |
+| 24 | `hull_label_center_colors` | 0 | 43 | 3 | False | 3 | False |
+| 24 | `detected` | 0 | 43 | 3 | False | 3 | False |
+| 26 | `assumed_zero` | 0 | 44 | 2 | False | 2 | False |
+| 26 | `hull_label_center_colors` | 0 | 44 | 2 | False | 2 | False |
+| 26 | `detected` | 0 | 44 | 2 | False | 2 | False |
+| 27 | `assumed_zero` | 0 | 37 | 1 | False | 1 | False |
+| 27 | `hull_label_center_colors` | 0 | 37 | 1 | False | 1 | False |
+| 27 | `detected` | 0 | 37 | 1 | False | 1 | False |
+| 28 | `assumed_zero` | 0 | 46 | 3 | False | 3 | False |
+| 28 | `hull_label_center_colors` | 0 | 46 | 3 | False | 3 | False |
 | 28 | `detected` | None | None | None | None | None | None |
 | 29 | `assumed_zero` | 0 | 35 | 1 | False | 1 | False |
 | 29 | `hull_label_center_colors` | 0 | 35 | 1 | False | 1 | False |
@@ -97,14 +97,14 @@ Generated: `2026-05-25T18:19:05.376787+00:00`
 | 32 | `manifest_expectedYaw` | 1 | 38 | 0 | True | 0 | True |
 | 32 | `hull_label_center_colors` | 1 | 38 | 0 | True | 0 | True |
 | 32 | `detected` | 1 | 38 | 0 | True | 0 | True |
-| 36 | `assumed_zero` | 0 | 47 | 43 | False | 25 | False |
-| 36 | `manifest_expectedYaw` | 2 | 41 | 2 | False | 2 | False |
-| 36 | `hull_label_center_colors` | 2 | 41 | 2 | False | 2 | False |
-| 36 | `detected` | 2 | 41 | 2 | False | 2 | False |
-| 37 | `assumed_zero` | 0 | 52 | 43 | False | 27 | False |
-| 37 | `manifest_expectedYaw` | 1 | 42 | 0 | True | 0 | True |
-| 37 | `hull_label_center_colors` | 1 | 42 | 0 | True | 0 | True |
-| 37 | `detected` | 1 | 42 | 0 | True | 0 | True |
+| 36 | `assumed_zero` | 0 | 40 | 42 | False | 24 | False |
+| 36 | `manifest_expectedYaw` | 2 | 36 | 0 | True | 0 | True |
+| 36 | `hull_label_center_colors` | 2 | 36 | 0 | True | 0 | True |
+| 36 | `detected` | 2 | 36 | 0 | True | 0 | True |
+| 37 | `assumed_zero` | 0 | 44 | 43 | False | 27 | False |
+| 37 | `manifest_expectedYaw` | 1 | 34 | 0 | True | 0 | True |
+| 37 | `hull_label_center_colors` | 1 | 34 | 0 | True | 0 | True |
+| 37 | `detected` | 1 | 34 | 0 | True | 0 | True |
 | 42 | `assumed_zero` | 0 | 37 | 45 | False | 26 | False |
 | 42 | `manifest_expectedYaw` | 1 | 33 | 0 | True | 0 | True |
 | 42 | `hull_label_center_colors` | 1 | 33 | 0 | True | 0 | True |
@@ -124,33 +124,33 @@ Generated: `2026-05-25T18:19:05.376787+00:00`
 | 41 | `assumed_zero` | 0 | 47 | 45 | False | 28 | False |
 | 41 | `hull_label_center_colors` | 1 | 41 | 0 | True | 0 | True |
 | 41 | `detected` | 1 | 41 | 0 | True | 0 | True |
-| 43 | `assumed_zero` | 0 | 40 | 43 | False | 25 | False |
-| 43 | `hull_label_center_colors` | 1 | 34 | 0 | True | 0 | True |
-| 43 | `detected` | 1 | 34 | 0 | True | 0 | True |
+| 43 | `assumed_zero` | 0 | 47 | 43 | False | 25 | False |
+| 43 | `hull_label_center_colors` | 1 | 41 | 0 | True | 0 | True |
+| 43 | `detected` | 1 | 41 | 0 | True | 0 | True |
 | 45 | `assumed_zero` | 0 | 36 | 0 | True | 0 | True |
 | 45 | `hull_label_center_colors` | 0 | 36 | 0 | True | 0 | True |
 | 45 | `detected` | 0 | 36 | 0 | True | 0 | True |
-| 17 | `assumed_zero` | 0 | 40 | 46 | False | 27 | False |
-| 17 | `hull_label_center_colors` | 1 | 36 | 0 | True | 0 | True |
+| 17 | `assumed_zero` | 0 | 41 | 46 | False | 27 | False |
+| 17 | `hull_label_center_colors` | 1 | 37 | 0 | True | 0 | True |
 | 17 | `detected` | None | None | None | None | None | None |
 | 21 | `assumed_zero` | 0 | 45 | 47 | False | 27 | False |
 | 21 | `hull_label_center_colors` | 1 | 36 | 0 | True | 0 | True |
 | 21 | `detected` | 1 | 36 | 0 | True | 0 | True |
-| 22 | `assumed_zero` | 0 | 50 | 44 | False | 30 | False |
-| 22 | `hull_label_center_colors` | 2 | 37 | 0 | True | 0 | True |
-| 22 | `detected` | 2 | 37 | 0 | True | 0 | True |
+| 22 | `assumed_zero` | 0 | 51 | 44 | False | 30 | False |
+| 22 | `hull_label_center_colors` | 2 | 38 | 0 | True | 0 | True |
+| 22 | `detected` | 2 | 38 | 0 | True | 0 | True |
 | 25 | `assumed_zero` | 0 | 38 | 2 | False | 2 | False |
 | 25 | `hull_label_center_colors` | 0 | 38 | 2 | False | 2 | False |
 | 25 | `detected` | None | None | None | None | None | None |
-| 30 | `assumed_zero` | 0 | None | None | None | None | None |
-| 30 | `hull_label_center_colors` | 1 | None | None | None | None | None |
-| 30 | `detected` | 1 | None | None | None | None | None |
+| 30 | `assumed_zero` | 0 | 48 | 46 | False | 31 | False |
+| 30 | `hull_label_center_colors` | 1 | 42 | 2 | False | 2 | False |
+| 30 | `detected` | 1 | 42 | 2 | False | 2 | False |
 | 39 | `assumed_zero` | 0 | 46 | 45 | False | 27 | False |
 | 39 | `hull_label_center_colors` | 1 | 40 | 0 | True | 0 | True |
 | 39 | `detected` | None | None | None | None | None | None |
-| 46 | `assumed_zero` | 0 | 33 | 5 | False | 5 | False |
-| 46 | `manifest_notes` | 0 | 33 | 5 | False | 5 | False |
-| 46 | `hull_label_center_colors` | 0 | 33 | 5 | False | 5 | False |
+| 46 | `assumed_zero` | 0 | 39 | 5 | False | 5 | False |
+| 46 | `manifest_notes` | 0 | 39 | 5 | False | 5 | False |
+| 46 | `hull_label_center_colors` | 0 | 39 | 5 | False | 5 | False |
 | 46 | `detected` | None | None | None | None | None | None |
 | 47 | `assumed_zero` | 0 | 48 | 47 | False | 30 | False |
 | 47 | `manifest_notes` | 1 | 39 | 4 | False | 4 | False |
@@ -164,37 +164,54 @@ Generated: `2026-05-25T18:19:05.376787+00:00`
 | 49 | `manifest_notes` | 3 | 40 | 2 | False | 2 | False |
 | 49 | `hull_label_center_colors` | 3 | 40 | 2 | False | 2 | False |
 | 49 | `detected` | None | None | None | None | None | None |
-| 57 | `assumed_zero` | 0 | 50 | 50 | False | 29 | False |
-| 57 | `hull_label_center_colors` | 1 | 45 | 3 | False | 3 | False |
-| 57 | `detected` | 1 | 45 | 3 | False | 3 | False |
-| 58 | `assumed_zero` | 0 | 50 | 38 | False | 27 | False |
-| 58 | `hull_label_center_colors` | 2 | 43 | 2 | False | 2 | False |
-| 58 | `detected` | 2 | 43 | 2 | False | 2 | False |
-| 61 | `assumed_zero` | 0 | 33 | 5 | False | 5 | False |
-| 61 | `hull_label_center_colors` | 0 | 33 | 5 | False | 5 | False |
-| 61 | `detected` | 0 | 33 | 5 | False | 5 | False |
-| 62 | `assumed_zero` | 0 | 50 | 45 | False | 27 | False |
-| 62 | `hull_label_center_colors` | 1 | 45 | 4 | False | 4 | False |
-| 62 | `detected` | 1 | 45 | 4 | False | 4 | False |
-| 63 | `assumed_zero` | 0 | 49 | 44 | False | 29 | False |
-| 63 | `manifest_expectedYaw` | 2 | 43 | 8 | False | 8 | False |
-| 63 | `hull_label_center_colors` | 2 | 43 | 8 | False | 8 | False |
-| 63 | `detected` | 2 | 43 | 8 | False | 8 | False |
-| 64 | `assumed_zero` | 0 | 42 | 4 | False | 4 | False |
-| 64 | `manifest_notes` | 0 | 42 | 4 | False | 4 | False |
-| 64 | `hull_label_center_colors` | 0 | 42 | 4 | False | 4 | False |
+| 57 | `assumed_zero` | 0 | 41 | 49 | False | 28 | False |
+| 57 | `hull_label_center_colors` | 1 | 36 | 2 | False | 2 | False |
+| 57 | `detected` | 1 | 36 | 2 | False | 2 | False |
+| 58 | `assumed_zero` | 0 | 50 | 39 | False | 27 | False |
+| 58 | `hull_label_center_colors` | 2 | 43 | 1 | False | 1 | False |
+| 58 | `detected` | 2 | 43 | 1 | False | 1 | False |
+| 61 | `assumed_zero` | 0 | 35 | 5 | False | 5 | False |
+| 61 | `hull_label_center_colors` | 0 | 35 | 5 | False | 5 | False |
+| 61 | `detected` | 0 | 35 | 5 | False | 5 | False |
+| 62 | `assumed_zero` | 0 | 43 | 45 | False | 27 | False |
+| 62 | `hull_label_center_colors` | 1 | 38 | 4 | False | 4 | False |
+| 62 | `detected` | 1 | 38 | 4 | False | 4 | False |
+| 63 | `assumed_zero` | 0 | 42 | 41 | False | 29 | False |
+| 63 | `manifest_expectedYaw` | 2 | 31 | 1 | False | 1 | False |
+| 63 | `hull_label_center_colors` | 2 | 31 | 1 | False | 1 | False |
+| 63 | `detected` | 2 | 31 | 1 | False | 1 | False |
+| 64 | `assumed_zero` | 0 | 34 | 0 | True | 0 | True |
+| 64 | `manifest_notes` | 0 | 34 | 0 | True | 0 | True |
+| 64 | `hull_label_center_colors` | 0 | 34 | 0 | True | 0 | True |
 | 64 | `detected` | None | None | None | None | None | None |
 | 65 | `assumed_zero` | 0 | 37 | 45 | False | 24 | False |
 | 65 | `hull_label_center_colors` | 1 | 32 | 0 | True | 0 | True |
 | 65 | `detected` | None | None | None | None | None | None |
-| 66 | `assumed_zero` | 0 | 50 | 42 | False | 30 | False |
-| 66 | `hull_label_center_colors` | 2 | 40 | 0 | True | 0 | True |
+| 66 | `assumed_zero` | 0 | 50 | 42 | False | 29 | False |
+| 66 | `hull_label_center_colors` | 2 | 41 | 1 | False | 1 | False |
 | 66 | `detected` | None | None | None | None | None | None |
 | 67 | `assumed_zero` | 0 | 44 | 44 | False | 24 | False |
-| 67 | `manifest_expectedYaw` | 3 | 42 | 9 | False | 9 | False |
-| 67 | `hull_label_center_colors` | 3 | 42 | 9 | False | 9 | False |
-| 67 | `detected` | 3 | 42 | 9 | False | 9 | False |
-| 68 | `assumed_zero` | 0 | 38 | 4 | False | 4 | False |
-| 68 | `manifest_expectedYaw` | 0 | 38 | 4 | False | 4 | False |
-| 68 | `hull_label_center_colors` | 0 | 38 | 4 | False | 4 | False |
-| 68 | `detected` | 0 | 38 | 4 | False | 4 | False |
+| 67 | `manifest_expectedYaw` | 3 | 41 | 2 | False | 2 | False |
+| 67 | `hull_label_center_colors` | 3 | 41 | 2 | False | 2 | False |
+| 67 | `detected` | 3 | 41 | 2 | False | 2 | False |
+| 68 | `assumed_zero` | 0 | 38 | 3 | False | 3 | False |
+| 68 | `manifest_expectedYaw` | 0 | 38 | 3 | False | 3 | False |
+| 68 | `hull_label_center_colors` | 0 | 38 | 3 | False | 3 | False |
+| 68 | `detected` | 0 | 38 | 3 | False | 3 | False |
+| 69 | `assumed_zero` | 0 | 36 | 48 | False | 25 | False |
+| 69 | `manifest_notes` | 2 | 37 | 1 | False | 1 | False |
+| 69 | `hull_label_center_colors` | 2 | 37 | 1 | False | 1 | False |
+| 69 | `detected` | None | None | None | None | None | None |
+| 70 | `assumed_zero` | 0 | 46 | 50 | False | 28 | False |
+| 70 | `manifest_notes` | 2 | 47 | 10 | False | 10 | False |
+| 70 | `hull_label_center_colors` | 2 | 47 | 10 | False | 10 | False |
+| 70 | `detected` | None | None | None | None | None | None |
+| 71 | `assumed_zero` | 0 | 41 | 11 | False | 11 | False |
+| 71 | `hull_label_center_colors` | 0 | 41 | 11 | False | 11 | False |
+| 71 | `detected` | None | None | None | None | None | None |
+| 72 | `assumed_zero` | 0 | 40 | 9 | False | 9 | False |
+| 72 | `hull_label_center_colors` | 0 | 40 | 9 | False | 9 | False |
+| 72 | `detected` | None | None | None | None | None | None |
+| 73 | `assumed_zero` | 0 | 37 | 11 | False | 11 | False |
+| 73 | `hull_label_center_colors` | 0 | 37 | 11 | False | 11 | False |
+| 73 | `detected` | None | None | None | None | None | None |

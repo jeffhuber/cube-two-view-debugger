@@ -470,6 +470,35 @@ def render_report(payload: Mapping[str, Any]) -> str:
                 f"`{row['selectedThresholds']}` | {row['currentHamming']} | "
                 f"{row['selectedHamming']} |"
             )
+    guarded_rows = []
+    for row in payload.get("rows", []):
+        selected = _hamming(row, ("pairSelected", "summary", "recommended", "hamming"))
+        aggressive = _hamming(row, ("aggressivePairSelected", "summary", "recommended", "hamming"))
+        if selected != aggressive:
+            guarded_rows.append({
+                "setId": row.get("setId"),
+                "selectedHamming": selected,
+                "aggressiveHamming": aggressive,
+                "selectedThresholds": row.get("pairSelected", {}).get("thresholds"),
+                "aggressiveThresholds": row.get("aggressivePairSelected", {}).get("thresholds"),
+                "selectionReason": row.get("pairSelected", {}).get("selectionReason"),
+            })
+    lines.extend([
+        "",
+        "## Guarded Rows",
+        "",
+        "| Set | Guarded thresholds | Aggressive thresholds | Guarded hamming | Aggressive hamming | Reason |",
+        "|---|---|---|---:|---:|---|",
+    ])
+    if not guarded_rows:
+        lines.append("| _none_ |  |  |  |  |  |")
+    else:
+        for row in guarded_rows:
+            lines.append(
+                f"| {row['setId']} | `{row['selectedThresholds']}` | "
+                f"`{row['aggressiveThresholds']}` | {row['selectedHamming']} | "
+                f"{row['aggressiveHamming']} | `{row['selectionReason']}` |"
+            )
     lines.extend([
         "",
         "## Notes",
@@ -483,9 +512,10 @@ def render_report(payload: Mapping[str, Any]) -> str:
         "  when current repair is invalid or unavailable.",
         "- `oracleBest` uses ground-truth hamming only to show the ceiling; it is",
         "  not a production selector.",
-        "- If pair selection improves exact/legal without regressions, the next",
-        "  production-shaped step is to fold the same pair-level search into the",
-        "  hidden hull-label Fixer path behind a gate.",
+        "- The hidden rectified Fixer path now uses the same guarded pair-level",
+        "  threshold gate. If this result holds, the next production-shaped",
+        "  decision is whether to validate it beyond Fixer toward broader",
+        "  recognizer use.",
     ])
     return "\n".join(lines) + "\n"
 

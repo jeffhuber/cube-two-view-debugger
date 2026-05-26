@@ -3,23 +3,29 @@
 Diagnostic-only. This report asks whether A/B mask thresholds should be
 chosen after yaw + deterministic repair, rather than independently per side.
 
-Git head: `e021b8907fbd8c054c4eeb25f54f58da22fb1ed8`
-Generated: `2026-05-26T19:58:54.527841+00:00`
+Git head: `2a0d7d4c461622afec4841362ba3e3cda212efb4`
+Generated: `2026-05-26T21:45:33.634453+00:00`
 
 ## Summary
 
 | Selector | Assembled | Exact | Legal | <=3 stickers | Hamming distribution |
 |---|---:|---:|---:|---:|---|
-| Current per-side selector | 45 | 44 | 44 | 44 | `{'0': 44, '4': 1}` |
-| Aggressive pair-selected by production signals | 45 | 44 | 45 | 45 | `{'0': 44, '2': 1}` |
-| Guarded pair-selected by production signals | 45 | 45 | 45 | 45 | `{'0': 45}` |
-| Oracle best threshold pair | 45 | 45 | 45 | 45 | `{'0': 45}` |
+| Current per-side selector | 46 | 45 | 45 | 45 | `{'0': 45, '4': 1}` |
+| Aggressive pair-selected by production signals | 46 | 45 | 46 | 46 | `{'0': 45, '2': 1}` |
+| Guarded pair-selected by production signals | 46 | 46 | 46 | 46 | `{'0': 46}` |
+| Oracle best threshold pair | 46 | 46 | 46 | 46 | `{'0': 46}` |
 
 ## Changed Rows
 
 | Set | Current thresholds | Selected thresholds | Current hamming | Selected hamming |
 |---|---|---|---:|---:|
 | 14 | `{'A': 160, 'B': 160}` | `{'A': 64, 'B': 192}` | 4 | 0 |
+
+## Guarded Rows
+
+| Set | Guarded thresholds | Aggressive thresholds | Guarded hamming | Aggressive hamming | Reason |
+|---|---|---|---:|---:|---|
+| 73 | `{'A': 224, 'B': 192}` | `{'A': 224, 'B': 128}` | 0 | 2 | `kept_current_valid_repair` |
 
 ## Notes
 
@@ -32,6 +38,7 @@ Generated: `2026-05-26T19:58:54.527841+00:00`
   when current repair is invalid or unavailable.
 - `oracleBest` uses ground-truth hamming only to show the ceiling; it is
   not a production selector.
-- If pair selection improves exact/legal without regressions, the next
-  production-shaped step is to fold the same pair-level search into the
-  hidden hull-label Fixer path behind a gate.
+- The hidden rectified Fixer path now uses the same guarded pair-level
+  threshold gate. If this result holds, the next production-shaped
+  decision is whether to validate it beyond Fixer toward broader
+  recognizer use.

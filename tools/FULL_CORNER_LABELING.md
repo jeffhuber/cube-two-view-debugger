@@ -1,8 +1,8 @@
 # Full Corner Labeling
 
 Status: active convention-reset labeling tool. The canonical fixture is
-`tests/fixtures/full_corner_ground_truth.json` (sets 20, 38, 40, 41, 43, 45,
-and the first tail/failure set 70; both A/B photos).
+`tests/fixtures/full_corner_ground_truth.json` (34 approved photos: sets
+20, 38, 40, 41, 43, 45, and tail/stress sets 63-73; both A/B photos).
 
 Seed fixture review on 2026-05-23:
 
@@ -17,7 +17,11 @@ Seed fixture review on 2026-05-23:
 Tail-label expansion:
 
 - 2026-05-26: Set 70 A/B added as the first targeted tail/failure geometry
-  label. Both rows are approved, schema-clean, and carry yaw_quarter_turns=2.
+  label. Both rows are approved and schema-clean.
+- 2026-05-26: Sets 63-73 A/B added from the targeted tail-labeling gallery.
+  All 22 rows are approved and schema-clean. These rows intentionally do not
+  require `yaw_quarter_turns`; capture yaw is inferred separately from center
+  colors or ground-truth metadata in yaw/repair diagnostics.
 
 The full-corner label format is the source of truth for visible cube geometry.
 It labels the seven human-visible points directly and avoids model-axis names

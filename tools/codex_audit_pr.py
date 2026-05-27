@@ -443,6 +443,15 @@ def dump_cli_failure(
         ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S_%fZ")
         path = base_dir / f"{owner_name}_pr{pr_number}_{short_sha}_{ts}.log"
 
+        # Codex P3 audit on cube-snap#196 / ctvd#358 0eff691/9cd9213:
+        # `len(str)` counts Python characters, not UTF-8 bytes. The
+        # CLI output frequently contains non-ASCII (em-dashes, smart
+        # quotes, etc.), so a char-count header on a multi-byte body
+        # would under-report and mislead anyone investigating
+        # truncation. Encode then measure to get the real byte count
+        # that landed on disk via `fdopen(..., encoding="utf-8")`.
+        stdout_bytes = len(stdout.encode("utf-8"))
+        stderr_bytes = len(stderr.encode("utf-8"))
         header = (
             "# Codex CLI raw output — verdict UNKNOWN\n"
             f"# repo: {repo}\n"
@@ -450,8 +459,8 @@ def dump_cli_failure(
             f"# head_sha: {head_sha}\n"
             f"# captured_at: {ts}\n"
             f"# parser_reason: {reason}\n"
-            f"# stdout_bytes: {len(stdout)}\n"
-            f"# stderr_bytes: {len(stderr)}\n"
+            f"# stdout_bytes: {stdout_bytes}\n"
+            f"# stderr_bytes: {stderr_bytes}\n"
         )
         body = (
             header

@@ -211,6 +211,30 @@ def test_dump_cli_failure_filename_includes_owner_repo_pr_sha(tmp_path):
     assert "abd0ffe0722f0c2c" not in name
 
 
+def test_dump_cli_failure_header_reports_utf8_byte_counts(tmp_path):
+    """Codex P3 audit on cube-snap#196 / ctvd#358 0eff691/9cd9213:
+    the header's *_bytes fields must reflect actual UTF-8 byte
+    length, not Python character count. `len(str)` would
+    under-report on multi-byte content (em-dashes, smart quotes,
+    non-Latin scripts), which is common in Codex review prose."""
+    multibyte_stdout = "non-ASCII em-dash — and smart quote “test”"
+    multibyte_stderr = "japanese: 日本語"
+    path = c.dump_cli_failure(
+        repo="o/r", pr_number=1, head_sha="abc",
+        stdout=multibyte_stdout, stderr=multibyte_stderr,
+        reason="r", base_dir=tmp_path,
+    )
+    assert path is not None
+    text = path.read_text()
+    expected_stdout_bytes = len(multibyte_stdout.encode("utf-8"))
+    expected_stderr_bytes = len(multibyte_stderr.encode("utf-8"))
+    # Sanity: byte count differs from char count for these inputs.
+    assert expected_stdout_bytes > len(multibyte_stdout)
+    assert expected_stderr_bytes > len(multibyte_stderr)
+    assert f"# stdout_bytes: {expected_stdout_bytes}" in text
+    assert f"# stderr_bytes: {expected_stderr_bytes}" in text
+
+
 def test_dump_cli_failure_handles_empty_outputs(tmp_path):
     """Empty stdout/stderr must still produce a readable dump — Codex
     has been observed emitting zero-length output, and that's exactly

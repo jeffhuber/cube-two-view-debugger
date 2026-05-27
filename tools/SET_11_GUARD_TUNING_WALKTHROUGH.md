@@ -41,13 +41,24 @@ dangers.
 ### Rescue rows (broad-legal exact, canonical-count invalid)
 
 These are the rows where deterministic repair *can* recover the
-GT state but only through the broad path:
+GT state but only through legal repair (conservative or broad):
 
-| Set | Source | broad cost | broad changes | canonical_count hamming |
-|---:|---|---:|---:|---:|
-| 65 | labeled corpus | 19.58 | 4 | 2 |
-| 69 | labeled corpus |  3.15 | 1 | 3 |
-| **11** | **fresh corpus** | **10.15** | **6** | **2** |
+| Set | Source | conservative status | broad cost | broad changes | canonical_count hamming |
+|---:|---|---|---:|---:|---:|
+| 65 | labeled corpus | `no_legal_repair` | 19.58 | 4 | 2 |
+| 69 | labeled corpus | **`legal_repair_found` (already admitted by conservative)** |  3.15 | 1 | 3 |
+| **11** | **fresh corpus** | `no_legal_repair` | **10.15** | **6** | **2** |
+
+**Note (per Codex audit P3):** Set 69 is recovered by
+`conservative_legal_repaired` (hamming 0), which is selected
+*before* `guarded_broad_legal_repaired` in
+`choose_recommended_method`'s preference list. So Set 69 isn't a
+broad-only rescue — it's already admitted today. The genuine
+**broad-only rescue candidates** (rows where the guarded-broad
+gate is the only path) are Set 65 (already admitted under the
+current gate at cost 19.58 / changes 4) and **Set 11** (currently
+rejected by the changes ceiling). The tune below changes
+admission for **Set 11 only**.
 
 ### Danger rows (broad-legal valid but NOT exact)
 
@@ -111,12 +122,16 @@ GUARDED_BROAD_MAX_REPAIR_CHANGES = 6  # was 4 — see SET_11_GUARD_TUNING_WALKTH
 Expected impact on the current corpus (46 labeled + 20 fresh = 66 rows):
 
 - **Admits Set 11**: 19/20 → 20/20 exact on the fresh corpus.
-- **No regressions**: zero legal-but-wrong rows fall in the
-  `4 < changes <= 6` window, so the gate's "no false positives"
-  property is preserved.
-- **Other admits unchanged**: Sets 65, 69 continue to admit
-  (they're under both the old and new ceilings); Set 14 continues
-  to reject (its cost 26.69 still exceeds the 20.0 cost gate).
+- **No regressions, by the COST gate** (per Codex audit P2):
+  Set 14 DOES fall inside the relaxed `4 < changes <= 6` window
+  (changes = 5), so the changes-ceiling relaxation alone would
+  admit it. The no-regression property holds only because **Set
+  14's cost (26.69) exceeds the unchanged `cost <= 20.0` ceiling**,
+  so the cost half of the gate rejects it. Both halves of the
+  gate are load-bearing; this tune relies on the cost gate
+  retaining its current role.
+- **Other admits unchanged**: Sets 65, 69 continue to admit;
+  Set 14 continues to reject (via cost, not changes).
 - **Reaches headline 100% exact** across both the labeled corpus
   (was 46/46, stays 46/46) and the fresh corpus (was 19/20,
   becomes 20/20).
@@ -139,6 +154,59 @@ a safety net without costing any current rescue rows.
 I'd recommend the conservative `changes <= 6` tune as the next
 step, with the option to relax further (or drop the ceiling) once
 more corpus data accumulates.
+
+## Alternative: state-delta gate (may obsolete this tune)
+
+A follow-up analysis in **ctvd#351** surfaced a structural
+finding worth weighing before landing the `changes <= 6` tune
+above. The `repairChanges` counter measures changes against
+RAW observations (pre-count-repair), not against the count-repaired
+baseline. For Set 11 the legal-repair helper reports
+`repairChanges = 6`, but the **true state-delta from
+`canonical_count_repaired` → `broad_legal_repaired` is only 2
+stickers** (indices 20 and 53, i.e. F[0,2] and B[2,2]).
+
+Across the 4 rescue rows + 1 danger row in the combined 66-row
+corpus, the true state-delta is a cleaner discriminator than
+`repairChanges`:
+
+| Set | role | reported `repairChanges` | **true state_delta(cc→bl)** |
+|---:|---|---:|---:|
+| 14 | DANGER (must reject) | 5 | **6** |
+| 65 | rescue | 4 | 2 |
+| 69 | rescue (also admitted by conservative) | 1 | 3 |
+| 11 | rescue | 6 | 2 |
+
+A gate of `cost <= 20.0 AND state_delta_from_canonical <= 4`
+cleanly separates rescues from the danger row on the current
+corpus, *and* it does so with both halves of the gate doing
+independent work (Set 14's state_delta of 6 alone rejects it,
+without leaning on the cost gate). The semantic is also more
+meaningful: "how much does broad-legal disagree with the trusted
+recommended baseline?" rather than "how many sticker changes did
+the legal-repair algorithm make against raw observations?"
+
+**Recommendation precedence**: before landing the `changes <= 6`
+tune from the previous section, **evaluate the state-delta gate
+alternative**. Codex owns the gate code (extracted into
+`tools/hull_label_pair_selector.py` in #346); they're the
+natural person to choose between:
+
+1. Bump `GUARDED_BROAD_MAX_REPAIR_CHANGES` from `4` to `6`
+   (this walkthrough's original recommendation).
+2. Replace the `repairChanges` gate with a `state_delta_from_canonical`
+   gate (#351's recommendation).
+
+Option 2 is structurally cleaner but requires exposing the
+state-delta value in the legal-repair payload (currently not
+emitted). Option 1 is a one-line constant change in two files.
+On the current corpus, both admit Set 11 and both reject Set 14;
+they differ in the gate semantic and in how they generalize to
+future failure modes.
+
+This walkthrough remains valid as the analysis of *which row to
+admit* and *which gate sketch suffices*. The state-delta
+discussion belongs at decision-time, not at analysis-time.
 
 ## Caveats
 

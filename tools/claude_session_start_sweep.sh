@@ -119,30 +119,66 @@ if [ -f "$LOG" ]; then
   tail -100 "$LOG" 2>/dev/null | jq -s -r '
     . as $events
     | [$events[] | select(.event == "review_requested")
-       | {repo, pr, head: (.head // ""), time: (.time.pt // "—"), lane: (.lane // "—")}] as $reviews
+       | {repo, pr,
+          head: (.head // ""),
+          time: (.time.pt // "—"),
+          time_utc: (.time.utc // ""),
+          lane: (.lane // "—")}] as $reviews
     | [$events[] | select(.event == "finished")
        | {repo: (.repo // .lock.repo // ""),
           pr: (.pr // .lock.pr // null),
-          head: (.head // .lock.head // "")}] as $finishes
+          head: (.head // .lock.head // ""),
+          # lane lives at top-level for post_review.sh finished events
+          # (claude-review / codex-review) and inside .lock for the
+          # codex-audit wrapper (run_codex_audit_pr.sh). Without falling
+          # back to .lock.lane we'd treat every codex-audit finish as
+          # having `lane == ""`, which would never match a claude-review
+          # request — i.e. always pending. Tested empirically on the
+          # captured snap#201 / ctvd#366 dumps.
+          lane: (.lane // .lock.lane // ""),
+          # UTC time of the finish event (top-level on both event
+          # shapes). Used below to require finish AFTER the request,
+          # so an earlier-round finish on the same head doesn't falsely
+          # clear a new request.
+          time_utc: (.time.utc // "")}] as $finishes
     | $reviews
       | map(
           . as $r
           | select([
               $finishes[]
-              # Match at 7-char short-SHA prefix. The audit log records
-              # `head` as whatever the caller passed to --head: sometimes
-              # a full 40-char SHA (record / handoff_log start), sometimes
-              # a 7-char short SHA (post_review.sh callers). A 12-char
-              # comparison falsely rejects matches when one side is 7
-              # chars (slicing beyond string length returns the string
-              # unchanged). 7 chars is the shortest realistic short SHA
-              # and gives ~1/268M collision probability per pair —
-              # negligible vs the false-positive cost of treating real
-              # finished reviews as pending.
+              # Three-part match for a "this review is done" signal:
+              #
+              # 1. Same (repo, pr, head[:7]) — the request and finish
+              #    are about the same PR head. 7-char SHA prefix
+              #    because the audit log mixes 40-char and 7-char
+              #    head encodings (post_review.sh shortens; the
+              #    wrappers don't); slicing beyond string length
+              #    returns the string unchanged so [0:12] would
+              #    falsely reject 40-char-vs-7-char matches.
+              #
+              # 2. Same lane — a codex-audit finish must NOT clear a
+              #    claude-review request (they're independent
+              #    workflows). Codex P2 on cube-snap#201 / ctvd#366:
+              #    without the lane filter, the same head being
+              #    audited would suppress a freshly-requested review
+              #    on the same head, defeating the cross-check.
+              #
+              # 3. Finish time AFTER request time — chronological
+              #    order matters. An earlier-round finish on the
+              #    same (repo, pr, head, lane) MUST NOT clear a new
+              #    request for that same head (e.g. when a fix is
+              #    pushed-then-reverted-then-rerequested at the
+              #    same SHA, or when the same head is requested
+              #    twice for follow-up review). Codex P2 round-1
+              #    on ctvd#366 / round-2 on snap#201. UTC ISO-8601
+              #    is lexicographically sortable so a plain string
+              #    compare works.
               | select(
                   .repo == $r.repo
                   and .pr == $r.pr
                   and (.head // "")[0:7] == ($r.head // "")[0:7]
+                  and .lane == $r.lane
+                  and .time_utc > $r.time_utc
                 )
             ] | length == 0)
           | "\($r.repo)\t\($r.pr)\t\(($r.head // "")[0:12])\t\($r.lane)\t\($r.time)"

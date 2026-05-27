@@ -1441,6 +1441,7 @@ def recognize_and_persist(
             pair.image_a.data,
             pair.image_b.data,
             constrained_mode,
+            expected_state=expected_state,
         )
     else:
         result = recognizer.recognize(
@@ -1494,7 +1495,31 @@ def _normalize_constrained_inference_mode(raw: Optional[str]) -> Optional[str]:
     return None
 
 
-def _constrained_signal_from_payload(payload: Mapping[str, Any], *, selected: bool) -> Dict[str, Any]:
+def _candidate_evaluation_from_payload(
+    payload: Mapping[str, Any],
+    expected_state: Optional[str],
+) -> Dict[str, Any]:
+    if not expected_state:
+        return {"available": False}
+    repair = payload.get("deterministicColorRepair")
+    repair_payload = repair if isinstance(repair, Mapping) else {}
+    recommended = repair_payload.get("recommended")
+    recommended_payload = recommended if isinstance(recommended, Mapping) else {}
+    state = recommended_payload.get("state")
+    evaluation = evaluate_state(state if isinstance(state, str) else None, expected_state)
+    return {
+        key: evaluation.get(key)
+        for key in ("available", "exact", "hamming", "expectedValid", "expectedErrors")
+        if key in evaluation
+    }
+
+
+def _constrained_signal_from_payload(
+    payload: Mapping[str, Any],
+    *,
+    selected: bool,
+    expected_state: Optional[str] = None,
+) -> Dict[str, Any]:
     repair = payload.get("deterministicColorRepair")
     repair_payload = repair if isinstance(repair, Mapping) else {}
     recommended = repair_payload.get("recommended")
@@ -1519,10 +1544,15 @@ def _constrained_signal_from_payload(payload: Mapping[str, Any], *, selected: bo
             "repairChanges": recommended_payload.get("repairChanges"),
             "stateDeltaFromCanonical": recommended_payload.get("stateDeltaFromCanonical"),
         },
+        "candidateEvaluation": _candidate_evaluation_from_payload(payload, expected_state),
     }
 
 
-def _constrained_candidate_result(payload: Mapping[str, Any]) -> Optional[RecognitionResult]:
+def _constrained_candidate_result(
+    payload: Mapping[str, Any],
+    *,
+    expected_state: Optional[str] = None,
+) -> Optional[RecognitionResult]:
     gate = payload.get("constrainedInferencePromotionGate")
     if not isinstance(gate, Mapping) or gate.get("accepted") is not True:
         return None
@@ -1545,14 +1575,28 @@ def _constrained_candidate_result(payload: Mapping[str, Any]) -> Optional[Recogn
         failed_checks=[],
         candidates=1,
         recognition_signals={
-            "constrainedInference": _constrained_signal_from_payload(payload, selected=True),
+            "constrainedInference": _constrained_signal_from_payload(
+                payload,
+                selected=True,
+                expected_state=expected_state,
+            ),
         },
     )
 
 
-def _attach_constrained_shadow_signal(result: RecognitionResult, payload: Mapping[str, Any], *, selected: bool) -> None:
+def _attach_constrained_shadow_signal(
+    result: RecognitionResult,
+    payload: Mapping[str, Any],
+    *,
+    selected: bool,
+    expected_state: Optional[str] = None,
+) -> None:
     signals = dict(result.recognition_signals or {})
-    signals["constrainedInference"] = _constrained_signal_from_payload(payload, selected=selected)
+    signals["constrainedInference"] = _constrained_signal_from_payload(
+        payload,
+        selected=selected,
+        expected_state=expected_state,
+    )
     result.recognition_signals = signals
 
 
@@ -1592,6 +1636,11 @@ def _compact_constrained_shadow_event(
 
     gate = signal.get("promotionGate") if isinstance(signal.get("promotionGate"), Mapping) else {}
     recommended = signal.get("recommended") if isinstance(signal.get("recommended"), Mapping) else {}
+    candidate_evaluation = (
+        signal.get("candidateEvaluation")
+        if isinstance(signal.get("candidateEvaluation"), Mapping)
+        else {}
+    )
     pair_selection = (
         signal.get("pairThresholdSelection")
         if isinstance(signal.get("pairThresholdSelection"), Mapping)
@@ -1629,6 +1678,13 @@ def _compact_constrained_shadow_event(
                 "repairCost": recommended.get("repairCost"),
                 "repairChanges": recommended.get("repairChanges"),
                 "stateDeltaFromCanonical": recommended.get("stateDeltaFromCanonical"),
+            },
+            "candidateEvaluation": {
+                "available": candidate_evaluation.get("available"),
+                "exact": candidate_evaluation.get("exact"),
+                "hamming": candidate_evaluation.get("hamming"),
+                "expectedValid": candidate_evaluation.get("expectedValid"),
+                "expectedErrors": candidate_evaluation.get("expectedErrors"),
             },
             "promotionGate": {
                 "accepted": gate.get("accepted"),
@@ -1679,6 +1735,8 @@ def _recognize_with_constrained_inference_mode(
     image_a: bytes,
     image_b: bytes,
     mode: str,
+    *,
+    expected_state: Optional[str] = None,
 ) -> RecognitionResult:
     legacy = recognizer.recognize(image_a, image_b, hull_label_tier1_mode="off")
     try:
@@ -1687,11 +1745,11 @@ def _recognize_with_constrained_inference_mode(
         _attach_constrained_error_signal(legacy, exc, mode=mode)
         return legacy
 
-    candidate = _constrained_candidate_result(payload)
+    candidate = _constrained_candidate_result(payload, expected_state=expected_state)
     if mode == "prefer" and candidate is not None:
         return candidate
 
-    _attach_constrained_shadow_signal(legacy, payload, selected=False)
+    _attach_constrained_shadow_signal(legacy, payload, selected=False, expected_state=expected_state)
     return legacy
 
 

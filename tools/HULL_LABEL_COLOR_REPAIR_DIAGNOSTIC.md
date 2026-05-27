@@ -6,10 +6,11 @@ This diagnostic asks whether deterministic color bookkeeping can clean
 up hull-label rectified panels before involving an LLM. It uses the
 same slot/yaw WCA assignment as the hull-label path, then compares
 plain Lab nearest-color classification, center forcing, exact
-9-per-color count repair, and guarded cubie-legality repair.
+9-per-color count repair, guarded two-view cubie consistency, and
+guarded cubie-legality repair.
 
-Git head: `38629f56fd7c0d3740399263869d127282a1c6b3`
-Generated: `2026-05-27T04:01:34.187705+00:00`
+Git head: `edb2f0a235e9c8a63b6c26171ca5ae3b7cf85c33`
+Generated: `2026-05-27T06:02:43.691997+00:00`
 
 ## Headline
 
@@ -26,6 +27,7 @@ mostly-correct panels to mostly-exact cubes:
 | `canonical_center_forced` | 66 | 26 | 26 | 51.56 | 2.0 | `{0: 26, 1: 6, 2: 10, 3: 5, 4: 4, 5: 5, 6: 3, 7: 3, 9: 2, 10: 1, 12: 1}` |
 | `canonical_count_repaired` | 66 | 61 | 61 | 53.8 | 0.0 | `{0: 61, 2: 3, 3: 1, 4: 1}` |
 | `conservative_legal_repaired` | 66 | 63 | 63 | 54 | 0 | `{0: 63}` |
+| `two_view_consistency_repaired` | 66 | 2 | 2 | 54 | 0.0 | `{0: 2}` |
 | `guarded_broad_legal_repaired` | 66 | 65 | 65 | 54 | 0 | `{0: 65}` |
 | `adaptive` | 66 | 24 | 24 | 51.18 | 2.0 | `{0: 24, 1: 5, 2: 7, 3: 8, 4: 6, 5: 6, 6: 3, 7: 1, 9: 2, 11: 2, 12: 2}` |
 | `adaptive_count_repaired` | 66 | 46 | 46 | 52.65 | 0.0 | `{0: 46, 2: 11, 4: 1, 6: 5, 8: 1, 11: 1, 14: 1}` |
@@ -33,6 +35,12 @@ mostly-correct panels to mostly-exact cubes:
 `canonical_count_repaired` is the stable deterministic baseline:
 61/66 exact/legal, 65/66 within 3 stickers, and only 1 row above 3 stickers.
 The payload's recommended-method selector is now 65/66 exact with hamming distribution `{0: 65, 4: 1}`.
+`two_view_consistency_repaired` is intentionally narrower than
+`guarded_broad_legal_repaired`: it promoted
+2/66 rows in this run,
+only when the current count-repaired state had split-cubie
+inconsistency across the A/B views and the candidate cleared that
+inconsistency.
 
 ## Full Summary By Yaw Source
 
@@ -42,6 +50,7 @@ The payload's recommended-method selector is now 65/66 exact with hamming distri
 | `ground_truth_captureYaw` | `canonical_center_forced` | 23 | 6 | 6 | 51.13 | 2 |
 | `ground_truth_captureYaw` | `canonical_count_repaired` | 23 | 20 | 20 | 53.7 | 0 |
 | `ground_truth_captureYaw` | `conservative_legal_repaired` | 23 | 21 | 21 | 54 | 0 |
+| `ground_truth_captureYaw` | `two_view_consistency_repaired` | 23 | 2 | 2 | 54 | 0.0 |
 | `ground_truth_captureYaw` | `guarded_broad_legal_repaired` | 23 | 23 | 23 | 54 | 0 |
 | `ground_truth_captureYaw` | `adaptive` | 23 | 5 | 5 | 50.04 | 3 |
 | `ground_truth_captureYaw` | `adaptive_center_forced` | 23 | 5 | 5 | 50.04 | 3 |
@@ -50,6 +59,7 @@ The payload's recommended-method selector is now 65/66 exact with hamming distri
 | `hull_label_center_colors` | `canonical_center_forced` | 66 | 26 | 26 | 51.56 | 2.0 |
 | `hull_label_center_colors` | `canonical_count_repaired` | 66 | 61 | 61 | 53.8 | 0.0 |
 | `hull_label_center_colors` | `conservative_legal_repaired` | 66 | 63 | 63 | 54 | 0 |
+| `hull_label_center_colors` | `two_view_consistency_repaired` | 66 | 2 | 2 | 54 | 0.0 |
 | `hull_label_center_colors` | `guarded_broad_legal_repaired` | 66 | 65 | 65 | 54 | 0 |
 | `hull_label_center_colors` | `adaptive` | 66 | 24 | 24 | 51.18 | 2.0 |
 | `hull_label_center_colors` | `adaptive_center_forced` | 66 | 24 | 24 | 51.23 | 2.0 |
@@ -58,6 +68,7 @@ The payload's recommended-method selector is now 65/66 exact with hamming distri
 | `manifest_expectedYaw` | `canonical_center_forced` | 7 | 2 | 2 | 51.29 | 2 |
 | `manifest_expectedYaw` | `canonical_count_repaired` | 7 | 7 | 7 | 54 | 0 |
 | `manifest_expectedYaw` | `conservative_legal_repaired` | 7 | 7 | 7 | 54 | 0 |
+| `manifest_expectedYaw` | `two_view_consistency_repaired` | 7 | 0 | 0 | None | None |
 | `manifest_expectedYaw` | `guarded_broad_legal_repaired` | 7 | 7 | 7 | 54 | 0 |
 | `manifest_expectedYaw` | `adaptive` | 7 | 2 | 2 | 51.29 | 3 |
 | `manifest_expectedYaw` | `adaptive_center_forced` | 7 | 2 | 2 | 51.29 | 3 |
@@ -66,6 +77,7 @@ The payload's recommended-method selector is now 65/66 exact with hamming distri
 | `manifest_notes` | `canonical_center_forced` | 2 | 0 | 0 | 51.5 | 2.5 |
 | `manifest_notes` | `canonical_count_repaired` | 2 | 2 | 2 | 54 | 0.0 |
 | `manifest_notes` | `conservative_legal_repaired` | 2 | 2 | 2 | 54 | 0.0 |
+| `manifest_notes` | `two_view_consistency_repaired` | 2 | 0 | 0 | None | None |
 | `manifest_notes` | `guarded_broad_legal_repaired` | 2 | 2 | 2 | 54 | 0.0 |
 | `manifest_notes` | `adaptive` | 2 | 1 | 1 | 53.5 | 0.5 |
 | `manifest_notes` | `adaptive_center_forced` | 2 | 1 | 1 | 53.5 | 0.5 |
@@ -74,6 +86,7 @@ The payload's recommended-method selector is now 65/66 exact with hamming distri
 | `white_up_default` | `canonical_center_forced` | 34 | 13 | 13 | 42.5 | 2.5 |
 | `white_up_default` | `canonical_count_repaired` | 34 | 24 | 25 | 44.24 | 0.0 |
 | `white_up_default` | `conservative_legal_repaired` | 34 | 25 | 33 | 44.09 | 0 |
+| `white_up_default` | `two_view_consistency_repaired` | 34 | 0 | 0 | None | None |
 | `white_up_default` | `guarded_broad_legal_repaired` | 34 | 25 | 33 | 44.06 | 0 |
 | `white_up_default` | `adaptive` | 34 | 12 | 12 | 42.24 | 3.5 |
 | `white_up_default` | `adaptive_center_forced` | 34 | 12 | 12 | 42.56 | 2.5 |
@@ -81,74 +94,74 @@ The payload's recommended-method selector is now 65/66 exact with hamming distri
 
 ## Per-Set Snapshot
 
-| Set | Source | Recommended | Best safe method | Best hamming | Canonical | Canonical+count | Guarded legal | Adaptive+count | Status |
-|---:|---|---|---|---:|---:|---:|---:|---:|---|
-| 8 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical_count_repaired` | 0 | 5 | 0 | 0 | 2 | `assembled` |
-| 9 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical_count_repaired` | 0 | 3 | 0 | 0 | 2 | `assembled` |
-| 10 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical_count_repaired` | 0 | 5 | 0 | 0 | 2 | `assembled` |
-| 11 | `hull_label_center_colors` | `guarded_broad_legal_repaired` | `guarded_broad_legal_repaired` | 0 | 12 | 2 | 0 | 2 | `assembled` |
-| 12 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 7 | 0 | 0 | 0 | `assembled` |
-| 13 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 6 | 0 | 0 | 0 | `assembled` |
-| 14 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical_count_repaired` | 4 | 10 | 4 | None | 11 | `assembled` |
-| 15 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 4 | 0 | 0 | 0 | `assembled` |
-| 16 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical_count_repaired` | 0 | 5 | 0 | 0 | 2 | `assembled` |
-| 17 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical` | 0 | 0 | 0 | 0 | 6 | `assembled` |
-| 18 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | 0 | 0 | `assembled` |
-| 19 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical` | 0 | 0 | 0 | 0 | 6 | `assembled` |
-| 20 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 1 | 0 | 0 | 0 | `assembled` |
-| 21 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 2 | 0 | 0 | 0 | `assembled` |
-| 22 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 3 | 0 | 0 | 0 | `assembled` |
-| 23 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 2 | 0 | 0 | 0 | `assembled` |
-| 24 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | 0 | 0 | `assembled` |
-| 25 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | 0 | 0 | `assembled` |
-| 26 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 0 | 0 | 0 | 0 | `assembled` |
-| 27 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | 0 | 0 | `assembled` |
-| 28 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | 0 | 0 | `assembled` |
-| 29 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | 0 | 0 | `assembled` |
-| 30 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | 0 | 0 | `assembled` |
-| 31 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical` | 0 | 0 | 0 | 0 | 8 | `assembled` |
-| 32 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical_count_repaired` | 0 | 3 | 0 | 0 | 2 | `assembled` |
-| 33 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 2 | 0 | 0 | 0 | `assembled` |
-| 34 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical_count_repaired` | 0 | 4 | 0 | 0 | 6 | `assembled` |
-| 35 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical_count_repaired` | 0 | 3 | 0 | 0 | 6 | `assembled` |
-| 36 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 0 | 0 | 0 | 0 | `assembled` |
-| 37 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 2 | 0 | 0 | 0 | `assembled` |
-| 38 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 0 | 0 | 0 | 0 | `assembled` |
-| 39 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 1 | 0 | 0 | 0 | `assembled` |
-| 40 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | 0 | 0 | `assembled` |
-| 41 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | 0 | 0 | `assembled` |
-| 42 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | 0 | 0 | `assembled` |
-| 43 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | 0 | 0 | `assembled` |
-| 44 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 2 | 0 | 0 | 0 | `assembled` |
-| 45 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 2 | 0 | 0 | 0 | `assembled` |
-| 46 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 2 | 0 | 0 | 0 | `assembled` |
-| 47 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 1 | 0 | 0 | 0 | `assembled` |
-| 48 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | 0 | 0 | `assembled` |
-| 49 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical_count_repaired` | 0 | 2 | 0 | 0 | 2 | `assembled` |
-| 50 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | 0 | 0 | `assembled` |
-| 51 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 1 | 0 | 0 | 0 | `assembled` |
-| 52 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | 0 | 0 | `assembled` |
-| 53 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | 0 | 0 | `assembled` |
-| 54 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 0 | 0 | 0 | 0 | `assembled` |
-| 55 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 1 | 0 | 0 | 0 | `assembled` |
-| 56 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical` | 0 | 0 | 0 | 0 | 2 | `assembled` |
-| 57 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical_count_repaired` | 0 | 1 | 0 | 0 | 2 | `assembled` |
-| 58 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 0 | 0 | 0 | 0 | `assembled` |
-| 59 | `hull_label_center_colors` | `conservative_legal_repaired` | `conservative_legal_repaired` | 0 | 8 | 2 | 0 | 6 | `assembled` |
-| 60 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical_count_repaired` | 0 | 5 | 0 | 0 | 2 | `assembled` |
-| 61 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 0 | 0 | 0 | 0 | `assembled` |
-| 62 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical_count_repaired` | 0 | 2 | 0 | 0 | 2 | `assembled` |
-| 63 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 2 | 0 | 0 | 0 | `assembled` |
-| 64 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 3 | 0 | 0 | 0 | `assembled` |
-| 65 | `hull_label_center_colors` | `guarded_broad_legal_repaired` | `guarded_broad_legal_repaired` | 0 | 7 | 2 | 0 | 4 | `assembled` |
-| 66 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 4 | 0 | 0 | 0 | `assembled` |
-| 67 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 2 | 0 | 0 | 0 | `assembled` |
-| 68 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 5 | 0 | 0 | 0 | `assembled` |
-| 69 | `hull_label_center_colors` | `conservative_legal_repaired` | `conservative_legal_repaired` | 0 | 6 | 3 | 0 | 14 | `assembled` |
-| 70 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 5 | 0 | 0 | 0 | `assembled` |
-| 71 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 6 | 0 | 0 | 0 | `assembled` |
-| 72 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 9 | 0 | 0 | 0 | `assembled` |
-| 73 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 10 | 0 | 0 | 0 | `assembled` |
+| Set | Source | Recommended | Best safe method | Best hamming | Canonical | Canonical+count | Two-view | Guarded legal | Adaptive+count | Status |
+|---:|---|---|---|---:|---:|---:|---:|---:|---:|---|
+| 8 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical_count_repaired` | 0 | 5 | 0 | None | 0 | 2 | `assembled` |
+| 9 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical_count_repaired` | 0 | 3 | 0 | None | 0 | 2 | `assembled` |
+| 10 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical_count_repaired` | 0 | 5 | 0 | None | 0 | 2 | `assembled` |
+| 11 | `hull_label_center_colors` | `guarded_broad_legal_repaired` | `guarded_broad_legal_repaired` | 0 | 12 | 2 | None | 0 | 2 | `assembled` |
+| 12 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 7 | 0 | None | 0 | 0 | `assembled` |
+| 13 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 6 | 0 | None | 0 | 0 | `assembled` |
+| 14 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical_count_repaired` | 4 | 10 | 4 | None | None | 11 | `assembled` |
+| 15 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 4 | 0 | None | 0 | 0 | `assembled` |
+| 16 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical_count_repaired` | 0 | 5 | 0 | None | 0 | 2 | `assembled` |
+| 17 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical` | 0 | 0 | 0 | None | 0 | 6 | `assembled` |
+| 18 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | None | 0 | 0 | `assembled` |
+| 19 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical` | 0 | 0 | 0 | None | 0 | 6 | `assembled` |
+| 20 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 1 | 0 | None | 0 | 0 | `assembled` |
+| 21 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 2 | 0 | None | 0 | 0 | `assembled` |
+| 22 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 3 | 0 | None | 0 | 0 | `assembled` |
+| 23 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 2 | 0 | None | 0 | 0 | `assembled` |
+| 24 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | None | 0 | 0 | `assembled` |
+| 25 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | None | 0 | 0 | `assembled` |
+| 26 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 0 | 0 | None | 0 | 0 | `assembled` |
+| 27 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | None | 0 | 0 | `assembled` |
+| 28 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | None | 0 | 0 | `assembled` |
+| 29 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | None | 0 | 0 | `assembled` |
+| 30 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | None | 0 | 0 | `assembled` |
+| 31 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical` | 0 | 0 | 0 | None | 0 | 8 | `assembled` |
+| 32 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical_count_repaired` | 0 | 3 | 0 | None | 0 | 2 | `assembled` |
+| 33 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 2 | 0 | None | 0 | 0 | `assembled` |
+| 34 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical_count_repaired` | 0 | 4 | 0 | None | 0 | 6 | `assembled` |
+| 35 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical_count_repaired` | 0 | 3 | 0 | None | 0 | 6 | `assembled` |
+| 36 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 0 | 0 | None | 0 | 0 | `assembled` |
+| 37 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 2 | 0 | None | 0 | 0 | `assembled` |
+| 38 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 0 | 0 | None | 0 | 0 | `assembled` |
+| 39 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 1 | 0 | None | 0 | 0 | `assembled` |
+| 40 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | None | 0 | 0 | `assembled` |
+| 41 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | None | 0 | 0 | `assembled` |
+| 42 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | None | 0 | 0 | `assembled` |
+| 43 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | None | 0 | 0 | `assembled` |
+| 44 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 2 | 0 | None | 0 | 0 | `assembled` |
+| 45 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 2 | 0 | None | 0 | 0 | `assembled` |
+| 46 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 2 | 0 | None | 0 | 0 | `assembled` |
+| 47 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 1 | 0 | None | 0 | 0 | `assembled` |
+| 48 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | None | 0 | 0 | `assembled` |
+| 49 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical_count_repaired` | 0 | 2 | 0 | None | 0 | 2 | `assembled` |
+| 50 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | None | 0 | 0 | `assembled` |
+| 51 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 1 | 0 | None | 0 | 0 | `assembled` |
+| 52 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | None | 0 | 0 | `assembled` |
+| 53 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 0 | 0 | None | 0 | 0 | `assembled` |
+| 54 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 0 | 0 | None | 0 | 0 | `assembled` |
+| 55 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 1 | 0 | None | 0 | 0 | `assembled` |
+| 56 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical` | 0 | 0 | 0 | None | 0 | 2 | `assembled` |
+| 57 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical_count_repaired` | 0 | 1 | 0 | None | 0 | 2 | `assembled` |
+| 58 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 0 | 0 | None | 0 | 0 | `assembled` |
+| 59 | `hull_label_center_colors` | `conservative_legal_repaired` | `conservative_legal_repaired` | 0 | 8 | 2 | None | 0 | 6 | `assembled` |
+| 60 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical_count_repaired` | 0 | 5 | 0 | None | 0 | 2 | `assembled` |
+| 61 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 0 | 0 | None | 0 | 0 | `assembled` |
+| 62 | `hull_label_center_colors` | `canonical_count_repaired` | `canonical_count_repaired` | 0 | 2 | 0 | None | 0 | 2 | `assembled` |
+| 63 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 2 | 0 | None | 0 | 0 | `assembled` |
+| 64 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 3 | 0 | None | 0 | 0 | `assembled` |
+| 65 | `hull_label_center_colors` | `two_view_consistency_repaired` | `guarded_broad_legal_repaired` | 0 | 7 | 2 | 0 | 0 | 4 | `assembled` |
+| 66 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive` | 0 | 4 | 0 | None | 0 | 0 | `assembled` |
+| 67 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 2 | 0 | None | 0 | 0 | `assembled` |
+| 68 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 5 | 0 | None | 0 | 0 | `assembled` |
+| 69 | `hull_label_center_colors` | `conservative_legal_repaired` | `conservative_legal_repaired` | 0 | 6 | 3 | 0 | 0 | 14 | `assembled` |
+| 70 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 5 | 0 | None | 0 | 0 | `assembled` |
+| 71 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 6 | 0 | None | 0 | 0 | `assembled` |
+| 72 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 9 | 0 | None | 0 | 0 | `assembled` |
+| 73 | `hull_label_center_colors` | `canonical_count_repaired` | `adaptive_count_repaired` | 0 | 10 | 0 | None | 0 | 0 | `assembled` |
 
 ## Current Run Notes
 
@@ -158,10 +171,11 @@ The payload's recommended-method selector is now 65/66 exact with hamming distri
 - Greedy count repair is a large deterministic jump: 61/66 exact/legal
   with the production-like yaw source. This supersedes the older
   20/46 exact headline for raw hull-label `prefer` panels.
-- Guarded cubie-legality repair is now part of the color-repair payload:
-  it is 65/66 exact here and exposes
-  conservative and guarded-broad legal candidates, while the
-  ungated broad legal candidate remains diagnostic-only.
+- Guarded two-view and cubie-legality repair are now part of the color-repair payload:
+  two-view promotes 2/66 rows,
+  while guarded broad is 65/66 exact here.
+  The payload exposes conservative, split-cubie-gated, and guarded-broad
+  legal candidates; the ungated broad legal candidate remains diagnostic-only.
 - Canonical Lab count repair beats the adaptive-palette count repair in
   this run (61/66 exact versus 46/66). Adaptive palettes should stay
   diagnostic or gated; do not blindly prefer them.
@@ -188,13 +202,30 @@ The payload's recommended-method selector is now 65/66 exact with hamming distri
   the physical requirement that each WCA face color appears exactly nine
   times. This catches duplicated/missing color reads while preserving the
   sampled geometry.
+- `two_view_consistency_repaired` is the first explicit A/B consistency
+  gate in the repair payload. It requires split-cubie inconsistency in
+  `canonical_count_repaired`, then promotes an already legal candidate
+  only when that candidate clears cubie consistency within the same
+  cost/state-delta limits as guarded broad repair.
 - `conservative_legal_repaired` and `guarded_broad_legal_repaired` add the
-  next constraint layer: cubie legality. The guarded broad method uses
-  the same no-ground-truth cost/state-delta gate as the legal-repair diagnostic;
-  the raw `broad_legal_repaired` method is emitted only for traceability.
+  broader cubie-legality layer. The raw `broad_legal_repaired` method is
+  emitted only for traceability.
 - The adaptive palette uses the six known center samples as anchors. It is
   still deterministic and local to the two input photos; no GT colors or
   LLM output are used.
 - Rows that remain high-hamming after adaptive count repair are likely
   geometry/panel-quality failures rather than cube-count failures. Those
   should be handled by hull-label acceptance gates or a visual repair UI.
+
+## Decision Path
+
+1. Treat `two_view_consistency_repaired` as a transparent diagnostic/selector,
+   not as the main accuracy lever. It explains the split-cubie rescue rows
+   and gives the Fixer trace better evidence, but guarded broad remains the
+   wider legal-repair candidate.
+2. Keep the current guarded-broad state-delta gate as the production-shaped
+   repair candidate until out-of-corpus rows show a new failure mode.
+3. Pull the next accuracy lever in front of repair: Lab + LLM evidence
+   ensemble per sticker, then confidence-gated auto-merge of repair variants.
+4. Re-run this scoreboard whenever the manifest/GT corpus changes, especially
+   after adding GAN 74-78 or additional tricky-lighting rows.

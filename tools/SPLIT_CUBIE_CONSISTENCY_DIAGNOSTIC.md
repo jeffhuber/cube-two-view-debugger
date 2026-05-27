@@ -127,6 +127,18 @@ consistency, not split-cubie specifically.** Whole-cube catches a
 strict superset of split-cubie on this corpus (4 vs 3). The split
 distinction adds no localization value.
 
+### 2026-05-26 follow-up
+
+Codex adopted the state-delta gate first, then pulled the low-risk
+two-view part into the repair payload as `two_view_consistency_repaired`.
+That method does **not** perform targeted reclassification. It is a
+transparent selector over an already legal broad candidate: promote only
+when `canonical_count_repaired` has split-cubie inconsistency, the
+candidate clears cubie consistency, and the same cost/state-delta guard
+passes. On the 66-row corpus it promotes the two split-cubie rescue rows
+(65, 69), rejects Set 14, and leaves in-image/parity cases to the broader
+guarded legal path.
+
 ## Reproducer
 
 ```bash

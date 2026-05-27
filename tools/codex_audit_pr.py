@@ -851,23 +851,36 @@ def _parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
             "pinned environment)."
         ),
     )
+    ap.add_argument(
+        "--read-token-from-stdin",
+        action="store_true",
+        help=(
+            "Read GITHUB_TOKEN from the first line of stdin instead of "
+            "os.environ. The wrapper passes this so the token never "
+            "appears in this Python process's initial environment, "
+            "which on Linux remains visible via /proc/<pid>/environ "
+            "to PR-controlled subprocesses even after "
+            "os.environ.pop(). When set, GITHUB_TOKEN / GH_TOKEN env "
+            "vars are also cleared as defense-in-depth."
+        ),
+    )
     return ap.parse_args(argv)
 
 
 def _extract_and_clear_github_token() -> Optional[str]:
-    """Read GITHUB_TOKEN from os.environ, then remove it (and GH_TOKEN)
-    from os.environ so this Python process's /proc/<pid>/environ doesn't
-    expose the credential to descendants.
+    """Legacy: read GITHUB_TOKEN from os.environ, then remove it (and
+    GH_TOKEN) from os.environ.
 
-    The codex review subprocess we spawn later receives a sanitized env
-    via _build_subprocess_env, but a malicious PR that walks the
-    process tree can still inspect ancestor processes' environments on
-    same-user systems (Linux /proc/<pid>/environ, macOS via task
-    inspection if entitlements permit). Clearing the token from this
-    process's env closes the ancestor-env attack for the Python layer.
-    The wrapper shell also unsets GITHUB_TOKEN before invoking this
-    script — see the wrapper for the bash-side half of the
-    defense-in-depth.
+    `os.environ.pop` clears the var from Python's view, but on Linux
+    the kernel-exposed /proc/<pid>/environ shows the INITIAL exec
+    environment block, not Python's live runtime env. So if the
+    parent process exec'd Python with GITHUB_TOKEN in env, that
+    initial-env exposure persists for the lifetime of the Python
+    process regardless of pop(). The wrapper avoids this by piping
+    the token via stdin and passing --read-token-from-stdin instead;
+    this function is kept for callers that invoke `codex_audit_pr.py`
+    directly without the wrapper, where the /proc exposure is
+    accepted as part of the caller's threat model.
 
     Returns the token value (kept only in a local variable, NOT
     re-exported via os.environ), or None if no token was present.
@@ -879,11 +892,46 @@ def _extract_and_clear_github_token() -> Optional[str]:
     return token
 
 
+def _resolve_github_token(read_from_stdin: bool) -> Optional[str]:
+    """Return the GITHUB_TOKEN, either piped via stdin (wrapper path —
+    avoids /proc/<pid>/environ exposure of the initial Python env on
+    Linux) or read from os.environ (legacy path for direct callers).
+
+    The wrapper passes --read-token-from-stdin and pipes the token as
+    the first line of stdin. When that flag is set, this function
+    reads stdin and ALSO clears GITHUB_TOKEN / GH_TOKEN from
+    os.environ as defense-in-depth (in case the caller accidentally
+    also exported the env vars — the wrapper unsets them before exec
+    but a misuse path could leave them).
+
+    Returns None if no token can be resolved by either mechanism.
+    """
+    if read_from_stdin:
+        line = sys.stdin.readline()
+        # Belt-and-suspenders: even though the wrapper unsets these
+        # before exec, clear them if they somehow made it through.
+        os.environ.pop("GITHUB_TOKEN", None)
+        os.environ.pop("GH_TOKEN", None)
+        if not line:
+            return None
+        return line.rstrip("\r\n")
+    return _extract_and_clear_github_token()
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     args = _parse_args(argv)
-    token = _extract_and_clear_github_token()
+    token = _resolve_github_token(args.read_token_from_stdin)
     if not token:
-        print("error: GITHUB_TOKEN env var is required", file=sys.stderr)
+        if args.read_token_from_stdin:
+            print(
+                "error: --read-token-from-stdin was passed but stdin "
+                "did not contain a token",
+                file=sys.stderr,
+            )
+        else:
+            print("error: GITHUB_TOKEN env var is required (or pass "
+                  "--read-token-from-stdin and pipe the token in)",
+                  file=sys.stderr)
         return 1
     if not args.repo_paths:
         print("error: --repo-paths or CODEX_AUDIT_REPO_PATHS is required",

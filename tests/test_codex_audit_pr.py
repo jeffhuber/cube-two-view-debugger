@@ -824,6 +824,81 @@ def test_extract_and_clear_github_token_returns_none_when_unset(monkeypatch):
     assert c._extract_and_clear_github_token() is None
 
 
+def test_resolve_github_token_reads_from_stdin_when_flag_set(monkeypatch):
+    """The wrapper pipes the token in via stdin (rather than env) so the
+    Python process's INITIAL environment block never contains the token.
+    On Linux, /proc/<pid>/environ reads from that initial block and the
+    bytes persist for the process's lifetime regardless of what Python
+    does with os.environ.pop() afterward. The stdin path closes the
+    /proc-environ exposure to PR-controlled subprocesses.
+
+    Caught by Codex P1 audit on cube-snap#195 / cube-two-view-debugger#354
+    (deeper level of the parent-env-exposure finding).
+    """
+    import io
+    import tools.codex_audit_pr as c
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    monkeypatch.delenv("GH_TOKEN", raising=False)
+    monkeypatch.setattr("sys.stdin", io.StringIO("ghp_via_stdin_value_xyz\n"))
+
+    token = c._resolve_github_token(read_from_stdin=True)
+
+    assert token == "ghp_via_stdin_value_xyz", (
+        "stdin path must return the piped-in token verbatim "
+        "(with trailing newline stripped)"
+    )
+
+
+def test_resolve_github_token_strips_crlf_from_stdin(monkeypatch):
+    """If the wrapper or shell piped the token with CRLF (e.g. via Git
+    Bash on Windows), strip both. Tokens never contain CR or LF
+    legitimately."""
+    import io
+    import tools.codex_audit_pr as c
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    monkeypatch.setattr("sys.stdin", io.StringIO("ghp_with_crlf\r\n"))
+    assert c._resolve_github_token(read_from_stdin=True) == "ghp_with_crlf"
+
+
+def test_resolve_github_token_stdin_path_also_clears_env_belt_and_suspenders(monkeypatch):
+    """Even on the stdin path, if GITHUB_TOKEN/GH_TOKEN happen to be set
+    in os.environ (caller misuse), clear them. The wrapper unsets before
+    exec, but the helper shouldn't trust that."""
+    import io
+    import tools.codex_audit_pr as c
+    monkeypatch.setenv("GITHUB_TOKEN", "should_be_cleared")
+    monkeypatch.setenv("GH_TOKEN", "should_also_be_cleared")
+    monkeypatch.setattr("sys.stdin", io.StringIO("ghp_real_token\n"))
+
+    token = c._resolve_github_token(read_from_stdin=True)
+
+    assert token == "ghp_real_token", "stdin wins over env"
+    assert "GITHUB_TOKEN" not in os.environ, (
+        "stdin path must still clear env vars as defense-in-depth"
+    )
+    assert "GH_TOKEN" not in os.environ, "same for GH_TOKEN"
+
+
+def test_resolve_github_token_stdin_returns_none_on_empty(monkeypatch):
+    """If --read-token-from-stdin is passed but stdin is empty, return
+    None so main() can print a clear error."""
+    import io
+    import tools.codex_audit_pr as c
+    monkeypatch.setattr("sys.stdin", io.StringIO(""))
+    assert c._resolve_github_token(read_from_stdin=True) is None
+
+
+def test_resolve_github_token_falls_back_to_env_when_flag_unset(monkeypatch):
+    """Direct callers that don't use the wrapper should still work via
+    the env-var path. _resolve_github_token(read_from_stdin=False) must
+    fall back to _extract_and_clear_github_token."""
+    import tools.codex_audit_pr as c
+    monkeypatch.setenv("GITHUB_TOKEN", "ghp_from_env")
+    assert c._resolve_github_token(read_from_stdin=False) == "ghp_from_env"
+    # And the env path still clears os.environ (existing behavior).
+    assert "GITHUB_TOKEN" not in os.environ
+
+
 def test_build_subprocess_env_strips_github_token_from_subprocess(
     tmp_path, monkeypatch,
 ):

@@ -173,20 +173,25 @@ fi
 
 # Capture GITHUB_TOKEN/GH_TOKEN into local bash variables and remove
 # them from THIS shell's environment. Without this, the audit
-# subprocess (codex review running PR-controlled tooling) can walk up
-# the process tree via /proc/<bash_pid>/environ on Linux (or
-# equivalent same-user introspection) and recover the credential
-# despite Python's _build_subprocess_env sanitization. Codex P1 audit
-# on cube-snap#194 and cube-two-view-debugger#354 caught this.
+# subprocess (codex review running PR-controlled tooling) can walk
+# up the process tree via /proc/<bash_pid>/environ on Linux (or
+# equivalent same-user introspection) and recover the credential.
 #
-# We re-export the token only as an inline-scoped env var on the
-# python invocation below, so the python child sees it briefly until
-# its own _extract_and_clear_github_token() pops it from os.environ.
-# After that point, neither this shell's env nor python's env contain
-# the token, and the codex subprocess walking up either pid finds
-# nothing. The user's interactive shell may still hold the token —
-# that's the user's deliberate export and outside this wrapper's
-# scope to clear.
+# Then PIPE the token to Python via stdin rather than passing it
+# through the env. On Linux, /proc/<pid>/environ reads from the
+# INITIAL exec environment block, which Python cannot scrub from
+# inside — os.environ.pop() clears Python's view but not the
+# kernel-exposed bytes from /proc. Earlier commits in this PR used
+# `GITHUB_TOKEN="${val}" python …` (inline env), which still put
+# the token in Python's initial env block and exposed it via /proc
+# for the lifetime of the Python process. Piping via stdin avoids
+# that: the token never appears in Python's initial env at all.
+#
+# Codex P1 audit on cube-snap#195 / cube-two-view-debugger#354
+# caught the /proc-environ issue with the inline-env approach. The
+# stdin pattern closes it for the wrapper-driven path. The user's
+# interactive shell may still hold the token — that's the user's
+# deliberate export and outside this wrapper's scope to clear.
 _token_to_pass=""
 if [ -n "${GITHUB_TOKEN:-}" ]; then
   _token_to_pass="${GITHUB_TOKEN}"
@@ -195,7 +200,10 @@ fi
 unset GH_TOKEN  # strip alt-name even if unused, for completeness
 
 if [ -n "${_token_to_pass}" ]; then
-  GITHUB_TOKEN="${_token_to_pass}" "${python_bin}" "${audit_script}" "${audit_args[@]}"
+  # Pipe the token on stdin so it never enters Python's initial env.
+  # `printf '%s'` avoids the trailing newline that `echo` would add;
+  # the Python side rstrips \r\n anyway, but tighter is better.
+  printf '%s' "${_token_to_pass}" | "${python_bin}" "${audit_script}" --read-token-from-stdin "${audit_args[@]}"
 else
   # No token in env — this is the --help/-h bypass path. Let python
   # show its argparse usage; no token needed for that.

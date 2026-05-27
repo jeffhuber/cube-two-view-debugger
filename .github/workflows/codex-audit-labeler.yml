@@ -187,7 +187,7 @@ jobs:
               // (treat it as the latest audit and use its missing SHA
               // to mark labels stale), erasing labels validly applied
               // by an earlier real audit.
-              if (!/Head SHA:\s*`[0-9a-fA-F]{7,40}`/.test(body)) {
+              if (!extractReviewedSha(body)) {
                 return null;
               }
               if (/Codex Audit(?:\s+Result)?\s*[—–:-]\s*PASS\b/i.test(body)) {
@@ -195,6 +195,30 @@ jobs:
               }
               if (/Codex Audit(?:\s+Result)?\s*[—–:-]\s*(BLOCKED|BLOCKER|INCOMPLETE)\b/i.test(body)) {
                 return 'blocked';
+              }
+              return null;
+            }
+
+            // Mirror the Python labeler's extract_reviewed_sha (Codex
+            // P2 round 2 of cube-snap#206 / ctvd#373). The labeler
+            // accepts SHA in bold-suffix (`Head SHA:** abc1234`) AND
+            // plain (`Head SHA: abc1234`) variants, with optional
+            // backticks around the SHA, case-insensitive. The
+            // previous JS regex only matched the strictest
+            // `Head SHA: \`<sha>\`` shape, so a prose-fallback audit
+            // using a supported alternate format would be classified
+            // by the Python labeler (label applied) but ignored by
+            // this synchronize handler (label erased on the next
+            // push). Two-pattern array mirrors codex_audit_labeler.py
+            // exactly.
+            function extractReviewedSha(body) {
+              const patterns = [
+                /Head SHA:\*\*\s*`?([0-9a-fA-F]{7,40})`?/i,
+                /Head SHA:\s*`?([0-9a-fA-F]{7,40})`?/i,
+              ];
+              for (const pattern of patterns) {
+                const m = body.match(pattern);
+                if (m) return m[1];
               }
               return null;
             }
@@ -228,10 +252,14 @@ jobs:
             const stale_labels = new Set(['codex-audit-done', 'codex-audit-blocked']);
             if (audits.length > 0) {
               const latest = audits[0];
-              const shaM = latest.body.match(/Head SHA:\s*`([0-9a-fA-F]{7,40})`/);
+              // Use the same Head-SHA extractor as the classifier
+              // (Codex P2 round 2 of cube-snap#206 / ctvd#373) so the
+              // trailer-aware preservation step accepts the same SHA
+              // formats the Python labeler accepts.
+              const reviewedRaw = extractReviewedSha(latest.body);
               const verdict = classifyAuditComment(latest.body);
-              if (shaM && verdict) {
-                const reviewed = shaM[1].toLowerCase();
+              if (reviewedRaw && verdict) {
+                const reviewed = reviewedRaw.toLowerCase();
                 const headMatches = currentHead === reviewed || currentHead.startsWith(reviewed);
                 if (headMatches) {
                   // `needs` verdict = audit didn't complete; treat as

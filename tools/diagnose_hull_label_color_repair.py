@@ -697,6 +697,10 @@ def render_report(payload: Mapping[str, Any]) -> str:
         "- Set 70 should be inspected with yaw-aware panel labels. Its current",
         "  yaw=2 Image B slots map to D/F/R; older no-yaw D/L/B contact sheets",
         "  are useful visually but misleading for face identity.",
+        "- GAN Sets 74-78 are the first GAN-brand tricky-lighting expansion in this",
+        "  scoreboard. The default recognizer still rejects them, but hull-label",
+        "  center-yaw inference gets yaw 0/1/2/3 correct for Sets 75-78 and",
+        "  `canonical_count_repaired` is exact on all five rows.",
     ])
 
     lines.extend([
@@ -736,7 +740,7 @@ def render_report(payload: Mapping[str, Any]) -> str:
         "3. Pull the next accuracy lever in front of repair: Lab + LLM evidence",
         "   ensemble per sticker, then confidence-gated auto-merge of repair variants.",
         "4. Re-run this scoreboard whenever the manifest/GT corpus changes, especially",
-        "   after adding GAN 74-78 or additional tricky-lighting rows.",
+        "   as additional GAN/tricky-lighting rows are added.",
     ])
     return "\n".join(lines) + "\n"
 

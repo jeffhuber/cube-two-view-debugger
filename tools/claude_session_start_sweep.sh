@@ -98,12 +98,84 @@ if [ "$CTVD_FETCH" = ok ]; then
 fi
 TOTAL=$((CS_COUNT + CTVD_COUNT))
 
+# Cross-check the audit log for `review_requested` events that have NO
+# later `finished` at the same head SHA. This catches the race window
+# between Codex writing a review_requested event AND the GitHub label
+# landing: gh pr list above only sees the label, so a freshly-requested
+# review can be invisible to the gh-list call by tens of seconds even
+# though the audit-log event is already there. The audit-log tail is the
+# leading indicator; the GitHub label is the lagging one.
+#
+# Scan a 100-event window (≈ last hour of typical activity). For each
+# review_requested in that window, check whether a subsequent finished
+# event in the window has the same (repo, pr, head). If not, emit it as
+# a pending entry.
+#
+# Worst-case work: 100-event jq pass. Cheap relative to the 2s gh
+# budget already accepted above.
+AUDIT_PENDING_TMP=$(mktemp -t audit-pending.XXXX)
+trap 'rm -f "$CS_TMP" "$CTVD_TMP" "$CS_STATUS" "$CTVD_STATUS" "$AUDIT_PENDING_TMP"' EXIT
+if [ -f "$LOG" ]; then
+  tail -100 "$LOG" 2>/dev/null | jq -s -r '
+    . as $events
+    | [$events[] | select(.event == "review_requested")
+       | {repo, pr, head: (.head // ""), time: (.time.pt // "—"), lane: (.lane // "—")}] as $reviews
+    | [$events[] | select(.event == "finished")
+       | {repo: (.repo // .lock.repo // ""),
+          pr: (.pr // .lock.pr // null),
+          head: (.head // .lock.head // "")}] as $finishes
+    | $reviews
+      | map(
+          . as $r
+          | select([
+              $finishes[]
+              # Match at 7-char short-SHA prefix. The audit log records
+              # `head` as whatever the caller passed to --head: sometimes
+              # a full 40-char SHA (record / handoff_log start), sometimes
+              # a 7-char short SHA (post_review.sh callers). A 12-char
+              # comparison falsely rejects matches when one side is 7
+              # chars (slicing beyond string length returns the string
+              # unchanged). 7 chars is the shortest realistic short SHA
+              # and gives ~1/268M collision probability per pair —
+              # negligible vs the false-positive cost of treating real
+              # finished reviews as pending.
+              | select(
+                  .repo == $r.repo
+                  and .pr == $r.pr
+                  and (.head // "")[0:7] == ($r.head // "")[0:7]
+                )
+            ] | length == 0)
+          | "\($r.repo)\t\($r.pr)\t\(($r.head // "")[0:12])\t\($r.lane)\t\($r.time)"
+        )
+      | .[]
+  ' 2>/dev/null > "$AUDIT_PENDING_TMP"
+fi
+AUDIT_PENDING_COUNT=$(wc -l < "$AUDIT_PENDING_TMP" 2>/dev/null | tr -d ' ')
+case "$AUDIT_PENDING_COUNT" in ''|*[!0-9]*) AUDIT_PENDING_COUNT=0 ;; esac
+
+# Headline. The fetch-failure case still wins (we can't tell what's
+# pending if gh is down). Otherwise: if EITHER the gh-list count OR
+# the audit-log cross-check is non-zero, surface specific PR numbers in
+# the headline itself so the model can't gloss over a count.
 if [ "$CS_FETCH" != ok ] || [ "$CTVD_FETCH" != ok ]; then
   echo "[Claude queue sweep — queue fetch incomplete; re-arm Monitor and poll GitHub manually]"
-elif [ "$TOTAL" -eq 0 ]; then
+elif [ "$TOTAL" -eq 0 ] && [ "$AUDIT_PENDING_COUNT" -eq 0 ]; then
   echo "[Claude queue sweep — no PRs awaiting Claude review at session start]"
 else
-  echo "[Claude queue sweep — $TOTAL PR(s) awaiting Claude review at session start]"
+  # Build a compact "snap#N, ctvd#M" list from gh-list + audit-log
+  # cross-check, deduplicating by (repo, pr).
+  HEADLINE_PRS=$(
+    {
+      [ "$CS_COUNT" -gt 0 ] && jq -r '.[] | "jeffhuber/cube-snap\t\(.number)"' < "$CS_TMP"
+      [ "$CTVD_COUNT" -gt 0 ] && jq -r '.[] | "jeffhuber/cube-two-view-debugger\t\(.number)"' < "$CTVD_TMP"
+      [ "$AUDIT_PENDING_COUNT" -gt 0 ] && awk -F'\t' '{print $1 "\t" $2}' < "$AUDIT_PENDING_TMP"
+    } | sort -u | awk -F'\t' '{
+        repo = $1; sub("jeffhuber/", "", repo)
+        short = (repo == "cube-snap") ? "snap" : (repo == "cube-two-view-debugger" ? "ctvd" : repo)
+        printf "%s%s#%s", (NR>1 ? ", " : ""), short, $2
+      } END { print "" }'
+  )
+  echo "[Claude queue sweep — PENDING: $HEADLINE_PRS]"
 fi
 echo ""
 
@@ -115,13 +187,23 @@ if [ "$CTVD_FETCH" != ok ]; then
 fi
 
 if [ "$CS_COUNT" -gt 0 ]; then
-  echo "cube-snap:"
+  echo "cube-snap (label needs-claude-review):"
   jq -r '.[] | "  - #\(.number) @ \(.headRefOid[0:7]) (updated \(.updatedAt))"' < "$CS_TMP"
 fi
 
 if [ "$CTVD_COUNT" -gt 0 ]; then
-  echo "cube-two-view-debugger:"
+  echo "cube-two-view-debugger (label needs-claude-review):"
   jq -r '.[] | "  - #\(.number) @ \(.headRefOid[0:7]) (updated \(.updatedAt))"' < "$CTVD_TMP"
+fi
+
+if [ "$AUDIT_PENDING_COUNT" -gt 0 ]; then
+  echo "Audit-log pending (review_requested with no matching finished):"
+  awk -F'\t' '{
+    repo = $1; sub("jeffhuber/", "", repo)
+    short = (repo == "cube-snap") ? "snap" : (repo == "cube-two-view-debugger" ? "ctvd" : repo)
+    printf "  - %s#%s @ %s lane=%s (review_requested at %s)\n", short, $2, $3, $4, $5
+  }' < "$AUDIT_PENDING_TMP"
+  echo "  ^ The audit-log event preceded the GitHub label flip — leading indicator."
 fi
 
 echo ""

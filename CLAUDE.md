@@ -695,11 +695,72 @@ authorized.
   `codex-audit-done` OR `devin-audit-done` AND a CLEAN merge state.
   Codex is preferred** (its findings have been higher-signal on
   this codebase per the bake-off calibration — see
-  `tools/CODEX_AUDIT_PROTOCOL.md`). Greptile is informational only
-  and never required for merge. Do NOT extend this to PRs owned by
-  Codex-the-collaborator (different from `codex-audit-done`), to
-  PRs missing both audit-done labels, or to anything that needs
-  `--admin` to bypass branch protection. If the user redirects
+  `tools/CODEX_AUDIT_PROTOCOL.md`).
+
+  **Captured-PASS-via-dump counts as `codex-audit-done`.** The
+  Codex CLI sometimes emits its final review prose to stdout
+  without the column-0 `codex` marker the wrapper parses for, so
+  the wrapper falls to UNKNOWN and the comment carries the
+  `needs-codex-audit` trailer despite Codex having produced a
+  clean PASS. The `dump_cli_failure()` instrumentation
+  (cube-snap#202 / ctvd#368) captures Codex's actual stdout prose
+  to `~/.cache/cube-agent-audits/cli-failures/` on every such
+  occurrence. When that captured stdout (a) contains a substantive
+  Codex summary line, (b) shows zero `[P0]`/`[P1]`/`[P2]` finding
+  bullets, and (c) reads as a PASS verdict (e.g. "did not find any
+  actionable regressions", "no introduced correctness issues", "no
+  regressions introduced by this patch"), that captured prose IS
+  the Codex verdict. The mechanical UNKNOWN label is a CLI flake,
+  not a missing review.
+
+  **Verify the dump matches the PR's current head before merging.**
+  Both the formal `codex-audit-done` label and the captured-PASS
+  dump are signals tied to a specific head SHA that can go stale
+  on later pushes. The labeler workflow (cube-snap#205 / ctvd#371)
+  clears `codex-audit-done` / `codex-audit-blocked` on every
+  `pull_request.synchronize` event, so the formal label path is
+  safely head-bound by the workflow itself. The captured-PASS dump
+  lives in the operator's local `~/.cache/` and persists across
+  pushes — so the operator MUST manually verify head-match before
+  using it:
+
+  ```bash
+  CURRENT=$(gh pr view <N> --repo <owner>/<repo> \
+    --json headRefOid --jq .headRefOid)
+  ls ~/.cache/cube-agent-audits/cli-failures/<owner>_<name>_pr<N>_${CURRENT:0:12}_*.log
+  grep "^# head_sha: $CURRENT$" <that-file>
+  ```
+
+  Both checks must pass. Mismatch = captured-PASS does NOT apply;
+  either re-run the audit or wait for the formal label.
+
+  **Transparency comment requirements.** Before merging on the
+  captured-PASS path, post a comment that names the dump file and
+  quotes Codex's actual verdict prose. Two phrasing constraints
+  from the labeler-prose-fallback shape:
+  - Do NOT use the exact phrase `Codex Audit: PASS` (or any
+    `Codex Audit [—–:-] PASS` variant) — the labeler's prose
+    fallback matches that pattern and would silently apply
+    `codex-audit-done` if your login ever ended up in
+    `CODEX_BOT_AUTHORS`. Use prose-only wording like "Captured
+    PASS verdict on `<sha>`" instead.
+  - Do NOT fabricate a `<!-- CODEX_AUDIT_STATE: codex-audit-done -->`
+    trailer — that would impersonate Codex.
+
+  Empirical basis: snap#202/#368/#201/#366/#204/#370 (three mirror
+  pairs across one session, all UNKNOWN with captured PASS, all
+  merged under user authorization on this exact pattern). Codex
+  caught both the head-match gap (P1) and the prose-fallback gap
+  (P2) on the first two rounds of cube-snap#205 / ctvd#371 itself;
+  the labeler-side `synchronize` handler in the same PR pair
+  closes the head-stale-label class entirely.
+
+  Greptile is informational only and never required for merge. Do
+  NOT extend this to PRs owned by Codex-the-collaborator
+  (different from `codex-audit-done`), to PRs missing both
+  audit-done labels (and also missing a captured-PASS dump per the
+  variant above), or to anything that needs `--admin` to bypass
+  branch protection. If the user redirects
   elsewhere ("work on X instead"), the merge auth doesn't carry
   over to that next thing.
 - Merging despite unresolved or ambiguous Devin comments, failing

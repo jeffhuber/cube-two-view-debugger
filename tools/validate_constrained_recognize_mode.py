@@ -107,6 +107,11 @@ def _score_payload(payload: Mapping[str, Any], expected_state: str) -> Dict[str,
         else {}
     )
     recommended = signal.get("recommended") if isinstance(signal.get("recommended"), Mapping) else {}
+    candidate_evaluation = (
+        signal.get("candidateEvaluation")
+        if isinstance(signal.get("candidateEvaluation"), Mapping)
+        else {}
+    )
     failed_checks = payload.get("failedChecks")
     return {
         "status": payload.get("status"),
@@ -129,6 +134,7 @@ def _score_payload(payload: Mapping[str, Any], expected_state: str) -> Dict[str,
             "status": signal.get("status"),
             "recommendedMethod": signal.get("recommendedMethod"),
             "recommended": dict(recommended),
+            "candidateEvaluation": dict(candidate_evaluation),
             "promotionGate": {
                 "accepted": gate.get("accepted"),
                 "decision": gate.get("decision"),
@@ -151,6 +157,7 @@ def _run_mode(
     image_a: bytes,
     image_b: bytes,
     mode: str,
+    expected_state: str,
 ) -> Dict[str, Any]:
     if mode == "legacy":
         result = recognizer.recognize(image_a, image_b, hull_label_tier1_mode="off")
@@ -160,6 +167,7 @@ def _run_mode(
             image_a,
             image_b,
             "prefer",
+            expected_state=expected_state,
         )
     else:  # pragma: no cover - argparse prevents this.
         raise ValueError(f"unknown mode {mode!r}")
@@ -172,7 +180,7 @@ def _evaluate_pair(task: PairTask, recognizer: WhiteUpRecognizer) -> Dict[str, A
     image_a = task.image_a.read_bytes()
     image_b = task.image_b.read_bytes()
     payloads = {
-        mode: _run_mode(recognizer, image_a, image_b, mode)
+        mode: _run_mode(recognizer, image_a, image_b, mode, expected)
         for mode in MODES
     }
     return {

@@ -152,7 +152,7 @@ def test_constrained_env_default_runs_shadow_when_query_omitted(tmp_path, monkey
     recognizer = FakeRecognizer()
     monkeypatch.setattr(app_module, "RUNS", tmp_path / "runs", raising=False)
     monkeypatch.setenv(app_module.CONSTRAINED_INFERENCE_MODE_ENV, "shadow")
-    monkeypatch.setattr(app_module, "prepare_llm_rectified_input", lambda _a, _b: _constrained_payload("R" * 54))
+    monkeypatch.setattr(app_module, "prepare_llm_rectified_input", lambda _a, _b: _constrained_payload(SOLVED_STATE))
 
     pair = ImagePair("env-constrained-shadow", ImageUpload("a.jpg", b"a"), ImageUpload("b.jpg", b"b"))
     payload = app_module.recognize_and_persist(
@@ -237,13 +237,14 @@ def test_constrained_shadow_mode_returns_legacy_with_shadow_signal(tmp_path, mon
             return RecognitionResult(status="success", state="U" * 54, confidence=0.8, reason="legacy")
 
     monkeypatch.setattr(app_module, "RUNS", tmp_path / "runs", raising=False)
-    monkeypatch.setattr(app_module, "prepare_llm_rectified_input", lambda _a, _b: _constrained_payload("R" * 54))
+    monkeypatch.setattr(app_module, "prepare_llm_rectified_input", lambda _a, _b: _constrained_payload(SOLVED_STATE))
 
     pair = ImagePair("constrained-shadow", ImageUpload("a.jpg", b"a"), ImageUpload("b.jpg", b"b"))
     payload = app_module.recognize_and_persist(
         FakeRecognizer(),  # type: ignore[arg-type]
         pair,
         hull_label_tier1_mode="constrained-shadow",
+        expected_state=SOLVED_STATE,
     )
 
     assert payload["state"] == "U" * 54
@@ -262,6 +263,9 @@ def test_constrained_shadow_mode_returns_legacy_with_shadow_signal(tmp_path, mon
     assert event["result"]["status"] == "success"
     assert event["constrainedInference"]["selected"] is False
     assert event["constrainedInference"]["promotionGate"]["accepted"] is True
+    assert event["constrainedInference"]["candidateEvaluation"]["available"] is True
+    assert event["constrainedInference"]["candidateEvaluation"]["exact"] is True
+    assert event["constrainedInference"]["candidateEvaluation"]["hamming"] == 0
     assert event["constrainedInference"]["pairThresholdSelection"]["selectedThresholds"] == {
         "A": 160,
         "B": 160,
@@ -304,6 +308,7 @@ def test_constrained_prefer_mode_returns_candidate_when_gate_accepts(tmp_path, m
         FakeRecognizer(),  # type: ignore[arg-type]
         pair,
         hull_label_tier1_mode="constrained",
+        expected_state=SOLVED_STATE,
     )
 
     assert payload["status"] == "success"
@@ -311,11 +316,13 @@ def test_constrained_prefer_mode_returns_candidate_when_gate_accepts(tmp_path, m
     signal = payload["recognitionSignals"]["constrainedInference"]
     assert signal["selected"] is True
     assert signal["promotionGate"]["accepted"] is True
+    assert signal["candidateEvaluation"]["exact"] is True
 
     event = json.loads((tmp_path / "runs" / "constrained_inference_shadow.jsonl").read_text(encoding="utf-8"))
     assert event["mode"] == "prefer"
     assert event["constrainedInference"]["selected"] is True
     assert event["constrainedInference"]["recommendedMethod"] == "canonical_count_repaired"
+    assert event["constrainedInference"]["candidateEvaluation"]["exact"] is True
 
 
 def test_constrained_prefer_mode_falls_back_when_gate_rejects(tmp_path, monkeypatch):

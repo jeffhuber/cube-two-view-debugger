@@ -14,9 +14,19 @@ set -euo pipefail
 # token even though Python already popped it from os.environ.
 #
 # Re-exec replaces this bash process with a new one whose initial env
-# does not contain those vars at all. CUBE_SNAP_AUDIT_SANITIZED guards
-# against infinite re-exec loops. `exec` preserves stdin (the piped
+# does not contain those vars at all. `exec` preserves stdin (the piped
 # token) and argv, so the new bash sees the same invocation.
+#
+# Loop guard: NO inherited sentinel. The env -u strip means the
+# re-exec'd wrapper sees GITHUB_TOKEN / GH_TOKEN both unset, so the
+# condition below is false on the second iteration and we fall
+# through normally. A sentinel like CUBE_SNAP_AUDIT_SANITIZED could
+# be set by an upstream caller (deliberately or accidentally),
+# which would skip the re-exec while the tokens are still in env —
+# re-opening the /proc leak. The absence of the token vars is the
+# natural and unspoofable loop guard. (Codex P2 audit on
+# cube-snap#195 / ctvd#354 1b92693/54a990f caught the
+# sentinel-spoofing class of bug.)
 #
 # This only runs in the --token-from-stdin code path because:
 #  - Mode 2 (legacy GITHUB_TOKEN env) DELIBERATELY uses that env var;
@@ -24,11 +34,10 @@ set -euo pipefail
 #  - --help bypasses token handling entirely.
 #  - No-token mode errors out before any subprocess is spawned.
 #
-# Codex P1 audit on cube-snap#195 / ctvd#354 caught the mixed-mode
-# hole: --token-from-stdin + exported GITHUB_TOKEN still leaked via
-# /proc. This is the structural fix.
-if [ -z "${CUBE_SNAP_AUDIT_SANITIZED:-}" ] \
-   && { [ -n "${GITHUB_TOKEN:-}" ] || [ -n "${GH_TOKEN:-}" ]; }; then
+# Codex P1 audit on cube-snap#195 / ctvd#354 d051504/4f1732f caught
+# the original mixed-mode hole: --token-from-stdin + exported
+# GITHUB_TOKEN still leaked via /proc. This is the structural fix.
+if [ -n "${GITHUB_TOKEN:-}" ] || [ -n "${GH_TOKEN:-}" ]; then
   _has_stdin_flag=""
   for _arg in "$@"; do
     case "${_arg}" in
@@ -40,7 +49,7 @@ if [ -z "${CUBE_SNAP_AUDIT_SANITIZED:-}" ] \
   done
   unset _arg
   if [ -n "${_has_stdin_flag}" ]; then
-    exec env -u GITHUB_TOKEN -u GH_TOKEN CUBE_SNAP_AUDIT_SANITIZED=1 "$0" "$@"
+    exec env -u GITHUB_TOKEN -u GH_TOKEN "$0" "$@"
   fi
   unset _has_stdin_flag
 fi

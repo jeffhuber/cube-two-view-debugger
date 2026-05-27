@@ -229,40 +229,88 @@ def post_pr_comment(repo: str, pr_number: int, body: str, *, token: str) -> Dict
 _P_TAG_RE = re.compile(r"^\s*[-*]\s*\[P([0-3])\]")
 
 
+# Strict pattern for a real Codex finding bullet — much narrower
+# than the loose _P_TAG_RE we use for counting findings inside an
+# already-trusted block. Real Codex findings always emit:
+#   - [PX] <title> — <file path>:<line>[-<line>]
+#     <indented details>
+# i.e. a column-0 `- [PX]` bullet, followed by a title, an em-dash
+# (—), a file path containing `/` or `.` ending in `:N` or `:N-N`,
+# then a newline and an INDENTED continuation line. This is the
+# "structural finding shape" Codex's instructions require.
+#
+# Used only by the stderr-fallback validator. Stdout parsing keeps
+# using the loose _P_TAG_RE since stdout is the trusted channel.
+_STRICT_FINDING_RE = re.compile(
+    r"^[-*]\s*\[P[0-3]\][^\n]*?\s—\s[/\w.][^\n]*?:\d+(?:-\d+)?[^\n]*\n\s+\S",
+    re.MULTILINE,
+)
+
+
 def _looks_like_codex_verdict_block(block: str) -> bool:
     """Validate a candidate verdict-block extracted from stderr-fallback.
 
-    Returns True if the block contains at least one P-tag finding
-    line (BLOCKED-shape, or PASS-shape with only P3 findings).
-    Returns False otherwise — in which case the caller should treat
-    the parse as UNKNOWN and requeue.
+    Codex audited rounds 1–4 of cube-snap#198 established the
+    threat model: when stderr has multiple column-0 `codex` markers
+    and the last is incidental (from a `cat`/`pytest`/`git diff`
+    inside an exec block, followed by truncation), the chatter
+    after that marker is essentially arbitrary content from the PR
+    being reviewed — commit messages, test fixtures, source files,
+    quoted diffs. ANY pattern at the level of "contains X" can be
+    embedded in such content.
 
-    Why P-tag presence specifically (and NOT a phrase / prose
-    heuristic): Codex P1 audit on cube-snap#198 f52d089 caught that
-    *any* substring-based phrase heuristic on free-form text is
-    fundamentally too leaky. The codex review subprocess regularly
-    cats files, runs tests, and prints diffs whose content can
-    contain arbitrary user-provided strings — including phrases
-    like "without introducing" or "no actionable" embedded in
-    commit messages, fixtures, or quoted source. A column-0 `codex`
-    line that lands by coincidence inside such output, followed by
-    truncation, would satisfy any phrase check and produce
-    auto-PASS. The P-tag pattern (`- [P[0-3]] <title> — <file:line>`)
-    is enough of a structural signal that incidental chatter is
-    extremely unlikely to mimic it.
-    The cost: real Codex PASS verdicts that arrive *only via the
-    stderr fallback path* AND have zero findings (no P-tags at
-    all) will fall to UNKNOWN. That case is rare (stderr-routed
-    verdicts are a CLI flake; the next attempt usually emits to
-    stdout normally) and the UNKNOWN trailer auto-requeues, so the
-    visible cost is one extra audit attempt. Acceptable in
-    exchange for closing the auto-PASS-from-chatter regression.
+    Defense: the validator now requires the candidate block to
+    have ALL of:
+
+      1. A STRICT finding bullet matching the full Codex shape:
+         `- [PX] <title> — <file path>:<line>` followed by a
+         2-space-indented continuation line. The em-dash + file
+         path + colon + line number + multi-line indentation is
+         the structural template Codex itself emits.
+
+      2. A substantive summary sentence (>= 40 chars,
+         non-bullet) BEFORE the first such finding. Real
+         verdicts always start with prose summarizing the
+         change.
+
+    A loose `- [P3] ...` line alone is not enough — that was the
+    Codex round-4 P2 concern. A summary sentence alone is not
+    enough — that was the rounds 1–3 phrase-heuristic concern.
+    The conjunction is what chatter cannot realistically forge:
+    arbitrary log output / file contents / diff hunks contain
+    one or the other in isolation, not the combination in the
+    right order.
+
+    Cost: a real Codex PASS verdict (zero findings) routed only
+    via stderr fallback now fails to UNKNOWN. That's rare (stderr
+    routing is itself a CLI flake; the next attempt usually emits
+    via stdout normally) and the auto-requeue trailer handles it
+    transparently — one extra audit pass, no visible failure.
+    Acceptable in exchange for closing the auto-PASS-from-chatter
+    regression class.
+
     Stdout-anchored blocks bypass this check: the column-0 `codex`
     line in stdout is the canonical final-verdict anchor and has
     not been observed as a false positive in practice.
     """
-    for line in block.splitlines():
-        if _P_TAG_RE.match(line):
+    # 1. Require a strict finding bullet somewhere in the block.
+    strict_match = _STRICT_FINDING_RE.search(block)
+    if not strict_match:
+        return False
+
+    # 2. Require a substantive summary line BEFORE the first strict
+    #    finding. "Substantive" = non-blank, non-bullet, >= 40
+    #    characters of trimmed text. Codex's real verdicts always
+    #    open with a one-sentence summary of the change.
+    finding_start_line = block[:strict_match.start()].count("\n")
+    for line in block.splitlines()[:finding_start_line]:
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if stripped.startswith(("- ", "* ")):
+            # Another bullet, not a prose summary.
+            continue
+        if len(stripped) >= 40:
             return True
     return False
 
@@ -347,16 +395,17 @@ def parse_codex_output(stdout: str, stderr: str = "") -> CodexVerdict:
         stderr_marker_indices = _codex_marker_indices(stderr_lines)
         if stderr_marker_indices:
             # Validate the candidate block before treating it as
-            # authoritative (cube-snap P2 audit on #198 → #199):
-            # Codex CLI output can emit incidental column-0 `codex`
-            # lines from log/test chatter BEFORE the real final
-            # verdict block, then get truncated or never reach the
-            # real verdict. The last-marker-wins rule alone would
-            # anchor on the incidental marker, find no P-tag in the
-            # following chatter, and auto-PASS — silently marking
-            # an unaudited PR done. The validator requires either
-            # a P-tag finding or canonical Codex-verdict prose
-            # phrase in the candidate block before accepting it.
+            # authoritative. See `_looks_like_codex_verdict_block`
+            # for the threat model and the strict-pattern defense
+            # (cube-snap#198 audit rounds 1-5): stderr can be
+            # truncated after an incidental column-0 `codex` line
+            # from `cat`/`pytest`/`git diff` chatter inside an
+            # exec block. The validator requires BOTH a substantive
+            # summary line AND a strict finding bullet (em-dash +
+            # file:line + indented continuation) before accepting
+            # the block. Bare P-tag bullets or PASS-shape phrases
+            # alone are insufficient — chatter can mimic either in
+            # isolation but not the conjunction in the right order.
             candidate_idx = stderr_marker_indices[-1]
             candidate_block = "\n".join(
                 stderr_lines[candidate_idx + 1:]
@@ -367,11 +416,15 @@ def parse_codex_output(stdout: str, stderr: str = "") -> CodexVerdict:
             else:
                 return CodexVerdict(
                     verdict="UNKNOWN",
-                    prose="(stderr fallback found a column-0 `codex` marker "
-                          "but the following text has no P-tag and no "
-                          "canonical Codex-verdict prose phrase — likely "
-                          "an incidental log line ahead of a truncated or "
-                          "format-drifted real verdict; requeue and retry)",
+                    prose="(stderr fallback found a column-0 `codex` "
+                          "marker but the following block lacks the "
+                          "strict Codex final-verdict shape — a "
+                          "substantive summary line plus a finding "
+                          "bullet with em-dash, file path, line "
+                          "number, and indented continuation. Likely "
+                          "an incidental log line ahead of a truncated "
+                          "or format-drifted real verdict; requeue "
+                          "and retry)",
                 )
         else:
             # No final `codex` marker found in stdout OR stderr.

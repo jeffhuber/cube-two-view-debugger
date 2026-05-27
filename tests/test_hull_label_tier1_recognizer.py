@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import json
 from typing import List, Optional
 
 from PIL import Image
@@ -196,6 +197,43 @@ def test_constrained_shadow_mode_returns_legacy_with_shadow_signal(tmp_path, mon
     assert signal["selected"] is False
     assert signal["promotionGate"]["accepted"] is True
 
+    log_path = tmp_path / "runs" / "constrained_inference_shadow.jsonl"
+    events = [json.loads(line) for line in log_path.read_text(encoding="utf-8").splitlines()]
+    assert len(events) == 1
+    event = events[0]
+    assert event["schema"] == "constrained_inference_shadow_event_v1"
+    assert event["mode"] == "shadow"
+    assert event["setId"] == "constrained-shadow"
+    assert event["runId"] == payload["runId"]
+    assert event["result"]["status"] == "success"
+    assert event["constrainedInference"]["selected"] is False
+    assert event["constrainedInference"]["promotionGate"]["accepted"] is True
+    assert event["constrainedInference"]["pairThresholdSelection"]["selectedThresholds"] == {
+        "A": 160,
+        "B": 160,
+    }
+
+
+def test_constrained_shadow_log_can_be_disabled(tmp_path, monkeypatch):
+    import app as app_module
+
+    class FakeRecognizer:
+        def recognize(self, image_a, image_b, *, hull_label_tier1_mode=None):
+            return RecognitionResult(status="success", state="U" * 54, confidence=0.8, reason="legacy")
+
+    monkeypatch.setattr(app_module, "RUNS", tmp_path / "runs", raising=False)
+    monkeypatch.setenv(app_module.CONSTRAINED_SHADOW_LOG_ENV, "off")
+    monkeypatch.setattr(app_module, "prepare_llm_rectified_input", lambda _a, _b: _constrained_payload("R" * 54))
+
+    pair = ImagePair("constrained-shadow-disabled", ImageUpload("a.jpg", b"a"), ImageUpload("b.jpg", b"b"))
+    app_module.recognize_and_persist(
+        FakeRecognizer(),  # type: ignore[arg-type]
+        pair,
+        hull_label_tier1_mode="constrained-shadow",
+    )
+
+    assert not (tmp_path / "runs" / "constrained_inference_shadow.jsonl").exists()
+
 
 def test_constrained_prefer_mode_returns_candidate_when_gate_accepts(tmp_path, monkeypatch):
     import app as app_module
@@ -219,6 +257,11 @@ def test_constrained_prefer_mode_returns_candidate_when_gate_accepts(tmp_path, m
     signal = payload["recognitionSignals"]["constrainedInference"]
     assert signal["selected"] is True
     assert signal["promotionGate"]["accepted"] is True
+
+    event = json.loads((tmp_path / "runs" / "constrained_inference_shadow.jsonl").read_text(encoding="utf-8"))
+    assert event["mode"] == "prefer"
+    assert event["constrainedInference"]["selected"] is True
+    assert event["constrainedInference"]["recommendedMethod"] == "canonical_count_repaired"
 
 
 def test_constrained_prefer_mode_falls_back_when_gate_rejects(tmp_path, monkeypatch):

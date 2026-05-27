@@ -68,8 +68,11 @@ Open levers, approximate descending leverage:
 
 1. **Real-traffic shadow rollout** for the hidden constrained recognizer mode:
    run `/api/recognize?hullLabelTier1=constrained-shadow` beside the legacy
-   default, log accept/reject/fallback decisions, and compare distribution to
-   the 71-pair corpus before replacing the legacy default.
+   default. The endpoint now appends compact JSONL events to
+   `runs/constrained_inference_shadow.jsonl` (override with
+   `CUBE_CONSTRAINED_SHADOW_LOG`, disable with `off`); compare accept/reject,
+   method, threshold, and yaw distributions to the 71-pair corpus before
+   replacing the legacy default.
 2. **Lab + LLM ensemble** for per-sticker color reads.
 3. **Confidence-gated auto-merge** of repair variants based on
    inter-variant agreement.

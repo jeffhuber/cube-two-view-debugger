@@ -84,16 +84,22 @@ jobs:
     # execute arbitrary code with our write token. This job operates
     # only on event metadata + GitHub API calls; PR code is never read.
     #
-    # Token: github.token directly. The workflow-level `issues: write`
-    # permission gives github.token the scope it needs. The earlier
-    # `secrets.CODEX_AUDIT_LABEL_TOKEN || github.token` pattern would
-    # silently fail if the optional PAT was configured but broken
-    # (expired, missing Issues:write, etc.) — github-script would use
-    # the broken PAT and never retry with github.token (Codex P2 on
-    # round 3 of the same PR pair). Unlike the Python labeler script
-    # (which has its own retry chain for the issue_comment trigger),
-    # this synchronize handler is simple enough that using github.token
-    # directly is both safer and more reliable.
+    # Token: PAT-first with github.token fallback (and reverse). The
+    # round-3 simplification used github.token directly because the
+    # workflow-level `permissions: { issues: write }` block is supposed
+    # to grant the needed scope. EMPIRICALLY THAT'S NOT ENOUGH in this
+    # repo — `clear-stale-on-push` failed on every PR with HTTP 403
+    # "Resource not accessible by integration" on `removeLabel`, because
+    # the repository's "Default workflow permissions" (org/repo setting)
+    # overrides the workflow YAML and removes the elevated scope. The
+    # existing `label:` job has always required `CODEX_AUDIT_LABEL_TOKEN`
+    # for this reason; the synchronize handler now does too.
+    #
+    # The round-3 finding (silent-fail on broken PAT) is addressed
+    # below by retrying with the OTHER token on any 403 — so if
+    # `CODEX_AUDIT_LABEL_TOKEN` is configured-but-broken, the script
+    # retries with `github.token`, and vice versa. The handler only
+    # gives up if BOTH tokens fail with 403.
     if: github.event_name == 'pull_request_target' && github.event.action == 'synchronize'
     runs-on: ubuntu-latest
     timeout-minutes: 2
@@ -110,21 +116,59 @@ jobs:
       - name: Clear stale Codex audit labels on push
         uses: actions/github-script@v7
         env:
+          GITHUB_TOKEN: ${{ github.token }}
+          CODEX_AUDIT_LABEL_TOKEN: ${{ secrets.CODEX_AUDIT_LABEL_TOKEN }}
           CODEX_BOT_AUTHORS: ${{ vars.CODEX_BOT_AUTHORS }}
         with:
+          # Start with PAT if configured (explicit Issues:write scope);
+          # otherwise default to github.token. `withFallback` below
+          # retries with the OTHER token on any 403 so a
+          # configured-but-broken PAT or an unwritable github.token
+          # doesn't silently no-op the handler.
+          github-token: ${{ secrets.CODEX_AUDIT_LABEL_TOKEN || github.token }}
           script: |
             const pr_number = context.payload.pull_request.number;
+
+            // Token-fallback helper. github-script's `github` Octokit
+            // is wired with whichever token `github-token` resolved to
+            // above; on a 403, build a fresh Octokit using the OTHER
+            // token and retry. Closes both:
+            //   - Codex round-3 silent-fail on broken PAT (PAT 403s
+            //     → retry with github.token).
+            //   - Live regression on cube-snap#206 / ctvd#373 where
+            //     github.token lacks issues:write despite the
+            //     workflow's permissions block (repo's "Default
+            //     workflow permissions" override) → retry with PAT.
+            // Only API calls wrapped in this helper get the retry;
+            // listComments + paginate are read-only and use github.*
+            // directly.
+            const primaryIsPat = !!process.env.CODEX_AUDIT_LABEL_TOKEN;
+            const fallbackToken = primaryIsPat
+              ? process.env.GITHUB_TOKEN
+              : process.env.CODEX_AUDIT_LABEL_TOKEN;
+            async function withFallback(fn) {
+              try {
+                return await fn(github);
+              } catch (e) {
+                if (e.status !== 403 || !fallbackToken) throw e;
+                core.warning(
+                  `Primary token got 403; retrying with ${primaryIsPat ? 'github.token' : 'CODEX_AUDIT_LABEL_TOKEN'}.`
+                );
+                const fb = new github.constructor({ auth: fallbackToken });
+                return await fn(fb);
+              }
+            }
 
             // Refetch live PR head (Codex P2 round 4 of cube-snap#205).
             // Event-payload `pull_request.head.sha` can be stale if
             // multiple pushes queue up and this run is processed out
             // of order; only the actual current head is safe to
             // compare against the latest audit comment.
-            const prResp = await github.rest.pulls.get({
+            const prResp = await withFallback(gh => gh.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: pr_number,
-            });
+            }));
             const currentHead = prResp.data.head.sha.toLowerCase();
 
             // Mirror the Python labeler's author normalization (Codex
@@ -221,12 +265,12 @@ jobs:
 
             for (const name of stale_labels) {
               try {
-                await github.rest.issues.removeLabel({
+                await withFallback(gh => gh.rest.issues.removeLabel({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: pr_number,
                   name: name,
-                });
+                }));
                 core.info(`Removed stale label ${name} from PR #${pr_number}`);
               } catch (e) {
                 // 404 = label was not applied; that is the normal case.

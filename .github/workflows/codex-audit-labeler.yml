@@ -153,7 +153,15 @@ jobs:
               }
             );
             const audits = comments
-              .filter(c => botLogins.has((c.user.login || '').toLowerCase()))
+              // Optional chaining on `c.user` (Codex P2 round 6 of
+              // ctvd#371): GitHub returns `user: null` for comments
+              // whose author has been deleted, and `c.user.login`
+              // would throw mid-filter. Without this guard, a single
+              // deleted-author comment in the PR's history makes the
+              // entire stale-label cleanup fail and leaves any prior
+              // codex-audit-done in place after a push — exactly the
+              // failure mode this handler is meant to close.
+              .filter(c => botLogins.has((c.user?.login || '').toLowerCase()))
               .filter(c => /<!--\s*CODEX_AUDIT_STATE:/.test(c.body))
               .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 

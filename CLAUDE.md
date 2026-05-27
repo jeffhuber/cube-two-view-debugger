@@ -475,6 +475,37 @@ This is the comparative-claims "view both" rule applied to
 
 ### 3. Branching from a shared checkout: audit working tree first
 
+Before any code or documentation edit, identify both the current
+branch and the worktree state:
+
+```bash
+git status -sb
+git branch --show-current
+```
+
+If the branch belongs to the other agent (for example Codex sees
+`claude/...`, or Claude sees `codex/...`), **do not edit in that
+checkout**. Create/switch to your own branch first. If the primary
+checkout is on another agent's branch or has unrelated modifications,
+use a separate worktree rooted at current `origin/main`:
+
+```bash
+git fetch origin main
+git worktree add -b codex/<topic> /tmp/ctvd-codex-<topic> origin/main
+```
+
+Use your own prefix (`codex/...` for Codex, `claude/...` for Claude)
+unless the user explicitly requests otherwise. Before committing or
+opening a PR, verify the branch and the intended diff one more time:
+
+```bash
+git branch --show-current
+git diff --stat origin/main...HEAD
+```
+
+If the branch prefix, owner, or diff scope is surprising, stop and fix
+that before commit/PR. This is a hard gate, not a status flourish.
+
 Before `git checkout -b <new-branch>` from a checkout that may have
 uncommitted work — especially the primary checkout that other
 agents and sessions share — run `git status` as a *separate*
@@ -521,6 +552,16 @@ Same shape as the `git add -A` failure mode in rule #1:
 not after. Rule #1 covers staging; this rule covers the analogous
 step at branch-creation time. Either misstep silently includes
 someone else's pending work in your commit.
+
+**This caused a real branch-contamination failure on 2026-05-27:**
+Codex edited while the primary checkout was on Claude's
+`claude/sweep-hook-audit-log-crosscheck` branch, putting the first
+`tools/request_review.py` helper commit onto Claude's PR #366. The
+correct fix was a separate Codex-owned PR (#367) plus a note asking
+Claude to drop/rebase the accidental commit. The prevention is the
+branch-owner preflight above: check `git status -sb` and
+`git branch --show-current` before edits, and never do Codex work on a
+`claude/...` branch.
 
 ## Worktrees — pre-flight before any Edit/Write/Bash (read once per session)
 

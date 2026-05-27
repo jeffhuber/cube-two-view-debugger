@@ -695,11 +695,42 @@ authorized.
   `codex-audit-done` OR `devin-audit-done` AND a CLEAN merge state.
   Codex is preferred** (its findings have been higher-signal on
   this codebase per the bake-off calibration — see
-  `tools/CODEX_AUDIT_PROTOCOL.md`). Greptile is informational only
-  and never required for merge. Do NOT extend this to PRs owned by
-  Codex-the-collaborator (different from `codex-audit-done`), to
-  PRs missing both audit-done labels, or to anything that needs
-  `--admin` to bypass branch protection. If the user redirects
+  `tools/CODEX_AUDIT_PROTOCOL.md`).
+
+  **Captured-PASS-via-dump counts as `codex-audit-done`.** The
+  Codex CLI sometimes emits its final review prose to stdout
+  without the column-0 `codex` marker the wrapper parses for, so
+  the wrapper falls to UNKNOWN and the comment carries the
+  `needs-codex-audit` trailer despite Codex having produced a
+  clean PASS. The `dump_cli_failure()` instrumentation
+  (cube-snap#202 / ctvd#368) captures Codex's actual stdout prose
+  to `~/.cache/cube-agent-audits/cli-failures/` on every such
+  occurrence. When that captured stdout (a) contains a substantive
+  Codex summary line, (b) shows zero `[P0]`/`[P1]`/`[P2]` finding
+  bullets, and (c) reads as a PASS verdict (e.g. "did not find any
+  actionable regressions", "no introduced correctness issues", "no
+  regressions introduced by this patch"), that captured prose IS
+  the Codex verdict. The mechanical UNKNOWN label is a CLI flake,
+  not a missing review.
+
+  Merge under the standing delegation in that case is fine
+  provided the rest of the gate holds (PR is CLEAN + Claude-owned
+  + no other holds). Before merging, post a transparency comment
+  that quotes the captured verdict and names the dump file, so the
+  merge reasoning is auditable in the PR record even though the
+  formal trailer never flipped. Do NOT fabricate a
+  `<!-- CODEX_AUDIT_STATE: codex-audit-done -->` trailer in that
+  comment — that would impersonate Codex. Empirical basis:
+  snap#202/#368/#201/#366/#204/#370 (three mirror pairs across one
+  session, all UNKNOWN with captured PASS, all merged under user
+  authorization on this exact pattern).
+
+  Greptile is informational only and never required for merge. Do
+  NOT extend this to PRs owned by Codex-the-collaborator
+  (different from `codex-audit-done`), to PRs missing both
+  audit-done labels (and also missing a captured-PASS dump per the
+  variant above), or to anything that needs `--admin` to bypass
+  branch protection. If the user redirects
   elsewhere ("work on X instead"), the merge auth doesn't carry
   over to that next thing.
 - Merging despite unresolved or ambiguous Devin comments, failing

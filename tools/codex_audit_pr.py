@@ -229,62 +229,42 @@ def post_pr_comment(repo: str, pr_number: int, body: str, *, token: str) -> Dict
 _P_TAG_RE = re.compile(r"^\s*[-*]\s*\[P([0-3])\]")
 
 
-# Phrases Codex consistently uses in real PASS-verdict prose.
-# Used by the stderr-fallback validator (cube-snap#198 → #199): when
-# we fall back to a column-0 `codex` marker in stderr, the candidate
-# block MUST contain either a P-tag bullet (BLOCKED-shape) or one of
-# these PASS-shape phrases. Otherwise we treat the marker as an
-# incidental log line and return UNKNOWN rather than risk auto-PASS
-# on truncated / format-drifted output.
-#
-# Codex round-2 P2 audit on cube-snap#198 caught that the earlier
-# phrase set included generic words ("findings:", "review comment",
-# "no blockers") that could appear in ordinary log/test chatter,
-# letting incidental markers slip through as PASS. This tightened
-# list is restricted to PASS-specific openers / closings Codex
-# actually uses in its final-verdict prose — patterns that don't
-# realistically appear outside an actual verdict. False matches
-# in incidental chatter are the failure mode we're closing; false
-# misses on legitimate verdicts are tolerable (UNKNOWN requeues
-# and the next run usually succeeds).
-#
-# Anchor sources verified against real Codex PASS outputs in this
-# repo's test fixtures (e.g. REAL_PASS_OUTPUT) and against
-# CODEX_AUDIT_PROTOCOL.md's documented verdict template.
-#
-# If Codex's PASS phrasing drifts and these stop matching, the
-# failure mode is UNKNOWN (requeue) — the safe direction. Add new
-# phrases here only when captured CLI-failure dumps show
-# legitimate PASS verdicts being refused.
-_VERDICT_PROSE_PHRASES = (
-    "i did not find",                # canonical PASS opener
-    "did not appear to introduce",   # canonical PASS opener
-    "without introducing",           # canonical PASS phrasing
-    "no actionable",                 # PASS-specific
-    "no clear correctness",          # PASS-specific
-    "no discrete issue",             # PASS-specific
-)
-
-
 def _looks_like_codex_verdict_block(block: str) -> bool:
     """Validate a candidate verdict-block extracted from stderr-fallback.
 
-    Returns True if the block contains either a P-tag finding line
-    (BLOCKED-shape) or one of the canonical PASS-shape phrases.
-    Returns False if it looks like incidental log chatter — in which
-    case the caller should treat the parse as UNKNOWN.
+    Returns True if the block contains at least one P-tag finding
+    line (BLOCKED-shape, or PASS-shape with only P3 findings).
+    Returns False otherwise — in which case the caller should treat
+    the parse as UNKNOWN and requeue.
 
+    Why P-tag presence specifically (and NOT a phrase / prose
+    heuristic): Codex P1 audit on cube-snap#198 f52d089 caught that
+    *any* substring-based phrase heuristic on free-form text is
+    fundamentally too leaky. The codex review subprocess regularly
+    cats files, runs tests, and prints diffs whose content can
+    contain arbitrary user-provided strings — including phrases
+    like "without introducing" or "no actionable" embedded in
+    commit messages, fixtures, or quoted source. A column-0 `codex`
+    line that lands by coincidence inside such output, followed by
+    truncation, would satisfy any phrase check and produce
+    auto-PASS. The P-tag pattern (`- [P[0-3]] <title> — <file:line>`)
+    is enough of a structural signal that incidental chatter is
+    extremely unlikely to mimic it.
+    The cost: real Codex PASS verdicts that arrive *only via the
+    stderr fallback path* AND have zero findings (no P-tags at
+    all) will fall to UNKNOWN. That case is rare (stderr-routed
+    verdicts are a CLI flake; the next attempt usually emits to
+    stdout normally) and the UNKNOWN trailer auto-requeues, so the
+    visible cost is one extra audit attempt. Acceptable in
+    exchange for closing the auto-PASS-from-chatter regression.
     Stdout-anchored blocks bypass this check: the column-0 `codex`
-    line in stdout is the canonical final-verdict anchor and we've
-    never observed it being a false positive. The stderr fallback
-    is the path where format drift / truncation can leave us with
-    a column-0 `codex` log line that isn't a real verdict.
+    line in stdout is the canonical final-verdict anchor and has
+    not been observed as a false positive in practice.
     """
     for line in block.splitlines():
         if _P_TAG_RE.match(line):
             return True
-    lower = block.lower()
-    return any(phrase in lower for phrase in _VERDICT_PROSE_PHRASES)
+    return False
 
 
 def _codex_marker_indices(lines: List[str]) -> List[int]:

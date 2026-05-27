@@ -101,14 +101,15 @@ def test_parse_falls_back_to_single_stderr_marker():
     """Task #85: occasionally the Codex CLI routes the final verdict
     marker to stderr. If stdout has no marker and stderr has at least
     one column-0 marker AND the trailing block passes the validator
-    (P-tag or canonical PASS phrase), parse stderr as a fallback."""
+    (has a P-tag finding line), parse stderr as a fallback."""
     parsed = c.parse_codex_output(
         stdout="exec progress without final marker",
-        stderr="progress chatter\ncodex\nThe changes look good. "
-               "I did not find a discrete issue.\n",
+        stderr="progress chatter\ncodex\nThe changes look good.\n"
+               "- [P3] minor suggestion — file.py:1\n",
     )
+    # P3-only → PASS verdict per blocker_count semantics.
     assert parsed.verdict == "PASS"
-    assert "I did not find" in parsed.prose
+    assert parsed.p3_count == 1
 
 
 def test_parse_prefers_stdout_marker_over_stderr_noise():
@@ -132,29 +133,29 @@ def test_parse_falls_back_to_last_stderr_marker_with_multiple():
     lines and quoted-in-prose mentions are not column-0 bare
     lines, so they don't create false markers.
 
-    The chosen block must additionally pass the validator added in
-    cube-snap#199 — either has a P-tag or contains canonical PASS
-    prose. Here the last block contains "without introducing" which
-    satisfies it.
+    The chosen block must additionally pass the validator (P-tag
+    finding line present). Here the last block contains a P3 bullet
+    which satisfies it.
 
     Empirical justification: ctvd#358's three repeated UNKNOWN
     verdicts (captured via the #196 instrumentation) were ALL
     this shape — stdout had review prose without a marker, stderr
     had multiple column-0 markers, the LAST one preceded the
-    real final-verdict block."""
+    real final-verdict block (which contained a P3 finding)."""
     parsed = c.parse_codex_output(
         stdout="exec progress without final marker",
         stderr="codex\nearly verdict (should be ignored)\n- [P1] old\n"
                "more progress\n"
-               "codex\nfinal verdict — the patch is clean without "
-               "introducing any clear correctness issue.\n",
+               "codex\nfinal verdict — the patch is clean.\n"
+               "- [P3] minor suggestion — file.py:1\n",
     )
-    assert parsed.verdict == "PASS"
+    assert parsed.verdict == "PASS"  # only P3 in last block → PASS-shaped
     # Anchored on the LAST stderr marker — the early one is discarded.
     assert "final verdict" in parsed.prose
     assert "early verdict" not in parsed.prose
-    # The P1 from the early block must not be counted.
+    # The P1 from the early block must not be counted; P3 is.
     assert parsed.p1_count == 0
+    assert parsed.p3_count == 1
 
 
 def test_parse_stderr_fallback_rejects_incidental_marker_without_verdict_signal():
@@ -181,28 +182,42 @@ def test_parse_stderr_fallback_rejects_incidental_marker_without_verdict_signal(
     assert "incidental log line" in parsed.prose
 
 
-def test_parse_stderr_fallback_accepts_pass_shape_via_canonical_phrase():
-    """A real Codex PASS verdict typically has no P-tags but DOES
-    contain canonical phrasing like "I did not find" or
-    "Codex Audit:". The validator must accept these so legitimate
-    stderr-routed PASSes still parse through (rather than getting
-    stuck at UNKNOWN forever waiting for P-tags PASSes never have)."""
+def test_parse_stderr_fallback_rejects_pass_shape_prose_without_p_tag():
+    """Codex round-3 P1 audit on cube-snap#198 f52d089: any
+    substring-based phrase heuristic on free-form text is
+    fundamentally too leaky — the codex review subprocess
+    regularly cats files, runs tests, and prints diffs whose
+    content can contain arbitrary user-provided strings (including
+    phrases like "without introducing" or "I did not find" embedded
+    in commit messages, test fixtures, or quoted source).
+
+    The defense: the stderr-fallback validator requires a structural
+    P-tag finding line. PASS-shape prose alone — even with
+    "canonical" Codex phrasing — is no longer sufficient.
+
+    Cost: real Codex PASS verdicts that arrive *only* via the
+    stderr fallback AND have zero P-tag findings fall to UNKNOWN,
+    auto-requeue, and the next attempt usually succeeds with the
+    verdict via stdout. Rare; acceptable in exchange for closing
+    the auto-PASS-from-chatter regression."""
     parsed = c.parse_codex_output(
         stdout="exec progress without final marker",
         stderr="codex\nThe change applies cleanly. I did not find a "
-               "discrete issue that should block this patch.\n",
+               "discrete issue that should block this patch. The "
+               "implementation looks correct without introducing "
+               "any clear correctness issue.\n",
     )
-    assert parsed.verdict == "PASS"
-    assert "I did not find" in parsed.prose
+    # Despite multiple canonical PASS phrases ("I did not find",
+    # "without introducing", "no discrete issue", "no clear
+    # correctness"), no P-tag → UNKNOWN. We don't trust prose-only.
+    assert parsed.verdict == "UNKNOWN"
+    assert "incidental log line" in parsed.prose
 
 
 def test_parse_stderr_fallback_rejects_block_with_only_generic_words():
-    """Codex round-2 P2 audit on cube-snap#198: the validator's
-    earlier phrase set included generic words like "findings:" and
-    "review comment" that could appear in ordinary log/test chatter,
-    letting incidental markers slip through as PASS. The tightened
-    phrase set must reject these generic patterns when no P-tag and
-    no PASS-specific phrase is present."""
+    """Codex round-2 P2 audit on cube-snap#198: chatter without
+    P-tag → UNKNOWN. Generic log/test wording must not satisfy
+    the validator."""
     parsed = c.parse_codex_output(
         stdout="exec progress without final marker",
         stderr="codex\n"
@@ -210,8 +225,6 @@ def test_parse_stderr_fallback_rejects_block_with_only_generic_words():
                "Review comment posted on the related issue earlier\n"
                "<truncated before real final verdict>\n",
     )
-    # No P-tag, no PASS-specific phrase (just "findings:" and
-    # "review comment" in incidental chatter) → must NOT auto-PASS.
     assert parsed.verdict == "UNKNOWN"
     assert "incidental log line" in parsed.prose
 
@@ -995,17 +1008,30 @@ def test_audit_pr_blocked_path(monkeypatch):
     assert "Codex Audit: BLOCKED" in posted[0]["body"]
 
 
-def test_audit_pr_parses_stderr_fallback(monkeypatch):
-    """End-to-end guard for task #85: audit_pr must pass stderr into the
-    parser so a single-marker stderr verdict can become PASS/BLOCKED
-    instead of UNKNOWN/requeue."""
+def test_audit_pr_parses_stderr_fallback_with_p_tag(monkeypatch):
+    """End-to-end guard for task #85 (post-cube-snap#199 tightening):
+    audit_pr passes stderr into the parser so a stderr-routed verdict
+    WITH AT LEAST ONE P-TAG can still become PASS/BLOCKED instead of
+    UNKNOWN/requeue. The P-tag requirement was added to defend
+    against incidental column-0 `codex` lines being followed by
+    truncated chatter that happens to contain PASS-shape prose."""
     pr_meta = _fake_pr(head_sha="dddd44445555")
     posted: List[Dict[str, Any]] = []
+    # Build a synthetic stderr that's PASS-shaped (P3 only, no P0/P1/P2)
+    # AND has the structural P-tag that the validator now requires.
+    stderr_with_p_tag = (
+        "exec\n"
+        "/bin/bash -lc \"echo something\" in /tmp\n"
+        " succeeded in 0ms\n"
+        "codex\n"
+        "The change is fine.\n"
+        "- [P3] minor suggestion — file.py:1\n"
+    )
     _install_audit_mocks(
         monkeypatch,
         pr_meta=pr_meta,
         codex_stdout="exec progress without final marker",
-        codex_stderr=REAL_PASS_OUTPUT,
+        codex_stderr=stderr_with_p_tag,
         posted_records=posted,
     )
     config = c.AuditConfig(
@@ -1017,11 +1043,48 @@ def test_audit_pr_parses_stderr_fallback(monkeypatch):
         result = c.audit_pr(config, "jeffhuber/cube-two-view-debugger", 17)
     finally:
         Path("/tmp/fake-repo").rmdir()
-    assert result.verdict == "PASS"
+    assert result.verdict == "PASS"  # P3 only → PASS-shaped
     assert result.trailer == c.DONE_TRAILER
     assert result.parsed is not None
-    assert result.parsed.prose.startswith("The changes add")
+    assert result.parsed.p3_count == 1
     assert "Codex Audit: PASS" in posted[0]["body"]
+
+
+def test_audit_pr_stderr_fallback_without_p_tag_returns_unknown(monkeypatch):
+    """Documents the intentional cost of cube-snap#199's
+    P-tag-required validator: a REAL Codex PASS verdict (with no
+    P-tag findings, since PASS verdicts often have none) routed
+    ONLY through stderr now falls to UNKNOWN. This is the
+    acceptable trade for closing the auto-PASS-from-chatter
+    regression — stderr routing is a CLI flake, the next attempt
+    usually emits to stdout normally, and UNKNOWN auto-requeues."""
+    pr_meta = _fake_pr(head_sha="eeee55556666")
+    posted: List[Dict[str, Any]] = []
+    _install_audit_mocks(
+        monkeypatch,
+        pr_meta=pr_meta,
+        codex_stdout="exec progress without final marker",
+        codex_stderr=REAL_PASS_OUTPUT,  # zero P-tags
+        posted_records=posted,
+    )
+    config = c.AuditConfig(
+        github_token="test",
+        repo_paths={"jeffhuber/cube-two-view-debugger": Path("/tmp/fake-repo")},
+    )
+    Path("/tmp/fake-repo").mkdir(exist_ok=True)
+    try:
+        result = c.audit_pr(config, "jeffhuber/cube-two-view-debugger", 17)
+    finally:
+        Path("/tmp/fake-repo").rmdir()
+    assert result.verdict == "UNKNOWN"
+    assert result.trailer == c.STALE_TRAILER
+    # The posted comment is the canonical "Could not parse" UNKNOWN
+    # template (format_comment uses a fixed body for UNKNOWN, not
+    # the parser's raw prose string).
+    assert "Could not parse a Codex verdict" in posted[0]["body"]
+    # The parser-side reason explains why the stderr fallback was
+    # refused — useful when inspecting the AuditResult itself.
+    assert "incidental log line" in result.parsed.prose
 
 
 def test_audit_pr_stale_head(monkeypatch):

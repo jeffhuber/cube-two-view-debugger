@@ -73,6 +73,12 @@ def test_render_report_marks_broad_repair_as_diagnostic_only():
                 "repairChanges": None,
                 "rejectedRepairCost": 22.0,
                 "rejectedRepairChanges": 8,
+                "rejectedStateDeltaFromCanonical": {
+                    "available": True,
+                    "count": 5,
+                    "indices": [0, 1, 2, 3, 4],
+                    "facePositions": ["U[0,0]", "U[0,1]", "U[0,2]", "U[1,0]", "U[1,1]"],
+                },
             },
             "broad_legal_repaired": {
                 "status": "legal_repair_found",
@@ -81,6 +87,12 @@ def test_render_report_marks_broad_repair_as_diagnostic_only():
                 "validState": True,
                 "repairCost": 2.5,
                 "repairChanges": 3,
+                "stateDeltaFromCanonical": {
+                    "available": True,
+                    "count": 5,
+                    "indices": [0, 1, 2, 3, 4],
+                    "facePositions": ["U[0,0]", "U[0,1]", "U[0,2]", "U[1,0]", "U[1,1]"],
+                },
             },
         },
     }]
@@ -93,5 +105,6 @@ def test_render_report_marks_broad_repair_as_diagnostic_only():
     report = render_report(payload)
 
     assert "Broad cubie repair is diagnostic-only" in report
-    assert "Guarded broad repair applies a provisional no-ground-truth gate" in report
-    assert "| 99 | 2 | None | `no_legal_repair` | None | `rejected_guarded_broad_legal_repair` | 0 | 2.5 | 3 |" in report
+    assert "Guarded broad repair applies a no-ground-truth gate" in report
+    assert "state delta from `canonical_count_repaired` <= 4" in report
+    assert "| 99 | 2 | None | `no_legal_repair` | None | `rejected_guarded_broad_legal_repair` | 0 | 2.5 | 3 | 5 |" in report

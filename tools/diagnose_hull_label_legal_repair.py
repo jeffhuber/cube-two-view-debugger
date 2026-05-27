@@ -48,18 +48,17 @@ from tools.diagnose_hull_label_color_repair import (  # noqa: E402
 )
 from tools.extract_color_samples import PairTask, load_corpus_tasks  # noqa: E402
 from tools.hull_label_color_repair import (  # noqa: E402
+    GUARDED_BROAD_MAX_REPAIR_COST,
+    GUARDED_BROAD_MAX_STATE_DELTA,
     StickerObservation,
     evaluate_palette,
     sample_observations,
+    state_delta_payload,
 )
 
 
 DEFAULT_OUT = REPO_ROOT / "tests" / "fixtures" / "hull_label_legal_repair_diagnostic.json"
 DEFAULT_REPORT = REPO_ROOT / "tools" / "HULL_LABEL_LEGAL_REPAIR_DIAGNOSTIC.md"
-GUARDED_BROAD_MAX_REPAIR_COST = 20.0
-GUARDED_BROAD_MAX_REPAIR_CHANGES = 4
-
-
 def _git_head_sha() -> str:
     try:
         return subprocess.check_output(
@@ -140,6 +139,7 @@ def _legal_repair_payload(
             **_state_payload(baseline_state, gt_state),
             "repairCost": 0.0,
             "repairChanges": 0,
+            "stateDeltaFromCanonical": state_delta_payload(baseline_state, baseline_state),
             "sourceMode": source,
         }
     faces = _faces_for_legal_repair(observations, source=source)
@@ -150,6 +150,7 @@ def _legal_repair_payload(
             **_state_payload(None, gt_state),
             "repairCost": None,
             "repairChanges": None,
+            "stateDeltaFromCanonical": state_delta_payload(baseline_state, None),
             "sourceMode": source,
         }
     state, cost, changes = result
@@ -158,6 +159,7 @@ def _legal_repair_payload(
         **_state_payload(state, gt_state),
         "repairCost": round(float(cost), 4),
         "repairChanges": int(changes),
+        "stateDeltaFromCanonical": state_delta_payload(baseline_state, state),
         "sourceMode": source,
     }
 
@@ -165,16 +167,19 @@ def _legal_repair_payload(
 def _guarded_broad_payload(broad_payload: Mapping[str, Any], *, gt_state: str) -> Dict[str, Any]:
     cost = broad_payload.get("repairCost")
     changes = broad_payload.get("repairChanges")
+    state_delta = broad_payload.get("stateDeltaFromCanonical")
+    state_delta_count = state_delta.get("count") if isinstance(state_delta, Mapping) and state_delta.get("available") is True else None
     accepted = (
         broad_payload.get("validState") is True
         and isinstance(cost, (int, float))
-        and isinstance(changes, int)
+        and isinstance(state_delta_count, int)
         and float(cost) <= GUARDED_BROAD_MAX_REPAIR_COST
-        and int(changes) <= GUARDED_BROAD_MAX_REPAIR_CHANGES
+        and int(state_delta_count) <= GUARDED_BROAD_MAX_STATE_DELTA
     )
     gate = {
         "maxRepairCost": GUARDED_BROAD_MAX_REPAIR_COST,
-        "maxRepairChanges": GUARDED_BROAD_MAX_REPAIR_CHANGES,
+        "maxStateDeltaFromCanonical": GUARDED_BROAD_MAX_STATE_DELTA,
+        "stateDeltaFromCanonical": state_delta,
         "accepted": accepted,
     }
     if accepted:
@@ -189,6 +194,7 @@ def _guarded_broad_payload(broad_payload: Mapping[str, Any], *, gt_state: str) -
         "repairChanges": None,
         "rejectedRepairCost": cost,
         "rejectedRepairChanges": changes,
+        "rejectedStateDeltaFromCanonical": state_delta,
         "sourceMode": broad_payload.get("sourceMode"),
         "gate": gate,
     }
@@ -285,6 +291,11 @@ def _method_summary(rows: Sequence[Mapping[str, Any]], method: str) -> Dict[str,
         for row in assembled
         if isinstance(row["methods"][method].get("repairChanges"), int)
     ]
+    state_deltas = [
+        row["methods"][method].get("stateDeltaFromCanonical", {}).get("count")
+        for row in assembled
+        if isinstance(row["methods"][method].get("stateDeltaFromCanonical", {}).get("count"), int)
+    ]
     return {
         "assembled": len(assembled),
         "legal": sum(1 for row in assembled if row["methods"][method].get("validState")),
@@ -295,6 +306,8 @@ def _method_summary(rows: Sequence[Mapping[str, Any]], method: str) -> Dict[str,
         "medianRepairCost": round(statistics.median(costs), 4) if costs else None,
         "medianRepairChanges": statistics.median(changes) if changes else None,
         "maxRepairChanges": max(changes) if changes else None,
+        "medianStateDeltaFromCanonical": statistics.median(state_deltas) if state_deltas else None,
+        "maxStateDeltaFromCanonical": max(state_deltas) if state_deltas else None,
     }
 
 
@@ -327,15 +340,17 @@ def render_report(payload: Mapping[str, Any]) -> str:
         "",
         "## Summary",
         "",
-        "| Method | Assembled | Legal | Exact | <=3 stickers | Median hamming | Hamming distribution | Median repair cost | Median changes | Max changes |",
-        "|---|---:|---:|---:|---:|---:|---|---:|---:|---:|",
+        "| Method | Assembled | Legal | Exact | <=3 stickers | Median hamming | Hamming distribution | Median repair cost | Median changes | Max changes | Median state delta | Max state delta |",
+        "|---|---:|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|",
     ]
     for method, summary in payload["summary"]["methods"].items():
         lines.append(
             f"| `{method}` | {summary['assembled']} | {summary['legal']} | "
             f"{summary['exact']} | {summary['within3']} | {summary['medianHamming']} | "
             f"`{_format_distribution(summary['hammingDistribution'])}` | "
-            f"{summary['medianRepairCost']} | {summary['medianRepairChanges']} | {summary['maxRepairChanges']} |"
+            f"{summary['medianRepairCost']} | {summary['medianRepairChanges']} | "
+            f"{summary['maxRepairChanges']} | {summary['medianStateDeltaFromCanonical']} | "
+            f"{summary['maxStateDeltaFromCanonical']} |"
         )
     lines.extend([
         "",
@@ -346,10 +361,12 @@ def render_report(payload: Mapping[str, Any]) -> str:
         "- Broad cubie repair is diagnostic-only: it marks samples as grid samples",
         "  so the helper can consider all color fallbacks. A perfect broad result",
         "  proves the true legal state is rankable by existing constraints, but",
-        "  it still needs cost/change/margin gates before production use.",
-        f"- Guarded broad repair applies a provisional no-ground-truth gate to that",
+        "  it still needs cost/state-delta/margin gates before production use.",
+        f"- Guarded broad repair applies a no-ground-truth gate to that",
         f"  same broad result: repair cost <= {GUARDED_BROAD_MAX_REPAIR_COST:g}",
-        f"  and repair changes <= {GUARDED_BROAD_MAX_REPAIR_CHANGES}. This is still",
+        f"  and state delta from `canonical_count_repaired` <= {GUARDED_BROAD_MAX_STATE_DELTA}.",
+        "  `repairChanges` remains diagnostic metadata only because it is measured",
+        "  against raw observations, not the count-repaired baseline. This is still",
         "  diagnostic, but it estimates the slice that looks safe enough to consider",
         "  for production confidence gating.",
         "- This diagnostic does not use ground truth for selection. Ground truth is",
@@ -358,8 +375,8 @@ def render_report(payload: Mapping[str, Any]) -> str:
         "",
         "## Non-Exact / No-Repair Rows",
         "",
-        "| Set | Count hamming | Conservative hamming | Conservative status | Guarded hamming | Guarded status | Broad hamming | Broad cost | Broad changes |",
-        "|---:|---:|---:|---|---:|---|---:|---:|---:|",
+        "| Set | Count hamming | Conservative hamming | Conservative status | Guarded hamming | Guarded status | Broad hamming | Broad cost | Broad changes | Broad state delta |",
+        "|---:|---:|---:|---|---:|---|---:|---:|---:|---:|",
     ])
     for row in rows:
         methods = row.get("methods", {})
@@ -373,7 +390,8 @@ def render_report(payload: Mapping[str, Any]) -> str:
             f"| {row['setId']} | {count_h} | {conservative.get('hamming')} | "
             f"`{conservative.get('status')}` | {guarded.get('hamming')} | "
             f"`{guarded.get('status')}` | {broad.get('hamming')} | "
-            f"{broad.get('repairCost')} | {broad.get('repairChanges')} |"
+            f"{broad.get('repairCost')} | {broad.get('repairChanges')} | "
+            f"{broad.get('stateDeltaFromCanonical', {}).get('count')} |"
         )
     return "\n".join(lines) + "\n"
 

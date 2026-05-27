@@ -9,7 +9,7 @@ LLM is treated as the source of truth:
 * greedily repair duplicated/missing colors to exactly nine stickers per WCA
   face color;
 * optionally run cubie-legality repair over the same Lab evidence with guarded
-  cost/change thresholds;
+  cost/state-delta thresholds;
 * expose the trace as a JSON-safe payload that Fixer can use as a draft.
 """
 from __future__ import annotations
@@ -44,7 +44,7 @@ SLOT_TO_LEGACY_FACE = {
     "front": "face_xy",
 }
 GUARDED_BROAD_MAX_REPAIR_COST = 20.0
-GUARDED_BROAD_MAX_REPAIR_CHANGES = 4
+GUARDED_BROAD_MAX_STATE_DELTA = 4
 
 
 @dataclass(frozen=True)
@@ -326,6 +326,44 @@ def _payload_for_state(state: Optional[str], gt_state: Optional[str]) -> Dict[st
     return state_payload(state)
 
 
+def _index_to_face_position(index: int) -> str:
+    face_idx, within = divmod(int(index), 9)
+    row, col = divmod(within, 3)
+    return f"{FACE_ORDER[face_idx]}[{row},{col}]"
+
+
+def state_delta_payload(
+    baseline_state: Optional[str],
+    candidate_state: Optional[str],
+    *,
+    baseline_method: str = "canonical_count_repaired",
+    candidate_method: str = "broad_legal_repaired",
+) -> Dict[str, Any]:
+    """Delta between the trusted count-repaired baseline and a candidate.
+
+    `repairChanges` from the legal-repair helper is measured against raw
+    observations. This gate needs the semantic delta from the already
+    count-repaired state to the broad-legal state: how much would the guarded
+    legal layer alter the current deterministic recommendation?
+    """
+    base = baseline_state if isinstance(baseline_state, str) else None
+    candidate = candidate_state if isinstance(candidate_state, str) else None
+    available = bool(base and candidate and len(base) == len(candidate))
+    indices = (
+        [idx for idx, (left, right) in enumerate(zip(base or "", candidate or "")) if left != right]
+        if available
+        else []
+    )
+    return {
+        "basis": baseline_method,
+        "candidate": candidate_method,
+        "available": available,
+        "count": len(indices) if available else None,
+        "indices": indices,
+        "facePositions": [_index_to_face_position(index) for index in indices],
+    }
+
+
 def _observation_by_index(observations: Sequence[StickerObservation]) -> Dict[int, StickerObservation]:
     return {int(obs.index): obs for obs in observations}
 
@@ -378,6 +416,7 @@ def _legal_repair_payload(
             **_payload_for_state(baseline_state, gt_state),
             "repairCost": 0.0,
             "repairChanges": 0,
+            "stateDeltaFromCanonical": state_delta_payload(baseline_state, baseline_state),
             "sourceMode": source,
         }
     faces = _faces_for_legal_repair(observations, source=source)
@@ -388,6 +427,7 @@ def _legal_repair_payload(
             **_payload_for_state(None, gt_state),
             "repairCost": None,
             "repairChanges": None,
+            "stateDeltaFromCanonical": state_delta_payload(baseline_state, None),
             "sourceMode": source,
         }
     state, cost, changes = result
@@ -396,6 +436,7 @@ def _legal_repair_payload(
         **_payload_for_state(state, gt_state),
         "repairCost": round(float(cost), 4),
         "repairChanges": int(changes),
+        "stateDeltaFromCanonical": state_delta_payload(baseline_state, state),
         "sourceMode": source,
     }
 
@@ -403,16 +444,19 @@ def _legal_repair_payload(
 def _guarded_broad_payload(broad_payload: Mapping[str, Any], *, gt_state: Optional[str]) -> Dict[str, Any]:
     cost = broad_payload.get("repairCost")
     changes = broad_payload.get("repairChanges")
+    state_delta = broad_payload.get("stateDeltaFromCanonical")
+    state_delta_count = state_delta.get("count") if isinstance(state_delta, Mapping) and state_delta.get("available") is True else None
     accepted = (
         broad_payload.get("validState") is True
         and isinstance(cost, (int, float))
-        and isinstance(changes, int)
+        and isinstance(state_delta_count, int)
         and float(cost) <= GUARDED_BROAD_MAX_REPAIR_COST
-        and int(changes) <= GUARDED_BROAD_MAX_REPAIR_CHANGES
+        and int(state_delta_count) <= GUARDED_BROAD_MAX_STATE_DELTA
     )
     gate = {
         "maxRepairCost": GUARDED_BROAD_MAX_REPAIR_COST,
-        "maxRepairChanges": GUARDED_BROAD_MAX_REPAIR_CHANGES,
+        "maxStateDeltaFromCanonical": GUARDED_BROAD_MAX_STATE_DELTA,
+        "stateDeltaFromCanonical": state_delta,
         "accepted": accepted,
     }
     if accepted:
@@ -427,6 +471,7 @@ def _guarded_broad_payload(broad_payload: Mapping[str, Any], *, gt_state: Option
         "repairChanges": None,
         "rejectedRepairCost": cost,
         "rejectedRepairChanges": changes,
+        "rejectedStateDeltaFromCanonical": state_delta,
         "sourceMode": broad_payload.get("sourceMode"),
         "gate": gate,
     }

@@ -7,9 +7,27 @@ guarded-broad legal-repair gate.
 
 Source artifacts:
 - `tools/FRESH_GT_CONSTRAINED_INFERENCE_REPORT.md` — Codex #344, headline 19/20 exact.
-- `tools/HULL_LABEL_LEGAL_REPAIR_DIAGNOSTIC.md` — the 46-pair labeled-corpus scoreboard.
+- `tools/HULL_LABEL_LEGAL_REPAIR_DIAGNOSTIC.md` — the current GT-corpus legal-repair scoreboard.
 - `tools/PAIR_THRESHOLD_REPAIR_DIAGNOSTIC.md` — pair-level threshold sweep (ctvd#342).
 - Set 11 broad-legal probe re-run via `tools/diagnose_pair_threshold_repair.py --only-sets 11`.
+
+## Status update: state-delta gate adopted
+
+The original version of this walkthrough proposed relaxing the
+`repairChanges` ceiling from 4 to 6. A follow-up analysis in ctvd#351
+showed that `repairChanges` is measured against raw observations, not
+against the count-repaired baseline. The implemented gate now uses the
+cleaner semantic:
+
+```python
+repairCost <= 20.0 and state_delta_from_canonical <= 4
+```
+
+That admits Set 11 because broad legal repair differs from
+`canonical_count_repaired` by only 2 stickers, while Set 14 remains
+rejected because its state delta is 6. The older `repairChanges <= 6`
+discussion below is preserved as historical analysis of the boundary
+rows, but it is not the active recommendation.
 
 ## The miss
 
@@ -107,16 +125,17 @@ The danger column stays empty across all relaxations of the
 changes ceiling because Set 14's *cost* (26.69) is the gating
 constraint — the changes ceiling never had to discriminate it.
 
-## Recommended tune
+## Original tune (superseded)
 
-**Change `GUARDED_BROAD_MAX_REPAIR_CHANGES` from `4` to `6`.**
-Leave `GUARDED_BROAD_MAX_REPAIR_COST` at `20.0` unchanged.
+The first candidate tune was to change
+`GUARDED_BROAD_MAX_REPAIR_CHANGES` from `4` to `6` while leaving
+`GUARDED_BROAD_MAX_REPAIR_COST` at `20.0` unchanged.
 
 ```python
 # tools/hull_label_color_repair.py
 # tools/diagnose_hull_label_legal_repair.py
 GUARDED_BROAD_MAX_REPAIR_COST = 20.0
-GUARDED_BROAD_MAX_REPAIR_CHANGES = 6  # was 4 — see SET_11_GUARD_TUNING_WALKTHROUGH.md
+GUARDED_BROAD_MAX_REPAIR_CHANGES = 6  # superseded by state_delta_from_canonical
 ```
 
 Expected impact on the current corpus (46 labeled + 20 fresh = 66 rows):
@@ -136,10 +155,9 @@ Expected impact on the current corpus (46 labeled + 20 fresh = 66 rows):
   (was 46/46, stays 46/46) and the fresh corpus (was 19/20,
   becomes 20/20).
 
-This mirrors the discipline of the original `cost <= 16 → 20`
-tune in #335 (admitted Set 65). Same shape: identify the
-specific boundary row, verify no danger rows fall in the
-admitted window, then ship a focused threshold change.
+This was superseded by the state-delta gate below, which keeps the same
+boundary-row discipline while measuring divergence from the trusted
+count-repaired state directly.
 
 ## A more aggressive alternative
 
@@ -151,9 +169,10 @@ future bad row has cost < 20 but absurd changes (e.g. 30+), it'd
 slip through. Keeping a sane upper bound (6, or even 8) preserves
 a safety net without costing any current rescue rows.
 
-I'd recommend the conservative `changes <= 6` tune as the next
-step, with the option to relax further (or drop the ceiling) once
-more corpus data accumulates.
+The original draft preferred the conservative `changes <= 6` tune over
+dropping the ceiling entirely. That conclusion is superseded by the
+state-delta gate; this section remains only to show why
+`repairChanges` was a poor discriminator.
 
 ## Alternative: state-delta gate (may obsolete this tune)
 
@@ -186,23 +205,19 @@ meaningful: "how much does broad-legal disagree with the trusted
 recommended baseline?" rather than "how many sticker changes did
 the legal-repair algorithm make against raw observations?"
 
-**Recommendation precedence**: before landing the `changes <= 6`
-tune from the previous section, **evaluate the state-delta gate
-alternative**. Codex owns the gate code (extracted into
-`tools/hull_label_pair_selector.py` in #346); they're the
-natural person to choose between:
+**Recommendation precedence**: this state-delta alternative has now
+superseded the `changes <= 6` tune from the previous section. Codex
+owns the gate code (extracted into `tools/hull_label_pair_selector.py`
+in #346), and the implemented choice is:
 
-1. Bump `GUARDED_BROAD_MAX_REPAIR_CHANGES` from `4` to `6`
-   (this walkthrough's original recommendation).
+1. Preserve `repairChanges` as diagnostic metadata.
 2. Replace the `repairChanges` gate with a `state_delta_from_canonical`
    gate (#351's recommendation).
 
-Option 2 is structurally cleaner but requires exposing the
-state-delta value in the legal-repair payload (currently not
-emitted). Option 1 is a one-line constant change in two files.
-On the current corpus, both admit Set 11 and both reject Set 14;
-they differ in the gate semantic and in how they generalize to
-future failure modes.
+The state-delta option is structurally cleaner because it gates on the
+actual number of sticker changes from the trusted
+`canonical_count_repaired` baseline. The legal-repair payload now emits
+that value as `stateDeltaFromCanonical`.
 
 This walkthrough remains valid as the analysis of *which row to
 admit* and *which gate sketch suffices*. The state-delta

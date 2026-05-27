@@ -56,6 +56,12 @@ def recommended_repair(evaluation: Mapping[str, Any]) -> Mapping[str, Any]:
     return summary_recommended
 
 
+def _state_delta_count(method: Mapping[str, Any]) -> Optional[int]:
+    state_delta = _mapping(method.get("stateDeltaFromCanonical"))
+    count = state_delta.get("count")
+    return int(count) if isinstance(count, int) else None
+
+
 def repair_valid(evaluation: Mapping[str, Any]) -> bool:
     """Whether an evaluation's recommended repair is already a valid cube."""
     return bool(recommended_repair(evaluation).get("validState"))
@@ -83,14 +89,18 @@ def repair_rank(evaluation: Mapping[str, Any]) -> RepairRank:
         changes = primary
     elif conservative.get("validState"):
         tier = 1
-        primary = int(conservative.get("repairChanges") or conservative.get("repairMoveCount") or 0)
+        primary = _state_delta_count(conservative)
+        if primary is None:
+            primary = int(conservative.get("repairChanges") or conservative.get("repairMoveCount") or 0)
         cost = float(conservative.get("repairCost") or 0.0)
-        changes = primary
+        changes = int(conservative.get("repairChanges") or conservative.get("repairMoveCount") or primary)
     elif guarded.get("validState"):
         tier = 2
-        primary = int(guarded.get("repairChanges") or guarded.get("repairMoveCount") or 0)
+        primary = _state_delta_count(guarded)
+        if primary is None:
+            primary = int(guarded.get("repairChanges") or guarded.get("repairMoveCount") or 0)
         cost = float(guarded.get("repairCost") or 0.0)
-        changes = primary
+        changes = int(guarded.get("repairChanges") or guarded.get("repairMoveCount") or primary)
     elif canonical.get("countBalanced"):
         tier = 3
         primary = int(canonical.get("repairMoveCount") or 99)
@@ -98,7 +108,9 @@ def repair_rank(evaluation: Mapping[str, Any]) -> RepairRank:
         changes = primary
     else:
         tier = 4
-        primary = int(recommended.get("repairMoveCount") or 99)
+        primary = _state_delta_count(recommended)
+        if primary is None:
+            primary = int(recommended.get("repairMoveCount") or 99)
         cost = float(recommended.get("repairCost") or 999.0)
         changes = int(recommended.get("repairChanges") or primary)
     return (

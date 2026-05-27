@@ -241,16 +241,27 @@ _P_TAG_RE = re.compile(r"^\s*[-*]\s*\[P([0-3])\]")
 #
 # Used only by the stderr-fallback validator. Stdout parsing keeps
 # using the loose _P_TAG_RE since stdout is the trusted channel.
-# Codex round-5 P2 audit on cube-snap#198 a788b68: the earlier
-# version used `\n\s+\S` for the continuation. `\s` matches
-# newlines too, so a bullet followed by a blank line and then an
-# unindented log line would satisfy the pattern (the `\s+` would
-# greedily consume `\n\n` and the `\S` would match the first non-
-# whitespace character on the unindented log line). Use `[ \t]+`
-# for horizontal whitespace only, so the continuation must be on
-# the immediate next line AND must actually be indented.
+# Strict-shape regex restricted to BLOCKER-severity findings only
+# (P0/P1/P2). Codex round-6 P1 audit on cube-snap#198 3a03ff7 made
+# the key observation: stderr-fallback auto-PASS is the failure mode
+# we must close. A BLOCKED verdict is the *safe direction* — a false
+# block forces user review, while a false PASS silently marks an
+# unaudited PR done.
+#
+# The asymmetry: PR-controlled content can plant a `- [P3] ... — file:line`
+# bullet with indented continuation in arbitrary chatter (test fixtures,
+# diff hunks, source files). A faked P3 bullet would produce PASS
+# (blocker_count == 0). A faked P0/P1/P2 bullet would produce BLOCKED
+# — visible failure, user investigates. So restrict the validator to
+# blocker severities: stderr fallback only accepts blocks with at
+# least one P0/P1/P2 strict bullet. P3-only or no-finding blocks fall
+# to UNKNOWN and auto-requeue.
+#
+# Continuation uses `[ \t]+` (not `\s+`) to require actual horizontal
+# indentation — Codex round-5 P2 caught that `\s+` matches blank-line
+# newlines, letting `bullet + blank + unindented log` pass.
 _STRICT_FINDING_RE = re.compile(
-    r"^[-*][ \t]*\[P[0-3]\][^\n]*?\s—\s[/\w.][^\n]*?:\d+(?:-\d+)?[^\n]*\n[ \t]+\S",
+    r"^[-*][ \t]*\[P[012]\][^\n]*?[ \t]+—[ \t]+[/\w.][^\n]*?:\d+(?:-\d+)?[^\n]*\n[ \t]+\S",
     re.MULTILINE,
 )
 
@@ -267,39 +278,55 @@ def _looks_like_codex_verdict_block(block: str) -> bool:
     quoted diffs. ANY pattern at the level of "contains X" can be
     embedded in such content.
 
-    Defense: the validator now requires the candidate block to
-    have ALL of:
+    Defense: the validator requires the candidate block to have
+    ALL of:
 
-      1. A STRICT finding bullet matching the full Codex shape:
+      1. A STRICT finding bullet at BLOCKER severity (P0/P1/P2)
+         matching the full Codex shape:
          `- [PX] <title> — <file path>:<line>` followed by a
-         2-space-indented continuation line. The em-dash + file
-         path + colon + line number + multi-line indentation is
-         the structural template Codex itself emits.
+         horizontally-indented continuation line ([ \\t]+, not
+         \\s+ — the latter matched blank-line newlines per
+         Codex round-5 P2). The em-dash + file path + colon
+         + line number + multi-line indentation is the
+         structural template Codex itself emits.
 
       2. A substantive summary sentence (>= 40 chars,
          non-bullet) BEFORE the first such finding. Real
          verdicts always start with prose summarizing the
          change.
 
-    A loose `- [P3] ...` line alone is not enough — that was the
-    Codex round-4 P2 concern. A summary sentence alone is not
-    enough — that was the rounds 1–3 phrase-heuristic concern.
-    The conjunction is what chatter cannot realistically forge:
-    arbitrary log output / file contents / diff hunks contain
-    one or the other in isolation, not the combination in the
-    right order.
+    Why P0/P1/P2 specifically (Codex round-6 P1): PR-controlled
+    chatter can plant a `- [P3] ... — file:line` bullet (e.g.,
+    test fixtures literally contain that pattern). A faked P3
+    bullet would parse to PASS via `blocker_count == 0` —
+    auto-PASS-from-chatter, the failure mode we keep closing.
+    A faked P0/P1/P2 bullet would parse to BLOCKED — visible
+    failure, user investigates, safe direction. We exploit this
+    asymmetry by only accepting BLOCKER findings from stderr
+    fallback. PASS verdicts via stderr fall to UNKNOWN and
+    auto-requeue.
 
-    Cost: a real Codex PASS verdict (zero findings) routed only
-    via stderr fallback now fails to UNKNOWN. That's rare (stderr
-    routing is itself a CLI flake; the next attempt usually emits
-    via stdout normally) and the auto-requeue trailer handles it
+    A loose `- [PX] ...` line alone (no continuation, any
+    severity) was the round-4 P2 concern. A summary sentence
+    alone was the rounds 1–3 phrase-heuristic concern. A
+    P3-only block was the round-6 P1 concern. The conjunction
+    (strict P0/P1/P2 bullet + substantive summary, in that
+    order) is what arbitrary chatter cannot realistically
+    forge AND limits any successful forgery to the BLOCKED
+    direction.
+
+    Cost: real Codex PASS verdicts AND real BLOCKED verdicts
+    with only P3 findings (technically PASS-shaped by our
+    blocker_count) that arrive only via stderr fallback fall
+    to UNKNOWN. Rare; the auto-requeue trailer handles it
     transparently — one extra audit pass, no visible failure.
-    Acceptable in exchange for closing the auto-PASS-from-chatter
-    regression class.
+    Stderr routing is itself a CLI flake; the next attempt
+    usually emits via stdout normally.
 
-    Stdout-anchored blocks bypass this check: the column-0 `codex`
-    line in stdout is the canonical final-verdict anchor and has
-    not been observed as a false positive in practice.
+    Stdout-anchored blocks bypass this check entirely: the
+    column-0 `codex` line in stdout is the canonical
+    final-verdict anchor and has not been observed as a
+    false positive in practice.
     """
     # 1. Require a strict finding bullet somewhere in the block.
     strict_match = _STRICT_FINDING_RE.search(block)

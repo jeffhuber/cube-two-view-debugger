@@ -45,6 +45,7 @@ STATIC = ROOT / "static"
 RUNS = ROOT / "runs"
 LABELS = RUNS / "labels"
 CONSTRAINED_SHADOW_LOG_ENV = "CUBE_CONSTRAINED_SHADOW_LOG"
+CONSTRAINED_INFERENCE_MODE_ENV = "CUBE_CONSTRAINED_INFERENCE_MODE"
 _CONSTRAINED_SHADOW_LOG_LOCK = threading.Lock()
 
 
@@ -1432,7 +1433,8 @@ def recognize_and_persist(
     expected_state: Optional[str] = None,
     hull_label_tier1_mode: Optional[str] = None,
 ) -> Dict:
-    constrained_mode = _normalize_constrained_inference_mode(hull_label_tier1_mode)
+    effective_mode = _effective_hull_label_tier1_mode(hull_label_tier1_mode)
+    constrained_mode = _normalize_constrained_inference_mode(effective_mode)
     if constrained_mode:
         result = _recognize_with_constrained_inference_mode(
             recognizer,
@@ -1444,7 +1446,7 @@ def recognize_and_persist(
         result = recognizer.recognize(
             pair.image_a.data,
             pair.image_b.data,
-            hull_label_tier1_mode=hull_label_tier1_mode,
+            hull_label_tier1_mode=effective_mode,
         )
     payload = result.to_api_dict()
     if result.image_a and result.image_b:
@@ -1467,6 +1469,20 @@ def recognize_and_persist(
     if constrained_mode:
         _append_constrained_shadow_event(pair, payload, constrained_mode)
     return payload
+
+
+def _effective_hull_label_tier1_mode(explicit_mode: Optional[str]) -> Optional[str]:
+    if explicit_mode is not None and str(explicit_mode).strip():
+        return explicit_mode
+    raw = os.environ.get(CONSTRAINED_INFERENCE_MODE_ENV)
+    value = str(raw or "").strip().lower().replace("_", "-")
+    if value in {"", "0", "false", "off", "none"}:
+        return explicit_mode
+    if value in {"shadow", "trace", "diagnostic"}:
+        return "constrained-shadow"
+    if value in {"prefer", "candidate"}:
+        return "constrained"
+    return raw
 
 
 def _normalize_constrained_inference_mode(raw: Optional[str]) -> Optional[str]:

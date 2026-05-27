@@ -82,6 +82,19 @@ records the rejection/error in `recognitionSignals.constrainedInference`.
 These modes are hidden and default-off. They are the shadow/candidate bridge
 between the Fixer-side rectified path and any future default recognizer flip.
 
+To run the constrained path in shadow for every `/api/recognize` request without
+changing callers, start the server with:
+
+```bash
+CUBE_CONSTRAINED_INFERENCE_MODE=shadow .venv/bin/python app.py
+```
+
+The env var is intentionally opt-in and default-off. Explicit request query
+params still win: `?hullLabelTier1=off` disables the constrained path for that
+request, and `?hullLabelTier1=constrained` runs the candidate-return mode.
+Accepted values are `shadow`/`constrained-shadow` for log-only shadowing and
+`prefer`/`constrained` for gate-controlled candidate return.
+
 When either constrained mode runs, the server appends one compact JSONL event
 to `runs/constrained_inference_shadow.jsonl` by default. Set
 `CUBE_CONSTRAINED_SHADOW_LOG=/path/to/events.jsonl` to write elsewhere, or set

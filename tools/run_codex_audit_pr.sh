@@ -1,6 +1,50 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Sanitized re-exec: if the caller invoked us with --token-from-stdin
+# (or the python-name alias --read-token-from-stdin), AND GITHUB_TOKEN /
+# GH_TOKEN are in our env, re-exec ourselves with those vars stripped.
+#
+# Why: bash's /proc/<pid>/environ on Linux exposes the *initial exec
+# environment block* for the life of the process. `unset GITHUB_TOKEN`
+# inside the script removes it from bash's variable table but NOT from
+# that kernel-exposed block. A PR-controlled subprocess walked from
+# `codex review` can ascend its ancestor chain (codex review → python →
+# bash wrapper → ...) and `cat /proc/<bash_pid>/environ` to recover the
+# token even though Python already popped it from os.environ.
+#
+# Re-exec replaces this bash process with a new one whose initial env
+# does not contain those vars at all. CUBE_SNAP_AUDIT_SANITIZED guards
+# against infinite re-exec loops. `exec` preserves stdin (the piped
+# token) and argv, so the new bash sees the same invocation.
+#
+# This only runs in the --token-from-stdin code path because:
+#  - Mode 2 (legacy GITHUB_TOKEN env) DELIBERATELY uses that env var;
+#    sanitizing would break it. Mode 2 carries its own /proc warning.
+#  - --help bypasses token handling entirely.
+#  - No-token mode errors out before any subprocess is spawned.
+#
+# Codex P1 audit on cube-snap#195 / ctvd#354 caught the mixed-mode
+# hole: --token-from-stdin + exported GITHUB_TOKEN still leaked via
+# /proc. This is the structural fix.
+if [ -z "${CUBE_SNAP_AUDIT_SANITIZED:-}" ] \
+   && { [ -n "${GITHUB_TOKEN:-}" ] || [ -n "${GH_TOKEN:-}" ]; }; then
+  _has_stdin_flag=""
+  for _arg in "$@"; do
+    case "${_arg}" in
+      --token-from-stdin|--read-token-from-stdin)
+        _has_stdin_flag=1
+        break
+        ;;
+    esac
+  done
+  unset _arg
+  if [ -n "${_has_stdin_flag}" ]; then
+    exec env -u GITHUB_TOKEN -u GH_TOKEN CUBE_SNAP_AUDIT_SANITIZED=1 "$0" "$@"
+  fi
+  unset _has_stdin_flag
+fi
+
 script_dir="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(CDPATH= cd -- "${script_dir}/.." && pwd)"
 audit_script="${script_dir}/codex_audit_pr.py"
@@ -60,10 +104,13 @@ while [ "${idx}" -lt "${#audit_args[@]}" ]; do
       help_requested=1
       filtered_args+=("${arg}")
       ;;
-    --token-from-stdin)
-      # Wrapper-only flag: tells the wrapper the caller is piping the
-      # token via stdin. Strip it before passing to python (python uses
-      # its own --read-token-from-stdin which the wrapper adds).
+    --token-from-stdin|--read-token-from-stdin)
+      # Wrapper-only flag (with python-name alias --read-token-from-stdin
+      # so users following the argparse `--help` output land in the same
+      # mode). Tells the wrapper the caller is piping the token via
+      # stdin. Strip it before passing to python — the wrapper always
+      # adds `--read-token-from-stdin` itself in mode 1 below, so leaving
+      # it in filtered_args would double-pass.
       token_from_stdin=1
       ;;
     *)
@@ -190,10 +237,17 @@ if [ -n "${help_requested}" ]; then
 elif [ -n "${token_from_stdin}" ]; then
   # Mode 1: caller pipes the token in. Wrapper passes through
   # stdin unmodified; python reads first line as token.
-  # We do NOT inspect or rewrite stdin, do NOT touch GITHUB_TOKEN
-  # in env (which should not be set in this mode anyway — if it
-  # is, that's the caller's choice and the legacy /proc exposure
-  # applies to whatever exported it).
+  #
+  # By the time control reaches here, the sanitized re-exec at the
+  # top of this script has already stripped GITHUB_TOKEN / GH_TOKEN
+  # from the wrapper bash's initial environ block — so this exec
+  # gives Python an env block free of the token. The `unset` calls
+  # below are defense-in-depth: redundant after the re-exec, but
+  # cheap, and they cover the (impossible-without-tampering)
+  # scenario where the sentinel CUBE_SNAP_AUDIT_SANITIZED is set
+  # while the tokens are also in env.
+  unset GITHUB_TOKEN
+  unset GH_TOKEN
   "${python_bin}" "${audit_script}" --read-token-from-stdin "${filtered_args[@]}"
 elif [ -n "${GITHUB_TOKEN:-}" ]; then
   # Mode 2: legacy env-var path. WARN about /proc exposure, then

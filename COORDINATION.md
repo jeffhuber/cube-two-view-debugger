@@ -58,15 +58,18 @@ Recent additions on top of the rectification foundation:
   `tools/CURRENT_HULL_LABEL_SCOREBOARD.md` summarizes the latest numbers:
   guarded pair-threshold selection is 71/71 exact, and
   `tools/CONSTRAINED_INFERENCE_PROMOTION_GATE.md` applies a GT-free
-  production-shaped gate that accepts 71/71 of those candidates. This is the
-  current default-recognizer shadow candidate, not a default flip by itself.
+  production-shaped gate that accepts 71/71 of those candidates. The hidden
+  `/api/recognize?hullLabelTier1=constrained` path now validates the same
+  candidate at the recognizer boundary: 71/71 exact/legal versus 24/71 exact
+  for the unchanged legacy/default path. This is the current default-recognizer
+  shadow candidate, not a default flip by itself.
 
 Open levers, approximate descending leverage:
 
-1. **Recognizer-path shadow/promotion wiring** for the constrained-inference
-   gate: run the same guarded pair-threshold + repair gate behind
-   `/api/recognize`, log accept/reject/fallback decisions, and only then
-   decide whether to replace the legacy default.
+1. **Real-traffic shadow rollout** for the hidden constrained recognizer mode:
+   run `/api/recognize?hullLabelTier1=constrained-shadow` beside the legacy
+   default, log accept/reject/fallback decisions, and compare distribution to
+   the 71-pair corpus before replacing the legacy default.
 2. **Lab + LLM ensemble** for per-sticker color reads.
 3. **Confidence-gated auto-merge** of repair variants based on
    inter-variant agreement.

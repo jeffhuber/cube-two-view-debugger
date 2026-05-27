@@ -488,6 +488,17 @@ def _build_subprocess_env(venv_path: Optional[Path]) -> Dict[str, str]:
     canonical .venv (3.12.13 / 2.3.5 / 12.2.0).
     """
     env = dict(os.environ)
+    # The `codex review` subprocess executes scripts/tooling from the
+    # PR worktree under audit — that is untrusted code by definition.
+    # GITHUB_TOKEN / GH_TOKEN in this script's parent env are used for
+    # GitHub API calls from THIS process (PR fetch, comment post). They
+    # must not leak into the codex subprocess where the PR code runs.
+    # Caught by Codex P1 audit on cube-snap#194 / cube-two-view-debugger#354:
+    # `gh auth token` fallback in the wrapper made every audit caller a
+    # potential exposure, but the same issue applied to manually-exported
+    # tokens before that. This sanitization closes both paths.
+    for sensitive in ("GITHUB_TOKEN", "GH_TOKEN"):
+        env.pop(sensitive, None)
     if venv_path is None:
         return env
     # Path("") and Path(".") both stringify as "." and resolve to cwd.

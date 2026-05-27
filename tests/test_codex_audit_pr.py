@@ -775,9 +775,49 @@ def test_build_subprocess_env_noop_when_venv_path_is_none(monkeypatch):
     pre-patch behavior."""
     monkeypatch.setenv("PATH", "/sentinel/path")
     monkeypatch.delenv("VIRTUAL_ENV", raising=False)
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    monkeypatch.delenv("GH_TOKEN", raising=False)
     env = c._build_subprocess_env(None)
     assert env["PATH"] == "/sentinel/path"
     assert "VIRTUAL_ENV" not in env
+
+
+def test_build_subprocess_env_strips_github_token_from_subprocess(
+    tmp_path, monkeypatch,
+):
+    """GITHUB_TOKEN / GH_TOKEN in this process's env must NOT propagate
+    to the codex review subprocess. The subprocess executes scripts and
+    tooling from the PR worktree under audit — that is untrusted code,
+    and leaking a write-capable GitHub token to it is the credential-
+    exposure vulnerability caught by Codex P1 on cube-snap#194 /
+    cube-two-view-debugger#354.
+
+    The sanitization must fire regardless of venv_path: tested both
+    venv_path=None (cube-snap-style caller) and a real venv path
+    (ctvd-style caller)."""
+    monkeypatch.setenv("GITHUB_TOKEN", "ghp_secret_value_12345")
+    monkeypatch.setenv("GH_TOKEN", "ghp_other_secret_67890")
+
+    # venv_path=None path (cube-snap caller without local .venv).
+    env_noop = c._build_subprocess_env(None)
+    assert "GITHUB_TOKEN" not in env_noop, (
+        "GITHUB_TOKEN must be stripped from subprocess env even when "
+        "venv_path is None — untrusted PR code runs regardless of venv"
+    )
+    assert "GH_TOKEN" not in env_noop, "GH_TOKEN must be stripped"
+
+    # venv_path set path (ctvd caller with local .venv).
+    fake_venv = tmp_path / "venv"
+    (fake_venv / "bin").mkdir(parents=True)
+    (fake_venv / "bin" / "python").touch()
+    env_venv = c._build_subprocess_env(fake_venv)
+    assert "GITHUB_TOKEN" not in env_venv, (
+        "GITHUB_TOKEN must be stripped even when venv injection happens"
+    )
+    assert "GH_TOKEN" not in env_venv, "GH_TOKEN must be stripped"
+    # Regression guard: the sanitization shouldn't have broken the
+    # existing venv-path injection.
+    assert env_venv["VIRTUAL_ENV"] == str(fake_venv)
 
 
 def test_build_subprocess_env_noop_when_venv_missing_bin_python(

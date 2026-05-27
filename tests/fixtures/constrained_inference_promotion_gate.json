@@ -1,0 +1,2330 @@
+{
+  "gate": {
+    "allowedMethods": [
+      "canonical_count_repaired",
+      "conservative_legal_repaired",
+      "guarded_broad_legal_repaired",
+      "two_view_consistency_repaired"
+    ],
+    "allowedSelectionReasons": [
+      "current_invalid_selected_best_pair",
+      "kept_current_valid_repair"
+    ],
+    "maxCanonicalRepairMoves": 10,
+    "maxLegalRepairChanges": 6,
+    "maxLegalRepairCost": 20.0,
+    "maxLegalStateDelta": 4
+  },
+  "rows": [
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        5,
+        0.0,
+        5,
+        3
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "8",
+      "thresholds": {
+        "current": {
+          "A": 192,
+          "B": 128
+        },
+        "selected": {
+          "A": 192,
+          "B": 128
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        3,
+        0.0,
+        3,
+        3
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "9",
+      "thresholds": {
+        "current": {
+          "A": 224,
+          "B": 160
+        },
+        "selected": {
+          "A": 224,
+          "B": 160
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        5,
+        0.0,
+        5,
+        3
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "10",
+      "thresholds": {
+        "current": {
+          "A": 64,
+          "B": 224
+        },
+        "selected": {
+          "A": 64,
+          "B": 224
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        2,
+        2,
+        10.1513,
+        6,
+        3
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "guarded_broad_legal_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "11",
+      "thresholds": {
+        "current": {
+          "A": 160,
+          "B": 128
+        },
+        "selected": {
+          "A": 160,
+          "B": 128
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        7,
+        0.0,
+        7,
+        3
+      ],
+      "recommendedConfidence": "medium",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "12",
+      "thresholds": {
+        "current": {
+          "A": 160,
+          "B": 224
+        },
+        "selected": {
+          "A": 160,
+          "B": 224
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        6,
+        0.0,
+        6,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "13",
+      "thresholds": {
+        "current": {
+          "A": 224,
+          "B": 128
+        },
+        "selected": {
+          "A": 224,
+          "B": 128
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": false,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        6,
+        0.0,
+        6,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "current_invalid_selected_best_pair",
+      "setId": "14",
+      "thresholds": {
+        "current": {
+          "A": 160,
+          "B": 160
+        },
+        "selected": {
+          "A": 64,
+          "B": 192
+        },
+        "switched": true
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        4,
+        0.0,
+        4,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "15",
+      "thresholds": {
+        "current": {
+          "A": 192,
+          "B": 192
+        },
+        "selected": {
+          "A": 192,
+          "B": 192
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        5,
+        0.0,
+        5,
+        3
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "16",
+      "thresholds": {
+        "current": {
+          "A": 128,
+          "B": 128
+        },
+        "selected": {
+          "A": 128,
+          "B": 128
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        1
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "17",
+      "thresholds": {
+        "current": {
+          "A": 128,
+          "B": 64
+        },
+        "selected": {
+          "A": 128,
+          "B": 64
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "18",
+      "thresholds": {
+        "current": {
+          "A": 64,
+          "B": 128
+        },
+        "selected": {
+          "A": 64,
+          "B": 128
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        1
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "19",
+      "thresholds": {
+        "current": {
+          "A": 224,
+          "B": 64
+        },
+        "selected": {
+          "A": 224,
+          "B": 64
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        1,
+        0.0,
+        1,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "20",
+      "thresholds": {
+        "current": {
+          "A": 64,
+          "B": 64
+        },
+        "selected": {
+          "A": 64,
+          "B": 64
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        2,
+        0.0,
+        2,
+        1
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "21",
+      "thresholds": {
+        "current": {
+          "A": 192,
+          "B": 64
+        },
+        "selected": {
+          "A": 192,
+          "B": 64
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        3,
+        0.0,
+        3,
+        2
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "22",
+      "thresholds": {
+        "current": {
+          "A": 64,
+          "B": 160
+        },
+        "selected": {
+          "A": 64,
+          "B": 160
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        2,
+        0.0,
+        2,
+        2
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "23",
+      "thresholds": {
+        "current": {
+          "A": 128,
+          "B": 160
+        },
+        "selected": {
+          "A": 128,
+          "B": 160
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "24",
+      "thresholds": {
+        "current": {
+          "A": 192,
+          "B": 64
+        },
+        "selected": {
+          "A": 192,
+          "B": 64
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "25",
+      "thresholds": {
+        "current": {
+          "A": 160,
+          "B": 224
+        },
+        "selected": {
+          "A": 160,
+          "B": 224
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "26",
+      "thresholds": {
+        "current": {
+          "A": 224,
+          "B": 64
+        },
+        "selected": {
+          "A": 224,
+          "B": 64
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "27",
+      "thresholds": {
+        "current": {
+          "A": 64,
+          "B": 192
+        },
+        "selected": {
+          "A": 64,
+          "B": 192
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "28",
+      "thresholds": {
+        "current": {
+          "A": 160,
+          "B": 224
+        },
+        "selected": {
+          "A": 160,
+          "B": 224
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "29",
+      "thresholds": {
+        "current": {
+          "A": 64,
+          "B": 160
+        },
+        "selected": {
+          "A": 64,
+          "B": 160
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        1
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "30",
+      "thresholds": {
+        "current": {
+          "A": 224,
+          "B": 192
+        },
+        "selected": {
+          "A": 224,
+          "B": 192
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        1
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "31",
+      "thresholds": {
+        "current": {
+          "A": 192,
+          "B": 192
+        },
+        "selected": {
+          "A": 192,
+          "B": 192
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        3,
+        0.0,
+        3,
+        1
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "32",
+      "thresholds": {
+        "current": {
+          "A": 160,
+          "B": 160
+        },
+        "selected": {
+          "A": 160,
+          "B": 160
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        2,
+        0.0,
+        2,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "33",
+      "thresholds": {
+        "current": {
+          "A": 224,
+          "B": 192
+        },
+        "selected": {
+          "A": 224,
+          "B": 192
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        4,
+        0.0,
+        4,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "34",
+      "thresholds": {
+        "current": {
+          "A": 192,
+          "B": 160
+        },
+        "selected": {
+          "A": 192,
+          "B": 160
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        3,
+        0.0,
+        3,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "35",
+      "thresholds": {
+        "current": {
+          "A": 160,
+          "B": 128
+        },
+        "selected": {
+          "A": 160,
+          "B": 128
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        2
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "36",
+      "thresholds": {
+        "current": {
+          "A": 160,
+          "B": 128
+        },
+        "selected": {
+          "A": 160,
+          "B": 128
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        2,
+        0.0,
+        2,
+        1
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "37",
+      "thresholds": {
+        "current": {
+          "A": 64,
+          "B": 192
+        },
+        "selected": {
+          "A": 64,
+          "B": 192
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        1
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "38",
+      "thresholds": {
+        "current": {
+          "A": 224,
+          "B": 224
+        },
+        "selected": {
+          "A": 224,
+          "B": 224
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        1,
+        0.0,
+        1,
+        1
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "39",
+      "thresholds": {
+        "current": {
+          "A": 224,
+          "B": 192
+        },
+        "selected": {
+          "A": 224,
+          "B": 192
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "40",
+      "thresholds": {
+        "current": {
+          "A": 224,
+          "B": 128
+        },
+        "selected": {
+          "A": 224,
+          "B": 128
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        1
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "41",
+      "thresholds": {
+        "current": {
+          "A": 64,
+          "B": 192
+        },
+        "selected": {
+          "A": 64,
+          "B": 192
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        1
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "42",
+      "thresholds": {
+        "current": {
+          "A": 224,
+          "B": 64
+        },
+        "selected": {
+          "A": 224,
+          "B": 64
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        1
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "43",
+      "thresholds": {
+        "current": {
+          "A": 128,
+          "B": 224
+        },
+        "selected": {
+          "A": 128,
+          "B": 224
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        2,
+        0.0,
+        2,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "44",
+      "thresholds": {
+        "current": {
+          "A": 64,
+          "B": 160
+        },
+        "selected": {
+          "A": 64,
+          "B": 160
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        2,
+        0.0,
+        2,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "45",
+      "thresholds": {
+        "current": {
+          "A": 128,
+          "B": 192
+        },
+        "selected": {
+          "A": 128,
+          "B": 192
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        2,
+        0.0,
+        2,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "46",
+      "thresholds": {
+        "current": {
+          "A": 64,
+          "B": 64
+        },
+        "selected": {
+          "A": 64,
+          "B": 64
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        1,
+        0.0,
+        1,
+        1
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "47",
+      "thresholds": {
+        "current": {
+          "A": 192,
+          "B": 128
+        },
+        "selected": {
+          "A": 192,
+          "B": 128
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        2
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "48",
+      "thresholds": {
+        "current": {
+          "A": 160,
+          "B": 224
+        },
+        "selected": {
+          "A": 160,
+          "B": 224
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        1,
+        0.0,
+        1,
+        3
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "49",
+      "thresholds": {
+        "current": {
+          "A": 192,
+          "B": 224
+        },
+        "selected": {
+          "A": 192,
+          "B": 224
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "50",
+      "thresholds": {
+        "current": {
+          "A": 224,
+          "B": 160
+        },
+        "selected": {
+          "A": 224,
+          "B": 160
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "51",
+      "thresholds": {
+        "current": {
+          "A": 192,
+          "B": 64
+        },
+        "selected": {
+          "A": 192,
+          "B": 64
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "52",
+      "thresholds": {
+        "current": {
+          "A": 160,
+          "B": 128
+        },
+        "selected": {
+          "A": 160,
+          "B": 128
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        1
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "53",
+      "thresholds": {
+        "current": {
+          "A": 192,
+          "B": 224
+        },
+        "selected": {
+          "A": 192,
+          "B": 224
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        2
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "54",
+      "thresholds": {
+        "current": {
+          "A": 128,
+          "B": 224
+        },
+        "selected": {
+          "A": 128,
+          "B": 224
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        1,
+        0.0,
+        1,
+        3
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "55",
+      "thresholds": {
+        "current": {
+          "A": 192,
+          "B": 160
+        },
+        "selected": {
+          "A": 192,
+          "B": 160
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "56",
+      "thresholds": {
+        "current": {
+          "A": 128,
+          "B": 64
+        },
+        "selected": {
+          "A": 128,
+          "B": 64
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        1,
+        0.0,
+        1,
+        1
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "57",
+      "thresholds": {
+        "current": {
+          "A": 192,
+          "B": 64
+        },
+        "selected": {
+          "A": 192,
+          "B": 64
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        2
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "58",
+      "thresholds": {
+        "current": {
+          "A": 128,
+          "B": 64
+        },
+        "selected": {
+          "A": 128,
+          "B": 64
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        1,
+        2,
+        5.5646,
+        5,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "conservative_legal_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "59",
+      "thresholds": {
+        "current": {
+          "A": 128,
+          "B": 224
+        },
+        "selected": {
+          "A": 128,
+          "B": 224
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        4,
+        0.0,
+        4,
+        3
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "60",
+      "thresholds": {
+        "current": {
+          "A": 160,
+          "B": 192
+        },
+        "selected": {
+          "A": 160,
+          "B": 192
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "61",
+      "thresholds": {
+        "current": {
+          "A": 128,
+          "B": 224
+        },
+        "selected": {
+          "A": 128,
+          "B": 224
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        2,
+        0.0,
+        2,
+        1
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "62",
+      "thresholds": {
+        "current": {
+          "A": 224,
+          "B": 192
+        },
+        "selected": {
+          "A": 224,
+          "B": 192
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        2,
+        0.0,
+        2,
+        2
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "63",
+      "thresholds": {
+        "current": {
+          "A": 224,
+          "B": 192
+        },
+        "selected": {
+          "A": 224,
+          "B": 192
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        3,
+        0.0,
+        3,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "64",
+      "thresholds": {
+        "current": {
+          "A": 160,
+          "B": 192
+        },
+        "selected": {
+          "A": 160,
+          "B": 192
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        2,
+        2,
+        19.5798,
+        4,
+        1
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "two_view_consistency_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "65",
+      "thresholds": {
+        "current": {
+          "A": 64,
+          "B": 224
+        },
+        "selected": {
+          "A": 64,
+          "B": 224
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        4,
+        0.0,
+        4,
+        2
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "66",
+      "thresholds": {
+        "current": {
+          "A": 224,
+          "B": 160
+        },
+        "selected": {
+          "A": 224,
+          "B": 160
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        2,
+        0.0,
+        2,
+        3
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "67",
+      "thresholds": {
+        "current": {
+          "A": 224,
+          "B": 64
+        },
+        "selected": {
+          "A": 224,
+          "B": 64
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        5,
+        0.0,
+        5,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "68",
+      "thresholds": {
+        "current": {
+          "A": 64,
+          "B": 160
+        },
+        "selected": {
+          "A": 64,
+          "B": 160
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        1,
+        3,
+        0.6734,
+        1,
+        2
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "conservative_legal_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "69",
+      "thresholds": {
+        "current": {
+          "A": 64,
+          "B": 160
+        },
+        "selected": {
+          "A": 64,
+          "B": 160
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        5,
+        0.0,
+        5,
+        2
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "70",
+      "thresholds": {
+        "current": {
+          "A": 64,
+          "B": 224
+        },
+        "selected": {
+          "A": 64,
+          "B": 224
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        6,
+        0.0,
+        6,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "71",
+      "thresholds": {
+        "current": {
+          "A": 224,
+          "B": 64
+        },
+        "selected": {
+          "A": 224,
+          "B": 64
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        9,
+        0.0,
+        9,
+        0
+      ],
+      "recommendedConfidence": "medium",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "72",
+      "thresholds": {
+        "current": {
+          "A": 64,
+          "B": 224
+        },
+        "selected": {
+          "A": 64,
+          "B": 224
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        10,
+        0.0,
+        10,
+        0
+      ],
+      "recommendedConfidence": "medium",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "73",
+      "thresholds": {
+        "current": {
+          "A": 224,
+          "B": 192
+        },
+        "selected": {
+          "A": 224,
+          "B": 192
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "74",
+      "thresholds": {
+        "current": {
+          "A": 64,
+          "B": 64
+        },
+        "selected": {
+          "A": 64,
+          "B": 64
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        0
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "75",
+      "thresholds": {
+        "current": {
+          "A": 64,
+          "B": 128
+        },
+        "selected": {
+          "A": 64,
+          "B": 128
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        1
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "76",
+      "thresholds": {
+        "current": {
+          "A": 160,
+          "B": 192
+        },
+        "selected": {
+          "A": 160,
+          "B": 192
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        1,
+        0.0,
+        1,
+        2
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "77",
+      "thresholds": {
+        "current": {
+          "A": 64,
+          "B": 64
+        },
+        "selected": {
+          "A": 64,
+          "B": 64
+        },
+        "switched": false
+      },
+      "validState": true
+    },
+    {
+      "accepted": true,
+      "countBalanced": true,
+      "currentRepairValid": true,
+      "decision": "auto_return_candidate",
+      "exactMatch": true,
+      "hamming": 0,
+      "productionRank": [
+        0,
+        0,
+        0.0,
+        0,
+        3
+      ],
+      "recommendedConfidence": "high",
+      "recommendedMethod": "canonical_count_repaired",
+      "rejectReasons": [],
+      "selectionReason": "kept_current_valid_repair",
+      "setId": "78",
+      "thresholds": {
+        "current": {
+          "A": 64,
+          "B": 160
+        },
+        "selected": {
+          "A": 64,
+          "B": 160
+        },
+        "switched": false
+      },
+      "validState": true
+    }
+  ],
+  "schema": "constrained_inference_promotion_gate_v1",
+  "source": {
+    "generated_at_utc": "2026-05-27T17:19:54.341913+00:00",
+    "git_sha": "ef5194ca7a3a06c7131d1315dcf07cdf73168616",
+    "input": "tests/fixtures/pair_threshold_repair_diagnostic.json",
+    "tool": "tools/validate_constrained_inference_promotion.py"
+  },
+  "summary": {
+    "accepted": 71,
+    "acceptedExact": 71,
+    "acceptedHammingDistribution": {
+      "0": 71
+    },
+    "acceptedLegal": 71,
+    "acceptedMethodCounts": {
+      "canonical_count_repaired": 67,
+      "conservative_legal_repaired": 2,
+      "guarded_broad_legal_repaired": 1,
+      "two_view_consistency_repaired": 1
+    },
+    "acceptedThresholdSwitchCount": 1,
+    "acceptedWithin3": 71,
+    "allExact": 71,
+    "allHammingDistribution": {
+      "0": 71
+    },
+    "allWithin3": 71,
+    "pairCount": 71,
+    "rejectReasonCounts": {},
+    "rejected": 0,
+    "rejectedMethodCounts": {},
+    "rejectedSetIds": [],
+    "selectionReasonCounts": {
+      "current_invalid_selected_best_pair": 1,
+      "kept_current_valid_repair": 70
+    },
+    "thresholdSwitchCount": 1
+  }
+}

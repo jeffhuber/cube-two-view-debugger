@@ -775,9 +775,166 @@ def test_build_subprocess_env_noop_when_venv_path_is_none(monkeypatch):
     pre-patch behavior."""
     monkeypatch.setenv("PATH", "/sentinel/path")
     monkeypatch.delenv("VIRTUAL_ENV", raising=False)
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    monkeypatch.delenv("GH_TOKEN", raising=False)
     env = c._build_subprocess_env(None)
     assert env["PATH"] == "/sentinel/path"
     assert "VIRTUAL_ENV" not in env
+
+
+def test_extract_and_clear_github_token_removes_from_os_environ(monkeypatch):
+    """The parent Python process's os.environ must not retain GITHUB_TOKEN
+    after _extract_and_clear_github_token() runs. The codex review
+    subprocess walks the process tree (/proc/<ppid>/environ on Linux,
+    equivalent on other same-user systems) and would otherwise recover
+    the credential from the parent Python process's environment despite
+    the _build_subprocess_env sanitization.
+
+    Caught by Codex P1 audit on cube-two-view-debugger#354: env
+    sanitization on the subprocess copy alone is insufficient — the
+    real parent process env must also be cleared. The bash wrapper does
+    the same for its own env before exec'ing this script (see
+    tools/run_codex_audit_pr.sh).
+    """
+    import tools.codex_audit_pr as c
+    monkeypatch.setenv("GITHUB_TOKEN", "ghp_secret_value_12345")
+    monkeypatch.setenv("GH_TOKEN", "ghp_other_secret_67890")
+
+    token = c._extract_and_clear_github_token()
+
+    assert token == "ghp_secret_value_12345", (
+        "function must return the captured token in a local variable for "
+        "the caller to use; only the env-var copy gets cleared"
+    )
+    assert "GITHUB_TOKEN" not in os.environ, (
+        "GITHUB_TOKEN must be removed from this process's os.environ so "
+        "/proc/<pid>/environ does not expose it to descendant subprocesses"
+    )
+    assert "GH_TOKEN" not in os.environ, (
+        "GH_TOKEN (alt name) must also be stripped"
+    )
+
+
+def test_extract_and_clear_github_token_returns_none_when_unset(monkeypatch):
+    """When GITHUB_TOKEN is not set, return None. Caller decides whether
+    to fail (e.g. main() prints an error) or proceed (e.g. --help mode)."""
+    import tools.codex_audit_pr as c
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    monkeypatch.delenv("GH_TOKEN", raising=False)
+    assert c._extract_and_clear_github_token() is None
+
+
+def test_resolve_github_token_reads_from_stdin_when_flag_set(monkeypatch):
+    """The wrapper pipes the token in via stdin (rather than env) so the
+    Python process's INITIAL environment block never contains the token.
+    On Linux, /proc/<pid>/environ reads from that initial block and the
+    bytes persist for the process's lifetime regardless of what Python
+    does with os.environ.pop() afterward. The stdin path closes the
+    /proc-environ exposure to PR-controlled subprocesses.
+
+    Caught by Codex P1 audit on cube-snap#195 / cube-two-view-debugger#354
+    (deeper level of the parent-env-exposure finding).
+    """
+    import io
+    import tools.codex_audit_pr as c
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    monkeypatch.delenv("GH_TOKEN", raising=False)
+    monkeypatch.setattr("sys.stdin", io.StringIO("ghp_via_stdin_value_xyz\n"))
+
+    token = c._resolve_github_token(read_from_stdin=True)
+
+    assert token == "ghp_via_stdin_value_xyz", (
+        "stdin path must return the piped-in token verbatim "
+        "(with trailing newline stripped)"
+    )
+
+
+def test_resolve_github_token_strips_crlf_from_stdin(monkeypatch):
+    """If the wrapper or shell piped the token with CRLF (e.g. via Git
+    Bash on Windows), strip both. Tokens never contain CR or LF
+    legitimately."""
+    import io
+    import tools.codex_audit_pr as c
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    monkeypatch.setattr("sys.stdin", io.StringIO("ghp_with_crlf\r\n"))
+    assert c._resolve_github_token(read_from_stdin=True) == "ghp_with_crlf"
+
+
+def test_resolve_github_token_stdin_path_also_clears_env_belt_and_suspenders(monkeypatch):
+    """Even on the stdin path, if GITHUB_TOKEN/GH_TOKEN happen to be set
+    in os.environ (caller misuse), clear them. The wrapper unsets before
+    exec, but the helper shouldn't trust that."""
+    import io
+    import tools.codex_audit_pr as c
+    monkeypatch.setenv("GITHUB_TOKEN", "should_be_cleared")
+    monkeypatch.setenv("GH_TOKEN", "should_also_be_cleared")
+    monkeypatch.setattr("sys.stdin", io.StringIO("ghp_real_token\n"))
+
+    token = c._resolve_github_token(read_from_stdin=True)
+
+    assert token == "ghp_real_token", "stdin wins over env"
+    assert "GITHUB_TOKEN" not in os.environ, (
+        "stdin path must still clear env vars as defense-in-depth"
+    )
+    assert "GH_TOKEN" not in os.environ, "same for GH_TOKEN"
+
+
+def test_resolve_github_token_stdin_returns_none_on_empty(monkeypatch):
+    """If --read-token-from-stdin is passed but stdin is empty, return
+    None so main() can print a clear error."""
+    import io
+    import tools.codex_audit_pr as c
+    monkeypatch.setattr("sys.stdin", io.StringIO(""))
+    assert c._resolve_github_token(read_from_stdin=True) is None
+
+
+def test_resolve_github_token_falls_back_to_env_when_flag_unset(monkeypatch):
+    """Direct callers that don't use the wrapper should still work via
+    the env-var path. _resolve_github_token(read_from_stdin=False) must
+    fall back to _extract_and_clear_github_token."""
+    import tools.codex_audit_pr as c
+    monkeypatch.setenv("GITHUB_TOKEN", "ghp_from_env")
+    assert c._resolve_github_token(read_from_stdin=False) == "ghp_from_env"
+    # And the env path still clears os.environ (existing behavior).
+    assert "GITHUB_TOKEN" not in os.environ
+
+
+def test_build_subprocess_env_strips_github_token_from_subprocess(
+    tmp_path, monkeypatch,
+):
+    """GITHUB_TOKEN / GH_TOKEN in this process's env must NOT propagate
+    to the codex review subprocess. The subprocess executes scripts and
+    tooling from the PR worktree under audit — that is untrusted code,
+    and leaking a write-capable GitHub token to it is the credential-
+    exposure vulnerability caught by Codex P1 on cube-snap#194 /
+    cube-two-view-debugger#354.
+
+    The sanitization must fire regardless of venv_path: tested both
+    venv_path=None (cube-snap-style caller) and a real venv path
+    (ctvd-style caller)."""
+    monkeypatch.setenv("GITHUB_TOKEN", "ghp_secret_value_12345")
+    monkeypatch.setenv("GH_TOKEN", "ghp_other_secret_67890")
+
+    # venv_path=None path (cube-snap caller without local .venv).
+    env_noop = c._build_subprocess_env(None)
+    assert "GITHUB_TOKEN" not in env_noop, (
+        "GITHUB_TOKEN must be stripped from subprocess env even when "
+        "venv_path is None — untrusted PR code runs regardless of venv"
+    )
+    assert "GH_TOKEN" not in env_noop, "GH_TOKEN must be stripped"
+
+    # venv_path set path (ctvd caller with local .venv).
+    fake_venv = tmp_path / "venv"
+    (fake_venv / "bin").mkdir(parents=True)
+    (fake_venv / "bin" / "python").touch()
+    env_venv = c._build_subprocess_env(fake_venv)
+    assert "GITHUB_TOKEN" not in env_venv, (
+        "GITHUB_TOKEN must be stripped even when venv injection happens"
+    )
+    assert "GH_TOKEN" not in env_venv, "GH_TOKEN must be stripped"
+    # Regression guard: the sanitization shouldn't have broken the
+    # existing venv-path injection.
+    assert env_venv["VIRTUAL_ENV"] == str(fake_venv)
 
 
 def test_build_subprocess_env_noop_when_venv_missing_bin_python(

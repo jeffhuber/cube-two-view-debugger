@@ -1,0 +1,87 @@
+{
+  "status": "success",
+  "prompt": "rectified",
+  "imageA": "base64-jpeg-omitted",
+  "imageB": "base64-jpeg-omitted",
+  "imageABytes": 12345,
+  "imageBBytes": 12340,
+  "yawQuarterTurns": 2,
+  "yawSource": "center-inference",
+  "panels": [
+    {
+      "side": "A",
+      "image": "imageA",
+      "slot": "upper",
+      "wcaFace": "U",
+      "yawQuarterTurns": 2,
+      "mirror": false,
+      "rotQuarter": 2
+    },
+    {
+      "side": "A",
+      "image": "imageA",
+      "slot": "front",
+      "wcaFace": "F",
+      "yawQuarterTurns": 2,
+      "mirror": false,
+      "rotQuarter": 0
+    },
+    {
+      "side": "A",
+      "image": "imageA",
+      "slot": "right",
+      "wcaFace": "R",
+      "yawQuarterTurns": 2,
+      "mirror": false,
+      "rotQuarter": 0
+    },
+    {
+      "side": "B",
+      "image": "imageB",
+      "slot": "upper",
+      "wcaFace": "D",
+      "yawQuarterTurns": 2,
+      "mirror": false,
+      "rotQuarter": 2
+    },
+    {
+      "side": "B",
+      "image": "imageB",
+      "slot": "front",
+      "wcaFace": "L",
+      "yawQuarterTurns": 2,
+      "mirror": false,
+      "rotQuarter": 0
+    },
+    {
+      "side": "B",
+      "image": "imageB",
+      "slot": "right",
+      "wcaFace": "B",
+      "yawQuarterTurns": 2,
+      "mirror": false,
+      "rotQuarter": 0
+    }
+  ],
+  "hullLabelPairThresholdSelection": {
+    "selected": {
+      "thresholdA": 224,
+      "thresholdB": 192,
+      "recommendedMethod": "guarded_broad_legal_repaired"
+    },
+    "candidateCount": 25
+  },
+  "deterministicColorRepair": {
+    "schema": "hull_label_color_repair_v1",
+    "status": "assembled",
+    "recommendedMethod": "guarded_broad_legal_repaired",
+    "recommended": {
+      "state": "LLBRUFUFLULDDRUDFLRDFRFBRLRBDFFDRRUUFDFRLUBUDLBDBBBBLU",
+      "validState": true,
+      "countBalanced": true,
+      "confidence": "high",
+      "repairMoveCount": 0,
+      "validationErrors": []
+    }
+  }
+}

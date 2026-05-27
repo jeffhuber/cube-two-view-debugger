@@ -3,17 +3,17 @@
 Diagnostic-only. This report asks whether A/B mask thresholds should be
 chosen after yaw + deterministic repair, rather than independently per side.
 
-Git head: `38629f56fd7c0d3740399263869d127282a1c6b3`
-Generated: `2026-05-27T03:59:58.737898+00:00`
+Git head: `0078609caa58f3455805650d576991f655ad2586`
+Generated: `2026-05-27T14:48:33.560308+00:00`
 
 ## Summary
 
 | Selector | Assembled | Exact | Legal | <=3 stickers | Hamming distribution |
 |---|---:|---:|---:|---:|---|
-| Current per-side selector | 66 | 65 | 65 | 65 | `{'0': 65, '4': 1}` |
-| Aggressive pair-selected by production signals | 66 | 65 | 66 | 66 | `{'0': 65, '2': 1}` |
-| Guarded pair-selected by production signals | 66 | 66 | 66 | 66 | `{'0': 66}` |
-| Oracle best threshold pair | 66 | 66 | 66 | 66 | `{'0': 66}` |
+| Current per-side selector | 71 | 70 | 70 | 70 | `{'0': 70, '4': 1}` |
+| Aggressive pair-selected by production signals | 71 | 70 | 71 | 71 | `{'0': 70, '2': 1}` |
+| Guarded pair-selected by production signals | 71 | 71 | 71 | 71 | `{'0': 71}` |
+| Oracle best threshold pair | 71 | 71 | 71 | 71 | `{'0': 71}` |
 
 ## Changed Rows
 

@@ -208,7 +208,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "expected=fb8d57fc3c5b60529e10d66924ec290f9cd060574f52452fd146b9fbf85f01ac; script=\"$CLAUDE_PROJECT_DIR/tools/claude_session_start_sweep.sh\"; actual=$(shasum -a 256 \"$script\" 2>/dev/null | awk '{print $1}'); if [ \"$actual\" = \"$expected\" ]; then \"$script\"; fi",
+            "command": "expected=629158db6449ce41cc77758b2bc25158471c011dae94f22bd5acec2729629f06; script=\"$CLAUDE_PROJECT_DIR/tools/claude_session_start_sweep.sh\"; actual=$(shasum -a 256 \"$script\" 2>/dev/null | awk '{print $1}'); if [ \"$actual\" = \"$expected\" ]; then \"$script\"; fi",
             "timeout": 5
           }
         ]

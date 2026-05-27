@@ -118,79 +118,75 @@ trap 'rm -f "$CS_TMP" "$CTVD_TMP" "$CS_STATUS" "$CTVD_STATUS" "$AUDIT_PENDING_TM
 if [ -f "$LOG" ]; then
   tail -100 "$LOG" 2>/dev/null | jq -s -r '
     . as $events
-    # Scope filter: the headline above is claude-review-scoped (the gh
-    # pr list call uses --label needs-claude-review), so the audit-log
-    # cross-check must match the same scope. Surfacing codex-audit /
-    # codex-review / qwen-audit requests here would tell Claude to
-    # review PRs that are in another lane entirely — false positives
-    # caught by Codex P2 on snap#201 round 2.
-    | [$events[] | select(.event == "review_requested"
-                          and (.lane // "") == "claude-review")
-       | {repo, pr,
-          head: (.head // ""),
-          time: (.time.pt // "—"),
-          time_utc: (.time.utc // ""),
-          lane: (.lane // "—")}] as $reviews
-    | [$events[] | select(.event == "finished")
-       | {repo: (.repo // .lock.repo // ""),
-          pr: (.pr // .lock.pr // null),
-          head: (.head // .lock.head // ""),
-          # lane field. post_review.sh writes it at top level
-          # (claude-review / codex-review); the codex-audit wrapper
-          # run_codex_audit_pr.sh nests it inside .lock. Without the
-          # .lock.lane fallback, every codex-audit finish would have
-          # lane == "" and never match a claude-review request, so
-          # all claude reviews would look perpetually pending. Caught
-          # empirically on the snap#201 / ctvd#366 captured dumps.
-          lane: (.lane // .lock.lane // ""),
-          # UTC time of the finish event (top-level on both event
-          # shapes). Used below to require finish AFTER the request
-          # so an earlier-round finish on the same head does not
-          # falsely clear a fresh request.
-          time_utc: (.time.utc // "")}] as $finishes
+    # Use the array index from the appended event log as the
+    # canonical ordering signal. The audit log is append-only with
+    # one event per line, so position in the file (= position in
+    # the parsed $events array) IS chronological order regardless
+    # of timestamp precision. Codex P3 round-3 on ctvd#366 caught
+    # the previous version which used `time.utc >` and would
+    # falsely keep a review pending when its request and finish
+    # were appended in the same wall-clock second (both events
+    # had identical `time.utc` at second precision).
+    | [$events | to_entries[]
+       | select(.value.event == "review_requested"
+                and (.value.lane // "") == "claude-review")
+       | {idx: .key,
+          repo: .value.repo, pr: .value.pr,
+          head: (.value.head // ""),
+          time: (.value.time.pt // "—"),
+          lane: (.value.lane // "—")}] as $reviews
+    | [$events | to_entries[]
+       | select(.value.event == "finished")
+       | {idx: .key,
+          repo: (.value.repo // .value.lock.repo // ""),
+          pr: (.value.pr // .value.lock.pr // null),
+          head: (.value.head // .value.lock.head // ""),
+          # lane lives at top-level for post_review.sh finished
+          # events (claude-review / codex-review); the codex-audit
+          # wrapper run_codex_audit_pr.sh nests it inside .lock.
+          # Without the .lock.lane fallback, every codex-audit
+          # finish would have lane == "" and never match a
+          # claude-review request.
+          lane: (.value.lane // .value.lock.lane // "")}] as $finishes
     | $reviews
       | map(
           . as $r
           | select([
               $finishes[]
-              # Three-part match for a "this review is done" signal.
-              # NOTE: comments here cannot use apostrophes because the
-              # entire jq program is a Bash single-quoted string and an
-              # apostrophe inside it terminates the quote (Codex P1
-              # caught the previous version which used wed/dont/etc).
+              # Four-part match for a "this review is done" signal.
+              # NOTE: comments here cannot use apostrophes because
+              # the entire jq program is a Bash single-quoted string
+              # and an apostrophe inside it terminates the quote
+              # (Codex P1 caught the previous version which used
+              # wed/dont/etc).
               #
-              # 1. Same (repo, pr, head[:7]) — the request and finish
-              #    are about the same PR head. 7-char SHA prefix
-              #    because the audit log mixes 40-char and 7-char
-              #    head encodings (post_review.sh shortens; the
-              #    wrappers do not); slicing beyond string length
-              #    returns the string unchanged so [0:12] would
-              #    falsely reject 40-char-vs-7-char matches.
+              # 1. Same (repo, pr, head[:7]) — the request and
+              #    finish are about the same PR head. 7-char SHA
+              #    prefix because the audit log mixes 40-char and
+              #    7-char head encodings (post_review.sh shortens;
+              #    the wrappers do not); slicing beyond string
+              #    length returns the string unchanged so [0:12]
+              #    would falsely reject 40-char-vs-7-char matches.
               #
-              # 2. Same lane — a codex-audit finish must NOT clear a
-              #    claude-review request (the two lanes are
+              # 2. Same lane — a codex-audit finish must NOT clear
+              #    a claude-review request (the two lanes are
               #    independent workflows). Codex P2 on
-              #    cube-snap#201 / ctvd#366: without the lane filter,
-              #    the same head being audited would suppress a
-              #    freshly-requested review on the same head,
-              #    defeating the cross-check.
+              #    cube-snap#201 / ctvd#366 round 1.
               #
-              # 3. Finish time AFTER request time — chronological
-              #    order matters. An earlier-round finish on the
-              #    same (repo, pr, head, lane) MUST NOT clear a new
-              #    request for that same head (e.g. when a fix is
-              #    pushed-then-reverted-then-rerequested at the
-              #    same SHA, or when the same head is requested
-              #    twice for follow-up review). Codex P2 round-1
-              #    on ctvd#366 / round-2 on snap#201. UTC ISO-8601
-              #    is lexicographically sortable so a plain string
-              #    compare works.
+              # 3. Finish AFTER request in the log file — uses the
+              #    array index assigned by to_entries above, which
+              #    reflects literal append order. The audit log is
+              #    strictly append-only, so later-in-file means
+              #    later-in-time at sub-second resolution. This
+              #    replaces the previous `time.utc >` comparison
+              #    (Codex P3 round-3 on ctvd#366) which dropped
+              #    legitimate same-second finishes.
               | select(
                   .repo == $r.repo
                   and .pr == $r.pr
                   and (.head // "")[0:7] == ($r.head // "")[0:7]
                   and .lane == $r.lane
-                  and .time_utc > $r.time_utc
+                  and .idx > $r.idx
                 )
             ] | length == 0)
           | "\($r.repo)\t\($r.pr)\t\(($r.head // "")[0:12])\t\($r.lane)\t\($r.time)"

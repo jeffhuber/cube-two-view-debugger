@@ -54,15 +54,25 @@ Recent additions on top of the rectification foundation:
   promotion-candidate slice. Read
   `tools/HULL_LABEL_LEGAL_REPAIR_DIAGNOSTIC.md` for current exact-match
   counts and per-row hamming.
+- **Current scoreboard / promotion gate** — the corpus is now 71 GT pairs.
+  `tools/CURRENT_HULL_LABEL_SCOREBOARD.md` summarizes the latest numbers:
+  guarded pair-threshold selection is 71/71 exact, and
+  `tools/CONSTRAINED_INFERENCE_PROMOTION_GATE.md` applies a GT-free
+  production-shaped gate that accepts 71/71 of those candidates. This is the
+  current default-recognizer shadow candidate, not a default flip by itself.
 
 Open levers, approximate descending leverage:
 
-1. **Lab + LLM ensemble** for per-sticker color reads.
-2. **Confidence-gated auto-merge** of repair variants based on
+1. **Recognizer-path shadow/promotion wiring** for the constrained-inference
+   gate: run the same guarded pair-threshold + repair gate behind
+   `/api/recognize`, log accept/reject/fallback decisions, and only then
+   decide whether to replace the legacy default.
+2. **Lab + LLM ensemble** for per-sticker color reads.
+3. **Confidence-gated auto-merge** of repair variants based on
    inter-variant agreement.
-3. **Graduating deterministic repair to the default recognizer** once
+4. **Graduating deterministic repair to the default recognizer** once
    confidence calibration is settled.
-4. **Targeted cubie-consistency reclassification** only if new failures
+5. **Targeted cubie-consistency reclassification** only if new failures
    appear that guarded legal repair cannot reach. The first two-view pull
    is no longer open: the shared cubie map/checker and a guarded
    `two_view_consistency_repaired` candidate codify the 12 split cubies
@@ -198,6 +208,8 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 ## Decision Log
 
 Newest first. Each entry: date, decision, one-line why.
+
+- **2026-05-27** — **Default-recognizer question reframed as a promotion gate.** `tools/CONSTRAINED_INFERENCE_PROMOTION_GATE.md` evaluates the guarded pair-threshold constrained-inference candidate with no GT in the decision and GT only for scoring: 71/71 candidates accepted, legal, and exact on the current GT corpus. This is strong evidence for a recognizer shadow/candidate mode, but production default should wait for the same gate to run in `/api/recognize` with explicit fallback behavior when it rejects.
 
 - **2026-05-26** — **Architectural reframe: constrained cube-state inference, not LLM-as-oracle.** Codified in both repos' `CLAUDE.md` (ctvd #327 / cube-snap #188). The recognizer's job is to combine evidence sources (LLM color reads + hull-label rectified samples + deterministic color/legality repair + (next lever) two-view consistency on shared cubies) under cube-state constraints — not to clean up an LLM oracle. Empirical state on the 46-pair shadow corpus: a graduated set of repair variants (canonical-count → conservative-legal → guarded-broad → broad) covers the climb from a stuck baseline up to a `broad_legal_repaired` upper-bound. The upper-bound is a diagnostic ceiling, NOT the recognition number; the guarded slice is the first defensible promotion candidate. See `tools/HULL_LABEL_LEGAL_REPAIR_DIAGNOSTIC.md` for current exact-match counts. Open levers in approximate descending leverage: two-view consistency, Lab+LLM ensemble, confidence-gated auto-merge, graduating repair to default.
 

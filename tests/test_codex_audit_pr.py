@@ -101,14 +101,14 @@ def test_parse_falls_back_to_single_stderr_marker():
     """Task #85: occasionally the Codex CLI routes the final verdict
     marker to stderr. If stdout has no marker and stderr has at least
     one column-0 marker AND the trailing block passes the validator
-    (P-tag or canonical phrase), parse stderr as a fallback."""
+    (P-tag or canonical PASS phrase), parse stderr as a fallback."""
     parsed = c.parse_codex_output(
         stdout="exec progress without final marker",
-        stderr="progress chatter\ncodex\nCodex Audit: PASS\n"
-               "All clear from stderr.\n",
+        stderr="progress chatter\ncodex\nThe changes look good. "
+               "I did not find a discrete issue.\n",
     )
     assert parsed.verdict == "PASS"
-    assert "All clear from stderr" in parsed.prose
+    assert "I did not find" in parsed.prose
 
 
 def test_parse_prefers_stdout_marker_over_stderr_noise():
@@ -133,9 +133,9 @@ def test_parse_falls_back_to_last_stderr_marker_with_multiple():
     lines, so they don't create false markers.
 
     The chosen block must additionally pass the validator added in
-    cube-snap#199 — either has a P-tag or contains canonical Codex
-    verdict prose phrase. Here the last block contains
-    "Codex Audit:" which satisfies it.
+    cube-snap#199 — either has a P-tag or contains canonical PASS
+    prose. Here the last block contains "without introducing" which
+    satisfies it.
 
     Empirical justification: ctvd#358's three repeated UNKNOWN
     verdicts (captured via the #196 instrumentation) were ALL
@@ -146,7 +146,8 @@ def test_parse_falls_back_to_last_stderr_marker_with_multiple():
         stdout="exec progress without final marker",
         stderr="codex\nearly verdict (should be ignored)\n- [P1] old\n"
                "more progress\n"
-               "codex\nfinal verdict.\nCodex Audit: PASS\nAll clear.\n",
+               "codex\nfinal verdict — the patch is clean without "
+               "introducing any clear correctness issue.\n",
     )
     assert parsed.verdict == "PASS"
     # Anchored on the LAST stderr marker — the early one is discarded.
@@ -193,6 +194,26 @@ def test_parse_stderr_fallback_accepts_pass_shape_via_canonical_phrase():
     )
     assert parsed.verdict == "PASS"
     assert "I did not find" in parsed.prose
+
+
+def test_parse_stderr_fallback_rejects_block_with_only_generic_words():
+    """Codex round-2 P2 audit on cube-snap#198: the validator's
+    earlier phrase set included generic words like "findings:" and
+    "review comment" that could appear in ordinary log/test chatter,
+    letting incidental markers slip through as PASS. The tightened
+    phrase set must reject these generic patterns when no P-tag and
+    no PASS-specific phrase is present."""
+    parsed = c.parse_codex_output(
+        stdout="exec progress without final marker",
+        stderr="codex\n"
+               "Findings: the test exercise turned up nothing of note\n"
+               "Review comment posted on the related issue earlier\n"
+               "<truncated before real final verdict>\n",
+    )
+    # No P-tag, no PASS-specific phrase (just "findings:" and
+    # "review comment" in incidental chatter) → must NOT auto-PASS.
+    assert parsed.verdict == "UNKNOWN"
+    assert "incidental log line" in parsed.prose
 
 
 def test_parse_stderr_fallback_accepts_block_with_p_tag():

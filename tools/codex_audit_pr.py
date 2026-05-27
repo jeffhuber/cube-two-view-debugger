@@ -229,33 +229,40 @@ def post_pr_comment(repo: str, pr_number: int, body: str, *, token: str) -> Dict
 _P_TAG_RE = re.compile(r"^\s*[-*]\s*\[P([0-3])\]")
 
 
-# Phrases Codex consistently uses in real final-verdict prose.
+# Phrases Codex consistently uses in real PASS-verdict prose.
 # Used by the stderr-fallback validator (cube-snap#198 → #199): when
 # we fall back to a column-0 `codex` marker in stderr, the candidate
-# block MUST contain either a P-tag bullet or one of these phrases.
-# Otherwise we treat the marker as an incidental log line (CLI
-# routing artifact) and return UNKNOWN rather than risk auto-PASS on
-# truncated / format-drifted output.
+# block MUST contain either a P-tag bullet (BLOCKED-shape) or one of
+# these PASS-shape phrases. Otherwise we treat the marker as an
+# incidental log line and return UNKNOWN rather than risk auto-PASS
+# on truncated / format-drifted output.
 #
-# The phrases are intentionally narrow: structural anchors Codex
-# emits as part of its verdict template, not generic words that
-# could appear in arbitrary chatter. If Codex's output format
-# drifts and these stop matching, the failure mode is UNKNOWN
-# (requeue) — which is the safe direction. Add new phrases here
-# when captured CLI-failure dumps show legitimate verdicts being
-# refused.
+# Codex round-2 P2 audit on cube-snap#198 caught that the earlier
+# phrase set included generic words ("findings:", "review comment",
+# "no blockers") that could appear in ordinary log/test chatter,
+# letting incidental markers slip through as PASS. This tightened
+# list is restricted to PASS-specific openers / closings Codex
+# actually uses in its final-verdict prose — patterns that don't
+# realistically appear outside an actual verdict. False matches
+# in incidental chatter are the failure mode we're closing; false
+# misses on legitimate verdicts are tolerable (UNKNOWN requeues
+# and the next run usually succeeds).
+#
+# Anchor sources verified against real Codex PASS outputs in this
+# repo's test fixtures (e.g. REAL_PASS_OUTPUT) and against
+# CODEX_AUDIT_PROTOCOL.md's documented verdict template.
+#
+# If Codex's PASS phrasing drifts and these stop matching, the
+# failure mode is UNKNOWN (requeue) — the safe direction. Add new
+# phrases here only when captured CLI-failure dumps show
+# legitimate PASS verdicts being refused.
 _VERDICT_PROSE_PHRASES = (
-    "codex audit:",          # the verdict header line itself
-    "review comment",        # "Review comment:" / "Review comments:"
-    "full review comments",
-    "findings:",
-    "i did not find",        # canonical PASS opener
-    "did not appear to introduce",
-    "no actionable",
-    "no clear correctness",
-    "no discrete issue",
-    "no blockers",
-    "without introducing",
+    "i did not find",                # canonical PASS opener
+    "did not appear to introduce",   # canonical PASS opener
+    "without introducing",           # canonical PASS phrasing
+    "no actionable",                 # PASS-specific
+    "no clear correctness",          # PASS-specific
+    "no discrete issue",             # PASS-specific
 )
 
 

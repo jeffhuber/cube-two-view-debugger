@@ -44,6 +44,8 @@ ROOT = Path(__file__).resolve().parent
 STATIC = ROOT / "static"
 RUNS = ROOT / "runs"
 LABELS = RUNS / "labels"
+CONSTRAINED_SHADOW_LOG_ENV = "CUBE_CONSTRAINED_SHADOW_LOG"
+_CONSTRAINED_SHADOW_LOG_LOCK = threading.Lock()
 
 
 # Origins permitted to call the recognizer cross-origin. The frontend
@@ -1462,6 +1464,8 @@ def recognize_and_persist(
     payload["runtime"] = _per_request_runtime(pair.image_a.data, pair.image_b.data)
     run_info = save_run(pair, payload, result, expected_state)
     payload.update(run_info)
+    if constrained_mode:
+        _append_constrained_shadow_event(pair, payload, constrained_mode)
     return payload
 
 
@@ -1547,6 +1551,111 @@ def _attach_constrained_error_signal(result: RecognitionResult, exc: Exception, 
         "error": f"{type(exc).__name__}: {exc}",
     }
     result.recognition_signals = signals
+
+
+def _constrained_shadow_log_path() -> Optional[Path]:
+    raw = os.environ.get(CONSTRAINED_SHADOW_LOG_ENV)
+    if raw is not None and raw.strip().lower() in {"", "0", "false", "off", "none"}:
+        return None
+    if raw:
+        return Path(raw).expanduser()
+    return RUNS / "constrained_inference_shadow.jsonl"
+
+
+def _compact_constrained_shadow_event(
+    pair: ImagePair,
+    payload: Mapping[str, Any],
+    mode: str,
+) -> Optional[Dict[str, Any]]:
+    signals = payload.get("recognitionSignals")
+    if not isinstance(signals, Mapping):
+        return None
+    signal = signals.get("constrainedInference")
+    if not isinstance(signal, Mapping):
+        return None
+
+    gate = signal.get("promotionGate") if isinstance(signal.get("promotionGate"), Mapping) else {}
+    recommended = signal.get("recommended") if isinstance(signal.get("recommended"), Mapping) else {}
+    pair_selection = (
+        signal.get("pairThresholdSelection")
+        if isinstance(signal.get("pairThresholdSelection"), Mapping)
+        else {}
+    )
+    runtime = payload.get("runtime") if isinstance(payload.get("runtime"), Mapping) else {}
+    inputs = runtime.get("inputs") if isinstance(runtime.get("inputs"), Mapping) else {}
+    evaluation = payload.get("evaluation") if isinstance(payload.get("evaluation"), Mapping) else None
+    return {
+        "schema": "constrained_inference_shadow_event_v1",
+        "createdAt": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "mode": mode,
+        "runId": payload.get("runId"),
+        "runUrl": payload.get("runUrl"),
+        "setId": pair.set_id,
+        "result": {
+            "status": payload.get("status"),
+            "recognitionCategory": payload.get("recognitionCategory"),
+            "recognitionCategoryReason": payload.get("recognitionCategoryReason"),
+            "failedChecks": payload.get("failedChecks", []),
+            "confidence": payload.get("confidence"),
+        },
+        "constrainedInference": {
+            "selected": signal.get("selected"),
+            "fallbackToLegacy": signal.get("fallbackToLegacy"),
+            "status": signal.get("status"),
+            "yawQuarterTurns": signal.get("yawQuarterTurns"),
+            "yawSource": signal.get("yawSource"),
+            "recommendedMethod": signal.get("recommendedMethod"),
+            "recommended": {
+                "validState": recommended.get("validState"),
+                "countBalanced": recommended.get("countBalanced"),
+                "confidence": recommended.get("confidence"),
+                "repairMoveCount": recommended.get("repairMoveCount"),
+                "repairCost": recommended.get("repairCost"),
+                "repairChanges": recommended.get("repairChanges"),
+                "stateDeltaFromCanonical": recommended.get("stateDeltaFromCanonical"),
+            },
+            "promotionGate": {
+                "accepted": gate.get("accepted"),
+                "decision": gate.get("decision"),
+                "rejectReasons": list(gate.get("rejectReasons") or []),
+                "productionRank": gate.get("productionRank"),
+            },
+            "pairThresholdSelection": {
+                "selectionReason": pair_selection.get("selectionReason"),
+                "currentThresholds": pair_selection.get("currentThresholds"),
+                "selectedThresholds": pair_selection.get("selectedThresholds"),
+            },
+        },
+        "inputs": {
+            "imageA": inputs.get("imageA"),
+            "imageB": inputs.get("imageB"),
+        },
+        **({"evaluation": evaluation} if evaluation else {}),
+    }
+
+
+def _append_constrained_shadow_event(
+    pair: ImagePair,
+    payload: Mapping[str, Any],
+    mode: str,
+) -> None:
+    event = _compact_constrained_shadow_event(pair, payload, mode)
+    if event is None:
+        return
+    path = _constrained_shadow_log_path()
+    if path is None:
+        return
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        line = json.dumps(event, sort_keys=True)
+        with _CONSTRAINED_SHADOW_LOG_LOCK:
+            with path.open("a", encoding="utf-8") as handle:
+                handle.write(line + "\n")
+    except Exception as exc:  # noqa: BLE001
+        print(
+            f"[rubik-app] warning: failed to append constrained shadow event to {path}: {exc}",
+            file=sys.stderr,
+        )
 
 
 def _recognize_with_constrained_inference_mode(

@@ -81,3 +81,18 @@ records the rejection/error in `recognitionSignals.constrainedInference`.
 
 These modes are hidden and default-off. They are the shadow/candidate bridge
 between the Fixer-side rectified path and any future default recognizer flip.
+
+When either constrained mode runs, the server appends one compact JSONL event
+to `runs/constrained_inference_shadow.jsonl` by default. Set
+`CUBE_CONSTRAINED_SHADOW_LOG=/path/to/events.jsonl` to write elsewhere, or set
+it to `off` to disable. The event intentionally stores only run metadata,
+gate decision, selected repair method, thresholds, yaw, and input hashes; it
+does not duplicate images or overlays. This is the real-traffic shadow audit
+trail to compare against the 71-pair corpus before any default flip.
+
+Use `tools/summarize_constrained_shadow_log.py` to inspect the JSONL:
+
+```bash
+.venv/bin/python tools/summarize_constrained_shadow_log.py \
+  --report runs/constrained_inference_shadow_summary.md
+```

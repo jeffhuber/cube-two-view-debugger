@@ -1,0 +1,148 @@
+{
+  "status": "success",
+  "state": "LLBRUFUFLULDDRUDFLRDFRFBRLRBDFFDRRUUFDFRLUBUDLBDBBBBLU",
+  "confidence": 0.7301,
+  "reason": "Recognized the highest-scoring legal cube state after cubie-level color repair.",
+  "recognitionCategory": "success_repaired_high_confidence",
+  "recognitionCategoryReason": "repair_path_high_confidence_low_penalty",
+  "failedChecks": [],
+  "candidates": 387208,
+  "recognitionSignals": {
+    "schemaVersion": 1,
+    "repairPathUsed": true,
+    "repairCandidateCount": 2,
+    "selectedGridQuality": {
+      "imageA": {
+        "U": {
+          "gridId": 16,
+          "centerFace": "U",
+          "matchedCount": 9,
+          "fitError": 0.61,
+          "quality": 100.0,
+          "gridSamples": 9,
+          "badSamples": 0,
+          "suspectSamples": 0.0
+        },
+        "F": {
+          "gridId": 3,
+          "centerFace": "F",
+          "matchedCount": 5,
+          "fitError": 1.76,
+          "quality": 90.46,
+          "gridSamples": 9,
+          "badSamples": 1,
+          "suspectSamples": 2.0
+        },
+        "R": {
+          "gridId": 8,
+          "centerFace": "R",
+          "matchedCount": 8,
+          "fitError": 1.25,
+          "quality": 98.75,
+          "gridSamples": 9,
+          "badSamples": 0,
+          "suspectSamples": 1.0
+        }
+      },
+      "imageB": {
+        "D": {
+          "gridId": 6,
+          "centerFace": "D",
+          "matchedCount": 8,
+          "fitError": 0.54,
+          "quality": 100.0,
+          "gridSamples": 9,
+          "badSamples": 0,
+          "suspectSamples": 0.0
+        },
+        "L": {
+          "gridId": 11,
+          "centerFace": "L",
+          "matchedCount": 8,
+          "fitError": 8.13,
+          "quality": 83.87,
+          "gridSamples": 9,
+          "badSamples": 2,
+          "suspectSamples": 1.0
+        },
+        "B": {
+          "gridId": 13,
+          "centerFace": "B",
+          "matchedCount": 7,
+          "fitError": 2.17,
+          "quality": 97.83,
+          "gridSamples": 9,
+          "badSamples": 0,
+          "suspectSamples": 1.0
+        }
+      }
+    },
+    "selectedFacesByImage": {
+      "imageA": ["F", "R", "U"],
+      "imageB": ["B", "D", "L"]
+    },
+    "selectedSidesByImage": {
+      "imageA": {
+        "left": "F",
+        "right": "R"
+      },
+      "imageB": {
+        "left": "L",
+        "right": "B"
+      }
+    },
+    "captureYaw": {
+      "status": "nonstandard",
+      "quarterTurns": 2,
+      "degrees": 180,
+      "requiresNormalization": true,
+      "normalizationApplied": true,
+      "stateFrame": "wca",
+      "captureFrameState": "LLBRUFUFLULDDRUDFLRDFRFBRLRBDFFDRRUUFDFRLUBUDLBDBBBBLU",
+      "observations": [
+        {
+          "image": "imageA",
+          "orderedSidePair": "FR",
+          "yawQuarterTurns": 2
+        },
+        {
+          "image": "imageB",
+          "orderedSidePair": "LB",
+          "yawQuarterTurns": 2
+        }
+      ]
+    },
+    "topRepairCandidates": [
+      {
+        "state": "LLBRUFUFLULDDRUDFLRDFRFBRLRBDFFDRRUUFDFRLUBUDLBDBBBBLU",
+        "confidence": 0.7301,
+        "repairCost": 15.25,
+        "repairChanges": 4,
+        "sidePairA": "F/R",
+        "sidePairB": "B/L",
+        "preRepairConflicts": {
+          "missingCorners": 0,
+          "invalidCorners": 0,
+          "missingEdges": 0,
+          "invalidEdges": 1,
+          "duplicateCornerCubies": 1,
+          "duplicateEdgeCubies": 2,
+          "totalConflicts": 5
+        }
+      }
+    ],
+    "selectedRepairCandidate": {
+      "state": "LLBRUFUFLULDDRUDFLRDFRFBRLRBDFFDRRUUFDFRLUBUDLBDBBBBLU",
+      "confidence": 0.7301,
+      "repairCost": 15.25,
+      "repairChanges": 4,
+      "sidePairA": "F/R",
+      "sidePairB": "B/L",
+      "preRepairConflicts": {
+        "invalidCorners": 0,
+        "invalidEdges": 1,
+        "totalConflicts": 5
+      }
+    }
+  }
+}

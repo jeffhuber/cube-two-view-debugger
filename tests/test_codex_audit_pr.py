@@ -161,6 +161,210 @@ def test_audit_pr_unknown_verdict_requeues_with_stale_trailer(monkeypatch):
     assert "Could not parse a Codex verdict" in posted[0]["body"]
 
 
+# ----- CLI parse-failure capture (dump_cli_failure) -----
+
+
+def test_dump_cli_failure_writes_self_describing_log(tmp_path):
+    """The dump file must include the repo, PR, SHA, reason, and byte
+    counts as a header — when someone attaches it to a follow-up issue,
+    they shouldn't need surrounding context to know what it is."""
+    path = c.dump_cli_failure(
+        repo="jeffhuber/cube-two-view-debugger",
+        pr_number=354,
+        head_sha="abcdef1234567890",
+        stdout="stdout content here",
+        stderr="stderr content here",
+        reason="no codex final-verdict block found in output",
+        base_dir=tmp_path,
+    )
+    assert path is not None
+    text = path.read_text()
+    assert "# repo: jeffhuber/cube-two-view-debugger" in text
+    assert "# pr: 354" in text
+    assert "# head_sha: abcdef1234567890" in text
+    assert "# parser_reason: no codex final-verdict block found in output" in text
+    assert "# stdout_bytes: 19" in text
+    assert "# stderr_bytes: 19" in text
+    assert "===== STDOUT =====" in text
+    assert "stdout content here" in text
+    assert "===== STDERR =====" in text
+    assert "stderr content here" in text
+
+
+def test_dump_cli_failure_filename_includes_owner_repo_pr_sha(tmp_path):
+    """Filename layout must be unambiguous for grepping a directory of
+    dumps from multiple repos/PRs: <owner>_<name>_pr<N>_<sha[:12]>_<UTC>.log."""
+    path = c.dump_cli_failure(
+        repo="jeffhuber/cube-snap",
+        pr_number=195,
+        head_sha="abd0ffe0722f0c2c11acf8625a86f972efc74b30",
+        stdout="x",
+        stderr="y",
+        reason="r",
+        base_dir=tmp_path,
+    )
+    assert path is not None
+    name = path.name
+    assert name.startswith("jeffhuber_cube-snap_pr195_abd0ffe0722f_")
+    assert name.endswith(".log")
+    # 12-char SHA truncation, not the full 40.
+    assert "abd0ffe0722f0c2c" not in name
+
+
+def test_dump_cli_failure_handles_empty_outputs(tmp_path):
+    """Empty stdout/stderr must still produce a readable dump — Codex
+    has been observed emitting zero-length output, and that's exactly
+    the signal we want to capture."""
+    path = c.dump_cli_failure(
+        repo="o/r", pr_number=1, head_sha="0" * 12,
+        stdout="", stderr="",
+        reason="empty output", base_dir=tmp_path,
+    )
+    assert path is not None
+    text = path.read_text()
+    assert "# stdout_bytes: 0" in text
+    assert "# stderr_bytes: 0" in text
+    # Sentinel <empty> so a reader doesn't think the dump itself was truncated.
+    assert text.count("<empty>") == 2
+
+
+def test_dump_cli_failure_creates_base_dir_when_missing(tmp_path):
+    """Default base_dir is `~/.cache/cube-agent-audits/cli-failures` which
+    may not exist on a fresh machine; the helper must mkdir parents."""
+    missing = tmp_path / "deep" / "nested" / "cli-failures"
+    assert not missing.exists()
+    path = c.dump_cli_failure(
+        repo="o/r", pr_number=1, head_sha="abc",
+        stdout="x", stderr="y", reason="r", base_dir=missing,
+    )
+    assert path is not None
+    assert path.exists()
+    assert missing.is_dir()
+
+
+def test_dump_cli_failure_returns_none_on_oserror(tmp_path, monkeypatch):
+    """A logging failure (disk full, permission denied) must NEVER
+    interrupt the audit. The helper swallows OSError and returns None
+    so the caller can keep posting the requeue comment."""
+    def boom(*args, **kwargs):
+        raise OSError("simulated disk full")
+
+    monkeypatch.setattr(Path, "write_text", boom)
+    path = c.dump_cli_failure(
+        repo="o/r", pr_number=1, head_sha="abc",
+        stdout="x", stderr="y", reason="r", base_dir=tmp_path,
+    )
+    assert path is None
+
+
+def test_audit_pr_unknown_branch_dumps_raw_cli_output(monkeypatch, tmp_path):
+    """audit_pr() in the UNKNOWN branch must call dump_cli_failure with
+    the actual codex CLI bytes — that's the whole point of the
+    instrumentation. Verify by intercepting the helper and checking
+    the captured arguments."""
+    pr_meta = _fake_pr(head_sha="aaaa11112222")
+    _install_audit_mocks(
+        monkeypatch,
+        pr_meta=pr_meta,
+        codex_stdout="exec output without a codex line",
+        codex_stderr="some stderr noise",
+        posted_records=[],
+    )
+
+    captured: List[Dict[str, Any]] = []
+
+    def fake_dump(**kwargs):
+        captured.append(kwargs)
+        return tmp_path / "fake_dump.log"
+
+    monkeypatch.setattr(c, "dump_cli_failure", fake_dump)
+
+    config = c.AuditConfig(
+        github_token="test",
+        repo_paths={"jeffhuber/cube-two-view-debugger": Path("/tmp/fake-repo")},
+    )
+    Path("/tmp/fake-repo").mkdir(exist_ok=True)
+    try:
+        result = c.audit_pr(config, "jeffhuber/cube-two-view-debugger", 17)
+    finally:
+        Path("/tmp/fake-repo").rmdir()
+
+    assert result.verdict == "UNKNOWN"
+    assert len(captured) == 1
+    call = captured[0]
+    assert call["repo"] == "jeffhuber/cube-two-view-debugger"
+    assert call["pr_number"] == 17
+    assert call["head_sha"] == "aaaa11112222"
+    assert call["stdout"] == "exec output without a codex line"
+    assert call["stderr"] == "some stderr noise"
+    # reason carries the parser's prose so the dump file's header
+    # explains *why* the parser gave up.
+    assert "requeue and retry" in call["reason"]
+
+
+def test_audit_pr_pass_branch_does_not_dump_cli_output(monkeypatch, tmp_path):
+    """The PASS path must NOT write a dump — the CLI output was fine,
+    there's nothing to diagnose, and writing on every successful audit
+    would balloon ~/.cache."""
+    pr_meta = _fake_pr(head_sha="ccccc33334444")
+    _install_audit_mocks(
+        monkeypatch,
+        pr_meta=pr_meta,
+        codex_stdout=REAL_PASS_OUTPUT,
+        posted_records=[],
+    )
+
+    dump_calls: List[Any] = []
+    monkeypatch.setattr(
+        c, "dump_cli_failure",
+        lambda **kwargs: dump_calls.append(kwargs) or (tmp_path / "x"),
+    )
+
+    config = c.AuditConfig(
+        github_token="test",
+        repo_paths={"jeffhuber/cube-two-view-debugger": Path("/tmp/fake-repo")},
+    )
+    Path("/tmp/fake-repo").mkdir(exist_ok=True)
+    try:
+        result = c.audit_pr(config, "jeffhuber/cube-two-view-debugger", 17)
+    finally:
+        Path("/tmp/fake-repo").rmdir()
+
+    assert result.verdict == "PASS"
+    assert dump_calls == []
+
+
+def test_audit_pr_blocked_branch_does_not_dump_cli_output(monkeypatch, tmp_path):
+    """Same as PASS: BLOCKED means the parser succeeded; nothing to
+    diagnose, no dump."""
+    pr_meta = _fake_pr(head_sha="ddddd44445555")
+    _install_audit_mocks(
+        monkeypatch,
+        pr_meta=pr_meta,
+        codex_stdout=REAL_BLOCKED_OUTPUT,
+        posted_records=[],
+    )
+
+    dump_calls: List[Any] = []
+    monkeypatch.setattr(
+        c, "dump_cli_failure",
+        lambda **kwargs: dump_calls.append(kwargs) or (tmp_path / "x"),
+    )
+
+    config = c.AuditConfig(
+        github_token="test",
+        repo_paths={"jeffhuber/cube-two-view-debugger": Path("/tmp/fake-repo")},
+    )
+    Path("/tmp/fake-repo").mkdir(exist_ok=True)
+    try:
+        result = c.audit_pr(config, "jeffhuber/cube-two-view-debugger", 17)
+    finally:
+        Path("/tmp/fake-repo").rmdir()
+
+    assert result.verdict == "BLOCKED"
+    assert dump_calls == []
+
+
 def test_parse_p0_alone_triggers_blocked():
     output = "codex\nReview comments:\n- [P0] critical bug — file.py:1"
     parsed = c.parse_codex_output(output)

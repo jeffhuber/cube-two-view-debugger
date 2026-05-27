@@ -72,6 +72,7 @@ import urllib.error
 import urllib.request
 import warnings
 from dataclasses import dataclass, field, replace
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -358,6 +359,82 @@ def parse_codex_output(stdout: str, stderr: str = "") -> CodexVerdict:
         p3_count=p_counts[3],
         findings=findings,
     )
+
+
+# ----- CLI parse-failure capture -----
+
+
+DEFAULT_CLI_FAILURE_DIR = (
+    Path.home() / ".cache" / "cube-agent-audits" / "cli-failures"
+)
+
+
+def dump_cli_failure(
+    repo: str,
+    pr_number: int,
+    head_sha: str,
+    stdout: str,
+    stderr: str,
+    reason: str,
+    base_dir: Optional[Path] = None,
+) -> Optional[Path]:
+    """Persist raw Codex CLI output to disk when verdict-parsing failed.
+
+    The orchestrator auto-requeues on UNKNOWN, but the raw bytes that
+    confused the parser are not otherwise preserved — the worktree gets
+    torn down and the next audit's output overwrites the in-memory
+    capture. Without this dump, diagnosing "is this a real parser bug
+    or a one-shot Codex CLI flake?" requires reproducing the original
+    audit, which often is not possible (head SHA moves on).
+
+    Output: `<base_dir>/<owner>_<name>_pr<N>_<sha[:12]>_<UTC>.log`.
+    The file is self-describing — header includes repo/pr/sha/reason
+    plus stdout/stderr byte counts so it stays useful when attached
+    to an issue without the surrounding context.
+
+    Returns the dump path on success, or None if the dump failed
+    (best-effort; we never want this helper to interrupt an audit).
+
+    `base_dir` is parameterized for tests; defaults to
+    `DEFAULT_CLI_FAILURE_DIR` (`~/.cache/cube-agent-audits/cli-failures/`).
+    """
+    try:
+        if base_dir is None:
+            base_dir = DEFAULT_CLI_FAILURE_DIR
+        base_dir.mkdir(parents=True, exist_ok=True)
+
+        owner_name = repo.replace("/", "_")
+        short_sha = (head_sha or "unknown")[:12]
+        ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        path = base_dir / f"{owner_name}_pr{pr_number}_{short_sha}_{ts}.log"
+
+        header = (
+            "# Codex CLI raw output — verdict UNKNOWN\n"
+            f"# repo: {repo}\n"
+            f"# pr: {pr_number}\n"
+            f"# head_sha: {head_sha}\n"
+            f"# captured_at: {ts}\n"
+            f"# parser_reason: {reason}\n"
+            f"# stdout_bytes: {len(stdout)}\n"
+            f"# stderr_bytes: {len(stderr)}\n"
+        )
+        body = (
+            header
+            + "\n===== STDOUT =====\n"
+            + (stdout if stdout else "<empty>\n")
+            + "\n===== STDERR =====\n"
+            + (stderr if stderr else "<empty>\n")
+        )
+        path.write_text(body, encoding="utf-8")
+        return path
+    except OSError as exc:
+        # Never propagate: a logging failure must not break the audit.
+        print(
+            f"  warning: failed to dump CLI output: {exc}",
+            file=sys.stderr,
+            flush=True,
+        )
+        return None
 
 
 # ----- Worktree management -----
@@ -763,6 +840,27 @@ def audit_pr(config: AuditConfig, repo: str, pr_number: int) -> AuditResult:
         # `codex` final-verdict marker, requeue rather than auto-PASS.
         # The trailer is the same as STALE because the downstream
         # outcome (re-run, don't trust this comment) is identical.
+        #
+        # Persist the raw CLI bytes that confused the parser. The
+        # post-comment trailer auto-requeues, but the next attempt
+        # overwrites the in-memory capture and the worktree is gone,
+        # so without this dump there's no way to diagnose "real
+        # parser bug or one-shot Codex CLI flake?" after the fact.
+        # Best-effort: a logging failure must not interrupt the audit.
+        dump_path = dump_cli_failure(
+            repo=repo,
+            pr_number=pr_number,
+            head_sha=head_sha_start,
+            stdout=codex_stdout,
+            stderr=codex_stderr,
+            reason=parsed.prose,
+        )
+        if dump_path is not None:
+            print(
+                f"  captured CLI output for diagnosis: {dump_path}",
+                file=sys.stderr,
+                flush=True,
+            )
         comment_body = format_comment(parsed, head_sha_start, is_unknown=True)
         result_verdict = "UNKNOWN"
         trailer = STALE_TRAILER

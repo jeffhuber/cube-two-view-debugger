@@ -43,8 +43,15 @@ def audit_dir() -> Path:
 
 
 def now_record() -> Dict[str, str]:
+    # Microsecond precision on `utc` (cube-snap#TBD / ctvd#TBD).
+    # Previously second-precision, which was sufficient for human-
+    # readable display but caused a same-second race in the sweep-hook
+    # cross-check (cube-snap#204 P3, fixed via array-index ordering).
+    # The display field (`pt`) stays at second precision because the
+    # session-start sweep header renders it directly to the operator,
+    # and microseconds add noise without value at that surface.
     now_utc = datetime.now(timezone.utc)
-    record = {"utc": now_utc.isoformat(timespec="seconds")}
+    record = {"utc": now_utc.isoformat(timespec="microseconds")}
     try:
         if ZoneInfo is not None:
             record["pt"] = now_utc.astimezone(ZoneInfo("America/Los_Angeles")).strftime("%Y-%m-%d %H:%M:%S PT")

@@ -258,6 +258,36 @@ def test_parse_stderr_fallback_rejects_p_tag_without_continuation_or_summary():
     assert "strict Codex final-verdict shape" in parsed.prose
 
 
+def test_parse_stderr_fallback_rejects_blank_line_pseudo_continuation():
+    """Codex round-5 P2 audit on cube-snap#198 a788b68: the earlier
+    strict-shape regex used `\\n\\s+\\S` for the continuation, but
+    `\\s` matches newlines too — so a bullet + blank line +
+    unindented log line would satisfy the pattern (the `\\s+` would
+    consume blank-line newlines and `\\S` would match the first
+    non-whitespace char on the unindented log line).
+
+    Defense: continuation now uses `[ \\t]+` — horizontal whitespace
+    only, no newlines. The continuation must be on the IMMEDIATE
+    next line AND must actually be indented.
+
+    Scenario: substantive summary, a bare bullet, blank line, then
+    an unindented log line — must be UNKNOWN."""
+    parsed = c.parse_codex_output(
+        stdout="exec progress without final marker",
+        stderr="codex\n"
+               "The summary line here is intentionally substantive "
+               "and well over forty characters so it passes the "
+               "summary check on its own.\n"
+               "- [P3] fake bullet without real continuation — generated.md:1\n"
+               "\n"                            # blank line
+               "another column-0 log line\n",  # unindented
+    )
+    # Strict regex must REJECT because the continuation is blank +
+    # unindented, not indented spaces/tabs.
+    assert parsed.verdict == "UNKNOWN"
+    assert "strict Codex final-verdict shape" in parsed.prose
+
+
 def test_parse_stderr_fallback_rejects_strict_finding_without_summary():
     """Even a strictly-shaped finding bullet (em-dash + file:line +
     indented continuation) is not enough on its own. Real Codex

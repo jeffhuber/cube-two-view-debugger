@@ -241,8 +241,16 @@ _P_TAG_RE = re.compile(r"^\s*[-*]\s*\[P([0-3])\]")
 #
 # Used only by the stderr-fallback validator. Stdout parsing keeps
 # using the loose _P_TAG_RE since stdout is the trusted channel.
+# Codex round-5 P2 audit on cube-snap#198 a788b68: the earlier
+# version used `\n\s+\S` for the continuation. `\s` matches
+# newlines too, so a bullet followed by a blank line and then an
+# unindented log line would satisfy the pattern (the `\s+` would
+# greedily consume `\n\n` and the `\S` would match the first non-
+# whitespace character on the unindented log line). Use `[ \t]+`
+# for horizontal whitespace only, so the continuation must be on
+# the immediate next line AND must actually be indented.
 _STRICT_FINDING_RE = re.compile(
-    r"^[-*]\s*\[P[0-3]\][^\n]*?\s—\s[/\w.][^\n]*?:\d+(?:-\d+)?[^\n]*\n\s+\S",
+    r"^[-*][ \t]*\[P[0-3]\][^\n]*?\s—\s[/\w.][^\n]*?:\d+(?:-\d+)?[^\n]*\n[ \t]+\S",
     re.MULTILINE,
 )
 

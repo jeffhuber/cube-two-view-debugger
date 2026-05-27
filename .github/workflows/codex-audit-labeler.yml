@@ -23,7 +23,7 @@
 # /pulls/{n} fetch before any label is applied.
 #
 # Push handling (cube-snap#205 / ctvd#371): the labeler also runs on
-# `pull_request.synchronize` to clear stale `codex-audit-done` /
+# `pull_request_target.synchronize` to clear stale `codex-audit-done` /
 # `codex-audit-blocked` labels that no longer correspond to the new
 # head. Without this, a PR audited at SHA A could carry `codex-audit-done`
 # indefinitely after a push to SHA B, falsely authorizing the standing
@@ -37,7 +37,7 @@ name: Codex audit labeler
 on:
   issue_comment:
     types: [created]
-  pull_request:
+  pull_request_target:
     types: [synchronize]
 
 permissions:
@@ -71,17 +71,88 @@ jobs:
     # this handler a stale label survives across pushes and could
     # authorize merging an unaudited newer head. Codex P1 on round 2 of
     # cube-snap#205 / ctvd#371.
-    if: github.event_name == 'pull_request' && github.event.action == 'synchronize'
+    #
+    # SECURITY NOTE: this job uses `pull_request_target` (not
+    # `pull_request`) so it receives a write-capable `github.token`
+    # even when the push comes from a fork. Without that, fork-pushed
+    # PRs would silently leave stale audit labels intact because the
+    # default `pull_request` token from a fork is read-only and gets no
+    # secrets (Codex P1 on round 3 of cube-snap#205 / ctvd#371).
+    # `pull_request_target` runs in the base repo context with elevated
+    # permissions, so the job MUST NOT check out PR-controlled code (no
+    # `actions/checkout` step) — otherwise a malicious fork could
+    # execute arbitrary code with our write token. This job operates
+    # only on event metadata + GitHub API calls; PR code is never read.
+    #
+    # Token: github.token directly. The workflow-level `issues: write`
+    # permission gives github.token the scope it needs. The earlier
+    # `secrets.CODEX_AUDIT_LABEL_TOKEN || github.token` pattern would
+    # silently fail if the optional PAT was configured but broken
+    # (expired, missing Issues:write, etc.) — github-script would use
+    # the broken PAT and never retry with github.token (Codex P2 on
+    # round 3 of the same PR pair). Unlike the Python labeler script
+    # (which has its own retry chain for the issue_comment trigger),
+    # this synchronize handler is simple enough that using github.token
+    # directly is both safer and more reliable.
+    if: github.event_name == 'pull_request_target' && github.event.action == 'synchronize'
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
       - name: Clear stale Codex audit labels on push
         uses: actions/github-script@v7
+        env:
+          CODEX_BOT_AUTHORS: ${{ vars.CODEX_BOT_AUTHORS }}
         with:
-          github-token: ${{ secrets.CODEX_AUDIT_LABEL_TOKEN || github.token }}
           script: |
-            const stale_labels = ['codex-audit-done', 'codex-audit-blocked'];
+            const currentHead = context.payload.pull_request.head.sha;
             const pr_number = context.payload.pull_request.number;
+
+            // Race guard (Codex P2 round 3 of cube-snap#205): the
+            // synchronize workflow can queue behind a subsequent audit
+            // run on the new head. If the audit fires first and applies
+            // a fresh codex-audit-done / codex-audit-blocked for the
+            // current head, we must NOT erase it. Check the most recent
+            // Codex audit comment and skip the removal if its reviewed
+            // head SHA matches the current PR head.
+            const defaultBots = ['codex-audit-bot', 'codex-audit-bot[bot]'];
+            const customBots = (process.env.CODEX_BOT_AUTHORS || '')
+              .split(',').map(s => s.trim()).filter(Boolean);
+            const botLogins = new Set([...defaultBots, ...customBots]);
+
+            const comments = await github.paginate(
+              github.rest.issues.listComments,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr_number,
+                per_page: 100,
+              }
+            );
+            const audits = comments
+              .filter(c => botLogins.has(c.user.login))
+              .filter(c => /<!--\s*CODEX_AUDIT_STATE:/.test(c.body))
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            if (audits.length > 0) {
+              const m = audits[0].body.match(/Head SHA:\s*`([0-9a-fA-F]{7,40})`/);
+              if (m) {
+                const reviewed = m[1].toLowerCase();
+                const current = currentHead.toLowerCase();
+                // Match on either the full 40-char SHA or the 7+ char
+                // prefix (codex_audit_pr.format_comment usually emits
+                // the full SHA but defend against future trimming).
+                if (current === reviewed || current.startsWith(reviewed)) {
+                  core.info(
+                    `Latest Codex audit comment (id=${audits[0].id}) is for current head ${currentHead}; preserving any audit labels.`
+                  );
+                  return;
+                }
+              }
+            }
+
+            // No fresh audit comment for the current head — any
+            // existing audit labels were applied for an older head and
+            // are now stale.
+            const stale_labels = ['codex-audit-done', 'codex-audit-blocked'];
             for (const name of stale_labels) {
               try {
                 await github.rest.issues.removeLabel({
@@ -92,7 +163,7 @@ jobs:
                 });
                 core.info(`Removed stale label ${name} from PR #${pr_number}`);
               } catch (e) {
-                // 404 = label was not applied; that's the normal case.
+                // 404 = label was not applied; that is the normal case.
                 if (e.status !== 404) throw e;
               }
             }

@@ -713,46 +713,47 @@ authorized.
   the Codex verdict. The mechanical UNKNOWN label is a CLI flake,
   not a missing review.
 
-  Merge under the standing delegation in that case is fine
-  provided the rest of the gate holds (PR is CLEAN + Claude-owned
-  + no other holds).
+  **Verify the dump matches the PR's current head before merging.**
+  Both the formal `codex-audit-done` label and the captured-PASS
+  dump are signals tied to a specific head SHA that can go stale
+  on later pushes. The labeler workflow (cube-snap#205 / ctvd#371)
+  clears `codex-audit-done` / `codex-audit-blocked` on every
+  `pull_request.synchronize` event, so the formal label path is
+  safely head-bound by the workflow itself. The captured-PASS dump
+  lives in the operator's local `~/.cache/` and persists across
+  pushes — so the operator MUST manually verify head-match before
+  using it:
 
-  **MANDATORY current-head match before this override counts.**
-  The normal `codex-audit-done` label is head-bound by the labeler
-  (it gets re-applied on every new push). The captured-PASS path
-  skips that machinery, so the operator MUST manually verify that
-  the dump corresponds to the PR's CURRENT head before treating it
-  as authoritative. Concretely, before merging:
+  ```bash
+  CURRENT=$(gh pr view <N> --repo <owner>/<repo> \
+    --json headRefOid --jq .headRefOid)
+  ls ~/.cache/cube-agent-audits/cli-failures/<owner>_<name>_pr<N>_${CURRENT:0:12}_*.log
+  grep "^# head_sha: $CURRENT$" <that-file>
+  ```
 
-  1. Fetch the current head: `CURRENT=$(gh pr view <N> --repo
-     <owner>/<repo> --json headRefOid --jq .headRefOid)`
-  2. Confirm the dump filename SHA prefix matches:
-     `ls ~/.cache/cube-agent-audits/cli-failures/<owner>_<name>_pr<N>_${CURRENT:0:12}_*.log`
-     — there must be at least one matching dump.
-  3. Confirm the dump header's `# head_sha:` line matches
-     `$CURRENT` exactly (full 40 chars, not just prefix).
-  4. Confirm `# repo:` and `# pr:` in the header also match.
+  Both checks must pass. Mismatch = captured-PASS does NOT apply;
+  either re-run the audit or wait for the formal label.
 
-  Without those checks, a stale dump from an earlier head (before
-  the latest push) could authorize merging a newer, unaudited head
-  — the failure mode Codex P1 caught on the first round of this
-  PR. Treat any mismatch as "captured-PASS does NOT apply; either
-  re-run the audit or wait for the formal label." (Codex P1 on
-  cube-snap#205 / ctvd#371 round 1.)
-
-  Before merging, post a transparency comment that quotes the
-  captured verdict AND the matched-against-current-head SHA AND
-  names the dump file, so the merge reasoning is auditable in the
-  PR record even though the formal trailer never flipped. Do NOT
-  fabricate a `<!-- CODEX_AUDIT_STATE: codex-audit-done -->`
-  trailer in that comment — that would impersonate Codex.
+  **Transparency comment requirements.** Before merging on the
+  captured-PASS path, post a comment that names the dump file and
+  quotes Codex's actual verdict prose. Two phrasing constraints
+  from the labeler-prose-fallback shape:
+  - Do NOT use the exact phrase `Codex Audit: PASS` (or any
+    `Codex Audit [—–:-] PASS` variant) — the labeler's prose
+    fallback matches that pattern and would silently apply
+    `codex-audit-done` if your login ever ended up in
+    `CODEX_BOT_AUTHORS`. Use prose-only wording like "Captured
+    PASS verdict on `<sha>`" instead.
+  - Do NOT fabricate a `<!-- CODEX_AUDIT_STATE: codex-audit-done -->`
+    trailer — that would impersonate Codex.
 
   Empirical basis: snap#202/#368/#201/#366/#204/#370 (three mirror
   pairs across one session, all UNKNOWN with captured PASS, all
-  merged under user authorization on this exact pattern — and all
-  reviewed against their then-current head SHA, which is why no
-  stale-dump regression actually shipped before Codex flagged the
-  missing gate in the doc).
+  merged under user authorization on this exact pattern). Codex
+  caught both the head-match gap (P1) and the prose-fallback gap
+  (P2) on the first two rounds of cube-snap#205 / ctvd#371 itself;
+  the labeler-side `synchronize` handler in the same PR pair
+  closes the head-stale-label class entirely.
 
   Greptile is informational only and never required for merge. Do
   NOT extend this to PRs owned by Codex-the-collaborator

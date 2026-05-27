@@ -21,12 +21,24 @@
 #                             stale-SHA detection)
 # Codex round 5 of #234 — P2: an Issues-only token would fail the
 # /pulls/{n} fetch before any label is applied.
+#
+# Push handling (cube-snap#205 / ctvd#371): the labeler also runs on
+# `pull_request.synchronize` to clear stale `codex-audit-done` /
+# `codex-audit-blocked` labels that no longer correspond to the new
+# head. Without this, a PR audited at SHA A could carry `codex-audit-done`
+# indefinitely after a push to SHA B, falsely authorizing the standing
+# in-thread merge delegation on an unaudited head. `needs-codex-audit`
+# is NOT auto-applied on push — operators re-fire
+# `tools/run_codex_audit_pr.sh` manually when ready, matching the
+# established Codex-lane protocol.
 
 name: Codex audit labeler
 
 on:
   issue_comment:
     types: [created]
+  pull_request:
+    types: [synchronize]
 
 permissions:
   contents: read
@@ -35,6 +47,7 @@ permissions:
 
 jobs:
   label:
+    if: github.event_name == 'issue_comment'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -50,3 +63,36 @@ jobs:
           CODEX_AUDIT_LABEL_TOKEN: ${{ secrets.CODEX_AUDIT_LABEL_TOKEN }}
           CODEX_BOT_AUTHORS: ${{ vars.CODEX_BOT_AUTHORS }}
         run: python3 tools/codex_audit_labeler.py
+
+  clear-stale-on-push:
+    # Clear stale Codex audit labels when the PR head moves. Both the
+    # standing in-thread merge delegation and the captured-PASS-via-dump
+    # escape hatch trust these labels as head-bound signals; without
+    # this handler a stale label survives across pushes and could
+    # authorize merging an unaudited newer head. Codex P1 on round 2 of
+    # cube-snap#205 / ctvd#371.
+    if: github.event_name == 'pull_request' && github.event.action == 'synchronize'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Clear stale Codex audit labels on push
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.CODEX_AUDIT_LABEL_TOKEN || github.token }}
+          script: |
+            const stale_labels = ['codex-audit-done', 'codex-audit-blocked'];
+            const pr_number = context.payload.pull_request.number;
+            for (const name of stale_labels) {
+              try {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: pr_number,
+                  name: name,
+                });
+                core.info(`Removed stale label ${name} from PR #${pr_number}`);
+              } catch (e) {
+                // 404 = label was not applied; that's the normal case.
+                if (e.status !== 404) throw e;
+              }
+            }

@@ -121,15 +121,85 @@ def test_parse_prefers_stdout_marker_over_stderr_noise():
     assert "stderr noise" not in parsed.prose
 
 
-def test_parse_multiple_stderr_markers_remains_unknown():
-    """If stdout has no marker and stderr has multiple possible markers,
-    fail closed rather than risk anchoring on progress chatter."""
+def test_parse_falls_back_to_last_stderr_marker_with_multiple():
+    """cube-snap#198: when stdout has zero markers AND stderr has
+    multiple column-0 `codex` markers, anchor on the LAST one —
+    same last-marker-wins rule that already governs the stdout
+    path. The column-0 exact-match filter in _codex_marker_indices
+    is what makes this safe for both streams: Codex's `exec` log
+    lines and quoted-in-prose mentions are not column-0 bare
+    lines, so they don't create false markers.
+
+    Empirical justification: ctvd#358's three repeated UNKNOWN
+    verdicts (captured via the #196 instrumentation) were ALL
+    this shape — stdout had review prose without a marker, stderr
+    had multiple column-0 markers, the LAST one preceded the
+    real final-verdict block."""
     parsed = c.parse_codex_output(
         stdout="exec progress without final marker",
-        stderr="codex\nquoted command\ncodex\nmaybe verdict\n",
+        stderr="codex\nearly verdict (should be ignored)\n- [P1] old\n"
+               "more progress\n"
+               "codex\nfinal verdict — All clear.\n",
+    )
+    assert parsed.verdict == "PASS"
+    # Anchored on the LAST stderr marker — the early one is discarded.
+    assert "final verdict" in parsed.prose
+    assert "early verdict" not in parsed.prose
+    # The P1 from the early block must not be counted.
+    assert parsed.p1_count == 0
+
+
+def test_parse_returns_unknown_when_no_marker_in_stdout_or_stderr():
+    """The safety floor stays: if neither stream has any column-0
+    `codex` marker, the parser must surface UNKNOWN so the
+    orchestrator requeues. The previous "exactly one stderr marker"
+    rule was the wrong place for the floor — the real floor is "at
+    least one marker somewhere."""
+    parsed = c.parse_codex_output(
+        stdout="exec progress without any marker",
+        stderr="more progress, also no marker",
     )
     assert parsed.verdict == "UNKNOWN"
-    assert "multiple possible codex markers" in parsed.prose
+    assert "stdout or stderr" in parsed.prose
+
+
+def test_parse_stderr_routed_verdict_with_exec_chatter_pattern():
+    """Regression test built from the empirical shape of ctvd#358's
+    captured CLI-failure dumps (round 3 at
+    ~/.cache/cube-agent-audits/cli-failures/...9cd92132...): Codex
+    CLI routes the verdict to stderr alongside the full `exec`
+    transcript, producing a stderr stream that's mostly log lines
+    plus one column-0 `codex` marker preceding the final review
+    prose. The pre-#198 parser refused this with "multiple possible
+    codex markers" because the duplicated review prose included
+    embedded `codex` references; the post-#198 parser correctly
+    parses the LAST column-0 marker."""
+    stdout = "The new dump helper generally works.\n"
+    stderr = (
+        "exec\n"
+        "/bin/bash -lc 'nl -ba tools/codex_audit_pr.py' in /tmp/wt\n"
+        " succeeded in 0ms:\n"
+        "  1156\t    if result.verdict in (\"STALE\", \"UNKNOWN\"):\n"
+        "  1157\t        return 2\n"
+        "codex\n"
+        "another exec line that has 'codex' embedded but not column-0\n"
+        "exec\n"
+        "  more output\n"
+        "codex\n"
+        "The new dump helper generally works.\n"
+        "\n"
+        "Review comment:\n"
+        "\n"
+        "- [P3] Count output bytes rather than characters — file.py:123\n"
+    )
+    parsed = c.parse_codex_output(stdout=stdout, stderr=stderr)
+    # Anchored on the LAST stderr `codex` line — the prose after it
+    # is the real review block.
+    assert parsed.verdict == "PASS"  # P3 only → PASS-shaped
+    assert parsed.p3_count == 1
+    assert parsed.p1_count == 0
+    assert parsed.p2_count == 0
+    assert "Count output bytes" in parsed.prose
 
 
 def test_audit_pr_unknown_verdict_requeues_with_stale_trailer(monkeypatch):

@@ -285,35 +285,45 @@ def parse_codex_output(stdout: str, stderr: str = "") -> CodexVerdict:
     else:
         # Task #85 / PR #255: the Codex CLI can occasionally route the
         # final verdict marker to stderr even though the normal review
-        # channel is stdout. Keep the round-6 contamination guard by
-        # falling back to stderr ONLY when stdout has no markers and stderr
-        # has exactly one column-0 marker. Multiple stderr markers are more
-        # likely progress chatter / quoted commands than a trustworthy final
-        # verdict anchor.
+        # channel is stdout. Fall back to the LAST column-0 `codex`
+        # marker in stderr, applying the same last-marker-wins rule
+        # that already governs the stdout path.
+        #
+        # Updated by cube-snap#198 after the CLI-failure capture from
+        # #196 produced empirical evidence: ctvd#358's three repeated
+        # UNKNOWN verdicts (captured at
+        # ~/.cache/cube-agent-audits/cli-failures/) were ALL the same
+        # shape — stdout had the review prose with no `codex` marker,
+        # stderr had multiple column-0 `codex` markers, the last of
+        # which preceded the real final-verdict block. The previous
+        # "exactly one stderr marker" guard refused these as ambiguous
+        # progress chatter; the captured dumps showed they were
+        # genuine final verdicts.
+        #
+        # The column-0 exact-match filter (in _codex_marker_indices)
+        # is what makes the last-marker-wins rule safe for both
+        # streams: Codex's `exec` log lines and quoted-in-prose
+        # mentions of "codex" are not column-0 bare lines, so they
+        # don't create false markers.
         stderr_lines = stderr.splitlines()
         stderr_marker_indices = _codex_marker_indices(stderr_lines)
-        if len(stderr_marker_indices) == 1:
+        if stderr_marker_indices:
             lines = stderr_lines
-            last_codex_idx = stderr_marker_indices[0]
+            last_codex_idx = stderr_marker_indices[-1]
         else:
-            reason = "no codex final-verdict block found in output"
-            if len(stderr_marker_indices) > 1:
-                reason = (
-                    "no stdout final-verdict marker found, and stderr had "
-                    "multiple possible codex markers"
-                )
-            # No final `codex` marker found. Codex round 3 of #234 — P2:
-            # the original code returned a PASS-shaped verdict here,
-            # which would silently mark unaudited PRs as
-            # `codex-audit-done` on format drift or empty/partial
-            # successful output. The safe behavior is to surface this as
-            # UNKNOWN so the orchestrator emits the `needs-codex-audit`
-            # (requeue) trailer instead of auto-PASS.
+            # No final `codex` marker found in stdout OR stderr.
+            # Codex round 3 of #234 — P2: the original code returned a
+            # PASS-shaped verdict here, which would silently mark
+            # unaudited PRs as `codex-audit-done` on format drift or
+            # empty/partial successful output. The safe behavior is to
+            # surface this as UNKNOWN so the orchestrator emits the
+            # `needs-codex-audit` (requeue) trailer instead of auto-PASS.
             return CodexVerdict(
                 verdict="UNKNOWN",
-                prose=f"({reason} — the codex CLI may have produced no "
-                      "review or its output format may have drifted; "
-                      "requeue and retry)",
+                prose="(no codex final-verdict block found in stdout or "
+                      "stderr — the codex CLI may have produced no review "
+                      "or its output format may have drifted; requeue "
+                      "and retry)",
             )
 
     verdict_block = "\n".join(lines[last_codex_idx + 1 :]).strip()

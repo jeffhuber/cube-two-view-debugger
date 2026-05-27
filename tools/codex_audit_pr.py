@@ -121,13 +121,21 @@ class AuditConfig:
 @dataclass
 class CodexVerdict:
     """Parsed verdict from `codex review` output (stdout, or stderr fallback)."""
-    verdict: str  # "PASS" | "BLOCKED"
+    verdict: str  # "PASS" | "BLOCKED" | "UNKNOWN"
     prose: str    # the final review block (clean, ready to render as a comment)
     p0_count: int = 0
     p1_count: int = 0
     p2_count: int = 0
     p3_count: int = 0
     findings: List[str] = field(default_factory=list)  # raw [P*] finding lines
+    # True when the verdict came from the stderr-fallback path AND the
+    # raw stderr block was intentionally withheld from the comment body
+    # (cube-snap#198 / ctvd#360 — stderr is PR-influenced, so even a
+    # strict-shape match cannot safely be published as the verdict prose).
+    # audit_pr() uses this flag to trigger dump_cli_failure() — without
+    # the dump the BLOCKED is unfalsifiable, since neither the comment
+    # nor the in-memory output survives the audit. cube-snap#202 / ctvd#368.
+    suppressed_raw_stderr: bool = False
 
     @property
     def blocker_count(self) -> int:
@@ -524,8 +532,10 @@ def parse_codex_output(stdout: str, stderr: str = "") -> CodexVerdict:
             "(stderr fallback found a blocker-shaped Codex verdict, "
             "but raw stderr prose was withheld because stderr fallback "
             "can be influenced by PR-controlled command output. Treat "
-            "as BLOCKED and rerun or inspect the local CLI-failure dump "
-            "for details.)"
+            "as BLOCKED and inspect the local CLI-failure dump under "
+            "`~/.cache/cube-agent-audits/cli-failures/` (audit operator "
+            "only — 0o600) for the raw bytes, or request a manual "
+            "Codex re-audit.)"
         )
         findings = []
     else:
@@ -539,6 +549,7 @@ def parse_codex_output(stdout: str, stderr: str = "") -> CodexVerdict:
         p2_count=p_counts[2],
         p3_count=p_counts[3],
         findings=findings,
+        suppressed_raw_stderr=suppress_raw_verdict_block,
     )
 
 
@@ -559,14 +570,27 @@ def dump_cli_failure(
     reason: str,
     base_dir: Optional[Path] = None,
 ) -> Optional[Path]:
-    """Persist raw Codex CLI output to disk when verdict-parsing failed.
+    """Persist raw Codex CLI output to disk when the comment body lacks
+    the diagnostic content needed to investigate the verdict.
 
-    The orchestrator auto-requeues on UNKNOWN, but the raw bytes that
-    confused the parser are not otherwise preserved — the worktree gets
-    torn down and the next audit's output overwrites the in-memory
-    capture. Without this dump, diagnosing "is this a real parser bug
-    or a one-shot Codex CLI flake?" requires reproducing the original
-    audit, which often is not possible (head SHA moves on).
+    Called from two audit_pr branches:
+
+    1. UNKNOWN — the parser couldn't find a verdict block at all. The
+       orchestrator auto-requeues, but without the dump there's no way
+       to diagnose "is this a real parser bug or a one-shot Codex CLI
+       flake?" once the worktree is torn down and the next audit
+       overwrites the in-memory capture.
+
+    2. stderr-fallback BLOCKED (cube-snap#202 / ctvd#368) — the parser
+       accepted a strict-shape verdict from stderr but intentionally
+       withholds the raw stderr block from the GitHub comment because
+       stderr is PR-controlled (cube-snap#198 safety policy). The
+       comment is blocker-shaped but contains no findings, so it's
+       unfalsifiable without the dump.
+
+    Either way, the raw bytes that produced the verdict are not
+    otherwise preserved — the worktree gets torn down and the next
+    audit's output overwrites the in-memory capture.
 
     Output: `<base_dir>/<owner>_<name>_pr<N>_<sha[:12]>_<UTC>.log`.
     The file is self-describing — header includes repo/pr/sha/reason
@@ -634,7 +658,7 @@ def dump_cli_failure(
         stdout_bytes = len(stdout.encode("utf-8"))
         stderr_bytes = len(stderr.encode("utf-8"))
         header = (
-            "# Codex CLI raw output — verdict UNKNOWN\n"
+            "# Codex CLI raw output — parser produced no clean comment-ready prose\n"
             f"# repo: {repo}\n"
             f"# pr: {pr_number}\n"
             f"# head_sha: {head_sha}\n"
@@ -1107,6 +1131,35 @@ def audit_pr(config: AuditConfig, repo: str, pr_number: int) -> AuditResult:
         result_verdict = "UNKNOWN"
         trailer = STALE_TRAILER
     else:
+        if parsed.verdict == "BLOCKED" and parsed.suppressed_raw_stderr:
+            # cube-snap#202 / ctvd#368: stderr-fallback BLOCKED withholds
+            # the raw stderr block from the posted comment (PR-controlled
+            # input safety, per cube-snap#198), which left the verdict
+            # unfalsifiable — neither the GitHub comment nor the in-memory
+            # output survives the audit, so "real Codex finding vs.
+            # PR-controlled chatter matching the strict shape?" couldn't be
+            # answered after the fact. Empirically observed on snap#201 /
+            # ctvd#366: three repeated stderr-fallback BLOCKED rounds with
+            # no captured evidence to investigate. Dump the raw bytes
+            # locally (same 0o600 dump dir as UNKNOWN) so the next
+            # occurrence is diagnosable. The comment body still withholds
+            # the raw prose; the dump is for the audit operator only.
+            dump_path = dump_cli_failure(
+                repo=repo,
+                pr_number=pr_number,
+                head_sha=head_sha_start,
+                stdout=codex_stdout,
+                stderr=codex_stderr,
+                reason="stderr-fallback BLOCKED (raw prose withheld from "
+                       "comment per cube-snap#198 PR-controlled-input policy)",
+            )
+            if dump_path is not None:
+                print(
+                    f"  captured stderr-fallback BLOCKED CLI output for "
+                    f"diagnosis: {dump_path}",
+                    file=sys.stderr,
+                    flush=True,
+                )
         comment_body = format_comment(parsed, head_sha_start)
         result_verdict = parsed.verdict
         trailer = BLOCKED_TRAILER if parsed.verdict == "BLOCKED" else DONE_TRAILER

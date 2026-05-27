@@ -833,9 +833,14 @@ def test_audit_pr_pass_branch_does_not_dump_cli_output(monkeypatch, tmp_path):
     assert dump_calls == []
 
 
-def test_audit_pr_blocked_branch_does_not_dump_cli_output(monkeypatch, tmp_path):
-    """Same as PASS: BLOCKED means the parser succeeded; nothing to
-    diagnose, no dump."""
+def test_audit_pr_stdout_blocked_does_not_dump_cli_output(monkeypatch, tmp_path):
+    """Stdout BLOCKED means the parser succeeded against the trusted
+    channel; the comment carries the full review prose so there's
+    nothing missing to diagnose, no dump.
+
+    Contrast with `test_audit_pr_stderr_fallback_blocked_dumps_cli_output`
+    below: stderr-fallback BLOCKED withholds the raw prose from the
+    comment (PR-controlled-input policy), and DOES dump."""
     pr_meta = _fake_pr(head_sha="ddddd44445555")
     _install_audit_mocks(
         monkeypatch,
@@ -862,6 +867,96 @@ def test_audit_pr_blocked_branch_does_not_dump_cli_output(monkeypatch, tmp_path)
 
     assert result.verdict == "BLOCKED"
     assert dump_calls == []
+
+
+def test_audit_pr_stderr_fallback_blocked_dumps_cli_output(monkeypatch, tmp_path):
+    """cube-snap#202 / ctvd#368: when the BLOCKED verdict comes from
+    the stderr-fallback path with the raw-prose-withheld safety policy
+    (cube-snap#198), audit_pr() MUST call dump_cli_failure() — otherwise
+    the BLOCKED is unfalsifiable. The comment intentionally carries no
+    finding details, the worktree is torn down, and the next audit
+    overwrites the in-memory capture, so "real Codex finding vs.
+    PR-controlled chatter matching the strict shape?" has no diagnostic
+    surface without the dump.
+
+    Empirical motivator: snap#201 + ctvd#366 both spent three audit
+    rounds at stderr-fallback BLOCKED with zero captured evidence.
+
+    Behavior contract verified:
+    - dump_cli_failure() called exactly once
+    - it receives the actual codex_stdout / codex_stderr bytes
+    - reason field identifies the source path
+    - parsed.suppressed_raw_stderr propagates through to the AuditResult
+    - the posted comment still withholds the raw stderr prose
+    """
+    pr_meta = _fake_pr(head_sha="ddddffff8888")
+    posted: List[Dict[str, Any]] = []
+
+    stderr_with_strict_finding = (
+        "exec\n"
+        "/bin/bash -lc \"echo something\" in /tmp\n"
+        " succeeded in 0ms\n"
+        "codex\n"
+        "The change introduces a synchronization gap that "
+        "drops events under concurrent writers.\n"
+        "\n"
+        "- [P2] race in event queue — src/queue.py:42\n"
+        "  When two writers race the queue drops events.\n"
+    )
+    _install_audit_mocks(
+        monkeypatch,
+        pr_meta=pr_meta,
+        codex_stdout="exec progress without final marker",
+        codex_stderr=stderr_with_strict_finding,
+        posted_records=posted,
+    )
+
+    captured: List[Dict[str, Any]] = []
+
+    def fake_dump(**kwargs):
+        captured.append(kwargs)
+        return tmp_path / "fake_dump.log"
+
+    monkeypatch.setattr(c, "dump_cli_failure", fake_dump)
+
+    config = c.AuditConfig(
+        github_token="test",
+        repo_paths={"jeffhuber/cube-two-view-debugger": Path("/tmp/fake-repo")},
+    )
+    Path("/tmp/fake-repo").mkdir(exist_ok=True)
+    try:
+        result = c.audit_pr(config, "jeffhuber/cube-two-view-debugger", 17)
+    finally:
+        Path("/tmp/fake-repo").rmdir()
+
+    assert result.verdict == "BLOCKED"
+    assert result.trailer == c.BLOCKED_TRAILER
+    assert result.parsed is not None
+    assert result.parsed.suppressed_raw_stderr is True
+    # Exactly one dump call, with the raw bytes that produced the verdict.
+    assert len(captured) == 1
+    call = captured[0]
+    assert call["repo"] == "jeffhuber/cube-two-view-debugger"
+    assert call["pr_number"] == 17
+    assert call["head_sha"] == "ddddffff8888"
+    assert call["stdout"] == "exec progress without final marker"
+    assert call["stderr"] == stderr_with_strict_finding
+    # Reason identifies the source path so a directory of dumps stays
+    # self-describing without needing to inspect contents.
+    assert "stderr-fallback BLOCKED" in call["reason"]
+    # Comment must still withhold the raw stderr prose — the
+    # PR-controlled-input policy is enforced regardless of the dump.
+    assert "raw stderr prose was withheld" in posted[0]["body"]
+    assert "race in event queue" not in posted[0]["body"]
+
+
+def test_codex_verdict_default_suppressed_raw_stderr_is_false():
+    """The new CodexVerdict.suppressed_raw_stderr field defaults to
+    False so existing call sites (stdout PASS/BLOCKED, UNKNOWN) don't
+    accidentally trip the new dump path. Only the stderr-fallback
+    accept branch in parse_codex_output sets it True."""
+    v = c.CodexVerdict(verdict="PASS", prose="ok")
+    assert v.suppressed_raw_stderr is False
 
 
 def test_parse_p0_alone_triggers_blocked():
@@ -1250,6 +1345,9 @@ def test_audit_pr_parses_stderr_fallback_with_strict_finding(monkeypatch):
     assert result.parsed is not None
     assert result.parsed.p2_count == 1
     assert "raw stderr prose was withheld" in result.parsed.prose
+    # cube-snap#202 / ctvd#368: stderr-fallback accept sets this flag
+    # so audit_pr knows to dump the raw bytes for diagnosis.
+    assert result.parsed.suppressed_raw_stderr is True
     assert "Codex Audit: BLOCKED" in posted[0]["body"]
     assert "race in event queue" not in posted[0]["body"]
 

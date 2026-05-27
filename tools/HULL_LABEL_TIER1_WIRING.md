@@ -110,8 +110,16 @@ Use `tools/summarize_constrained_shadow_log.py` to inspect the JSONL:
   --min-events 30 \
   --max-error-rate 0 \
   --max-gate-reject-rate 0.25 \
+  --require-gt-on-accepted \
+  --fail-when-not-ready \
   --report runs/constrained_inference_shadow_summary.md
 ```
+
+For a pre-promotion check, treat a nonzero exit from that command as a hard
+stop. `--require-gt-on-accepted` is appropriate when replaying labeled/corpus
+traffic because every gate-accepted candidate should have an exact GT
+comparison. For unlabeled live shadow traffic, omit that flag and use the same
+report as a production-signal summary rather than a GT promotion gate.
 
 When ground truth is supplied to `/api/recognize`, shadow events also include
 `constrainedInference.candidateEvaluation`: a compact GT comparison for the

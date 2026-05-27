@@ -217,9 +217,16 @@ def _edge_cubies(state: str):
 
 
 def _parity(permutation: List[int]) -> int:
-    inversions = 0
+    visited = [False] * len(permutation)
+    parity = 0
     for i in range(len(permutation)):
-        for j in range(i + 1, len(permutation)):
-            if permutation[i] > permutation[j]:
-                inversions += 1
-    return inversions % 2
+        if visited[i]:
+            continue
+        j = i
+        cycle_len = 0
+        while not visited[j]:
+            visited[j] = True
+            j = permutation[j]
+            cycle_len += 1
+        parity += cycle_len - 1
+    return parity % 2

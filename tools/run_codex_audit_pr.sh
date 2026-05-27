@@ -21,6 +21,10 @@ repo_arg=""
 pr_arg=""
 repo_paths_arg=""
 help_requested=""
+token_from_stdin=""
+# Filtered args = audit_args with --token-from-stdin (a wrapper-only flag)
+# stripped. We pass --read-token-from-stdin to python instead.
+filtered_args=()
 idx=0
 while [ "${idx}" -lt "${#audit_args[@]}" ]; do
   arg="${audit_args[${idx}]}"
@@ -28,26 +32,42 @@ while [ "${idx}" -lt "${#audit_args[@]}" ]; do
     --repo)
       idx=$((idx + 1))
       repo_arg="${audit_args[${idx}]:-}"
+      filtered_args+=("${arg}" "${audit_args[${idx}]:-}")
       ;;
     --repo=*)
       repo_arg="${arg#--repo=}"
+      filtered_args+=("${arg}")
       ;;
     --pr)
       idx=$((idx + 1))
       pr_arg="${audit_args[${idx}]:-}"
+      filtered_args+=("${arg}" "${audit_args[${idx}]:-}")
       ;;
     --pr=*)
       pr_arg="${arg#--pr=}"
+      filtered_args+=("${arg}")
       ;;
     --repo-paths)
       idx=$((idx + 1))
       repo_paths_arg="${audit_args[${idx}]:-}"
+      filtered_args+=("${arg}" "${audit_args[${idx}]:-}")
       ;;
     --repo-paths=*)
       repo_paths_arg="${arg#--repo-paths=}"
+      filtered_args+=("${arg}")
       ;;
     --help|-h)
       help_requested=1
+      filtered_args+=("${arg}")
+      ;;
+    --token-from-stdin)
+      # Wrapper-only flag: tells the wrapper the caller is piping the
+      # token via stdin. Strip it before passing to python (python uses
+      # its own --read-token-from-stdin which the wrapper adds).
+      token_from_stdin=1
+      ;;
+    *)
+      filtered_args+=("${arg}")
       ;;
   esac
   idx=$((idx + 1))
@@ -130,82 +150,73 @@ if [ -n "${repo_arg}" ] && [ -n "${pr_arg}" ]; then
   trap finish_lock EXIT
 fi
 
-# codex_audit_pr.py requires GITHUB_TOKEN for the GitHub API calls
-# (PR metadata fetch, comment post). Fail with an actionable
-# message rather than letting the Python script die later with a
-# generic "env var required" error.
+# Token-resolution decision tree. Three modes:
 #
-# Placed AFTER the lock/trap setup above (Codex P2 audit on
-# cube-two-view-debugger#354): if this early-exit ran before the
-# trap, the failure would not be logged to events.jsonl and the
-# existing test_wrapper_propagates_python_failure_exit_code_to_audit_log
-# regression test would break. Now the trap catches `exit 1` here
-# and writes a `finished` event with status='failed'.
+# 1. --token-from-stdin (RECOMMENDED): caller pipes the token in
+#    via stdin. The wrapper never touches GITHUB_TOKEN in env, never
+#    has it in argv. No process in the wrapper's tree exposes the
+#    token via /proc/<pid>/environ. This is the only mode that
+#    fully isolates from the /proc-environ exposure path on Linux.
 #
-# Deliberately NOT auto-sourcing via `gh auth token`: that would
-# put a write-capable GitHub credential into a process whose
-# subprocesses include `codex review` running PR-controlled
-# tooling. Even with the codex_audit_pr.py env sanitization
-# stripping GITHUB_TOKEN/GH_TOKEN from the subprocess env, the
-# subprocess inherits HOME and PATH and can recover the token by
-# invoking `gh auth token` itself or by reading `gh`'s credential
-# store directly. The cleanest mitigation is to force callers to
-# explicitly opt in by setting GITHUB_TOKEN in their own env, so
-# the credential-sharing decision is deliberate. See Codex P1
-# audits on cube-snap#194 and cube-two-view-debugger#354 for the
-# full reasoning behind reverting the auto-fallback.
-if [ -z "${help_requested}" ] && [ -z "${GITHUB_TOKEN:-}" ]; then
-  printf 'error: GITHUB_TOKEN env var is required.\n' >&2
+# 2. GITHUB_TOKEN env var (legacy / backward-compat): caller has
+#    GITHUB_TOKEN exported. The wrapper captures, unsets from env,
+#    pipes to python via stdin. BUT the wrapper's own
+#    /proc/<bash_pid>/environ block was captured at exec time with
+#    GITHUB_TOKEN in it; `unset` doesn't scrub that. On Linux,
+#    PR-controlled code in the codex review subprocess can read
+#    /proc/<wrapper_bash_pid>/environ and recover the token for the
+#    full lifetime of the audit. We print a warning to stderr.
+#    Same applies recursively to the user's interactive shell
+#    above the wrapper — outside the wrapper's scope.
+#
+# 3. --help / -h: no token needed; argparse prints usage and exits.
+#
+# Modes 2 + 3 deliberately do NOT auto-source via `gh auth token`:
+# that would put a write-capable credential into a process whose
+# subprocess (codex review) executes PR-controlled tooling. The
+# explicit-opt-in design makes credential sharing the caller's
+# deliberate choice, not the wrapper's default.
+#
+# Codex P1 audits on cube-snap#194/195 and cube-two-view-debugger
+# #354 caught successive /proc-exposure layers (subprocess env,
+# Python's initial env, wrapper bash's initial env). Mode 1 is the
+# only one that fully closes that chain *for this wrapper's
+# process tree*. Closing the user's interactive shell's exposure
+# is outside this wrapper's scope (would require user to invoke
+# from a fresh subshell with a sanitized env).
+if [ -n "${help_requested}" ]; then
+  # --help: skip all token handling, let python show usage.
+  "${python_bin}" "${audit_script}" "${filtered_args[@]}"
+elif [ -n "${token_from_stdin}" ]; then
+  # Mode 1: caller pipes the token in. Wrapper passes through
+  # stdin unmodified; python reads first line as token.
+  # We do NOT inspect or rewrite stdin, do NOT touch GITHUB_TOKEN
+  # in env (which should not be set in this mode anyway — if it
+  # is, that's the caller's choice and the legacy /proc exposure
+  # applies to whatever exported it).
+  "${python_bin}" "${audit_script}" --read-token-from-stdin "${filtered_args[@]}"
+elif [ -n "${GITHUB_TOKEN:-}" ]; then
+  # Mode 2: legacy env-var path. WARN about /proc exposure, then
+  # do best-effort scrubbing + pipe to python.
+  printf 'warning: GITHUB_TOKEN-in-env mode exposes the token via\n' >&2
+  printf '  /proc/<bash_pid>/environ for the lifetime of this audit.\n' >&2
+  printf '  For full isolation, use:\n' >&2
+  printf '    printf %%s "$(gh auth token)" | %s --token-from-stdin %s\n' "$0" "$*" >&2
   printf '\n' >&2
-  printf '  To use your local gh CLI credential (one-shot):\n' >&2
+  _token_to_pass="${GITHUB_TOKEN}"
+  unset GITHUB_TOKEN
+  unset GH_TOKEN  # strip alt-name for completeness
+  printf '%s' "${_token_to_pass}" | "${python_bin}" "${audit_script}" --read-token-from-stdin "${filtered_args[@]}"
+else
+  # Mode 4: no token, no --help — error out with actionable message.
+  printf 'error: no GitHub token provided.\n' >&2
+  printf '\n' >&2
+  printf '  Preferred (fully isolates from /proc/<pid>/environ exposure):\n' >&2
+  printf '    printf %%s "$(gh auth token)" | %s --token-from-stdin %s\n' "$0" "$*" >&2
+  printf '\n' >&2
+  printf '  Or legacy env-var (warns about /proc exposure but works):\n' >&2
   printf '    GITHUB_TOKEN="$(gh auth token)" %s %s\n' "$0" "$*" >&2
-  printf '\n' >&2
-  printf '  Or export once for the shell session:\n' >&2
-  printf '    export GITHUB_TOKEN="$(gh auth token)"\n' >&2
-  printf '\n' >&2
-  printf '  (Not auto-sourced: would expose the credential to the\n' >&2
-  printf '   untrusted codex review subprocess. See commit message\n' >&2
-  printf '   on this script for details.)\n' >&2
   printf '\n' >&2
   printf '  To inspect CLI options without a token, use --help or -h.\n' >&2
   exit 1
-fi
-
-# Capture GITHUB_TOKEN/GH_TOKEN into local bash variables and remove
-# them from THIS shell's environment. Without this, the audit
-# subprocess (codex review running PR-controlled tooling) can walk
-# up the process tree via /proc/<bash_pid>/environ on Linux (or
-# equivalent same-user introspection) and recover the credential.
-#
-# Then PIPE the token to Python via stdin rather than passing it
-# through the env. On Linux, /proc/<pid>/environ reads from the
-# INITIAL exec environment block, which Python cannot scrub from
-# inside — os.environ.pop() clears Python's view but not the
-# kernel-exposed bytes from /proc. Earlier commits in this PR used
-# `GITHUB_TOKEN="${val}" python …` (inline env), which still put
-# the token in Python's initial env block and exposed it via /proc
-# for the lifetime of the Python process. Piping via stdin avoids
-# that: the token never appears in Python's initial env at all.
-#
-# Codex P1 audit on cube-snap#195 / cube-two-view-debugger#354
-# caught the /proc-environ issue with the inline-env approach. The
-# stdin pattern closes it for the wrapper-driven path. The user's
-# interactive shell may still hold the token — that's the user's
-# deliberate export and outside this wrapper's scope to clear.
-_token_to_pass=""
-if [ -n "${GITHUB_TOKEN:-}" ]; then
-  _token_to_pass="${GITHUB_TOKEN}"
-  unset GITHUB_TOKEN
-fi
-unset GH_TOKEN  # strip alt-name even if unused, for completeness
-
-if [ -n "${_token_to_pass}" ]; then
-  # Pipe the token on stdin so it never enters Python's initial env.
-  # `printf '%s'` avoids the trailing newline that `echo` would add;
-  # the Python side rstrips \r\n anyway, but tighter is better.
-  printf '%s' "${_token_to_pass}" | "${python_bin}" "${audit_script}" --read-token-from-stdin "${audit_args[@]}"
-else
-  # No token in env — this is the --help/-h bypass path. Let python
-  # show its argparse usage; no token needed for that.
-  "${python_bin}" "${audit_script}" "${audit_args[@]}"
 fi

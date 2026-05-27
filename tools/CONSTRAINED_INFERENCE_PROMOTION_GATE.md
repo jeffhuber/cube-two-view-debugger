@@ -5,8 +5,8 @@ using the hull-label constrained-inference candidate outside Fixer.
 Ground truth is used only for scoring the gate, never for the gate
 decision itself.
 
-Git head: `ef5194ca7a3a06c7131d1315dcf07cdf73168616`
-Generated: `2026-05-27T17:19:54.341913+00:00`
+Git head: `1d8a28a75fc1189ff812c68bb82b6265dbd1c159`
+Generated: `2026-05-27T17:34:30.243987+00:00`
 Input: `tests/fixtures/pair_threshold_repair_diagnostic.json`
 
 ## Gate

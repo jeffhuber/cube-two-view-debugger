@@ -33,6 +33,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "8",
       "thresholds": {
@@ -65,6 +66,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "9",
       "thresholds": {
@@ -97,6 +99,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "10",
       "thresholds": {
@@ -129,6 +132,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "guarded_broad_legal_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "11",
       "thresholds": {
@@ -161,6 +165,7 @@
       "recommendedConfidence": "medium",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "12",
       "thresholds": {
@@ -193,6 +198,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "13",
       "thresholds": {
@@ -225,6 +231,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "current_invalid_selected_best_pair",
       "setId": "14",
       "thresholds": {
@@ -257,6 +264,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "15",
       "thresholds": {
@@ -289,6 +297,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "16",
       "thresholds": {
@@ -321,6 +330,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "17",
       "thresholds": {
@@ -353,6 +363,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "18",
       "thresholds": {
@@ -385,6 +396,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "19",
       "thresholds": {
@@ -417,6 +429,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "20",
       "thresholds": {
@@ -449,6 +462,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "21",
       "thresholds": {
@@ -481,6 +495,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "22",
       "thresholds": {
@@ -513,6 +528,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "23",
       "thresholds": {
@@ -545,6 +561,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "24",
       "thresholds": {
@@ -577,6 +594,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "25",
       "thresholds": {
@@ -609,6 +627,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "26",
       "thresholds": {
@@ -641,6 +660,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "27",
       "thresholds": {
@@ -673,6 +693,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "28",
       "thresholds": {
@@ -705,6 +726,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "29",
       "thresholds": {
@@ -737,6 +759,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "30",
       "thresholds": {
@@ -769,6 +792,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "31",
       "thresholds": {
@@ -801,6 +825,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "32",
       "thresholds": {
@@ -833,6 +858,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "33",
       "thresholds": {
@@ -865,6 +891,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "34",
       "thresholds": {
@@ -897,6 +924,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "35",
       "thresholds": {
@@ -929,6 +957,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "36",
       "thresholds": {
@@ -961,6 +990,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "37",
       "thresholds": {
@@ -993,6 +1023,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "38",
       "thresholds": {
@@ -1025,6 +1056,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "39",
       "thresholds": {
@@ -1057,6 +1089,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "40",
       "thresholds": {
@@ -1089,6 +1122,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "41",
       "thresholds": {
@@ -1121,6 +1155,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "42",
       "thresholds": {
@@ -1153,6 +1188,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "43",
       "thresholds": {
@@ -1185,6 +1221,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "44",
       "thresholds": {
@@ -1217,6 +1254,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "45",
       "thresholds": {
@@ -1249,6 +1287,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "46",
       "thresholds": {
@@ -1281,6 +1320,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "47",
       "thresholds": {
@@ -1313,6 +1353,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "48",
       "thresholds": {
@@ -1345,6 +1386,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "49",
       "thresholds": {
@@ -1377,6 +1419,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "50",
       "thresholds": {
@@ -1409,6 +1452,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "51",
       "thresholds": {
@@ -1441,6 +1485,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "52",
       "thresholds": {
@@ -1473,6 +1518,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "53",
       "thresholds": {
@@ -1505,6 +1551,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "54",
       "thresholds": {
@@ -1537,6 +1584,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "55",
       "thresholds": {
@@ -1569,6 +1617,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "56",
       "thresholds": {
@@ -1601,6 +1650,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "57",
       "thresholds": {
@@ -1633,6 +1683,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "58",
       "thresholds": {
@@ -1665,6 +1716,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "conservative_legal_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "59",
       "thresholds": {
@@ -1697,6 +1749,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "60",
       "thresholds": {
@@ -1729,6 +1782,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "61",
       "thresholds": {
@@ -1761,6 +1815,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "62",
       "thresholds": {
@@ -1793,6 +1848,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "63",
       "thresholds": {
@@ -1825,6 +1881,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "64",
       "thresholds": {
@@ -1857,6 +1914,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "two_view_consistency_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "65",
       "thresholds": {
@@ -1889,6 +1947,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "66",
       "thresholds": {
@@ -1921,6 +1980,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "67",
       "thresholds": {
@@ -1953,6 +2013,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "68",
       "thresholds": {
@@ -1985,6 +2046,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "conservative_legal_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "69",
       "thresholds": {
@@ -2017,6 +2079,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "70",
       "thresholds": {
@@ -2049,6 +2112,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "71",
       "thresholds": {
@@ -2081,6 +2145,7 @@
       "recommendedConfidence": "medium",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "72",
       "thresholds": {
@@ -2113,6 +2178,7 @@
       "recommendedConfidence": "medium",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "73",
       "thresholds": {
@@ -2145,6 +2211,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "74",
       "thresholds": {
@@ -2177,6 +2244,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "75",
       "thresholds": {
@@ -2209,6 +2277,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "76",
       "thresholds": {
@@ -2241,6 +2310,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "77",
       "thresholds": {
@@ -2273,6 +2343,7 @@
       "recommendedConfidence": "high",
       "recommendedMethod": "canonical_count_repaired",
       "rejectReasons": [],
+      "schema": "constrained_inference_promotion_gate_decision_v1",
       "selectionReason": "kept_current_valid_repair",
       "setId": "78",
       "thresholds": {
@@ -2291,8 +2362,8 @@
   ],
   "schema": "constrained_inference_promotion_gate_v1",
   "source": {
-    "generated_at_utc": "2026-05-27T17:19:54.341913+00:00",
-    "git_sha": "ef5194ca7a3a06c7131d1315dcf07cdf73168616",
+    "generated_at_utc": "2026-05-27T17:34:30.243987+00:00",
+    "git_sha": "1d8a28a75fc1189ff812c68bb82b6265dbd1c159",
     "input": "tests/fixtures/pair_threshold_repair_diagnostic.json",
     "tool": "tools/validate_constrained_inference_promotion.py"
   },

@@ -36,6 +36,7 @@ from rubik_recognizer.dataset import (
     parse_manifest_pairs,
 )
 from rubik_recognizer.recognizer import WhiteUpRecognizer, recognition_diagnostics
+from tools.constrained_inference_gate import evaluate_runtime_payload_gate
 from tools.hull_label_pair_selector import choose_guarded_pair, repair_rank, repair_valid
 
 
@@ -1115,6 +1116,8 @@ def prepare_llm_rectified_input(
         "selectedThresholds": selected_combo.get("thresholds"),
         "currentRepairValid": repair_valid(current_combo["evaluation"]),
         "selectedRepairValid": repair_valid(selected_eval),
+        "currentProductionRank": current_combo.get("productionRank"),
+        "selectedProductionRank": selected_combo.get("productionRank"),
         "evaluatedPairCount": len(pair_candidates),
         "possiblePairCount": (
             len(threshold_entries_by_side["A"]) * len(threshold_entries_by_side["B"])
@@ -1158,6 +1161,12 @@ def prepare_llm_rectified_input(
         "schema": "hull_label_color_repair_v1",
         "status": selected_eval.get("status", "unavailable"),
     }
+    promotion_gate = evaluate_runtime_payload_gate(
+        repair=deterministic_repair,
+        pair_threshold_selection=pair_threshold_selection,
+        side_traces=threshold_traces_by_side,
+        yaw_inference=yaw_inference,
+    )
     return {
         "status": "success",
         "prompt": "rectified",
@@ -1172,6 +1181,7 @@ def prepare_llm_rectified_input(
         "hullLabelMaskThresholds": threshold_traces_by_side,
         "hullLabelPairThresholdSelection": pair_threshold_selection,
         "deterministicColorRepair": deterministic_repair,
+        "constrainedInferencePromotionGate": promotion_gate,
     }
 
 

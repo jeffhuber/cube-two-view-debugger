@@ -4,6 +4,7 @@ from tools.validate_constrained_inference_promotion import (
     build_summary,
     evaluate_promotion_gate,
 )
+from tools.constrained_inference_gate import evaluate_runtime_payload_gate
 
 
 def _candidate_trace(threshold: int = 160):
@@ -158,3 +159,40 @@ def test_build_summary_counts_gate_outcomes():
     assert summary["rejected"] == 1
     assert summary["acceptedExact"] == 1
     assert summary["rejectReasonCounts"] == {"canonical_repair_moves_above_gate": 1}
+
+
+def test_runtime_payload_gate_uses_app_payload_shape():
+    decision = evaluate_runtime_payload_gate(
+        repair={
+            "status": "assembled",
+            "yawQuarterTurns": 0,
+            "recommendedMethod": "canonical_count_repaired",
+            "recommended": {
+                "validState": True,
+                "countBalanced": True,
+                "confidence": "medium",
+                "repairMoveCount": 8,
+            },
+            "methods": {
+                "canonical_count_repaired": {
+                    "validState": True,
+                    "countBalanced": True,
+                    "repairMoveCount": 8,
+                }
+            },
+        },
+        pair_threshold_selection={
+            "selectionReason": "kept_current_valid_repair",
+            "currentRepairValid": True,
+            "currentThresholds": {"A": 160, "B": 160},
+            "selectedThresholds": {"A": 160, "B": 160},
+        },
+        side_traces={
+            "A": {"status": "accepted", "hard_failures": []},
+            "B": {"status": "accepted", "hard_failures": []},
+        },
+        yaw_inference={"accepted": True},
+    )
+
+    assert decision["accepted"] is True
+    assert decision["productionRank"] == [0, 8, 0.0, 8, 0]

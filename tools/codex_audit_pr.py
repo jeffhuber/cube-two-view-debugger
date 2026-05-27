@@ -229,6 +229,57 @@ def post_pr_comment(repo: str, pr_number: int, body: str, *, token: str) -> Dict
 _P_TAG_RE = re.compile(r"^\s*[-*]\s*\[P([0-3])\]")
 
 
+# Phrases Codex consistently uses in real final-verdict prose.
+# Used by the stderr-fallback validator (cube-snap#198 → #199): when
+# we fall back to a column-0 `codex` marker in stderr, the candidate
+# block MUST contain either a P-tag bullet or one of these phrases.
+# Otherwise we treat the marker as an incidental log line (CLI
+# routing artifact) and return UNKNOWN rather than risk auto-PASS on
+# truncated / format-drifted output.
+#
+# The phrases are intentionally narrow: structural anchors Codex
+# emits as part of its verdict template, not generic words that
+# could appear in arbitrary chatter. If Codex's output format
+# drifts and these stop matching, the failure mode is UNKNOWN
+# (requeue) — which is the safe direction. Add new phrases here
+# when captured CLI-failure dumps show legitimate verdicts being
+# refused.
+_VERDICT_PROSE_PHRASES = (
+    "codex audit:",          # the verdict header line itself
+    "review comment",        # "Review comment:" / "Review comments:"
+    "full review comments",
+    "findings:",
+    "i did not find",        # canonical PASS opener
+    "did not appear to introduce",
+    "no actionable",
+    "no clear correctness",
+    "no discrete issue",
+    "no blockers",
+    "without introducing",
+)
+
+
+def _looks_like_codex_verdict_block(block: str) -> bool:
+    """Validate a candidate verdict-block extracted from stderr-fallback.
+
+    Returns True if the block contains either a P-tag finding line
+    (BLOCKED-shape) or one of the canonical PASS-shape phrases.
+    Returns False if it looks like incidental log chatter — in which
+    case the caller should treat the parse as UNKNOWN.
+
+    Stdout-anchored blocks bypass this check: the column-0 `codex`
+    line in stdout is the canonical final-verdict anchor and we've
+    never observed it being a false positive. The stderr fallback
+    is the path where format drift / truncation can leave us with
+    a column-0 `codex` log line that isn't a real verdict.
+    """
+    for line in block.splitlines():
+        if _P_TAG_RE.match(line):
+            return True
+    lower = block.lower()
+    return any(phrase in lower for phrase in _VERDICT_PROSE_PHRASES)
+
+
 def _codex_marker_indices(lines: List[str]) -> List[int]:
     """Return indices of column-0 `codex` verdict markers."""
     return [i for i, line in enumerate(lines) if line.rstrip() == "codex"]
@@ -308,8 +359,33 @@ def parse_codex_output(stdout: str, stderr: str = "") -> CodexVerdict:
         stderr_lines = stderr.splitlines()
         stderr_marker_indices = _codex_marker_indices(stderr_lines)
         if stderr_marker_indices:
-            lines = stderr_lines
-            last_codex_idx = stderr_marker_indices[-1]
+            # Validate the candidate block before treating it as
+            # authoritative (cube-snap P2 audit on #198 → #199):
+            # Codex CLI output can emit incidental column-0 `codex`
+            # lines from log/test chatter BEFORE the real final
+            # verdict block, then get truncated or never reach the
+            # real verdict. The last-marker-wins rule alone would
+            # anchor on the incidental marker, find no P-tag in the
+            # following chatter, and auto-PASS — silently marking
+            # an unaudited PR done. The validator requires either
+            # a P-tag finding or canonical Codex-verdict prose
+            # phrase in the candidate block before accepting it.
+            candidate_idx = stderr_marker_indices[-1]
+            candidate_block = "\n".join(
+                stderr_lines[candidate_idx + 1:]
+            ).strip()
+            if _looks_like_codex_verdict_block(candidate_block):
+                lines = stderr_lines
+                last_codex_idx = candidate_idx
+            else:
+                return CodexVerdict(
+                    verdict="UNKNOWN",
+                    prose="(stderr fallback found a column-0 `codex` marker "
+                          "but the following text has no P-tag and no "
+                          "canonical Codex-verdict prose phrase — likely "
+                          "an incidental log line ahead of a truncated or "
+                          "format-drifted real verdict; requeue and retry)",
+                )
         else:
             # No final `codex` marker found in stdout OR stderr.
             # Codex round 3 of #234 — P2: the original code returned a

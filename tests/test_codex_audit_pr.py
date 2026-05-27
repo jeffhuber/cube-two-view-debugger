@@ -99,11 +99,13 @@ def test_parse_no_codex_marker_returns_unknown():
 
 def test_parse_falls_back_to_single_stderr_marker():
     """Task #85: occasionally the Codex CLI routes the final verdict
-    marker to stderr. If stdout has no marker and stderr has exactly one
-    column-0 marker, parse stderr as a narrow fallback."""
+    marker to stderr. If stdout has no marker and stderr has at least
+    one column-0 marker AND the trailing block passes the validator
+    (P-tag or canonical phrase), parse stderr as a fallback."""
     parsed = c.parse_codex_output(
         stdout="exec progress without final marker",
-        stderr="progress chatter\ncodex\nAll clear from stderr.\n",
+        stderr="progress chatter\ncodex\nCodex Audit: PASS\n"
+               "All clear from stderr.\n",
     )
     assert parsed.verdict == "PASS"
     assert "All clear from stderr" in parsed.prose
@@ -130,6 +132,11 @@ def test_parse_falls_back_to_last_stderr_marker_with_multiple():
     lines and quoted-in-prose mentions are not column-0 bare
     lines, so they don't create false markers.
 
+    The chosen block must additionally pass the validator added in
+    cube-snap#199 — either has a P-tag or contains canonical Codex
+    verdict prose phrase. Here the last block contains
+    "Codex Audit:" which satisfies it.
+
     Empirical justification: ctvd#358's three repeated UNKNOWN
     verdicts (captured via the #196 instrumentation) were ALL
     this shape — stdout had review prose without a marker, stderr
@@ -139,7 +146,7 @@ def test_parse_falls_back_to_last_stderr_marker_with_multiple():
         stdout="exec progress without final marker",
         stderr="codex\nearly verdict (should be ignored)\n- [P1] old\n"
                "more progress\n"
-               "codex\nfinal verdict — All clear.\n",
+               "codex\nfinal verdict.\nCodex Audit: PASS\nAll clear.\n",
     )
     assert parsed.verdict == "PASS"
     # Anchored on the LAST stderr marker — the early one is discarded.
@@ -147,6 +154,58 @@ def test_parse_falls_back_to_last_stderr_marker_with_multiple():
     assert "early verdict" not in parsed.prose
     # The P1 from the early block must not be counted.
     assert parsed.p1_count == 0
+
+
+def test_parse_stderr_fallback_rejects_incidental_marker_without_verdict_signal():
+    """Codex P2 audit on cube-snap#198 → #199: stderr can contain
+    incidental column-0 `codex` log lines from CLI test/exec output
+    BEFORE the real final verdict block, then get truncated. The
+    last-marker-wins rule alone would anchor on the incidental
+    marker, find no P-tag in the following chatter, and AUTO-PASS
+    — silently marking an unaudited PR done.
+
+    Defense: after picking the last stderr marker, validate the
+    candidate block contains either a P-tag finding OR a canonical
+    Codex-verdict prose phrase. Plain chatter with no P-tag and no
+    recognized phrase → UNKNOWN."""
+    parsed = c.parse_codex_output(
+        stdout="exec progress without final marker",
+        stderr="codex\n"
+               "running tests in subprocess\n"
+               "  test passed\n"
+               "  test passed\n"
+               "<output truncated before real final verdict>\n",
+    )
+    assert parsed.verdict == "UNKNOWN"
+    assert "incidental log line" in parsed.prose
+
+
+def test_parse_stderr_fallback_accepts_pass_shape_via_canonical_phrase():
+    """A real Codex PASS verdict typically has no P-tags but DOES
+    contain canonical phrasing like "I did not find" or
+    "Codex Audit:". The validator must accept these so legitimate
+    stderr-routed PASSes still parse through (rather than getting
+    stuck at UNKNOWN forever waiting for P-tags PASSes never have)."""
+    parsed = c.parse_codex_output(
+        stdout="exec progress without final marker",
+        stderr="codex\nThe change applies cleanly. I did not find a "
+               "discrete issue that should block this patch.\n",
+    )
+    assert parsed.verdict == "PASS"
+    assert "I did not find" in parsed.prose
+
+
+def test_parse_stderr_fallback_accepts_block_with_p_tag():
+    """A real Codex BLOCKED verdict has P-tag findings. Validator
+    accepts these on the P-tag path."""
+    parsed = c.parse_codex_output(
+        stdout="exec progress without final marker",
+        stderr="codex\n"
+               "Issues found.\n"
+               "- [P2] something serious — file.py:1\n",
+    )
+    assert parsed.verdict == "BLOCKED"
+    assert parsed.p2_count == 1
 
 
 def test_parse_returns_unknown_when_no_marker_in_stdout_or_stderr():

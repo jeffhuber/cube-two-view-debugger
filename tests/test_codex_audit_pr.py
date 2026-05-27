@@ -122,6 +122,8 @@ def test_parse_falls_back_to_single_stderr_marker():
     )
     assert parsed.verdict == "BLOCKED"
     assert parsed.p2_count == 1
+    assert "raw stderr prose was withheld" in parsed.prose
+    assert "race in event queue" not in parsed.prose
 
 
 def test_parse_prefers_stdout_marker_over_stderr_noise():
@@ -167,8 +169,10 @@ def test_parse_falls_back_to_last_stderr_marker_with_multiple():
                "  When two writers race the queue drops events.\n",
     )
     assert parsed.verdict == "BLOCKED"  # P2 in last block → BLOCKED
-    # Anchored on the LAST stderr marker — the early one is discarded.
-    assert "final verdict" in parsed.prose
+    # The raw stderr tail is not published; stderr fallback is
+    # unauthenticated and can contain PR-controlled chatter.
+    assert "raw stderr prose was withheld" in parsed.prose
+    assert "final verdict" not in parsed.prose
     assert "early verdict" not in parsed.prose
     # The P3 from the early block must not be counted; P2 is.
     assert parsed.p3_count == 0
@@ -481,6 +485,8 @@ def test_parse_stderr_routed_blocked_verdict_with_p2_still_parses():
     parsed = c.parse_codex_output(stdout=stdout, stderr=stderr)
     assert parsed.verdict == "BLOCKED"
     assert parsed.p2_count == 1
+    assert "raw stderr prose was withheld" in parsed.prose
+    assert "race in event queue" not in parsed.prose
 
 
 def test_audit_pr_unknown_verdict_requeues_with_stale_trailer(monkeypatch):
@@ -1243,7 +1249,9 @@ def test_audit_pr_parses_stderr_fallback_with_strict_finding(monkeypatch):
     assert result.trailer == c.BLOCKED_TRAILER
     assert result.parsed is not None
     assert result.parsed.p2_count == 1
+    assert "raw stderr prose was withheld" in result.parsed.prose
     assert "Codex Audit: BLOCKED" in posted[0]["body"]
+    assert "race in event queue" not in posted[0]["body"]
 
 
 def test_audit_pr_stderr_fallback_without_p_tag_returns_unknown(monkeypatch):

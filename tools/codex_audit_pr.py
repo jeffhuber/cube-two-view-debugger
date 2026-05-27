@@ -400,6 +400,7 @@ def parse_codex_output(stdout: str, stderr: str = "") -> CodexVerdict:
     # indentation. Match exactly, allowing only trailing whitespace.
     lines = stdout.splitlines()
     marker_indices = _codex_marker_indices(lines)
+    suppress_raw_verdict_block = False
 
     if marker_indices:
         last_codex_idx = marker_indices[-1]
@@ -448,6 +449,7 @@ def parse_codex_output(stdout: str, stderr: str = "") -> CodexVerdict:
             if _looks_like_codex_verdict_block(candidate_block):
                 lines = stderr_lines
                 last_codex_idx = candidate_idx
+                suppress_raw_verdict_block = True
             else:
                 return CodexVerdict(
                     verdict="UNKNOWN",
@@ -510,10 +512,28 @@ def parse_codex_output(stdout: str, stderr: str = "") -> CodexVerdict:
 
     blocker_count = p_counts[0] + p_counts[1] + p_counts[2]
     verdict = "BLOCKED" if blocker_count > 0 else "PASS"
+    if suppress_raw_verdict_block:
+        # Codex round-8 P2 on ctvd#360: stderr fallback is not an
+        # authenticated final-review channel. Even a blocker-shaped
+        # tail could be PR-controlled command/test chatter after an
+        # incidental column-0 `codex` line. Treat blocker-shaped stderr
+        # as BLOCKED for safety, but never publish the raw stderr tail
+        # back to GitHub; raw output remains confined to the local
+        # 0o600 CLI-failure dump if deeper debugging is needed.
+        prose = (
+            "(stderr fallback found a blocker-shaped Codex verdict, "
+            "but raw stderr prose was withheld because stderr fallback "
+            "can be influenced by PR-controlled command output. Treat "
+            "as BLOCKED and rerun or inspect the local CLI-failure dump "
+            "for details.)"
+        )
+        findings = []
+    else:
+        prose = verdict_block
 
     return CodexVerdict(
         verdict=verdict,
-        prose=verdict_block,
+        prose=prose,
         p0_count=p_counts[0],
         p1_count=p_counts[1],
         p2_count=p_counts[2],

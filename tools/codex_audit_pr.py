@@ -229,6 +229,127 @@ def post_pr_comment(repo: str, pr_number: int, body: str, *, token: str) -> Dict
 _P_TAG_RE = re.compile(r"^\s*[-*]\s*\[P([0-3])\]")
 
 
+# Strict pattern for a real Codex finding bullet — much narrower
+# than the loose _P_TAG_RE we use for counting findings inside an
+# already-trusted block. Real Codex findings always emit:
+#   - [PX] <title> — <file path>:<line>[-<line>]
+#     <indented details>
+# i.e. a column-0 `- [PX]` bullet, followed by a title, an em-dash
+# (—), a file path containing `/` or `.` ending in `:N` or `:N-N`,
+# then a newline and an INDENTED continuation line. This is the
+# "structural finding shape" Codex's instructions require.
+#
+# Used only by the stderr-fallback validator. Stdout parsing keeps
+# using the loose _P_TAG_RE since stdout is the trusted channel.
+# Strict-shape regex restricted to BLOCKER-severity findings only
+# (P0/P1/P2). Codex round-6 P1 audit on cube-snap#198 3a03ff7 made
+# the key observation: stderr-fallback auto-PASS is the failure mode
+# we must close. A BLOCKED verdict is the *safe direction* — a false
+# block forces user review, while a false PASS silently marks an
+# unaudited PR done.
+#
+# The asymmetry: PR-controlled content can plant a `- [P3] ... — file:line`
+# bullet with indented continuation in arbitrary chatter (test fixtures,
+# diff hunks, source files). A faked P3 bullet would produce PASS
+# (blocker_count == 0). A faked P0/P1/P2 bullet would produce BLOCKED
+# — visible failure, user investigates. So restrict the validator to
+# blocker severities: stderr fallback only accepts blocks with at
+# least one P0/P1/P2 strict bullet. P3-only or no-finding blocks fall
+# to UNKNOWN and auto-requeue.
+#
+# Continuation uses `[ \t]+` (not `\s+`) to require actual horizontal
+# indentation — Codex round-5 P2 caught that `\s+` matches blank-line
+# newlines, letting `bullet + blank + unindented log` pass.
+_STRICT_FINDING_RE = re.compile(
+    r"^[-*][ \t]*\[P[012]\][^\n]*?[ \t]+—[ \t]+[/\w.][^\n]*?:\d+(?:-\d+)?[^\n]*\n[ \t]+\S",
+    re.MULTILINE,
+)
+
+
+def _looks_like_codex_verdict_block(block: str) -> bool:
+    """Validate a candidate verdict-block extracted from stderr-fallback.
+
+    Codex audited rounds 1–4 of cube-snap#198 established the
+    threat model: when stderr has multiple column-0 `codex` markers
+    and the last is incidental (from a `cat`/`pytest`/`git diff`
+    inside an exec block, followed by truncation), the chatter
+    after that marker is essentially arbitrary content from the PR
+    being reviewed — commit messages, test fixtures, source files,
+    quoted diffs. ANY pattern at the level of "contains X" can be
+    embedded in such content.
+
+    Defense: the validator requires the candidate block to have
+    ALL of:
+
+      1. A STRICT finding bullet at BLOCKER severity (P0/P1/P2)
+         matching the full Codex shape:
+         `- [PX] <title> — <file path>:<line>` followed by a
+         horizontally-indented continuation line ([ \\t]+, not
+         \\s+ — the latter matched blank-line newlines per
+         Codex round-5 P2). The em-dash + file path + colon
+         + line number + multi-line indentation is the
+         structural template Codex itself emits.
+
+      2. A substantive summary sentence (>= 40 chars,
+         non-bullet) BEFORE the first such finding. Real
+         verdicts always start with prose summarizing the
+         change.
+
+    Why P0/P1/P2 specifically (Codex round-6 P1): PR-controlled
+    chatter can plant a `- [P3] ... — file:line` bullet (e.g.,
+    test fixtures literally contain that pattern). A faked P3
+    bullet would parse to PASS via `blocker_count == 0` —
+    auto-PASS-from-chatter, the failure mode we keep closing.
+    A faked P0/P1/P2 bullet would parse to BLOCKED — visible
+    failure, user investigates, safe direction. We exploit this
+    asymmetry by only accepting BLOCKER findings from stderr
+    fallback. PASS verdicts via stderr fall to UNKNOWN and
+    auto-requeue.
+
+    A loose `- [PX] ...` line alone (no continuation, any
+    severity) was the round-4 P2 concern. A summary sentence
+    alone was the rounds 1–3 phrase-heuristic concern. A
+    P3-only block was the round-6 P1 concern. The conjunction
+    (strict P0/P1/P2 bullet + substantive summary, in that
+    order) is what arbitrary chatter cannot realistically
+    forge AND limits any successful forgery to the BLOCKED
+    direction.
+
+    Cost: real Codex PASS verdicts AND real BLOCKED verdicts
+    with only P3 findings (technically PASS-shaped by our
+    blocker_count) that arrive only via stderr fallback fall
+    to UNKNOWN. Rare; the auto-requeue trailer handles it
+    transparently — one extra audit pass, no visible failure.
+    Stderr routing is itself a CLI flake; the next attempt
+    usually emits via stdout normally.
+
+    Stdout-anchored blocks bypass this check entirely: the
+    column-0 `codex` line in stdout is the canonical
+    final-verdict anchor and has not been observed as a
+    false positive in practice.
+    """
+    # 1. Require a strict finding bullet somewhere in the block.
+    strict_match = _STRICT_FINDING_RE.search(block)
+    if not strict_match:
+        return False
+
+    # 2. Require a substantive summary line BEFORE the first strict
+    #    finding. "Substantive" = non-blank, non-bullet, >= 40
+    #    characters of trimmed text. Codex's real verdicts always
+    #    open with a one-sentence summary of the change.
+    finding_start_line = block[:strict_match.start()].count("\n")
+    for line in block.splitlines()[:finding_start_line]:
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if stripped.startswith(("- ", "* ")):
+            # Another bullet, not a prose summary.
+            continue
+        if len(stripped) >= 40:
+            return True
+    return False
+
+
 def _codex_marker_indices(lines: List[str]) -> List[int]:
     """Return indices of column-0 `codex` verdict markers."""
     return [i for i, line in enumerate(lines) if line.rstrip() == "codex"]
@@ -279,41 +400,83 @@ def parse_codex_output(stdout: str, stderr: str = "") -> CodexVerdict:
     # indentation. Match exactly, allowing only trailing whitespace.
     lines = stdout.splitlines()
     marker_indices = _codex_marker_indices(lines)
+    suppress_raw_verdict_block = False
 
     if marker_indices:
         last_codex_idx = marker_indices[-1]
     else:
         # Task #85 / PR #255: the Codex CLI can occasionally route the
         # final verdict marker to stderr even though the normal review
-        # channel is stdout. Keep the round-6 contamination guard by
-        # falling back to stderr ONLY when stdout has no markers and stderr
-        # has exactly one column-0 marker. Multiple stderr markers are more
-        # likely progress chatter / quoted commands than a trustworthy final
-        # verdict anchor.
+        # channel is stdout. Fall back to the LAST column-0 `codex`
+        # marker in stderr, applying the same last-marker-wins rule
+        # that already governs the stdout path.
+        #
+        # Updated by cube-snap#198 after the CLI-failure capture from
+        # #196 produced empirical evidence: ctvd#358's three repeated
+        # UNKNOWN verdicts (captured at
+        # ~/.cache/cube-agent-audits/cli-failures/) were ALL the same
+        # shape — stdout had the review prose with no `codex` marker,
+        # stderr had multiple column-0 `codex` markers, the last of
+        # which preceded the real final-verdict block. The previous
+        # "exactly one stderr marker" guard refused these as ambiguous
+        # progress chatter; the captured dumps showed they were
+        # genuine final verdicts.
+        #
+        # The column-0 exact-match filter (in _codex_marker_indices)
+        # is what makes the last-marker-wins rule safe for both
+        # streams: Codex's `exec` log lines and quoted-in-prose
+        # mentions of "codex" are not column-0 bare lines, so they
+        # don't create false markers.
         stderr_lines = stderr.splitlines()
         stderr_marker_indices = _codex_marker_indices(stderr_lines)
-        if len(stderr_marker_indices) == 1:
-            lines = stderr_lines
-            last_codex_idx = stderr_marker_indices[0]
-        else:
-            reason = "no codex final-verdict block found in output"
-            if len(stderr_marker_indices) > 1:
-                reason = (
-                    "no stdout final-verdict marker found, and stderr had "
-                    "multiple possible codex markers"
+        if stderr_marker_indices:
+            # Validate the candidate block before treating it as
+            # authoritative. See `_looks_like_codex_verdict_block`
+            # for the threat model and the strict-pattern defense
+            # (cube-snap#198 audit rounds 1-5): stderr can be
+            # truncated after an incidental column-0 `codex` line
+            # from `cat`/`pytest`/`git diff` chatter inside an
+            # exec block. The validator requires BOTH a substantive
+            # summary line AND a strict finding bullet (em-dash +
+            # file:line + indented continuation) before accepting
+            # the block. Bare P-tag bullets or PASS-shape phrases
+            # alone are insufficient — chatter can mimic either in
+            # isolation but not the conjunction in the right order.
+            candidate_idx = stderr_marker_indices[-1]
+            candidate_block = "\n".join(
+                stderr_lines[candidate_idx + 1:]
+            ).strip()
+            if _looks_like_codex_verdict_block(candidate_block):
+                lines = stderr_lines
+                last_codex_idx = candidate_idx
+                suppress_raw_verdict_block = True
+            else:
+                return CodexVerdict(
+                    verdict="UNKNOWN",
+                    prose="(stderr fallback found a column-0 `codex` "
+                          "marker but the following block lacks the "
+                          "strict Codex final-verdict shape — a "
+                          "substantive summary line plus a finding "
+                          "bullet with em-dash, file path, line "
+                          "number, and indented continuation. Likely "
+                          "an incidental log line ahead of a truncated "
+                          "or format-drifted real verdict; requeue "
+                          "and retry)",
                 )
-            # No final `codex` marker found. Codex round 3 of #234 — P2:
-            # the original code returned a PASS-shaped verdict here,
-            # which would silently mark unaudited PRs as
-            # `codex-audit-done` on format drift or empty/partial
-            # successful output. The safe behavior is to surface this as
-            # UNKNOWN so the orchestrator emits the `needs-codex-audit`
-            # (requeue) trailer instead of auto-PASS.
+        else:
+            # No final `codex` marker found in stdout OR stderr.
+            # Codex round 3 of #234 — P2: the original code returned a
+            # PASS-shaped verdict here, which would silently mark
+            # unaudited PRs as `codex-audit-done` on format drift or
+            # empty/partial successful output. The safe behavior is to
+            # surface this as UNKNOWN so the orchestrator emits the
+            # `needs-codex-audit` (requeue) trailer instead of auto-PASS.
             return CodexVerdict(
                 verdict="UNKNOWN",
-                prose=f"({reason} — the codex CLI may have produced no "
-                      "review or its output format may have drifted; "
-                      "requeue and retry)",
+                prose="(no codex final-verdict block found in stdout or "
+                      "stderr — the codex CLI may have produced no review "
+                      "or its output format may have drifted; requeue "
+                      "and retry)",
             )
 
     verdict_block = "\n".join(lines[last_codex_idx + 1 :]).strip()
@@ -349,10 +512,28 @@ def parse_codex_output(stdout: str, stderr: str = "") -> CodexVerdict:
 
     blocker_count = p_counts[0] + p_counts[1] + p_counts[2]
     verdict = "BLOCKED" if blocker_count > 0 else "PASS"
+    if suppress_raw_verdict_block:
+        # Codex round-8 P2 on ctvd#360: stderr fallback is not an
+        # authenticated final-review channel. Even a blocker-shaped
+        # tail could be PR-controlled command/test chatter after an
+        # incidental column-0 `codex` line. Treat blocker-shaped stderr
+        # as BLOCKED for safety, but never publish the raw stderr tail
+        # back to GitHub; raw output remains confined to the local
+        # 0o600 CLI-failure dump if deeper debugging is needed.
+        prose = (
+            "(stderr fallback found a blocker-shaped Codex verdict, "
+            "but raw stderr prose was withheld because stderr fallback "
+            "can be influenced by PR-controlled command output. Treat "
+            "as BLOCKED and rerun or inspect the local CLI-failure dump "
+            "for details.)"
+        )
+        findings = []
+    else:
+        prose = verdict_block
 
     return CodexVerdict(
         verdict=verdict,
-        prose=verdict_block,
+        prose=prose,
         p0_count=p_counts[0],
         p1_count=p_counts[1],
         p2_count=p_counts[2],

@@ -99,14 +99,31 @@ def test_parse_no_codex_marker_returns_unknown():
 
 def test_parse_falls_back_to_single_stderr_marker():
     """Task #85: occasionally the Codex CLI routes the final verdict
-    marker to stderr. If stdout has no marker and stderr has exactly one
-    column-0 marker, parse stderr as a narrow fallback."""
+    marker to stderr. If stdout has no marker and stderr has a
+    column-0 marker whose trailing block passes the strict validator
+    (substantive summary >= 40 chars + strict P0/P1/P2 finding
+    bullet with em-dash + file:line + indented continuation),
+    parse stderr as a fallback.
+
+    The validator restricts to P0/P1/P2 only (Codex round-6 P1) to
+    prevent PR-controlled chatter from manufacturing PASS-shape
+    blocks with faked P3 bullets. Real BLOCKED stderr verdicts
+    still parse; real PASS stderr verdicts and P3-only-stderr
+    verdicts now fall to UNKNOWN and auto-requeue."""
     parsed = c.parse_codex_output(
         stdout="exec progress without final marker",
-        stderr="progress chatter\ncodex\nAll clear from stderr.\n",
+        stderr="progress chatter\ncodex\n"
+               "The change introduces a synchronization gap that "
+               "drops events under concurrent writers.\n"
+               "\n"
+               "- [P2] race in event queue — src/queue.py:42\n"
+               "  When two writers race, the second sees an empty "
+               "queue and exits early.\n",
     )
-    assert parsed.verdict == "PASS"
-    assert "All clear from stderr" in parsed.prose
+    assert parsed.verdict == "BLOCKED"
+    assert parsed.p2_count == 1
+    assert "raw stderr prose was withheld" in parsed.prose
+    assert "race in event queue" not in parsed.prose
 
 
 def test_parse_prefers_stdout_marker_over_stderr_noise():
@@ -121,15 +138,355 @@ def test_parse_prefers_stdout_marker_over_stderr_noise():
     assert "stderr noise" not in parsed.prose
 
 
-def test_parse_multiple_stderr_markers_remains_unknown():
-    """If stdout has no marker and stderr has multiple possible markers,
-    fail closed rather than risk anchoring on progress chatter."""
+def test_parse_falls_back_to_last_stderr_marker_with_multiple():
+    """cube-snap#198: when stdout has zero markers AND stderr has
+    multiple column-0 `codex` markers, anchor on the LAST one —
+    same last-marker-wins rule that already governs the stdout
+    path. The column-0 exact-match filter in _codex_marker_indices
+    is what makes this safe for both streams: Codex's `exec` log
+    lines and quoted-in-prose mentions are not column-0 bare
+    lines, so they don't create false markers.
+
+    The chosen block must additionally pass the strict validator
+    (substantive summary line + strict finding bullet with em-dash,
+    file:line, indented continuation). Here the last block has
+    both, so it satisfies the validator.
+
+    Empirical justification: ctvd#358's three repeated UNKNOWN
+    verdicts (captured via the #196 instrumentation) were ALL
+    this shape — stdout had review prose without a marker, stderr
+    had multiple column-0 markers, the LAST one preceded the
+    real final-verdict block. Test now uses a P2 finding (the
+    validator only accepts P0/P1/P2 per Codex round-6 P1)."""
     parsed = c.parse_codex_output(
         stdout="exec progress without final marker",
-        stderr="codex\nquoted command\ncodex\nmaybe verdict\n",
+        stderr="codex\nearly verdict (should be ignored)\n- [P3] old\n"
+               "more progress\n"
+               "codex\nfinal verdict — the patch has a real "
+               "concurrency issue in the modified write path.\n"
+               "\n"
+               "- [P2] race in event queue — src/queue.py:42\n"
+               "  When two writers race the queue drops events.\n",
+    )
+    assert parsed.verdict == "BLOCKED"  # P2 in last block → BLOCKED
+    # The raw stderr tail is not published; stderr fallback is
+    # unauthenticated and can contain PR-controlled chatter.
+    assert "raw stderr prose was withheld" in parsed.prose
+    assert "final verdict" not in parsed.prose
+    assert "early verdict" not in parsed.prose
+    # The P3 from the early block must not be counted; P2 is.
+    assert parsed.p3_count == 0
+    assert parsed.p2_count == 1
+
+
+def test_parse_stderr_fallback_rejects_incidental_marker_without_verdict_signal():
+    """Codex P2 audit on cube-snap#198 → #199: stderr can contain
+    incidental column-0 `codex` log lines from CLI test/exec output
+    BEFORE the real final verdict block, then get truncated. The
+    last-marker-wins rule alone would anchor on the incidental
+    marker, find no P-tag in the following chatter, and AUTO-PASS
+    — silently marking an unaudited PR done.
+
+    Defense: after picking the last stderr marker, the strict
+    validator requires substantive summary + finding bullet
+    (em-dash + file:line + indented continuation). Plain chatter
+    with neither → UNKNOWN."""
+    parsed = c.parse_codex_output(
+        stdout="exec progress without final marker",
+        stderr="codex\n"
+               "running tests in subprocess\n"
+               "  test passed\n"
+               "  test passed\n"
+               "<output truncated before real final verdict>\n",
     )
     assert parsed.verdict == "UNKNOWN"
-    assert "multiple possible codex markers" in parsed.prose
+    assert "strict Codex final-verdict shape" in parsed.prose
+
+
+def test_parse_stderr_fallback_rejects_pass_shape_prose_without_p_tag():
+    """Codex round-3 P1 audit on cube-snap#198 f52d089: any
+    substring-based phrase heuristic on free-form text is
+    fundamentally too leaky — the codex review subprocess
+    regularly cats files, runs tests, and prints diffs whose
+    content can contain arbitrary user-provided strings (including
+    phrases like "without introducing" or "I did not find" embedded
+    in commit messages, test fixtures, or quoted source).
+
+    The defense: the stderr-fallback validator requires a structural
+    Codex finding shape: substantive summary plus a strict finding
+    bullet with file/line context and an indented detail line.
+    PASS-shape prose alone — even with "canonical" Codex phrasing —
+    is no longer sufficient.
+
+    Cost: real Codex PASS verdicts that arrive *only* via the
+    stderr fallback AND have zero P-tag findings fall to UNKNOWN,
+    auto-requeue, and the next attempt usually succeeds with the
+    verdict via stdout. Rare; acceptable in exchange for closing
+    the auto-PASS-from-chatter regression."""
+    parsed = c.parse_codex_output(
+        stdout="exec progress without final marker",
+        stderr="codex\nThe change applies cleanly. I did not find a "
+               "discrete issue that should block this patch. The "
+               "implementation looks correct without introducing "
+               "any clear correctness issue.\n",
+    )
+    # Despite multiple canonical PASS phrases ("I did not find",
+    # "without introducing", "no discrete issue", "no clear
+    # correctness"), no P-tag → UNKNOWN. We don't trust prose-only.
+    assert parsed.verdict == "UNKNOWN"
+    assert "strict Codex final-verdict shape" in parsed.prose
+
+
+def test_parse_stderr_fallback_rejects_block_with_only_generic_words():
+    """Codex round-2 P2 audit on cube-snap#198: chatter without the
+    full summary-plus-strict-finding shape stays UNKNOWN. Generic
+    log/test wording must not satisfy the validator."""
+    parsed = c.parse_codex_output(
+        stdout="exec progress without final marker",
+        stderr="codex\n"
+               "Findings: the test exercise turned up nothing of note\n"
+               "Review comment posted on the related issue earlier\n"
+               "<truncated before real final verdict>\n",
+    )
+    assert parsed.verdict == "UNKNOWN"
+    assert "strict Codex final-verdict shape" in parsed.prose
+
+
+def test_parse_stderr_fallback_rejects_p_tag_without_continuation_or_summary():
+    """Codex round-4 P2 audit on cube-snap#198: a bare P-tag-looking
+    markdown bullet alone is not enough, because command/test
+    output can print `- [P3] ...` too. The strict validator
+    requires the full Codex finding shape (em-dash + file:line +
+    indented continuation) AND a substantive summary line."""
+    parsed = c.parse_codex_output(
+        stdout="exec progress without final marker",
+        stderr="codex\n"
+               "ordinary command output\n"
+               "- [P3] fake non-blocking bullet — generated.md:1\n",
+    )
+    # No indented continuation after the bullet → strict regex fails.
+    assert parsed.verdict == "UNKNOWN"
+    assert "strict Codex final-verdict shape" in parsed.prose
+
+
+def test_parse_stderr_fallback_rejects_p3_only_strict_block():
+    """Codex round-6 P1 audit on cube-snap#198 3a03ff7: a strict
+    Codex-shaped block (summary + bullet + em-dash + file:line +
+    indented continuation) with ONLY P3 findings would still parse
+    to PASS via `blocker_count == 0`. PR-controlled chatter can
+    plant such a block (test fixtures literally contain P3 bullets
+    with the full shape). Auto-PASS-from-chatter regression.
+
+    Defense: validator restricts the strict bullet regex to
+    blocker severities (P0/P1/P2). A faked P0/P1/P2 in chatter
+    would BLOCK, which is the safe direction. P3-only stderr
+    fallback now → UNKNOWN."""
+    parsed = c.parse_codex_output(
+        stdout="exec progress without final marker",
+        stderr="codex\n"
+               "The summary line here is intentionally substantive "
+               "and well over forty characters to pass the summary "
+               "check.\n"
+               "\n"
+               "- [P3] perfectly-shaped P3 bullet — generated.md:42\n"
+               "  with a properly indented continuation line\n",
+    )
+    # All elements satisfied EXCEPT severity is P3 → strict regex
+    # doesn't match (it requires [P012] now) → UNKNOWN.
+    assert parsed.verdict == "UNKNOWN"
+    assert "strict Codex final-verdict shape" in parsed.prose
+
+
+def test_parse_stderr_fallback_rejects_blank_line_pseudo_continuation():
+    """Codex round-5 P2 audit on cube-snap#198 a788b68: the earlier
+    strict-shape regex used `\\n\\s+\\S` for the continuation, but
+    `\\s` matches newlines too — so a bullet + blank line +
+    unindented log line would satisfy the pattern (the `\\s+` would
+    consume blank-line newlines and `\\S` would match the first
+    non-whitespace char on the unindented log line).
+
+    Defense: continuation now uses `[ \\t]+` — horizontal whitespace
+    only, no newlines. The continuation must be on the IMMEDIATE
+    next line AND must actually be indented.
+
+    Scenario: substantive summary, a bare bullet, blank line, then
+    an unindented log line — must be UNKNOWN."""
+    parsed = c.parse_codex_output(
+        stdout="exec progress without final marker",
+        stderr="codex\n"
+               "The summary line here is intentionally substantive "
+               "and well over forty characters so it passes the "
+               "summary check on its own.\n"
+               "- [P3] fake bullet without real continuation — generated.md:1\n"
+               "\n"                            # blank line
+               "another column-0 log line\n",  # unindented
+    )
+    # Strict regex must REJECT because the continuation is blank +
+    # unindented, not indented spaces/tabs.
+    assert parsed.verdict == "UNKNOWN"
+    assert "strict Codex final-verdict shape" in parsed.prose
+
+
+def test_parse_stderr_fallback_rejects_multiline_finding_header():
+    """Codex round-7 P2 audit on ctvd#360 60bf318: the earlier
+    strict-shape regex used `\\s—\\s` around the em dash. `\\s`
+    can match newlines, so a bullet line followed by an em-dash
+    file/line line could satisfy the validator even though the
+    documented Codex finding header must be one physical line.
+
+    Defense: em-dash separators now use `[ \\t]+` on both sides,
+    so the title, em dash, file path, and line number must stay on
+    the same line."""
+    parsed = c.parse_codex_output(
+        stdout="exec progress without final marker",
+        stderr="codex\n"
+               "The summary line here is intentionally substantive "
+               "and well over forty characters so it passes the "
+               "summary check on its own.\n"
+               "- [P2] fake bullet split across lines\n"
+               "— generated.md:1\n"
+               "  with an indented continuation line\n",
+    )
+    assert parsed.verdict == "UNKNOWN"
+    assert "strict Codex final-verdict shape" in parsed.prose
+
+
+def test_parse_stderr_fallback_rejects_strict_finding_without_summary():
+    """Even a strictly-shaped finding bullet (em-dash + file:line +
+    indented continuation) is not enough on its own. Real Codex
+    verdicts open with a substantive summary sentence. Without
+    the conjunction (summary AND finding) the candidate block is
+    treated as chatter that happens to look bullet-shaped."""
+    parsed = c.parse_codex_output(
+        stdout="exec progress without final marker",
+        stderr="codex\n"
+               # No summary; jump straight into a strict bullet:
+               "- [P3] fake non-blocking bullet — generated.md:1\n"
+               "  with the indented continuation a real finding has\n",
+    )
+    assert parsed.verdict == "UNKNOWN"
+    assert "strict Codex final-verdict shape" in parsed.prose
+
+
+def test_parse_stderr_fallback_rejects_summary_without_strict_finding():
+    """A substantive summary line alone (no strict finding bullet)
+    is also not enough — random log/test output regularly produces
+    sentences > 40 chars. The summary requirement is necessary but
+    not sufficient."""
+    parsed = c.parse_codex_output(
+        stdout="exec progress without final marker",
+        stderr="codex\n"
+               "The change reorganizes the helper without introducing "
+               "any clear correctness issue in the modified paths.\n"
+               "I did not find a discrete blocking issue.\n",
+    )
+    # Has multiple PASS-shape sentences, no strict bullet → UNKNOWN.
+    assert parsed.verdict == "UNKNOWN"
+    assert "strict Codex final-verdict shape" in parsed.prose
+
+
+def test_parse_stderr_fallback_accepts_block_with_strict_finding():
+    """A real Codex BLOCKED verdict has a substantive summary plus
+    a strict finding bullet (em-dash, file:line, indented
+    continuation). Validator accepts that structural shape."""
+    parsed = c.parse_codex_output(
+        stdout="exec progress without final marker",
+        stderr="codex\n"
+               "The patch leaves a synchronization gap that can "
+               "drop events under load.\n"
+               "\n"
+               "- [P2] race in event queue drains — src/queue.py:42\n"
+               "  When two writers race, the second one sees an "
+               "empty queue and exits early.\n",
+    )
+    assert parsed.verdict == "BLOCKED"
+    assert parsed.p2_count == 1
+
+
+def test_parse_returns_unknown_when_no_marker_in_stdout_or_stderr():
+    """The safety floor stays: if neither stream has any column-0
+    `codex` marker, the parser must surface UNKNOWN so the
+    orchestrator requeues. The previous "exactly one stderr marker"
+    rule was the wrong place for the floor — the real floor is "at
+    least one marker somewhere."""
+    parsed = c.parse_codex_output(
+        stdout="exec progress without any marker",
+        stderr="more progress, also no marker",
+    )
+    assert parsed.verdict == "UNKNOWN"
+    assert "stdout or stderr" in parsed.prose
+
+
+def test_parse_stderr_routed_p3_only_verdict_now_falls_to_unknown():
+    """Empirical scenario from ctvd#358's captured CLI-failure dumps
+    (round 3 at ~/.cache/cube-agent-audits/cli-failures/...9cd92132...):
+    Codex CLI routed the verdict to stderr, the verdict was P3-only
+    (PASS-shaped via blocker_count == 0).
+
+    Pre-#198: refused with "multiple possible codex markers" → UNKNOWN.
+    Post-#198 round-5: would have parsed as PASS (auto-PASS-from-stderr).
+    Post-#198 round-6 (Codex P1): P3-only stderr verdicts intentionally
+    fall to UNKNOWN. We can't tell a real P3-only stderr verdict apart
+    from PR-controlled chatter that planted a P3 bullet. The cost is
+    that the rare real ctvd#358-shape case now needs a manual Codex
+    follow-up (same as it does today, pre-#198) — but we close the
+    auto-PASS-from-chatter regression.
+
+    Real BLOCKED stderr verdicts (P0/P1/P2) DO parse — see the
+    `..._with_strict_finding` test above. Only P3-only stderr
+    falls to UNKNOWN."""
+    stdout = "The new dump helper generally works.\n"
+    stderr = (
+        "exec\n"
+        "/bin/bash -lc 'nl -ba tools/codex_audit_pr.py' in /tmp/wt\n"
+        " succeeded in 0ms:\n"
+        "  1156\t    if result.verdict in (\"STALE\", \"UNKNOWN\"):\n"
+        "  1157\t        return 2\n"
+        "codex\n"
+        "another exec line that has 'codex' embedded but not column-0\n"
+        "exec\n"
+        "  more output\n"
+        "codex\n"
+        "The new dump helper generally works, but its self-described "
+        "byte counts are inaccurate for Unicode output.\n"
+        "\n"
+        "- [P3] Count output bytes rather than characters — tools/codex_audit_pr.py:123\n"
+        "  `len(stdout)` counts characters, not UTF-8 bytes; the "
+        "header under-reports on multi-byte content.\n"
+    )
+    parsed = c.parse_codex_output(stdout=stdout, stderr=stderr)
+    # P3-only stderr fallback rejected per Codex round-6 P1 threat
+    # model — auto-PASS from stderr is the failure mode we close.
+    assert parsed.verdict == "UNKNOWN"
+    assert "strict Codex final-verdict shape" in parsed.prose
+
+
+def test_parse_stderr_routed_blocked_verdict_with_p2_still_parses():
+    """Counterpart to the above: a real BLOCKED verdict in stderr
+    (P2 bullet) DOES still parse through. Stderr fallback is
+    safe to accept for BLOCKER findings because a false BLOCKED
+    is the safe direction (visible failure, user investigates)
+    vs. auto-PASS-from-chatter which silently marks unaudited
+    PRs done."""
+    stdout = "exec progress without final marker"
+    stderr = (
+        "exec\n"
+        "/bin/bash -lc 'cat src/queue.py' in /tmp/wt\n"
+        " succeeded in 0ms:\n"
+        "  1	import asyncio\n"
+        "codex\n"
+        "The patch introduces a synchronization gap that drops "
+        "events under concurrent writers — see the queue.put path.\n"
+        "\n"
+        "- [P2] race in event queue — src/queue.py:42\n"
+        "  When two writers race, the second sees an empty queue\n"
+        "  and exits early.\n"
+    )
+    parsed = c.parse_codex_output(stdout=stdout, stderr=stderr)
+    assert parsed.verdict == "BLOCKED"
+    assert parsed.p2_count == 1
+    assert "raw stderr prose was withheld" in parsed.prose
+    assert "race in event queue" not in parsed.prose
 
 
 def test_audit_pr_unknown_verdict_requeues_with_stale_trailer(monkeypatch):
@@ -845,17 +1202,38 @@ def test_audit_pr_blocked_path(monkeypatch):
     assert "Codex Audit: BLOCKED" in posted[0]["body"]
 
 
-def test_audit_pr_parses_stderr_fallback(monkeypatch):
-    """End-to-end guard for task #85: audit_pr must pass stderr into the
-    parser so a single-marker stderr verdict can become PASS/BLOCKED
-    instead of UNKNOWN/requeue."""
+def test_audit_pr_parses_stderr_fallback_with_strict_finding(monkeypatch):
+    """End-to-end guard for task #85 (post-cube-snap#198 tightening):
+    audit_pr passes stderr into the parser so a stderr-routed verdict
+    WITH the strict Codex final-verdict shape (substantive summary
+    line + P0/P1/P2 finding bullet with em-dash, file:line, indented
+    continuation) can still become BLOCKED instead of UNKNOWN/requeue.
+
+    The validator restricts to P0/P1/P2 only (Codex round-6 P1) so
+    that auto-PASS from PR-controlled chatter is impossible; a false
+    BLOCKED is the safe direction."""
     pr_meta = _fake_pr(head_sha="dddd44445555")
     posted: List[Dict[str, Any]] = []
+    # Build a synthetic stderr with a real BLOCKED-shape verdict
+    # (P2 finding) that satisfies the strict validator: summary
+    # >= 40 chars + finding bullet with em-dash + file:line +
+    # indented continuation.
+    stderr_with_strict_finding = (
+        "exec\n"
+        "/bin/bash -lc \"echo something\" in /tmp\n"
+        " succeeded in 0ms\n"
+        "codex\n"
+        "The change introduces a synchronization gap that "
+        "drops events under concurrent writers.\n"
+        "\n"
+        "- [P2] race in event queue — src/queue.py:42\n"
+        "  When two writers race the queue drops events.\n"
+    )
     _install_audit_mocks(
         monkeypatch,
         pr_meta=pr_meta,
         codex_stdout="exec progress without final marker",
-        codex_stderr=REAL_PASS_OUTPUT,
+        codex_stderr=stderr_with_strict_finding,
         posted_records=posted,
     )
     config = c.AuditConfig(
@@ -867,11 +1245,50 @@ def test_audit_pr_parses_stderr_fallback(monkeypatch):
         result = c.audit_pr(config, "jeffhuber/cube-two-view-debugger", 17)
     finally:
         Path("/tmp/fake-repo").rmdir()
-    assert result.verdict == "PASS"
-    assert result.trailer == c.DONE_TRAILER
+    assert result.verdict == "BLOCKED"  # P2 → BLOCKED
+    assert result.trailer == c.BLOCKED_TRAILER
     assert result.parsed is not None
-    assert result.parsed.prose.startswith("The changes add")
-    assert "Codex Audit: PASS" in posted[0]["body"]
+    assert result.parsed.p2_count == 1
+    assert "raw stderr prose was withheld" in result.parsed.prose
+    assert "Codex Audit: BLOCKED" in posted[0]["body"]
+    assert "race in event queue" not in posted[0]["body"]
+
+
+def test_audit_pr_stderr_fallback_without_p_tag_returns_unknown(monkeypatch):
+    """Documents the intentional cost of cube-snap#199's
+    structural validator: a REAL Codex PASS verdict (with no
+    review header plus P-tag findings, since PASS verdicts often
+    have none) routed ONLY through stderr now falls to UNKNOWN.
+    This is the acceptable trade for closing the auto-PASS-from-chatter
+    regression — stderr routing is a CLI flake, the next attempt
+    usually emits to stdout normally, and UNKNOWN auto-requeues."""
+    pr_meta = _fake_pr(head_sha="eeee55556666")
+    posted: List[Dict[str, Any]] = []
+    _install_audit_mocks(
+        monkeypatch,
+        pr_meta=pr_meta,
+        codex_stdout="exec progress without final marker",
+        codex_stderr=REAL_PASS_OUTPUT,  # zero P-tags
+        posted_records=posted,
+    )
+    config = c.AuditConfig(
+        github_token="test",
+        repo_paths={"jeffhuber/cube-two-view-debugger": Path("/tmp/fake-repo")},
+    )
+    Path("/tmp/fake-repo").mkdir(exist_ok=True)
+    try:
+        result = c.audit_pr(config, "jeffhuber/cube-two-view-debugger", 17)
+    finally:
+        Path("/tmp/fake-repo").rmdir()
+    assert result.verdict == "UNKNOWN"
+    assert result.trailer == c.STALE_TRAILER
+    # The posted comment is the canonical "Could not parse" UNKNOWN
+    # template (format_comment uses a fixed body for UNKNOWN, not
+    # the parser's raw prose string).
+    assert "Could not parse a Codex verdict" in posted[0]["body"]
+    # The parser-side reason explains why the stderr fallback was
+    # refused — useful when inspecting the AuditResult itself.
+    assert "strict Codex final-verdict shape" in result.parsed.prose
 
 
 def test_audit_pr_stale_head(monkeypatch):

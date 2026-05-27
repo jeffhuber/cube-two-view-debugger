@@ -111,3 +111,46 @@ def test_set_11_row_has_expected_failure_shape():
     # The repairChanges overcount finding: reported=6, true delta=2
     assert set11["broadLegal"]["reportedRepairChanges"] == 6
     assert set11["broadLegal"]["trueStateDeltaFromCanonical"]["count"] == 2
+
+
+def test_labeled_corpus_fixture_pins_combined_corpus_findings():
+    """Labeled corpus sweep: 46 rows, 3 cc-failures (14, 65, 69), ALL split-cubie.
+
+    Combined with the fresh-corpus fixture (Set 11 in-image, Set 59 parity),
+    the headline becomes: 4/5 cc-failures caught by whole-cube cubie consistency,
+    3/5 caught by split-cubie specifically. This pins the corrected verdict
+    that the original draft report missed by only analyzing the fresh corpus.
+    """
+    fixture_path = Path(__file__).parent / "fixtures" / "split_cubie_consistency_labeled_corpus.json"
+    payload = json.loads(fixture_path.read_text())
+    assert payload["summary"]["rowCount"] == 46
+    # All 3 cc-failures are in split cubies (no in-image, no parity-only)
+    assert sorted(payload["summary"]["withSplitCubieInconsistency"]) == ["14", "65", "69"]
+    assert payload["summary"]["withInImageCubieInconsistencyOnly"] == []
+    assert payload["summary"]["withNoCubieInconsistency"] == []
+
+
+def test_state_delta_gate_cleanly_separates_rescues_from_danger():
+    """The corrected state_delta finding: gate of state_delta <= 4 admits
+    rescue rows (65, 69, 11) and rejects the danger row (14). This is the
+    structural argument for switching the gate semantic away from
+    repairChanges-against-raw-observations."""
+    labeled = json.loads(
+        (Path(__file__).parent / "fixtures" / "split_cubie_consistency_labeled_corpus.json").read_text()
+    )
+    fresh = json.loads(
+        (Path(__file__).parent / "fixtures" / "split_cubie_consistency_summary.json").read_text()
+    )
+
+    rows_by_set = {r["setId"]: r for r in labeled["rows"]}
+    rows_by_set.update({r["setId"]: r for r in fresh["rows"]})
+
+    # Set 14 (danger, must reject) has state_delta > 4
+    assert rows_by_set["14"]["broadLegal"]["trueStateDeltaFromCanonical"]["count"] == 6
+
+    # Rescue rows (must admit) all have state_delta <= 4
+    for setid in ("65", "69", "11"):
+        assert rows_by_set[setid]["broadLegal"]["trueStateDeltaFromCanonical"]["count"] <= 4, (
+            f"Set {setid} state_delta {rows_by_set[setid]['broadLegal']['trueStateDeltaFromCanonical']['count']}"
+            f" should be <= 4 for a state_delta gate to admit it"
+        )

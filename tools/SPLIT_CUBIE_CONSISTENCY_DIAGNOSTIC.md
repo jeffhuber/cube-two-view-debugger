@@ -5,6 +5,15 @@ discussed in `COORDINATION.md`. Asks whether the cross-image
 cubie-validity constraint catches recognition failures earlier or
 more locally than the existing legal-repair layer.
 
+> ⚠ **Verdict update (post-review)**: an earlier draft of this
+> report concluded "yield zero, don't build Phase 2" based on the
+> 20-row fresh corpus alone. That was wrong — sample of N=2 cc-failures
+> drew an over-strong conclusion. Re-running against the 46-pair
+> labeled corpus surfaced 3/3 cc-failure rows with split-cubie
+> inconsistency. Combined corpus is 4/5 (80%) caught by whole-cube
+> per-cubie consistency, 3/5 (60%) caught by split-cubie specifically.
+> Revised verdict + state-delta gate finding below.
+
 ## What's a split cubie?
 
 Photo A captures U+R+F faces. Photo B (after a 180° flip) captures
@@ -21,135 +30,95 @@ For each split cubie, the observed colors on its stickers must
 form a real cubie face-set (one of the 8 valid corner triples or
 12 valid edge pairs). If not, at least one sticker is misclassified.
 
-## Phase 1 question
+## The corrected empirical headline
 
-> When `canonical_count_repaired` fails to reach the GT state, is
-> the failure visible in split-cubie inconsistency? Could a
-> targeted re-classification step (Phase 2 of D) recover the row?
+Combined across both corpora (66 rows total — 46 labeled + 20 fresh):
 
-## Headline finding
+| Corpus | Rows | cc-failures | Caught by split-cubie | Caught by whole-cube |
+|---|---:|---:|---:|---:|
+| Labeled (46) | 46 | 3 | **3** (Sets 14, 65, 69) | **3** (same) |
+| Fresh (20) | 20 | 2 | 0 | 1 (Set 11) |
+| **Combined** | **66** | **5** | **3 (60%)** | **4 (80%)** |
 
-On the 20 fresh-GT rows from #343 / #344:
+**Whole-cube per-cubie consistency catches 4/5 cc-failure cases on
+the current 66-row corpus.** Split-cubie specifically catches 3/5.
+The 1 case neither catches (Set 59) is a parity/twist failure
+already handled in production by pair-threshold search (#340).
 
-| Failure mode | Rows |
-|---|---|
-| `canonical_count_repaired` already exact (no failure) | 18 / 20 |
-| `cc` fails with split-cubie inconsistency | **0 / 20** |
-| `cc` fails with in-image-only cubie inconsistency | 1 / 20 (Set 11) |
-| `cc` fails with NO cubie inconsistency (parity/twist) | 1 / 20 (Set 59) |
+## Per-row evidence
 
-**Split-cubie consistency would catch 0 of the 2 fresh-corpus
-failures.** The lever exists as an architectural primitive, but its
-empirical yield on the current corpus is zero.
+| Set | corpus | cc_ham | inval_cubies | which | bl_ham | reported_changes | **state_delta(cc→bl)** |
+|---:|---|---:|---:|---|---:|---:|---:|
+| 14 | labeled (DANGER) | 4 | 2 split | UBR, DR | 4 | 5 | **6** |
+| 65 | labeled (rescue) | 2 | 2 split | UBR, DRB | 0 | 4 | **2** |
+| 69 | labeled (rescue) | 3 | 2 split | UFL, UL | 0 | 1 | **3** |
+| 11 | fresh (rescue) | 2 | 2 in-image | URF, DBL | 0 | 6 | **2** |
+| 59 | fresh (parity) | 2 | 0 | — | 0 | 5 | 2 |
 
-## Set 11 — in-image cubie inconsistency
+## The `repairChanges` semantic surprise → state_delta gate finding
 
-Recovered by broad-legal as the GT-exact state. Per-cubie check on
-`canonical_count_repaired`:
+The legal-repair helper reports `repairChanges` against RAW
+observations (pre-count-repair), not against the count-repaired
+baseline. This causes systematic mismatches between
+"reported_changes" and "true state_delta from cc → bl":
 
-- ✗ **URF** corner (in-image, all in photo A): observed `(U, R, D)`,
-  not a valid corner triple. The D should be F.
-- ✗ **DBL** corner (in-image, all in photo B): observed `(B, F, R)`,
-  not a valid corner triple. The F should be D, etc.
-- ✓ All 6 split corners, all 6 split edges, and all 6 in-image
-  edges are consistent.
+- Set 65: reported 4, true delta 2 (overcount)
+- Set 69: reported 1, true delta 3 (**undercount**)
+- Set 11: reported 6, true delta 2 (overcount)
+- Set 14: reported 5, true delta 6 (slight undercount, but still
+  the largest delta among these 4)
 
-So Set 11's two failed cubies are both **non-split**. The split-cubie
-diagnostic, by construction, only checks the 12 split cubies — it
-doesn't see URF or DBL. **Whole-cube cubie consistency catches Set 11;
-split-cubie consistency does not.**
+**A gate of `cost <= 20.0 AND state_delta <= 4` cleanly separates
+rescue from danger on the current corpus:**
 
-Whole-cube cubie validity is a strict superset of split-cubie validity.
-If we're considering Phase 2, the right primitive is **whole-cube
-per-cubie consistency**, not split-cubie consistency. The "split"
-distinction adds nothing here.
+| Row | state_delta | Verdict under new gate |
+|---:|---:|---|
+| 14 (DANGER) | 6 | rejected (delta > 4) ✓ |
+| 65 (rescue) | 2 | admitted ✓ |
+| 69 (rescue) | 3 | admitted ✓ |
+| 11 (rescue) | 2 | admitted ✓ |
 
-## Set 59 — parity/twist failure
+This is a strictly cleaner gate than #345's recommended "bump
+`GUARDED_BROAD_MAX_REPAIR_CHANGES` from 4 to 6". The new gate:
 
-`canonical_count_repaired` hamming = 2, **but every cubie is
-internally consistent.** The two mismatched stickers swap with each
-other in a way that keeps each cubie's colorset valid; the cube
-state is invalid for parity-or-orientation reasons, not for
-local-cubie reasons.
+1. Measures what it's supposed to measure (divergence of broad-legal
+   from the trusted recommended path).
+2. Admits Set 11 without any threshold relaxation.
+3. Still rejects Set 14 by the same margin (6 vs 4 → rejected by 2).
+4. Doesn't depend on the legal-repair helper's accounting quirk.
 
-Set 59 is recovered in production today by the **pair-threshold
-search** (#340) — picking different A/B mask thresholds produces
-rectified samples where the count-repair finds the GT-exact state
-without invoking legal repair. So Set 59 isn't a residual gap; it's
-proof that cross-image *evidence* (alternative threshold pairs) is
-already handling this failure mode in production. No additional
-constraint layer needed.
+**Recommendation: replace #345's "bump changes ceiling" with
+"switch the gate to state_delta_from_canonical".** Codex owns the
+gate code; Codex should evaluate this before landing either tune.
 
-## The `repairChanges` semantic surprise
+## Verdict on D Phase 2 (revised)
 
-While running this diagnostic I hit a side-finding worth recording.
+**Still don't build Phase 2 yet, but for a different reason than
+the original draft.**
 
-Set 11's broad-legal repair reports `repairChanges = 6`. But the
-**true state delta** from `canonical_count_repaired` → `broad_legal_repaired`
-is **2 stickers** (indices 20 and 53, i.e. F[0,2] and B[2,2]).
+- Original draft (wrong): "empirical yield is zero on the 20 fresh
+  rows, so don't build it."
+- Corrected (right): empirical yield on the combined 66-row corpus
+  is real (4/5 cc-failures have cubie inconsistency). But **the
+  state-delta gate already admits all 4 of those rows via the
+  existing broad-legal path**. So Phase 2's marginal value over
+  "gate-tune alone" is zero on the current corpus.
 
-The 6 vs 2 gap comes from how the legal-repair helper accumulates
-`changes`. It sums per-piece changes against raw observations
-(before count repair), not against the count-repaired baseline.
-For URF (3 stickers), if the legal helper picks a different
-corner color triple than the raw observation, every sticker in
-that corner counts as a "change" — even if 2 of those 3 happened
-to already match the count-repaired state.
+If the state-delta gate is adopted, Phase 2 (targeted re-classification
+guided by per-cubie inconsistency) becomes redundant for these
+specific failure modes. Phase 2's architectural value re-emerges
+when failure modes appear that the gate alone can't reach (e.g.,
+rows where broad-legal can't produce ANY valid cube from raw
+observations, but a targeted re-classification would).
 
-**Implication for #345's guard-tune recommendation:** the "right"
-gate semantic is arguably `state_delta_from_canonical_count <= N`
-(directly the hamming distance between recommended and proposed
-states) rather than `repairChanges <= N` (which measures the
-algorithm's accounting). For Set 11:
+If the gate-tune is NOT adopted, Phase 2 would lift recognition
+on the 4 cubie-inconsistent rescue rows — but that's a more
+expensive build than the gate change.
 
-| Measure | Value | Current gate result |
-|---|---:|---|
-| `repairChanges` (vs raw observation) | 6 | rejected (6 > 4) |
-| `state_delta` (vs `canonical_count_repaired`) | 2 | would be accepted |
-
-A gate of `cost <= 20.0 AND state_delta_from_canonical <= 4` would
-admit Set 11 *without* changing the changes-against-observations
-ceiling. It also has a cleaner semantic: "broad legal can change
-at most N stickers from the recommended count-repair baseline."
-
-This may be a better tune than #345's "bump
-`GUARDED_BROAD_MAX_REPAIR_CHANGES` from 4 to 6" recommendation —
-or a complementary one. Worth Codex's input before either lands.
-
-## Verdict on D Phase 2
-
-**Don't build Phase 2 yet.** The empirical yield on the current
-corpus is zero new cases caught by split-cubie consistency
-specifically. The 1 case it could catch (Set 11) is in non-split
-cubies, addressable by the existing guard-tune work in #345 (or
-the alternative gate semantic suggested above). The 1 case that
-genuinely needs cross-image evidence (Set 59) is already handled
-by the pair-threshold search in production (#340).
-
-The architecture is sound — the 12 split cubies are real,
-cross-view color agreement is a real constraint, and a Phase 2
-implementation would be tractable. But there's no current
-empirical signal that the cost of building it would be repaid.
-Revisit once the corpus has more diverse failure modes (e.g.,
-post-graduation traffic on the default `/api/recognize`).
-
-## What's left if Phase 2 ever does become valuable
-
-Phase 2 would add `cubie_consistency_repaired` as a tier between
-`conservative_legal_repaired` and `guarded_broad_legal_repaired`
-in the `choose_recommended_method` preference list:
-
-1. For each cubie that fails consistency, identify the lowest-confidence
-   sticker as the suspect.
-2. Re-classify that sticker using a tighter palette / alternative
-   classifier.
-3. Accept the re-classified state only if it produces a valid cube
-   AND each repaired cubie is now consistent.
-
-The split-cubie variant (vs whole-cube cubie consistency) would
-only differ in which 12 of the 20 cubies are checked — likely not
-worth the special-casing. **If we build it, build it as whole-cube
-per-cubie consistency**, not split-cubie specifically.
+**If you ever do build Phase 2: build it as whole-cube per-cubie
+consistency, not split-cubie specifically.** Whole-cube catches a
+strict superset of split-cubie on this corpus (4 vs 3). The split
+distinction adds no localization value.
 
 ## Reproducer
 
@@ -164,7 +133,15 @@ per-cubie consistency**, not split-cubie specifically.
 .venv/bin/python tools/diagnose_split_cubie_consistency.py \
   --input /tmp/fresh_legal.json \
   --out-json tests/fixtures/split_cubie_consistency_summary.json
+
+# 3. Same diagnostic on the labeled corpus (uses the checked-in
+#    legal-repair fixture, no fresh compute needed)
+.venv/bin/python tools/diagnose_split_cubie_consistency.py \
+  --input tests/fixtures/hull_label_legal_repair_diagnostic.json \
+  --out-json tests/fixtures/split_cubie_consistency_labeled_corpus.json
 ```
 
-Or, for Set 11 alone, replace `--only-sets ... 60` with just
-`--only-sets 11` in step 1.
+Both fixtures are checked in. The combined-corpus headline (4/5)
+comes from joining their `summary.withSplitCubieInconsistency` +
+`summary.withInImageCubieInconsistencyOnly` lists across the two
+files.

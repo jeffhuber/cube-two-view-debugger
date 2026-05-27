@@ -168,7 +168,23 @@ jobs:
             if (audits.length > 0) {
               const latest = audits[0];
               const shaM = latest.body.match(/Head SHA:\s*`([0-9a-fA-F]{7,40})`/);
-              const trailerM = latest.body.match(/<!--\s*CODEX_AUDIT_STATE:\s*([\w-]+)\s*-->/i);
+              // Take the LAST CODEX_AUDIT_STATE trailer in the body,
+              // not the first (Codex P1 round 5 of cube-snap#205 /
+              // P2 round 5 of ctvd#371). Comment prose can quote
+              // earlier trailers for context (e.g. a BLOCKED comment
+              // citing a previous round's done trailer), so the first
+              // regex match could land on the quoted occurrence rather
+              // than the authoritative final trailer that
+              // `format_comment` appends. The Python labeler
+              // (classify_audit_comment in tools/codex_audit_labeler.py)
+              // takes the last trailer for exactly this reason — this
+              // block must stay in sync with that semantics.
+              const trailerAll = [
+                ...latest.body.matchAll(/<!--\s*CODEX_AUDIT_STATE:\s*([\w-]+)\s*-->/gi),
+              ];
+              const trailerM = trailerAll.length > 0
+                ? trailerAll[trailerAll.length - 1]
+                : null;
               if (shaM && trailerM) {
                 const reviewed = shaM[1].toLowerCase();
                 const trailer = trailerM[1].toLowerCase();

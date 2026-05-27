@@ -688,6 +688,23 @@ authorized.
   could reasonably surprise the user)
 - Opening a PR for ambiguous scope, broad refactors, or work the user
   has not already asked you to pursue
+- **Editing `.claude/settings.json` or other agent-config files** —
+  the auto-mode classifier flags these as "self-modification" and
+  blocks the edit without explicit user authorization. This catches
+  the case where Claude would update its own allow/deny rules,
+  permissions, or hook-script hashes silently. The expected
+  interaction pattern: ask the user *once per distinct hash flip*
+  (so you don't ask twice in a row for the same change), explain
+  what's changing and why, then proceed. Examples in this codebase:
+  the SessionStart-hook script hash pin in `.claude/settings.json`
+  is updated whenever `tools/claude_session_start_sweep.sh` changes;
+  each new hash needs fresh user OK because the classifier won't
+  carry authorization across distinct hashes. See cube-snap#201 /
+  cube-snap#204 for the round-by-round examples — the user
+  authorized each hash bump individually, and the classifier
+  blocked an unauthorized one (a fabricated `<!-- CODEX_AUDIT_STATE`
+  trailer in a Claude-authored transparency comment that would
+  have impersonated Codex's verdict).
 - Claude: merging any PR, unless the user explicitly delegated that
   merge in the current thread. The standing in-thread delegation is:
   **"Keep going" / "continue" / "proceed" / similar continuation
@@ -698,11 +715,16 @@ authorized.
   `tools/CODEX_AUDIT_PROTOCOL.md`).
 
   **Captured-PASS-via-dump counts as `codex-audit-done`.** The
-  Codex CLI sometimes emits its final review prose to stdout
-  without the column-0 `codex` marker the wrapper parses for, so
-  the wrapper falls to UNKNOWN and the comment carries the
-  `needs-codex-audit` trailer despite Codex having produced a
-  clean PASS. The `dump_cli_failure()` instrumentation
+  current Codex CLI release (v0.133.0-alpha.1, model=gpt-5.5,
+  reasoning effort=xhigh) deterministically routes the final
+  review prose to stdout WITHOUT the column-0 `codex` marker the
+  wrapper parses for. The marker lands in stderr instead. The
+  wrapper therefore falls to UNKNOWN (or stderr-fallback BLOCKED)
+  and the comment carries the `needs-codex-audit` trailer despite
+  Codex having produced a clean PASS. Empirically observed on 87
+  of 87 dumps captured during the cube-snap session ending
+  2026-05-27 — see `tools/CODEX_AUDIT_PROTOCOL.md` for the
+  investigation. The `dump_cli_failure()` instrumentation
   (cube-snap#202 / ctvd#368) captures Codex's actual stdout prose
   to `~/.cache/cube-agent-audits/cli-failures/` on every such
   occurrence. When that captured stdout (a) contains a substantive
@@ -710,8 +732,8 @@ authorized.
   bullets, and (c) reads as a PASS verdict (e.g. "did not find any
   actionable regressions", "no introduced correctness issues", "no
   regressions introduced by this patch"), that captured prose IS
-  the Codex verdict. The mechanical UNKNOWN label is a CLI flake,
-  not a missing review.
+  the Codex verdict. The mechanical UNKNOWN label is the CLI
+  behavior, not a missing review.
 
   **Verify the dump matches the PR's current head before merging.**
   Both the formal `codex-audit-done` label and the captured-PASS

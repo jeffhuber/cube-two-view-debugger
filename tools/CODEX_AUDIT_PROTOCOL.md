@@ -361,3 +361,57 @@ gh label delete codex-audit-blocked
   kept on disk so the lane is trivial to revive).
 - `CLAUDE.md` "Devin PR audit routing" section — the merge-delegation
   contract that currently authorizes only Devin's labels.
+
+## Why captured-PASS-via-dump is the operational norm (Codex CLI v0.133.0-alpha.1)
+
+Empirical investigation (2026-05-27, 87 CLI-failure dumps captured during a
+single multi-PR cube-snap session): the current Codex CLI release
+deterministically routes the final-verdict marker to **stderr**, while the
+verdict prose lands on **stdout**.
+
+| Stat | Count | % |
+|---|---|---|
+| Total dumps | 87 | 100% |
+| Stdout has column-0 `codex` marker | **0** | **0%** |
+| Stdout missing marker | **87** | **100%** |
+| Stderr has column-0 `codex` marker | 87 | 100% |
+
+Sample dump header:
+
+```
+OpenAI Codex v0.133.0-alpha.1
+--------
+workdir: /private/var/folders/.../codex-audit-...
+model: gpt-5.5
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: xhigh
+reasoning summaries: none
+```
+
+This is NOT intermittent (which is what the old "(the CLI flake mode)"
+wording in CLAUDE.md implied) — it is consistent CLI behavior on this
+release. The parser's stderr-fallback path is therefore the *primary*
+signal source on this CLI version, not a rare workaround.
+
+Implications:
+
+- **Captured-PASS-via-dump is the operational norm**, not an exceptional
+  case. The merge-auth path documented in CLAUDE.md ("Captured-PASS-via-dump
+  counts as `codex-audit-done`") fires on essentially every Codex audit
+  this CLI version posts.
+- **A stable (non-alpha) Codex CLI release that emits the marker to
+  stdout** would let the parser take the stdout-anchored path and skip
+  the strict-shape validator entirely. If/when such a release is
+  available, pinning to it would simplify the audit comments back to
+  trailer-anchored `codex-audit-done` / `codex-audit-blocked` directly.
+- **Upstream Codex CLI bug worth filing**: the column-0 `codex`
+  final-verdict marker should land on the same stream as the verdict
+  prose (stdout), not be split across streams. Once fixed, the
+  stderr-fallback code path in `tools/codex_audit_pr.py` can be
+  deprecated.
+
+Sample data lives at `~/.cache/cube-agent-audits/cli-failures/` on the
+audit-operator machine; the 87-dump corpus referenced here is from the
+2026-05-27 cube-snap session ending ~23:00 PT.

@@ -9,8 +9,8 @@ plain Lab nearest-color classification, center forcing, exact
 9-per-color count repair, guarded two-view cubie consistency, and
 guarded cubie-legality repair.
 
-Git head: `cdbef344406ef3a96bcdf8f9f070147a50b1be90`
-Generated: `2026-05-27T06:23:38.069596+00:00`
+Git head: `ed48d32ec55638d90de183e771b2c6b08601ab1c`
+Generated: `2026-05-27T06:41:19.417548+00:00`
 
 ## Headline
 

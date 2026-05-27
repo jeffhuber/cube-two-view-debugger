@@ -36,6 +36,7 @@ from tools.corner_conventions import wca_face_by_slot
 from tools.hull_label_assembly import convention_orientation_for_slot
 from tools.rectify_faces import DEFAULT_FACE_SIZE, extract_stickers_from_rectified, rectify_face
 from tools.sample_stickers_from_hull import apply_orientation
+from tools.shared_cubie_consistency import check_state_cubies
 
 
 SLOT_TO_LEGACY_FACE = {
@@ -45,6 +46,8 @@ SLOT_TO_LEGACY_FACE = {
 }
 GUARDED_BROAD_MAX_REPAIR_COST = 20.0
 GUARDED_BROAD_MAX_STATE_DELTA = 4
+TWO_VIEW_MAX_REPAIR_COST = 20.0
+TWO_VIEW_MAX_STATE_DELTA = 4
 
 
 @dataclass(frozen=True)
@@ -477,6 +480,122 @@ def _guarded_broad_payload(broad_payload: Mapping[str, Any], *, gt_state: Option
     }
 
 
+def _cubie_consistency_for_state(state: Optional[str]) -> Optional[Dict[str, Any]]:
+    if not isinstance(state, str) or len(state) != 54:
+        return None
+    return check_state_cubies(state)
+
+
+def _compact_cubie_consistency(consistency: Optional[Mapping[str, Any]]) -> Optional[Dict[str, Any]]:
+    if not isinstance(consistency, Mapping):
+        return None
+    cubies = consistency.get("cubies")
+    inconsistent = [
+        row
+        for row in cubies
+        if isinstance(row, Mapping) and row.get("valid") is False
+    ] if isinstance(cubies, Sequence) else []
+    return {
+        "totalCubies": consistency.get("totalCubies"),
+        "consistentCount": consistency.get("consistentCount"),
+        "inconsistentCount": consistency.get("inconsistentCount"),
+        "inconsistentCornerCount": consistency.get("inconsistentCornerCount"),
+        "inconsistentEdgeCount": consistency.get("inconsistentEdgeCount"),
+        "inconsistentSplitCount": consistency.get("inconsistentSplitCount"),
+        "inconsistentInImageCount": consistency.get("inconsistentInImageCount"),
+        "inconsistentNames": consistency.get("inconsistentNames"),
+        "inconsistentCubies": inconsistent,
+    }
+
+
+def _two_view_consistency_payload(
+    broad_payload: Mapping[str, Any],
+    *,
+    baseline_state: Optional[str],
+    gt_state: Optional[str],
+) -> Dict[str, Any]:
+    """Promote broad legal repair only when cross-photo cubie evidence supports it.
+
+    This is intentionally a guarded selector over an already legal candidate,
+    not a new search. The evidence requirement is: the count-repaired baseline
+    must have at least one split-cubie inconsistency, and the legal candidate
+    must clear that cubie inconsistency while staying within the same cost and
+    state-delta bounds used by guarded broad repair.
+    """
+    baseline_consistency = _cubie_consistency_for_state(baseline_state)
+    candidate_state = broad_payload.get("state")
+    candidate_consistency = _cubie_consistency_for_state(candidate_state if isinstance(candidate_state, str) else None)
+    cost = broad_payload.get("repairCost")
+    state_delta = broad_payload.get("stateDeltaFromCanonical")
+    state_delta_count = (
+        state_delta.get("count")
+        if isinstance(state_delta, Mapping) and state_delta.get("available") is True
+        else None
+    )
+    baseline_split_count = (
+        baseline_consistency.get("inconsistentSplitCount")
+        if isinstance(baseline_consistency, Mapping)
+        else None
+    )
+    candidate_inconsistent_count = (
+        candidate_consistency.get("inconsistentCount")
+        if isinstance(candidate_consistency, Mapping)
+        else None
+    )
+
+    accepted = (
+        broad_payload.get("validState") is True
+        and isinstance(cost, (int, float))
+        and isinstance(state_delta_count, int)
+        and isinstance(baseline_split_count, int)
+        and isinstance(candidate_inconsistent_count, int)
+        and int(baseline_split_count) > 0
+        and int(candidate_inconsistent_count) == 0
+        and float(cost) <= TWO_VIEW_MAX_REPAIR_COST
+        and int(state_delta_count) <= TWO_VIEW_MAX_STATE_DELTA
+    )
+    reasons: List[str] = []
+    if broad_payload.get("validState") is not True:
+        reasons.append("candidate_not_legal")
+    if not isinstance(cost, (int, float)) or float(cost) > TWO_VIEW_MAX_REPAIR_COST:
+        reasons.append("repair_cost_out_of_range")
+    if not isinstance(state_delta_count, int) or int(state_delta_count) > TWO_VIEW_MAX_STATE_DELTA:
+        reasons.append("state_delta_out_of_range")
+    if not isinstance(baseline_split_count, int) or int(baseline_split_count) <= 0:
+        reasons.append("no_split_cubie_inconsistency")
+    if not isinstance(candidate_inconsistent_count, int):
+        reasons.append("candidate_cubie_consistency_unavailable")
+    elif int(candidate_inconsistent_count) != 0:
+        reasons.append("candidate_cubies_still_inconsistent")
+
+    gate = {
+        "maxRepairCost": TWO_VIEW_MAX_REPAIR_COST,
+        "maxStateDeltaFromCanonical": TWO_VIEW_MAX_STATE_DELTA,
+        "requiresBaselineSplitCubieInconsistency": True,
+        "stateDeltaFromCanonical": state_delta,
+        "baselineCubieConsistency": _compact_cubie_consistency(baseline_consistency),
+        "candidateCubieConsistency": _compact_cubie_consistency(candidate_consistency),
+        "accepted": accepted,
+        "reasons": [] if accepted else reasons,
+    }
+    if accepted:
+        out = dict(broad_payload)
+        out["status"] = "accepted_two_view_consistency_repair"
+        out["gate"] = gate
+        return out
+    return {
+        "status": "rejected_two_view_consistency_repair",
+        **_payload_for_state(None, gt_state),
+        "repairCost": None,
+        "repairChanges": None,
+        "rejectedRepairCost": cost,
+        "rejectedRepairChanges": broad_payload.get("repairChanges"),
+        "rejectedStateDeltaFromCanonical": state_delta,
+        "sourceMode": broad_payload.get("sourceMode"),
+        "gate": gate,
+    }
+
+
 def evaluate_legal_repair_methods(
     *,
     observations: Sequence[StickerObservation],
@@ -489,6 +608,11 @@ def evaluate_legal_repair_methods(
         source="grid_sample",
         baseline_state=baseline_state,
     )
+    two_view = _two_view_consistency_payload(
+        broad,
+        baseline_state=baseline_state,
+        gt_state=gt_state,
+    )
     guarded = _guarded_broad_payload(broad, gt_state=gt_state)
     broad = dict(broad)
     broad["diagnosticOnly"] = True
@@ -499,6 +623,7 @@ def evaluate_legal_repair_methods(
             source="hull_label_sample",
             baseline_state=baseline_state,
         ),
+        "two_view_consistency_repaired": two_view,
         "guarded_broad_legal_repaired": guarded,
         "broad_legal_repaired": broad,
     }
@@ -543,6 +668,7 @@ def choose_recommended_method(methods: Mapping[str, Mapping[str, Any]]) -> str:
     preferred = [
         "canonical_count_repaired",
         "conservative_legal_repaired",
+        "two_view_consistency_repaired",
         "guarded_broad_legal_repaired",
         "adaptive_count_repaired",
         "canonical_center_forced",

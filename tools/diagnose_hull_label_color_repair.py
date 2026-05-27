@@ -9,6 +9,8 @@ shared slot/yaw convention, then compares deterministic color repair stages:
 * `canonical_center_forced`: same, but WCA centers are forced to U/R/F/D/L/B.
 * `canonical_count_repaired`: greedy count repair to exactly 9 stickers per
   WCA face color, with centers fixed.
+* `two_view_consistency_repaired`: broad legal repair promoted only when
+  split-cubie evidence across the two photos supports it.
 * `adaptive_center_forced`: adaptive Lab palette anchored by the six known
   WCA centers.
 * `adaptive_count_repaired`: count repair using that adaptive palette.
@@ -482,6 +484,7 @@ def build_summary(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
         "canonical_center_forced",
         "canonical_count_repaired",
         "conservative_legal_repaired",
+        "two_view_consistency_repaired",
         "guarded_broad_legal_repaired",
         "adaptive",
         "adaptive_center_forced",
@@ -546,7 +549,8 @@ def render_report(payload: Mapping[str, Any]) -> str:
         "up hull-label rectified panels before involving an LLM. It uses the",
         "same slot/yaw WCA assignment as the hull-label path, then compares",
         "plain Lab nearest-color classification, center forcing, exact",
-        "9-per-color count repair, and guarded cubie-legality repair.",
+        "9-per-color count repair, guarded two-view cubie consistency, and",
+        "guarded cubie-legality repair.",
         "",
         f"Git head: `{payload['source']['git_sha']}`",
         f"Generated: `{payload['source']['generated_at_utc']}`",
@@ -568,6 +572,7 @@ def render_report(payload: Mapping[str, Any]) -> str:
         "canonical_center_forced",
         "canonical_count_repaired",
         "conservative_legal_repaired",
+        "two_view_consistency_repaired",
         "guarded_broad_legal_repaired",
         "adaptive",
         "adaptive_count_repaired",
@@ -582,6 +587,7 @@ def render_report(payload: Mapping[str, Any]) -> str:
 
     canonical_summary = primary_methods.get("canonical", {})
     canonical_count_summary = primary_methods.get("canonical_count_repaired", {})
+    two_view_summary = primary_methods.get("two_view_consistency_repaired", {})
     guarded_legal_summary = primary_methods.get("guarded_broad_legal_repaired", {})
     adaptive_count_summary = primary_methods.get("adaptive_count_repaired", {})
     canonical_values = _method_hamming_values(rows, primary_source, "canonical")
@@ -603,6 +609,12 @@ def render_report(payload: Mapping[str, Any]) -> str:
         f"The payload's recommended-method selector is now "
         f"{sum(value == 0 for value in recommended_values)}/{len(recommended_values)} exact "
         f"with hamming distribution `{_hamming_distribution(recommended_values)}`.",
+        "`two_view_consistency_repaired` is intentionally narrower than",
+        "`guarded_broad_legal_repaired`: it promoted",
+        f"{two_view_summary.get('exact')}/{two_view_summary.get('assembled')} rows in this run,",
+        "only when the current count-repaired state had split-cubie",
+        "inconsistency across the A/B views and the candidate cleared that",
+        "inconsistency.",
         "",
         "## Full Summary By Yaw Source",
         "",
@@ -615,6 +627,7 @@ def render_report(payload: Mapping[str, Any]) -> str:
             "canonical_center_forced",
             "canonical_count_repaired",
             "conservative_legal_repaired",
+            "two_view_consistency_repaired",
             "guarded_broad_legal_repaired",
             "adaptive",
             "adaptive_center_forced",
@@ -630,8 +643,8 @@ def render_report(payload: Mapping[str, Any]) -> str:
         "",
         "## Per-Set Snapshot",
         "",
-        "| Set | Source | Recommended | Best safe method | Best hamming | Canonical | Canonical+count | Guarded legal | Adaptive+count | Status |",
-        "|---:|---|---|---|---:|---:|---:|---:|---:|---|",
+        "| Set | Source | Recommended | Best safe method | Best hamming | Canonical | Canonical+count | Two-view | Guarded legal | Adaptive+count | Status |",
+        "|---:|---|---|---|---:|---:|---:|---:|---:|---:|---|",
     ])
     for row in rows:
         source = primary_source if primary_source in row.get("evaluations", {}) else next(iter(row.get("evaluations", {})), "")
@@ -639,12 +652,13 @@ def render_report(payload: Mapping[str, Any]) -> str:
         best = _best_method(row, source)
         canonical = evaluation.get("methods", {}).get("canonical", {}).get("hamming")
         canonical_count = evaluation.get("methods", {}).get("canonical_count_repaired", {}).get("hamming")
+        two_view = evaluation.get("methods", {}).get("two_view_consistency_repaired", {}).get("hamming")
         guarded_legal = evaluation.get("methods", {}).get("guarded_broad_legal_repaired", {}).get("hamming")
         adaptive_count = evaluation.get("methods", {}).get("adaptive_count_repaired", {}).get("hamming")
         lines.append(
             f"| {row['setId']} | `{source}` | `{evaluation.get('recommendedMethod', 'n/a')}` | "
             f"`{best[0] if best else 'n/a'}` | {best[1] if best else 'n/a'} | "
-            f"{canonical} | {canonical_count} | {guarded_legal} | {adaptive_count} | "
+            f"{canonical} | {canonical_count} | {two_view} | {guarded_legal} | {adaptive_count} | "
             f"`{evaluation.get('status', 'missing')}` |"
         )
 
@@ -661,10 +675,11 @@ def render_report(payload: Mapping[str, Any]) -> str:
         f"{canonical_count_summary.get('exact')}/{canonical_count_summary.get('assembled')} exact/legal",
         "  with the production-like yaw source. This supersedes the older",
         "  20/46 exact headline for raw hull-label `prefer` panels.",
-        "- Guarded cubie-legality repair is now part of the color-repair payload:",
-        f"  it is {guarded_legal_summary.get('exact')}/{guarded_legal_summary.get('assembled')} exact here and exposes",
-        "  conservative and guarded-broad legal candidates, while the",
-        "  ungated broad legal candidate remains diagnostic-only.",
+        "- Guarded two-view and cubie-legality repair are now part of the color-repair payload:",
+        f"  two-view promotes {two_view_summary.get('exact')}/{two_view_summary.get('assembled')} rows,",
+        f"  while guarded broad is {guarded_legal_summary.get('exact')}/{guarded_legal_summary.get('assembled')} exact here.",
+        "  The payload exposes conservative, split-cubie-gated, and guarded-broad",
+        "  legal candidates; the ungated broad legal candidate remains diagnostic-only.",
         "- Canonical Lab count repair beats the adaptive-palette count repair in",
         f"  this run ({canonical_count_summary.get('exact')}/{canonical_count_summary.get('assembled')} exact versus "
         f"{adaptive_count_summary.get('exact')}/{adaptive_count_summary.get('assembled')}). Adaptive palettes should stay",
@@ -682,6 +697,10 @@ def render_report(payload: Mapping[str, Any]) -> str:
         "- Set 70 should be inspected with yaw-aware panel labels. Its current",
         "  yaw=2 Image B slots map to D/F/R; older no-yaw D/L/B contact sheets",
         "  are useful visually but misleading for face identity.",
+        "- GAN Sets 74-78 are the first GAN-brand tricky-lighting expansion in this",
+        "  scoreboard. The default recognizer still rejects them, but hull-label",
+        "  center-yaw inference gets yaw 0/1/2/3 correct for Sets 75-78 and",
+        "  `canonical_count_repaired` is exact on all five rows.",
     ])
 
     lines.extend([
@@ -695,16 +714,33 @@ def render_report(payload: Mapping[str, Any]) -> str:
         "  the physical requirement that each WCA face color appears exactly nine",
         "  times. This catches duplicated/missing color reads while preserving the",
         "  sampled geometry.",
+        "- `two_view_consistency_repaired` is the first explicit A/B consistency",
+        "  gate in the repair payload. It requires split-cubie inconsistency in",
+        "  `canonical_count_repaired`, then promotes an already legal candidate",
+        "  only when that candidate clears cubie consistency within the same",
+        "  cost/state-delta limits as guarded broad repair.",
         "- `conservative_legal_repaired` and `guarded_broad_legal_repaired` add the",
-        "  next constraint layer: cubie legality. The guarded broad method uses",
-        "  the same no-ground-truth cost/state-delta gate as the legal-repair diagnostic;",
-        "  the raw `broad_legal_repaired` method is emitted only for traceability.",
+        "  broader cubie-legality layer. The raw `broad_legal_repaired` method is",
+        "  emitted only for traceability.",
         "- The adaptive palette uses the six known center samples as anchors. It is",
         "  still deterministic and local to the two input photos; no GT colors or",
         "  LLM output are used.",
         "- Rows that remain high-hamming after adaptive count repair are likely",
         "  geometry/panel-quality failures rather than cube-count failures. Those",
         "  should be handled by hull-label acceptance gates or a visual repair UI.",
+        "",
+        "## Decision Path",
+        "",
+        "1. Treat `two_view_consistency_repaired` as a transparent diagnostic/selector,",
+        "   not as the main accuracy lever. It explains the split-cubie rescue rows",
+        "   and gives the Fixer trace better evidence, but guarded broad remains the",
+        "   wider legal-repair candidate.",
+        "2. Keep the current guarded-broad state-delta gate as the production-shaped",
+        "   repair candidate until out-of-corpus rows show a new failure mode.",
+        "3. Pull the next accuracy lever in front of repair: Lab + LLM evidence",
+        "   ensemble per sticker, then confidence-gated auto-merge of repair variants.",
+        "4. Re-run this scoreboard whenever the manifest/GT corpus changes, especially",
+        "   as additional GAN/tricky-lighting rows are added.",
     ])
     return "\n".join(lines) + "\n"
 

@@ -57,14 +57,18 @@ Recent additions on top of the rectification foundation:
 
 Open levers, approximate descending leverage:
 
-1. **Two-view consistency** on the six cubies visible in both photos
-   (the next un-pulled lever; cross-view agreement is a free signal
-   independent of color or mask quality).
-2. **Lab + LLM ensemble** for per-sticker color reads.
-3. **Confidence-gated auto-merge** of repair variants based on
+1. **Lab + LLM ensemble** for per-sticker color reads.
+2. **Confidence-gated auto-merge** of repair variants based on
    inter-variant agreement.
-4. **Graduating deterministic repair to the default recognizer** once
+3. **Graduating deterministic repair to the default recognizer** once
    confidence calibration is settled.
+4. **Targeted cubie-consistency reclassification** only if new failures
+   appear that guarded legal repair cannot reach. The first two-view pull
+   is no longer open: the shared cubie map/checker and a guarded
+   `two_view_consistency_repaired` candidate codify the 12 split cubies
+   (6 corners + 6 edges) visible across A/B and expose that evidence in the
+   repair payload. It is a selector over an already legal candidate, not a
+   new color reclassification search.
 
 The 2026-05-22 strategic shift still holds: Claude's geometry
 research is **scaffolding around** Codex's production `cv-local`,

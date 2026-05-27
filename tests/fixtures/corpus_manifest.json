@@ -914,6 +914,66 @@
       "expectedCategory": "reject_retake",
       "currentScoreObserved": 0,
       "notes": "Added and calibrated 2026-05-25 from canonical /Users/jhuber/cube-corpus files for medium-challenge Sets 69-73. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54. GT file does not encode capture yaw; image set still follows white-up A / yellow-up B capture convention."
+    },
+    {
+      "setId": "74",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set GAN 74 - A - solved white-up IMG_7450.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set GAN 74 - B - solved white-up IMG_7451.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set GAN 74 - cube-ground-truth-1779861145693.json",
+      "imageA_sha256_expected": "40cdfcd6008a1715583ac0f633ef8f9e9d7544a8019a022f0fbe0937479a2581",
+      "imageB_sha256_expected": "76ca2ce5d1018c71fee54b14b8fab7c15199009d51bba3b1f99f71c0ab46ff6b",
+      "groundTruth_sha256_expected": "05d0a09951e2c7eca181c5252cfc4fe8933557dc1e29285049f7aed78c9a5ef8",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus files for GAN-brand tricky-lighting expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54. Solved GAN cube baseline; hull-label color repair is exact on this row."
+    },
+    {
+      "setId": "75",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set GAN 75 - A - white-up IMG_7624.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set GAN 75 - B - white-up IMG_7625.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set GAN 75 - cube-ground-truth-1779861326931.json",
+      "imageA_sha256_expected": "65d19d05e5650150e51ad8789d27b15c3d27d817c20e1de75f824295d64f7c2e",
+      "imageB_sha256_expected": "793d495cc358eae924090c7ca6e0f9555d02a396e50283ace073b6bde07d6212",
+      "groundTruth_sha256_expected": "b2654e8e9b2d7bf8b412efdef69d30aa82328b5eb65fe2626ee5c579678f16d3",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus files for GAN-brand tricky-lighting expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54. Same physical cube as Sets 76-78 at capture yaw=0; hull-label color repair is exact on this row."
+    },
+    {
+      "setId": "76",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set GAN 76 - A - white-up IMG_7626.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set GAN 76 - B - white-up IMG_7627.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set GAN 76 - cube-ground-truth-1779861676306.json",
+      "imageA_sha256_expected": "2715f83fdfe34231b1514f1d125df8f4f2d63da58cebabd3852e532272aa76dc",
+      "imageB_sha256_expected": "91f166387a7d70b54a1f0413d4a8506ef97d2856951ebd46f873380a0714fe67",
+      "groundTruth_sha256_expected": "ff4de7623d5af24d35b92f3c13a5642a6fcf889968143d3a98df3cd5a2247510",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus files for GAN-brand tricky-lighting expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54. Same physical cube as Sets 75/77/78 at capture yaw=1; hull-label center-yaw inference and color repair are exact on this row."
+    },
+    {
+      "setId": "77",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set GAN 77 - A - white-up IMG_7628.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set GAN 77 - B - white-up IMG_7629.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set GAN 77 - cube-ground-truth-1779861788339.json",
+      "imageA_sha256_expected": "8c59d238de99aa86865f186d6143fbaaccf2408457790cd3591032008fa70e91",
+      "imageB_sha256_expected": "60032d939cb0a103ca5b81ac2a0ebcfa8c027e080e050debbc0c1be34aaf9a09",
+      "groundTruth_sha256_expected": "3f6c15b3a81fbfbdc881bf8ba1dfb1ee5cd3e1d53bdc83ae0db15aab0acd56d6",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus files for GAN-brand tricky-lighting expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54. Same physical cube as Sets 75/76/78 at capture yaw=2; hull-label center-yaw inference and color repair are exact on this row."
+    },
+    {
+      "setId": "78",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set GAN 78 - A - white-up IMG_7630.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set GAN 78 - B - white-up IMG_7631.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set GAN 78 - cube-ground-truth-1779861875811.json",
+      "imageA_sha256_expected": "f4cffa609f3714e3447621c212dbfdcf5a64e0ad3fc7077809cc99e13ba1e8c8",
+      "imageB_sha256_expected": "79bd2832642019ed89d2a8c31f7398d5ff2baeb65fadc2aa32a24a4e2845fd31",
+      "groundTruth_sha256_expected": "a9fa0f504bb6ee415a0b53be07cbc8441962117a1ede4e578274becf5002463c",
+      "expectedCategory": "reject_retake",
+      "currentScoreObserved": 0,
+      "notes": "Added and calibrated 2026-05-26 from canonical /Users/jhuber/cube-corpus files for GAN-brand tricky-lighting expansion. Category/score pinned from tools/probe_corpus.py on current recognizer: reject_retake, score 0/54. Same physical cube as Sets 75-77 at capture yaw=3; hull-label center-yaw inference and color repair are exact on this row."
     }
   ]
 }

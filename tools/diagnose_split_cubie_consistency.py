@@ -46,140 +46,24 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from dataclasses import dataclass, asdict
 from pathlib import Path
-from typing import Any, Dict, FrozenSet, List, Mapping, Optional, Sequence, Tuple
+from typing import Any, Dict, Mapping, Optional, Sequence
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from rubik_recognizer.validation import (  # noqa: E402
-    CORNER_COLORS,
-    CORNER_FACELETS,
-    EDGE_COLORS,
-    EDGE_FACELETS,
-    FACE_ORDER,
+from tools.shared_cubie_consistency import (  # noqa: E402
+    ALL_CUBIES,
+    SPLIT_CORNERS,
+    SPLIT_EDGES,
+    VALID_CORNER_COLORSETS,
+    VALID_EDGE_COLORSETS,
+    check_cubie,
+    check_state,
+    index_to_face_position,
+    state_diff_indices,
 )
-
-
-# ---------------------------------------------------------------------------
-# Cubie inventory + image-source partition
-# ---------------------------------------------------------------------------
-
-def _image_for(index: int) -> str:
-    """Image A holds the U+R+F faces (indices 0..26); image B holds D+L+B (27..53)."""
-    return "A" if index < 27 else "B"
-
-
-def _is_split(facelets: Sequence[int]) -> bool:
-    return len({_image_for(i) for i in facelets}) > 1
-
-
-@dataclass(frozen=True)
-class Cubie:
-    name: str  # canonical face-tuple as string, e.g. "URF" or "UB"
-    kind: str  # "corner" or "edge"
-    facelets: Tuple[int, ...]
-    expected_colorset: FrozenSet[str]
-    split: bool
-
-    def to_dict(self) -> Dict[str, Any]:
-        d = asdict(self)
-        d["facelets"] = list(self.facelets)
-        d["expected_colorset"] = sorted(self.expected_colorset)
-        return d
-
-
-def _build_cubies() -> List[Cubie]:
-    out: List[Cubie] = []
-    for colors, facelets in zip(CORNER_COLORS, CORNER_FACELETS):
-        out.append(Cubie(
-            name="".join(colors),
-            kind="corner",
-            facelets=tuple(facelets),
-            expected_colorset=frozenset(colors),
-            split=_is_split(facelets),
-        ))
-    for colors, facelets in zip(EDGE_COLORS, EDGE_FACELETS):
-        out.append(Cubie(
-            name="".join(colors),
-            kind="edge",
-            facelets=tuple(facelets),
-            expected_colorset=frozenset(colors),
-            split=_is_split(facelets),
-        ))
-    return out
-
-
-ALL_CUBIES: List[Cubie] = _build_cubies()
-
-VALID_CORNER_COLORSETS: FrozenSet[FrozenSet[str]] = frozenset(
-    frozenset(triple) for triple in CORNER_COLORS
-)
-VALID_EDGE_COLORSETS: FrozenSet[FrozenSet[str]] = frozenset(
-    frozenset(pair) for pair in EDGE_COLORS
-)
-
-SPLIT_CORNERS: List[Cubie] = [c for c in ALL_CUBIES if c.kind == "corner" and c.split]
-SPLIT_EDGES: List[Cubie] = [c for c in ALL_CUBIES if c.kind == "edge" and c.split]
-
-
-# ---------------------------------------------------------------------------
-# Pure-function cubie consistency check
-# ---------------------------------------------------------------------------
-
-def check_cubie(state: str, cubie: Cubie) -> Dict[str, Any]:
-    """Check whether the colors at cubie.facelets in `state` form a valid cubie."""
-    if len(state) != 54:
-        raise ValueError(f"expected 54-char state, got {len(state)}")
-    colors = tuple(state[i] for i in cubie.facelets)
-    colorset = frozenset(colors)
-    valid_pool = VALID_CORNER_COLORSETS if cubie.kind == "corner" else VALID_EDGE_COLORSETS
-    valid = len(colorset) == len(cubie.facelets) and colorset in valid_pool
-    return {
-        "name": cubie.name,
-        "kind": cubie.kind,
-        "split": cubie.split,
-        "facelets": list(cubie.facelets),
-        "observed_colors": list(colors),
-        "valid": valid,
-    }
-
-
-def check_state(state: str) -> Dict[str, Any]:
-    """Full cubie consistency check for a state string.
-
-    Returns per-cubie reports plus aggregate counts split by
-    {corner|edge} x {split|in-image}.
-    """
-    if len(state) != 54:
-        raise ValueError(f"expected 54-char state, got {len(state)}")
-    reports = [check_cubie(state, c) for c in ALL_CUBIES]
-    inconsistent = [r for r in reports if not r["valid"]]
-    return {
-        "cubies": reports,
-        "totalCubies": len(reports),
-        "consistentCount": len(reports) - len(inconsistent),
-        "inconsistentCount": len(inconsistent),
-        "inconsistentCornerCount": sum(1 for r in inconsistent if r["kind"] == "corner"),
-        "inconsistentEdgeCount": sum(1 for r in inconsistent if r["kind"] == "edge"),
-        "inconsistentSplitCount": sum(1 for r in inconsistent if r["split"]),
-        "inconsistentInImageCount": sum(1 for r in inconsistent if not r["split"]),
-        "inconsistentNames": [r["name"] for r in inconsistent],
-    }
-
-
-def state_diff_indices(state_a: str, state_b: str) -> List[int]:
-    if len(state_a) != len(state_b):
-        return []
-    return [i for i in range(len(state_a)) if state_a[i] != state_b[i]]
-
-
-def index_to_face_position(index: int) -> str:
-    face_idx, within = divmod(index, 9)
-    row, col = divmod(within, 3)
-    return f"{FACE_ORDER[face_idx]}[{row},{col}]"
 
 
 # ---------------------------------------------------------------------------

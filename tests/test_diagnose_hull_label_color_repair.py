@@ -17,6 +17,7 @@ from tools.hull_label_color_repair import (
     choose_recommended_method,
     _face_index,
     _guarded_broad_payload,
+    _two_view_consistency_payload,
     greedy_count_repair,
     state_delta_payload,
 )
@@ -132,7 +133,7 @@ def test_render_report_highlights_hull_label_center_color_scoreboard():
     assert "9-per-color count repair" in report
     assert "`canonical_count_repaired` is the stable deterministic baseline" in report
     assert "The payload's recommended-method selector is now" in report
-    assert "Guarded cubie-legality repair is now part of the color-repair payload" in report
+    assert "Guarded two-view and cubie-legality repair are now part of the color-repair payload" in report
 
 
 def test_assemble_color_repair_payload_exposes_repaired_draft():
@@ -165,6 +166,8 @@ def test_assemble_color_repair_payload_exposes_repaired_draft():
     assert payload["recommended"]["repairMoveCount"] == 0
     assert payload["recommended"]["confidence"] == "high"
     assert payload["methods"]["conservative_legal_repaired"]["status"] == "already_valid_count_repair"
+    assert payload["methods"]["two_view_consistency_repaired"]["status"] == "rejected_two_view_consistency_repair"
+    assert "no_split_cubie_inconsistency" in payload["methods"]["two_view_consistency_repaired"]["gate"]["reasons"]
     assert payload["methods"]["guarded_broad_legal_repaired"]["gate"]["accepted"] is True
     assert payload["methods"]["guarded_broad_legal_repaired"]["gate"]["stateDeltaFromCanonical"]["count"] == 0
     assert payload["methods"]["broad_legal_repaired"]["diagnosticOnly"] is True
@@ -210,12 +213,63 @@ def test_state_delta_gate_uses_count_repaired_delta_not_repair_changes():
     assert reject["rejectedRepairChanges"] == 5
 
 
+def test_two_view_consistency_gate_requires_split_cubie_evidence():
+    solved = "".join(face * 9 for face in FACE_ORDER)
+    split_corrupt = list(solved)
+    split_corrupt[_face_index("L", 2)] = "D"  # UFL sees U/F/D, not a real corner.
+    split_corrupt_state = "".join(split_corrupt)
+    in_image_corrupt = list(solved)
+    in_image_corrupt[_face_index("F", 2)] = "D"  # URF is fully visible in image A.
+    in_image_corrupt_state = "".join(in_image_corrupt)
+
+    broad_payload = {
+        "status": "legal_repair_found",
+        "state": solved,
+        "validState": True,
+        "repairCost": 3.0,
+        "repairChanges": 1,
+        "stateDeltaFromCanonical": state_delta_payload(split_corrupt_state, solved),
+        "sourceMode": "grid_sample",
+    }
+    accepted = _two_view_consistency_payload(
+        broad_payload,
+        baseline_state=split_corrupt_state,
+        gt_state=None,
+    )
+    rejected = _two_view_consistency_payload(
+        {
+            **broad_payload,
+            "stateDeltaFromCanonical": state_delta_payload(in_image_corrupt_state, solved),
+        },
+        baseline_state=in_image_corrupt_state,
+        gt_state=None,
+    )
+
+    assert accepted["status"] == "accepted_two_view_consistency_repair"
+    assert accepted["gate"]["baselineCubieConsistency"]["inconsistentSplitCount"] == 1
+    assert accepted["gate"]["candidateCubieConsistency"]["inconsistentCount"] == 0
+    assert rejected["status"] == "rejected_two_view_consistency_repair"
+    assert "no_split_cubie_inconsistency" in rejected["gate"]["reasons"]
+
+
 def test_choose_recommended_method_uses_guarded_legal_before_balanced_fallback():
     methods = {
         "canonical_count_repaired": {"validState": False, "countBalanced": True},
         "conservative_legal_repaired": {"validState": False, "countBalanced": False},
+        "two_view_consistency_repaired": {"validState": False, "countBalanced": False},
         "guarded_broad_legal_repaired": {"validState": True, "countBalanced": True},
         "broad_legal_repaired": {"validState": True, "countBalanced": True},
     }
 
     assert choose_recommended_method(methods) == "guarded_broad_legal_repaired"
+
+
+def test_choose_recommended_method_prefers_two_view_over_guarded_broad():
+    methods = {
+        "canonical_count_repaired": {"validState": False, "countBalanced": True},
+        "conservative_legal_repaired": {"validState": False, "countBalanced": False},
+        "two_view_consistency_repaired": {"validState": True, "countBalanced": True},
+        "guarded_broad_legal_repaired": {"validState": True, "countBalanced": True},
+    }
+
+    assert choose_recommended_method(methods) == "two_view_consistency_repaired"

@@ -3,13 +3,13 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from tools.diagnose_split_cubie_consistency import (
+from tools.diagnose_split_cubie_consistency import analyze_legal_repair_json
+from tools.shared_cubie_consistency import (
     ALL_CUBIES,
     SPLIT_CORNERS,
     SPLIT_EDGES,
     VALID_CORNER_COLORSETS,
     VALID_EDGE_COLORSETS,
-    analyze_legal_repair_json,
     check_cubie,
     check_state,
     state_diff_indices,

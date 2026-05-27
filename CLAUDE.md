@@ -499,6 +499,7 @@ unless the user explicitly requests otherwise. Before committing or
 opening a PR, verify the branch and the intended diff one more time:
 
 ```bash
+git fetch origin main
 git branch --show-current
 git diff --stat origin/main...HEAD
 ```

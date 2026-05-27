@@ -105,16 +105,16 @@
     },
     {
       "setId": "14",
-      "imageAPath": "/Users/jhuber/Downloads/Set 14 - A - white up IMG_6705.JPG",
-      "imageBPath": "/Users/jhuber/Downloads/Set 14 - B - white up IMG_6706.JPG",
-      "groundTruthPath": "/Users/jhuber/Downloads/Set 14 cube-ground-truth-1777966718946.json",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 14 - A - white up IMG_6705.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 14 - B - white up IMG_6706.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 14 - cube-ground-truth-1779862270078.json",
       "imageA_sha256_expected": "5a9824d5e23843e72ed49a5d739a055c8b51012a871669f073db1504d147686c",
       "imageB_sha256_expected": "2cfb57b1811c04351646abf77f4275cb30cebb13dee32161c10ae4ac8446ac19",
-      "groundTruth_sha256_expected": "734d7c8f858addc3bae25fac61a5434816023b9afeb07853ebcd234a945b4e56",
+      "groundTruth_sha256_expected": "2931b4b859082a7b5e65e15acdf9eaa84646af8c03389043e950b74d1fb3581c",
       "expectedCategory": "needs_manual_review",
       "expectedScoreFloor": 50,
       "currentScoreObserved": 50,
-      "notes": "Known orientation-rank case; this local hashed pair currently scores above the cross-runner floor, but the repaired candidate is manual-review because pre-repair piece evidence is too conflicted for a trusted high-confidence result."
+      "notes": "Known orientation-rank case; this local hashed pair currently scores above the cross-runner floor, but the repaired candidate is manual-review because pre-repair piece evidence is too conflicted for a trusted high-confidence result. Manifest paths moved to canonical /Users/jhuber/cube-corpus GT on 2026-05-27; corrected state is unchanged from the legacy Downloads GT."
     },
     {
       "setId": "15",

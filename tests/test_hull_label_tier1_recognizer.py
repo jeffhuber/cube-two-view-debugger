@@ -138,6 +138,60 @@ def test_recognize_and_persist_forwards_hull_label_tier1_mode(tmp_path, monkeypa
     assert recognizer.mode == "shadow"
 
 
+def test_constrained_env_default_runs_shadow_when_query_omitted(tmp_path, monkeypatch):
+    import app as app_module
+
+    class FakeRecognizer:
+        def __init__(self):
+            self.modes: List[Optional[str]] = []
+
+        def recognize(self, image_a, image_b, *, hull_label_tier1_mode=None):
+            self.modes.append(hull_label_tier1_mode)
+            return RecognitionResult(status="success", state="U" * 54, confidence=0.8, reason="legacy")
+
+    recognizer = FakeRecognizer()
+    monkeypatch.setattr(app_module, "RUNS", tmp_path / "runs", raising=False)
+    monkeypatch.setenv(app_module.CONSTRAINED_INFERENCE_MODE_ENV, "shadow")
+    monkeypatch.setattr(app_module, "prepare_llm_rectified_input", lambda _a, _b: _constrained_payload("R" * 54))
+
+    pair = ImagePair("env-constrained-shadow", ImageUpload("a.jpg", b"a"), ImageUpload("b.jpg", b"b"))
+    payload = app_module.recognize_and_persist(
+        recognizer,  # type: ignore[arg-type]
+        pair,
+    )
+
+    assert recognizer.modes == ["off"]
+    assert payload["state"] == "U" * 54
+    signal = payload["recognitionSignals"]["constrainedInference"]
+    assert signal["selected"] is False
+    assert signal["promotionGate"]["accepted"] is True
+
+
+def test_explicit_mode_overrides_constrained_env_default(tmp_path, monkeypatch):
+    import app as app_module
+
+    class FakeRecognizer:
+        def __init__(self):
+            self.modes: List[Optional[str]] = []
+
+        def recognize(self, image_a, image_b, *, hull_label_tier1_mode=None):
+            self.modes.append(hull_label_tier1_mode)
+            return RecognitionResult(status="rejected", reason="legacy")
+
+    recognizer = FakeRecognizer()
+    monkeypatch.setattr(app_module, "RUNS", tmp_path / "runs", raising=False)
+    monkeypatch.setenv(app_module.CONSTRAINED_INFERENCE_MODE_ENV, "constrained")
+
+    pair = ImagePair("explicit-off", ImageUpload("a.jpg", b"a"), ImageUpload("b.jpg", b"b"))
+    app_module.recognize_and_persist(
+        recognizer,  # type: ignore[arg-type]
+        pair,
+        hull_label_tier1_mode="off",
+    )
+
+    assert recognizer.modes == ["off"]
+
+
 def _constrained_payload(state: str = SOLVED_STATE, *, accepted: bool = True):
     return {
         "status": "success",

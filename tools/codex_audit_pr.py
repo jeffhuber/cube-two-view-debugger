@@ -72,6 +72,7 @@ import urllib.error
 import urllib.request
 import warnings
 from dataclasses import dataclass, field, replace
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -358,6 +359,143 @@ def parse_codex_output(stdout: str, stderr: str = "") -> CodexVerdict:
         p3_count=p_counts[3],
         findings=findings,
     )
+
+
+# ----- CLI parse-failure capture -----
+
+
+DEFAULT_CLI_FAILURE_DIR = (
+    Path.home() / ".cache" / "cube-agent-audits" / "cli-failures"
+)
+
+
+def dump_cli_failure(
+    repo: str,
+    pr_number: int,
+    head_sha: str,
+    stdout: str,
+    stderr: str,
+    reason: str,
+    base_dir: Optional[Path] = None,
+) -> Optional[Path]:
+    """Persist raw Codex CLI output to disk when verdict-parsing failed.
+
+    The orchestrator auto-requeues on UNKNOWN, but the raw bytes that
+    confused the parser are not otherwise preserved — the worktree gets
+    torn down and the next audit's output overwrites the in-memory
+    capture. Without this dump, diagnosing "is this a real parser bug
+    or a one-shot Codex CLI flake?" requires reproducing the original
+    audit, which often is not possible (head SHA moves on).
+
+    Output: `<base_dir>/<owner>_<name>_pr<N>_<sha[:12]>_<UTC>.log`.
+    The file is self-describing — header includes repo/pr/sha/reason
+    plus stdout/stderr byte counts so it stays useful when attached
+    to an issue without the surrounding context.
+
+    File permissions: 0o600 (owner read/write only). Directory: 0o700.
+    The raw output can contain source snippets and credentials
+    accidentally printed by PR-controlled subprocesses, so on a
+    shared audit host the default umask (often 0o644 file / 0o755
+    dir) would leak audit data to other users on the box. Created
+    via `os.open(..., mode=0o600)` rather than `write_text()` +
+    `chmod()` so there's no TOCTOU window where the file briefly
+    exists with the umask perms before being restricted. (Codex P2
+    audit on cube-snap#196 5e97011.)
+
+    Symlink / pre-existing-path safety: open uses `O_EXCL | O_NOFOLLOW`
+    in addition to `O_CREAT`, so a PR-controlled subprocess that
+    pre-creates the dump path (predictable filename) as either a
+    symlink-to-sensitive-target or a world-readable regular file
+    cannot trick this helper into truncating an arbitrary file or
+    leaving our 0o600 mode unenforced (`mode` is ignored for
+    existing targets). A collision fails the open; the OSError
+    handler returns None and the dump is just skipped — preferable
+    to writing potentially-credential-laden content into an attacker-
+    controlled path. The timestamp includes microseconds to make
+    natural collisions vanishingly rare. (Codex P2 audit on
+    cube-snap#196 17b4156.)
+
+    Returns the dump path on success, or None if the dump failed
+    (best-effort; we never want this helper to interrupt an audit).
+
+    `base_dir` is parameterized for tests; defaults to
+    `DEFAULT_CLI_FAILURE_DIR` (`~/.cache/cube-agent-audits/cli-failures/`).
+    """
+    try:
+        if base_dir is None:
+            base_dir = DEFAULT_CLI_FAILURE_DIR
+        # `mkdir(mode=0o700)` only takes effect on dirs we create; if the
+        # dir already exists with looser perms, mkdir(exist_ok=True) is
+        # a no-op. Chmod afterward to make it idempotent. Wrap in its
+        # own try so a chmod failure (we don't own a pre-existing dir)
+        # doesn't drop the dump — the file's own 0o600 still protects
+        # the content.
+        base_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
+        try:
+            os.chmod(base_dir, 0o700)
+        except OSError:
+            pass
+
+        owner_name = repo.replace("/", "_")
+        short_sha = (head_sha or "unknown")[:12]
+        # Microsecond resolution — same-second collisions across audits
+        # would have caused O_EXCL (below) to refuse the open.
+        ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S_%fZ")
+        path = base_dir / f"{owner_name}_pr{pr_number}_{short_sha}_{ts}.log"
+
+        # Codex P3 audit on cube-snap#196 / ctvd#358 0eff691/9cd9213:
+        # `len(str)` counts Python characters, not UTF-8 bytes. The
+        # CLI output frequently contains non-ASCII (em-dashes, smart
+        # quotes, etc.), so a char-count header on a multi-byte body
+        # would under-report and mislead anyone investigating
+        # truncation. Encode then measure to get the real byte count
+        # that landed on disk via `fdopen(..., encoding="utf-8")`.
+        stdout_bytes = len(stdout.encode("utf-8"))
+        stderr_bytes = len(stderr.encode("utf-8"))
+        header = (
+            "# Codex CLI raw output — verdict UNKNOWN\n"
+            f"# repo: {repo}\n"
+            f"# pr: {pr_number}\n"
+            f"# head_sha: {head_sha}\n"
+            f"# captured_at: {ts}\n"
+            f"# parser_reason: {reason}\n"
+            f"# stdout_bytes: {stdout_bytes}\n"
+            f"# stderr_bytes: {stderr_bytes}\n"
+        )
+        body = (
+            header
+            + "\n===== STDOUT =====\n"
+            + (stdout if stdout else "<empty>\n")
+            + "\n===== STDERR =====\n"
+            + (stderr if stderr else "<empty>\n")
+        )
+        # Atomic create-with-mode + symlink/pre-existing refusal:
+        # - O_CREAT|O_EXCL: refuses if path already exists; together
+        #   they guarantee our 0o600 mode is enforced (the mode arg
+        #   is ignored by the kernel for existing targets).
+        # - O_NOFOLLOW: refuses if the final path component is a
+        #   symlink, so a pre-planted symlink-to-sensitive-file
+        #   cannot redirect our write.
+        # On collision/symlink: open raises OSError → caught by the
+        # outer try → dump skipped (None returned). Better to lose a
+        # diagnostic dump than write credential-laden bytes to an
+        # attacker-controlled path.
+        fd = os.open(
+            str(path),
+            os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+            0o600,
+        )
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(body)
+        return path
+    except OSError as exc:
+        # Never propagate: a logging failure must not break the audit.
+        print(
+            f"  warning: failed to dump CLI output: {exc}",
+            file=sys.stderr,
+            flush=True,
+        )
+        return None
 
 
 # ----- Worktree management -----
@@ -763,6 +901,27 @@ def audit_pr(config: AuditConfig, repo: str, pr_number: int) -> AuditResult:
         # `codex` final-verdict marker, requeue rather than auto-PASS.
         # The trailer is the same as STALE because the downstream
         # outcome (re-run, don't trust this comment) is identical.
+        #
+        # Persist the raw CLI bytes that confused the parser. The
+        # post-comment trailer auto-requeues, but the next attempt
+        # overwrites the in-memory capture and the worktree is gone,
+        # so without this dump there's no way to diagnose "real
+        # parser bug or one-shot Codex CLI flake?" after the fact.
+        # Best-effort: a logging failure must not interrupt the audit.
+        dump_path = dump_cli_failure(
+            repo=repo,
+            pr_number=pr_number,
+            head_sha=head_sha_start,
+            stdout=codex_stdout,
+            stderr=codex_stderr,
+            reason=parsed.prose,
+        )
+        if dump_path is not None:
+            print(
+                f"  captured CLI output for diagnosis: {dump_path}",
+                file=sys.stderr,
+                flush=True,
+            )
         comment_body = format_comment(parsed, head_sha_start, is_unknown=True)
         result_verdict = "UNKNOWN"
         trailer = STALE_TRAILER

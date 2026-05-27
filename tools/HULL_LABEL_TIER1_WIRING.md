@@ -66,3 +66,18 @@ slot/yaw candidate assembled through `tools/hull_label_assembly.py` and
 that candidate. The normal legality checks, pair fallback, and default-off
 feature flag still apply: if the direct candidate does not produce a legal
 state, `prefer` falls back to the legacy recognizer result.
+
+## Constrained-Inference API Modes
+
+`/api/recognize?hullLabelTier1=constrained-shadow` runs the legacy recognizer
+result, then evaluates the rectified hull-label constrained-inference payload
+and attaches `recognitionSignals.constrainedInference`; it always returns the
+legacy state.
+
+`/api/recognize?hullLabelTier1=constrained` returns the constrained candidate
+only when `tools/constrained_inference_gate.py` accepts it. If the gate rejects
+or rectification fails, the endpoint falls back to the legacy recognizer and
+records the rejection/error in `recognitionSignals.constrainedInference`.
+
+These modes are hidden and default-off. They are the shadow/candidate bridge
+between the Fixer-side rectified path and any future default recognizer flip.

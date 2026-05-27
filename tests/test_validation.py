@@ -1,4 +1,6 @@
-from rubik_recognizer.validation import is_valid_state, validate_state
+from itertools import permutations
+
+from rubik_recognizer.validation import _parity, is_valid_state, validate_state
 
 
 SOLVED = "U" * 9 + "R" * 9 + "F" * 9 + "D" * 9 + "L" * 9 + "B" * 9
@@ -36,3 +38,14 @@ def test_validate_state_rejects_invalid_piece_even_with_counts():
     assert not result.valid
     assert not is_valid_state("".join(chars))
     assert any(error.startswith("corner_") or error.startswith("edge_") for error in result.errors)
+
+
+def test_parity_matches_inversion_count_for_permutations():
+    for permutation in permutations(range(5)):
+        inversions = 0
+        for i in range(len(permutation)):
+            for j in range(i + 1, len(permutation)):
+                if permutation[i] > permutation[j]:
+                    inversions += 1
+
+        assert _parity(list(permutation)) == inversions % 2

@@ -150,9 +150,16 @@ jobs:
               try {
                 return await fn(github);
               } catch (e) {
-                if (e.status !== 403 || !fallbackToken) throw e;
+                // 403 = scope missing (current case for github.token
+                // when repo perms strip issues:write).
+                // 401 = bad credentials (Codex P2 round 1 of snap#208 /
+                // ctvd#377: expired or revoked PAT returns 401, not 403).
+                // Both should trigger the fallback; only OTHER errors
+                // (404, 5xx, etc.) propagate.
+                const isAuthFail = e.status === 403 || e.status === 401;
+                if (!isAuthFail || !fallbackToken) throw e;
                 core.warning(
-                  `Primary token got 403; retrying with ${primaryIsPat ? 'github.token' : 'CODEX_AUDIT_LABEL_TOKEN'}.`
+                  `Primary token got ${e.status}; retrying with ${primaryIsPat ? 'github.token' : 'CODEX_AUDIT_LABEL_TOKEN'}.`
                 );
                 const fb = new github.constructor({ auth: fallbackToken });
                 return await fn(fb);

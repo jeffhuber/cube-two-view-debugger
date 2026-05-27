@@ -35,7 +35,7 @@ from rubik_recognizer.dataset import (
     parse_ground_truth,
     parse_manifest_pairs,
 )
-from rubik_recognizer.recognizer import WhiteUpRecognizer, recognition_diagnostics
+from rubik_recognizer.recognizer import RecognitionResult, WhiteUpRecognizer, recognition_diagnostics
 from tools.constrained_inference_gate import evaluate_runtime_payload_gate
 from tools.hull_label_pair_selector import choose_guarded_pair, repair_rank, repair_valid
 
@@ -801,7 +801,7 @@ def _api_routes() -> List[Dict[str, str]]:
         {"method": "GET",  "path": "/api/labels",          "brief": "List of recently saved cube-geometry label JSON documents."},
         {"method": "GET",  "path": "/runs/pairs/<id>/...", "brief": "Static access to a saved run's files (result.json, debug.json, overlays, samples.csv, original photos)."},
         {"method": "GET",  "path": "/runs/labels/<id>.json", "brief": "Static access to saved cube-geometry label JSON."},
-        {"method": "POST", "path": "/api/recognize",       "brief": "Recognize one pair. Multipart fields: imageA, imageB; optional setId, expectedState. Query: ?slim=1 to omit overlays/diagnostics; ?hullLabelTier1=shadow|prefer for the hidden hull-label Tier 1 candidate path. Persists a run under /runs/pairs/<id>/."},
+        {"method": "POST", "path": "/api/recognize",       "brief": "Recognize one pair. Multipart fields: imageA, imageB; optional setId, expectedState. Query: ?slim=1 to omit overlays/diagnostics; ?hullLabelTier1=shadow|prefer for the hidden hull-label Tier 1 candidate path, or constrained-shadow|constrained for the hidden constrained-inference gate path. Persists a run under /runs/pairs/<id>/."},
         {"method": "POST", "path": "/api/llm-rectified-input", "brief": "Prepare two Claude/GPT-ready rectified WCA contact-sheet JPEGs from imageA/imageB. Multipart fields: imageA, imageB; optional yawQuarterTurns=0..3 or auto. Does not call an LLM or persist a run."},
         {"method": "POST", "path": "/api/recognize-batch", "brief": "Recognize multiple pairs in one call. Multipart field: images (multi-file); optional groundTruth (.csv/.tsv/.json). Pairs files by filename A/B markers or by drop order. Persists a batch under /runs/batches/<id>/."},
         {"method": "POST", "path": "/api/labels",          "brief": "Persist one cube-geometry label JSON document under /runs/labels/."},
@@ -1430,11 +1430,20 @@ def recognize_and_persist(
     expected_state: Optional[str] = None,
     hull_label_tier1_mode: Optional[str] = None,
 ) -> Dict:
-    result = recognizer.recognize(
-        pair.image_a.data,
-        pair.image_b.data,
-        hull_label_tier1_mode=hull_label_tier1_mode,
-    )
+    constrained_mode = _normalize_constrained_inference_mode(hull_label_tier1_mode)
+    if constrained_mode:
+        result = _recognize_with_constrained_inference_mode(
+            recognizer,
+            pair.image_a.data,
+            pair.image_b.data,
+            constrained_mode,
+        )
+    else:
+        result = recognizer.recognize(
+            pair.image_a.data,
+            pair.image_b.data,
+            hull_label_tier1_mode=hull_label_tier1_mode,
+        )
     payload = result.to_api_dict()
     if result.image_a and result.image_b:
         payload["diagnostics"] = recognition_diagnostics(result.image_a, result.image_b)
@@ -1454,6 +1463,111 @@ def recognize_and_persist(
     run_info = save_run(pair, payload, result, expected_state)
     payload.update(run_info)
     return payload
+
+
+def _normalize_constrained_inference_mode(raw: Optional[str]) -> Optional[str]:
+    value = str(raw or "").strip().lower().replace("_", "-")
+    if value in {"constrained-shadow", "constrained-trace", "constrained-diagnostic"}:
+        return "shadow"
+    if value in {"constrained", "constrained-prefer", "constrained-candidate"}:
+        return "prefer"
+    return None
+
+
+def _constrained_signal_from_payload(payload: Mapping[str, Any], *, selected: bool) -> Dict[str, Any]:
+    repair = payload.get("deterministicColorRepair")
+    repair_payload = repair if isinstance(repair, Mapping) else {}
+    recommended = repair_payload.get("recommended")
+    recommended_payload = recommended if isinstance(recommended, Mapping) else {}
+    return {
+        "schema": "constrained_inference_recognize_signal_v1",
+        "selected": selected,
+        "fallbackToLegacy": not selected,
+        "status": payload.get("status"),
+        "yawQuarterTurns": payload.get("yawQuarterTurns"),
+        "yawSource": payload.get("yawSource"),
+        "yawInference": payload.get("yawInference"),
+        "pairThresholdSelection": payload.get("hullLabelPairThresholdSelection"),
+        "promotionGate": payload.get("constrainedInferencePromotionGate"),
+        "recommendedMethod": repair_payload.get("recommendedMethod"),
+        "recommended": {
+            "validState": recommended_payload.get("validState"),
+            "countBalanced": recommended_payload.get("countBalanced"),
+            "confidence": recommended_payload.get("confidence"),
+            "repairMoveCount": recommended_payload.get("repairMoveCount"),
+            "repairCost": recommended_payload.get("repairCost"),
+            "repairChanges": recommended_payload.get("repairChanges"),
+            "stateDeltaFromCanonical": recommended_payload.get("stateDeltaFromCanonical"),
+        },
+    }
+
+
+def _constrained_candidate_result(payload: Mapping[str, Any]) -> Optional[RecognitionResult]:
+    gate = payload.get("constrainedInferencePromotionGate")
+    if not isinstance(gate, Mapping) or gate.get("accepted") is not True:
+        return None
+    repair = payload.get("deterministicColorRepair")
+    if not isinstance(repair, Mapping):
+        return None
+    recommended = repair.get("recommended")
+    if not isinstance(recommended, Mapping):
+        return None
+    state = recommended.get("state")
+    if not isinstance(state, str) or len(state) != 54:
+        return None
+    confidence_label = str(recommended.get("confidence") or "")
+    confidence = 0.90 if confidence_label == "high" else 0.80
+    return RecognitionResult(
+        status="success",
+        state=state,
+        confidence=confidence,
+        reason="Recognized a unique legal white-up cube state via constrained hull-label inference.",
+        failed_checks=[],
+        candidates=1,
+        recognition_signals={
+            "constrainedInference": _constrained_signal_from_payload(payload, selected=True),
+        },
+    )
+
+
+def _attach_constrained_shadow_signal(result: RecognitionResult, payload: Mapping[str, Any], *, selected: bool) -> None:
+    signals = dict(result.recognition_signals or {})
+    signals["constrainedInference"] = _constrained_signal_from_payload(payload, selected=selected)
+    result.recognition_signals = signals
+
+
+def _attach_constrained_error_signal(result: RecognitionResult, exc: Exception, *, mode: str) -> None:
+    signals = dict(result.recognition_signals or {})
+    signals["constrainedInference"] = {
+        "schema": "constrained_inference_recognize_signal_v1",
+        "selected": False,
+        "fallbackToLegacy": True,
+        "mode": mode,
+        "status": "error",
+        "error": f"{type(exc).__name__}: {exc}",
+    }
+    result.recognition_signals = signals
+
+
+def _recognize_with_constrained_inference_mode(
+    recognizer: WhiteUpRecognizer,
+    image_a: bytes,
+    image_b: bytes,
+    mode: str,
+) -> RecognitionResult:
+    legacy = recognizer.recognize(image_a, image_b, hull_label_tier1_mode="off")
+    try:
+        payload = prepare_llm_rectified_input(image_a, image_b)
+    except Exception as exc:  # noqa: BLE001
+        _attach_constrained_error_signal(legacy, exc, mode=mode)
+        return legacy
+
+    candidate = _constrained_candidate_result(payload)
+    if mode == "prefer" and candidate is not None:
+        return candidate
+
+    _attach_constrained_shadow_signal(legacy, payload, selected=False)
+    return legacy
 
 
 def _strip_heavy_fields(payload: Dict) -> None:

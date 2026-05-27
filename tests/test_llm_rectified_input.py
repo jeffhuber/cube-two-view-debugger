@@ -6,12 +6,12 @@ import pytest
 from PIL import Image
 
 from app import (
-    _choose_llm_rectified_pair_threshold,
     _infer_yaw_from_rectified_fits,
     _parse_llm_rectified_yaw,
 )
 from rubik_recognizer.colors import CANONICAL_RGB, FACE_TO_COLOR
 from tools.corner_conventions import wca_face_by_slot
+from tools.hull_label_pair_selector import choose_guarded_pair
 
 
 def _solid_face(wca_face: str) -> Image.Image:
@@ -95,9 +95,10 @@ def test_pair_threshold_selection_keeps_current_when_current_repair_valid():
     current = _threshold_combo(224, 192, valid=True, moves=10, score=200.0)
     tempting = _threshold_combo(224, 128, valid=True, moves=9, score=150.0)
 
-    selected = _choose_llm_rectified_pair_threshold(
+    selected = choose_guarded_pair(
         current_combo=current,
         candidates=[current, tempting],
+        fallback_to_current_without_alternative=True,
     )
 
     assert selected["thresholds"] == {"A": 224, "B": 192}
@@ -108,9 +109,10 @@ def test_pair_threshold_selection_switches_when_current_repair_invalid():
     current = _threshold_combo(160, 160, valid=False, moves=4, score=100.0)
     better = _threshold_combo(64, 192, valid=True, moves=8, score=120.0)
 
-    selected = _choose_llm_rectified_pair_threshold(
+    selected = choose_guarded_pair(
         current_combo=current,
         candidates=[current, better],
+        fallback_to_current_without_alternative=True,
     )
 
     assert selected["thresholds"] == {"A": 64, "B": 192}

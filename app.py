@@ -36,6 +36,7 @@ from rubik_recognizer.dataset import (
     parse_manifest_pairs,
 )
 from rubik_recognizer.recognizer import WhiteUpRecognizer, recognition_diagnostics
+from tools.hull_label_pair_selector import choose_guarded_pair, repair_rank, repair_valid
 
 
 ROOT = Path(__file__).resolve().parent
@@ -836,89 +837,6 @@ def _llm_rectified_session() -> Any:
         return _LLM_RECTIFIED_SESSION
 
 
-def _llm_rectified_repair_valid(evaluation: Mapping[str, Any]) -> bool:
-    repair = evaluation.get("repair")
-    if not isinstance(repair, Mapping):
-        return False
-    recommended = repair.get("recommended")
-    return bool(isinstance(recommended, Mapping) and recommended.get("validState"))
-
-
-def _llm_rectified_repair_rank(evaluation: Mapping[str, Any]) -> Tuple[int, int, float, int, int]:
-    """Rank a threshold-pair evaluation using production-available signals."""
-    repair = evaluation.get("repair")
-    if not isinstance(repair, Mapping):
-        return (9, 99, 999.0, 99, int(evaluation.get("yawQuarterTurns") or 0))
-
-    methods = repair.get("methods") if isinstance(repair.get("methods"), Mapping) else {}
-    canonical = methods.get("canonical_count_repaired") if isinstance(methods.get("canonical_count_repaired"), Mapping) else {}
-    conservative = methods.get("conservative_legal_repaired") if isinstance(methods.get("conservative_legal_repaired"), Mapping) else {}
-    guarded = methods.get("guarded_broad_legal_repaired") if isinstance(methods.get("guarded_broad_legal_repaired"), Mapping) else {}
-    recommended = repair.get("recommended") if isinstance(repair.get("recommended"), Mapping) else {}
-
-    if canonical.get("validState"):
-        tier = 0
-        primary = int(canonical.get("repairMoveCount") or 0)
-        cost = 0.0
-        changes = primary
-    elif conservative.get("validState"):
-        tier = 1
-        primary = int(conservative.get("repairChanges") or conservative.get("repairMoveCount") or 0)
-        cost = float(conservative.get("repairCost") or 0.0)
-        changes = primary
-    elif guarded.get("validState"):
-        tier = 2
-        primary = int(guarded.get("repairChanges") or guarded.get("repairMoveCount") or 0)
-        cost = float(guarded.get("repairCost") or 0.0)
-        changes = primary
-    elif canonical.get("countBalanced"):
-        tier = 3
-        primary = int(canonical.get("repairMoveCount") or 99)
-        cost = 0.0
-        changes = primary
-    else:
-        tier = 4
-        primary = int(recommended.get("repairMoveCount") or 99)
-        cost = float(recommended.get("repairCost") or 999.0)
-        changes = int(recommended.get("repairChanges") or primary)
-    return (tier, primary, cost, changes, int(evaluation.get("yawQuarterTurns") or 0))
-
-
-def _choose_llm_rectified_pair_threshold(
-    *,
-    current_combo: Mapping[str, Any],
-    candidates: Sequence[Mapping[str, Any]],
-) -> Dict[str, Any]:
-    """Conservative A/B threshold selection for rectified Fixer input."""
-    current_eval = current_combo.get("evaluation")
-    if isinstance(current_eval, Mapping) and _llm_rectified_repair_valid(current_eval):
-        selected = dict(current_combo)
-        selected["selectionReason"] = "kept_current_valid_repair"
-        return selected
-
-    assembled = [
-        combo for combo in candidates
-        if isinstance(combo.get("evaluation"), Mapping)
-        and combo["evaluation"].get("status") == "assembled"
-    ]
-    if not assembled:
-        selected = dict(current_combo)
-        selected["selectionReason"] = "kept_current_no_assembled_alternative"
-        return selected
-
-    selected = dict(min(
-        assembled,
-        key=lambda combo: (
-            _llm_rectified_repair_rank(combo["evaluation"]),
-            float(combo.get("stickerScoreTotal") or 999999.0),
-            int(combo.get("thresholds", {}).get("A") or 9999),
-            int(combo.get("thresholds", {}).get("B") or 9999),
-        ),
-    ))
-    selected["selectionReason"] = "current_invalid_selected_best_pair"
-    return selected
-
-
 def prepare_llm_rectified_input(
     image_a_bytes: bytes,
     image_b_bytes: bytes,
@@ -1124,7 +1042,7 @@ def prepare_llm_rectified_input(
             "thresholds": {"A": int(thresholds["A"]), "B": int(thresholds["B"])},
             "sideFits": {side: dict(side_entries[side]) for side in ("A", "B")},
             "evaluation": evaluation,
-            "productionRank": list(_llm_rectified_repair_rank(evaluation)),
+            "productionRank": list(repair_rank(evaluation)),
             "stickerScoreTotal": round(score_total, 2),
         }
 
@@ -1154,7 +1072,7 @@ def prepare_llm_rectified_input(
 
     current_combo = compact_combo(current_thresholds, current_side_entries)
     pair_candidates: List[Dict[str, Any]] = [current_combo]
-    if not _llm_rectified_repair_valid(current_combo["evaluation"]):
+    if not repair_valid(current_combo["evaluation"]):
         pair_candidates = []
         for threshold_a, entry_a in sorted(threshold_entries_by_side["A"].items()):
             for threshold_b, entry_b in sorted(threshold_entries_by_side["B"].items()):
@@ -1162,9 +1080,10 @@ def prepare_llm_rectified_input(
                     {"A": threshold_a, "B": threshold_b},
                     {"A": entry_a, "B": entry_b},
                 ))
-    selected_combo = _choose_llm_rectified_pair_threshold(
+    selected_combo = choose_guarded_pair(
         current_combo=current_combo,
         candidates=pair_candidates,
+        fallback_to_current_without_alternative=True,
     )
     selected_eval = selected_combo["evaluation"]
     yaw_inference = selected_eval.get("yawInference") or {}
@@ -1194,8 +1113,8 @@ def prepare_llm_rectified_input(
         "selectionReason": selected_combo.get("selectionReason"),
         "currentThresholds": current_thresholds,
         "selectedThresholds": selected_combo.get("thresholds"),
-        "currentRepairValid": _llm_rectified_repair_valid(current_combo["evaluation"]),
-        "selectedRepairValid": _llm_rectified_repair_valid(selected_eval),
+        "currentRepairValid": repair_valid(current_combo["evaluation"]),
+        "selectedRepairValid": repair_valid(selected_eval),
         "evaluatedPairCount": len(pair_candidates),
         "possiblePairCount": (
             len(threshold_entries_by_side["A"]) * len(threshold_entries_by_side["B"])

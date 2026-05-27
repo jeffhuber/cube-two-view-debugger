@@ -44,6 +44,11 @@ from tools.diagnose_hull_label_color_repair import (  # noqa: E402
 from tools.extract_color_samples import PairTask, load_corpus_tasks  # noqa: E402
 from tools.global_cube_model import _slot_center_faces_from_rectified  # noqa: E402
 from tools.hull_label_color_repair import repair_from_hull_label_fits  # noqa: E402
+from tools.hull_label_pair_selector import (  # noqa: E402
+    choose_guarded_pair,
+    choose_pair_by_production_signals,
+    repair_rank,
+)
 from tools.rectify_faces import DEFAULT_FACE_SIZE  # noqa: E402
 from tools.rectify_via_hull_labels import (  # noqa: E402
     DEFAULT_MASK_THRESHOLDS,
@@ -85,88 +90,6 @@ def _payload_summary(payload: Mapping[str, Any]) -> Dict[str, Any]:
         "guardedBroadLegal": _method_summary(methods.get("guarded_broad_legal_repaired")),
         "broadLegal": _method_summary(methods.get("broad_legal_repaired")),
     }
-
-
-def _method_rank(payload: Mapping[str, Any]) -> Tuple[int, int, float, int, int]:
-    """Rank a threshold-pair payload using production-available signals.
-
-    Lower is better. The rank deliberately avoids ground-truth hamming.
-    """
-    methods = payload.get("methods") or {}
-    canonical = methods.get("canonical_count_repaired") or {}
-    guarded = methods.get("guarded_broad_legal_repaired") or {}
-    conservative = methods.get("conservative_legal_repaired") or {}
-    recommended = payload.get("recommended") or {}
-
-    if canonical.get("validState"):
-        tier = 0
-        primary = int(canonical.get("repairMoveCount") or 0)
-        cost = 0.0
-        changes = primary
-    elif conservative.get("validState"):
-        tier = 1
-        primary = int(conservative.get("repairChanges") or conservative.get("repairMoveCount") or 0)
-        cost = float(conservative.get("repairCost") or 0.0)
-        changes = primary
-    elif guarded.get("validState"):
-        tier = 2
-        primary = int(guarded.get("repairChanges") or guarded.get("repairMoveCount") or 0)
-        cost = float(guarded.get("repairCost") or 0.0)
-        changes = primary
-    elif canonical.get("countBalanced"):
-        tier = 3
-        primary = int(canonical.get("repairMoveCount") or 99)
-        cost = 0.0
-        changes = primary
-    else:
-        tier = 4
-        primary = int(recommended.get("repairMoveCount") or 99)
-        cost = float(recommended.get("repairCost") or 999.0)
-        changes = int(recommended.get("repairChanges") or primary)
-    return (tier, primary, cost, changes, int(payload.get("yawQuarterTurns") or 0))
-
-
-def choose_pair_by_production_signals(combos: Sequence[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
-    accepted = [combo for combo in combos if combo.get("status") == "assembled"]
-    if not accepted:
-        return None
-    return min(
-        accepted,
-        key=lambda combo: (
-            tuple(combo.get("productionRank") or (99, 99, 999.0, 99, 99)),
-            float(combo.get("stickerScoreTotal") or 999999.0),
-            int(combo["thresholds"]["A"]),
-            int(combo["thresholds"]["B"]),
-        ),
-    )
-
-
-def choose_guarded_pair(
-    *,
-    current_combo: Optional[Mapping[str, Any]],
-    current_eval: Mapping[str, Any],
-    aggressive_pair: Optional[Mapping[str, Any]],
-) -> Optional[Mapping[str, Any]]:
-    """Choose threshold pair with a conservative production gate.
-
-    If the current per-side selector already yields a valid recommended state,
-    do not switch. Set 73 shows why: alternate threshold pairs can also be
-    legal but encode the wrong cube. Pair search is valuable when the current
-    selected geometry cannot assemble a valid cube, as in Set 14.
-    """
-    current_rec = (
-        current_eval.get("summary", {})
-        .get("recommended", {})
-    )
-    if current_rec.get("validState") and current_combo is not None:
-        out = dict(current_combo)
-        out["selectionReason"] = "kept_current_valid_repair"
-        return out
-    if aggressive_pair is not None:
-        out = dict(aggressive_pair)
-        out["selectionReason"] = "current_invalid_selected_best_pair"
-        return out
-    return None
 
 
 def choose_pair_by_oracle(combos: Sequence[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
@@ -280,7 +203,7 @@ def _compact_combo(
             "yawInference": evaluation.get("yawInference"),
         }
     payload = evaluation["payload"]
-    rank = _method_rank(payload)
+    rank = repair_rank(payload)
     score_total = (
         float((fit_a.get("trace") or {}).get("sticker_score_total") or 0.0)
         + float((fit_b.get("trace") or {}).get("sticker_score_total") or 0.0)

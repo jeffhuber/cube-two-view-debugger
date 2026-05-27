@@ -14,6 +14,7 @@ Git head: `0078609caa58f3455805650d576991f655ad2586`
 | Current recommended repair selector | 70/71 | 70/71 | `{0: 70, 4: 1}` |
 | Guarded pair-threshold selector | 71/71 | 71/71 | `{0: 71}` |
 | Constrained-inference promotion gate | 71/71 accepted | 71/71 accepted | accepted `{0: 71}` |
+| Hidden `/api/recognize?hullLabelTier1=constrained` mode | 71/71 | 71/71 | `{0: 71}` |
 
 The current per-side threshold selector leaves one row, Set 14, at hamming 4.
 The guarded pair-threshold selector switches Set 14 from thresholds
@@ -31,6 +32,9 @@ regressing any row in the corpus.
   current-selector failure as a large visual walkthrough.
 - `tools/CONSTRAINED_INFERENCE_PROMOTION_GATE.md` applies a GT-free
   production-shaped auto-return gate to the guarded pair-threshold candidate.
+- `tools/CONSTRAINED_RECOGNIZE_MODE_VALIDATION.md` runs the same gate at the
+  recognizer boundary through the hidden constrained mode and compares it with
+  the unchanged legacy/default recognizer path.
 
 ## Interpretation
 
@@ -40,9 +44,12 @@ thresholds at the pair level chooses a different B-side mask threshold and
 the same deterministic repair machinery becomes exact.
 
 That makes the guarded pair-threshold path the current production-shaped
-candidate for the hidden rectified Fixer flow. The promotion-gate diagnostic
-now accepts 71/71 corpus rows and scores 71/71 exact using ground truth. That
-is a strong shadow/default-candidate signal, but it is not yet a default
-`/api/recognize` flip: the next production step should run this exact gate in
-the recognizer path and explicitly decide fallback behavior when the gate
-rejects.
+candidate. The promotion-gate diagnostic accepts 71/71 corpus rows and scores
+71/71 exact using ground truth, and the hidden constrained `/api/recognize`
+mode now reproduces that 71/71 exact result at the recognizer boundary while
+the unchanged legacy path is 24/71 exact on the same corpus.
+
+This is a strong shadow/default-candidate signal, but it is not yet a default
+flip: the next production step should run the hidden constrained mode in shadow
+on real traffic and explicitly preserve fallback/manual-review behavior when
+the gate rejects.

@@ -83,21 +83,6 @@ else
   die "no controlled Python found. Create ${repo_root}/.venv, set CODEX_AUDIT_PYTHON=/path/to/venv/bin/python, pass --repo-paths <owner/repo>:<path-with-.venv>, or set CODEX_AUDIT_REPO_PATHS in the env. Refusing to use ambient python3."
 fi
 
-# codex_audit_pr.py requires GITHUB_TOKEN for the GitHub API calls (PR
-# metadata fetch, comment post). Fall back to `gh auth token` when the
-# env var isn't already set so the common case (running locally with
-# `gh auth login` already done) just works without the user having to
-# remember to export GITHUB_TOKEN. Silent on failure — if gh isn't
-# installed or isn't authed, the python script's own "GITHUB_TOKEN env
-# var is required" error will fire downstream with a clear message.
-if [ -z "${GITHUB_TOKEN:-}" ]; then
-  if command -v gh >/dev/null 2>&1; then
-    if gh_token="$(gh auth token 2>/dev/null)" && [ -n "${gh_token}" ]; then
-      export GITHUB_TOKEN="${gh_token}"
-    fi
-  fi
-fi
-
 lock_id=""
 if [ -n "${repo_arg}" ] && [ -n "${pr_arg}" ]; then
   set +e

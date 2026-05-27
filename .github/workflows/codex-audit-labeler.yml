@@ -97,6 +97,15 @@ jobs:
     if: github.event_name == 'pull_request_target' && github.event.action == 'synchronize'
     runs-on: ubuntu-latest
     timeout-minutes: 2
+    # Cancel superseded sync runs for the same PR (Codex P2 round 4 of
+    # cube-snap#205). If multiple pushes queue close together, the
+    # earlier runs hold a stale event-payload SHA; cancelling them
+    # when a newer run starts means only the latest run touches
+    # labels. The runtime refetch below ALSO guards against stale
+    # payloads in case cancellation races (defense in depth).
+    concurrency:
+      group: codex-audit-labeler-sync-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
     steps:
       - name: Clear stale Codex audit labels on push
         uses: actions/github-script@v7
@@ -104,20 +113,35 @@ jobs:
           CODEX_BOT_AUTHORS: ${{ vars.CODEX_BOT_AUTHORS }}
         with:
           script: |
-            const currentHead = context.payload.pull_request.head.sha;
             const pr_number = context.payload.pull_request.number;
 
-            // Race guard (Codex P2 round 3 of cube-snap#205): the
-            // synchronize workflow can queue behind a subsequent audit
-            // run on the new head. If the audit fires first and applies
-            // a fresh codex-audit-done / codex-audit-blocked for the
-            // current head, we must NOT erase it. Check the most recent
-            // Codex audit comment and skip the removal if its reviewed
-            // head SHA matches the current PR head.
-            const defaultBots = ['codex-audit-bot', 'codex-audit-bot[bot]'];
-            const customBots = (process.env.CODEX_BOT_AUTHORS || '')
-              .split(',').map(s => s.trim()).filter(Boolean);
-            const botLogins = new Set([...defaultBots, ...customBots]);
+            // Refetch live PR head (Codex P2 round 4 of cube-snap#205).
+            // Event-payload `pull_request.head.sha` can be stale if
+            // multiple pushes queue up and this run is processed out
+            // of order; only the actual current head is safe to
+            // compare against the latest audit comment.
+            const prResp = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr_number,
+            });
+            const currentHead = prResp.data.head.sha.toLowerCase();
+
+            // Mirror the Python labeler's author normalization (Codex
+            // P2 round 4 of ctvd#371). CODEX_BOT_AUTHORS is an
+            // OVERRIDE (not additive) when set; entries are stripped
+            // and lowercased; comparison is against lowercased login.
+            // See `_DEFAULT_AUTHORS` / `CODEX_COMMENT_AUTHORS` in
+            // tools/codex_audit_labeler.py — this block must stay in
+            // sync with that semantics or the two workflows can
+            // disagree on which comments count as authoritative.
+            const DEFAULT_AUTHORS = 'codex-audit-bot,codex-audit-bot[bot]';
+            const botLogins = new Set(
+              (process.env.CODEX_BOT_AUTHORS || DEFAULT_AUTHORS)
+                .split(',')
+                .map(s => s.trim().toLowerCase())
+                .filter(Boolean)
+            );
 
             const comments = await github.paginate(
               github.rest.issues.listComments,
@@ -129,30 +153,48 @@ jobs:
               }
             );
             const audits = comments
-              .filter(c => botLogins.has(c.user.login))
+              .filter(c => botLogins.has((c.user.login || '').toLowerCase()))
               .filter(c => /<!--\s*CODEX_AUDIT_STATE:/.test(c.body))
               .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            // Trailer-aware preservation (Codex P1 round 4 of ctvd#371).
+            // Previously preserved ANY audit label when the latest
+            // comment SHA matched current head, but a stale
+            // codex-audit-done from earlier head + latest comment for
+            // current head as BLOCKED would let the stale PASS survive
+            // and falsely authorize a merge. Parse the trailer and
+            // preserve only the label that matches it.
+            const stale_labels = new Set(['codex-audit-done', 'codex-audit-blocked']);
             if (audits.length > 0) {
-              const m = audits[0].body.match(/Head SHA:\s*`([0-9a-fA-F]{7,40})`/);
-              if (m) {
-                const reviewed = m[1].toLowerCase();
-                const current = currentHead.toLowerCase();
-                // Match on either the full 40-char SHA or the 7+ char
-                // prefix (codex_audit_pr.format_comment usually emits
-                // the full SHA but defend against future trimming).
-                if (current === reviewed || current.startsWith(reviewed)) {
-                  core.info(
-                    `Latest Codex audit comment (id=${audits[0].id}) is for current head ${currentHead}; preserving any audit labels.`
+              const latest = audits[0];
+              const shaM = latest.body.match(/Head SHA:\s*`([0-9a-fA-F]{7,40})`/);
+              const trailerM = latest.body.match(/<!--\s*CODEX_AUDIT_STATE:\s*([\w-]+)\s*-->/i);
+              if (shaM && trailerM) {
+                const reviewed = shaM[1].toLowerCase();
+                const trailer = trailerM[1].toLowerCase();
+                const headMatches = currentHead === reviewed || currentHead.startsWith(reviewed);
+                if (headMatches) {
+                  // `needs-codex-audit` trailer = audit didn't
+                  // complete; treat as no fresh audit and remove both.
+                  const preserve = (
+                    trailer === 'codex-audit-done' ? 'codex-audit-done' :
+                    trailer === 'codex-audit-blocked' ? 'codex-audit-blocked' :
+                    null
                   );
-                  return;
+                  if (preserve) {
+                    stale_labels.delete(preserve);
+                    core.info(
+                      `Latest audit comment (id=${latest.id}) for current head ${currentHead} is ${trailer}; preserving ${preserve}, removing the opposing audit label.`
+                    );
+                  } else {
+                    core.info(
+                      `Latest audit comment (id=${latest.id}) for current head ${currentHead} has trailer ${trailer}; removing all audit labels.`
+                    );
+                  }
                 }
               }
             }
 
-            // No fresh audit comment for the current head — any
-            // existing audit labels were applied for an older head and
-            // are now stale.
-            const stale_labels = ['codex-audit-done', 'codex-audit-blocked'];
             for (const name of stale_labels) {
               try {
                 await github.rest.issues.removeLabel({

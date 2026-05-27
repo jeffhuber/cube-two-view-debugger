@@ -20,6 +20,7 @@ audit_args=("$@")
 repo_arg=""
 pr_arg=""
 repo_paths_arg=""
+help_requested=""
 idx=0
 while [ "${idx}" -lt "${#audit_args[@]}" ]; do
   arg="${audit_args[${idx}]}"
@@ -44,6 +45,9 @@ while [ "${idx}" -lt "${#audit_args[@]}" ]; do
       ;;
     --repo-paths=*)
       repo_paths_arg="${arg#--repo-paths=}"
+      ;;
+    --help|-h)
+      help_requested=1
       ;;
   esac
   idx=$((idx + 1))
@@ -150,7 +154,7 @@ fi
 # the credential-sharing decision is deliberate. See Codex P1
 # audits on cube-snap#194 and cube-two-view-debugger#354 for the
 # full reasoning behind reverting the auto-fallback.
-if [ -z "${GITHUB_TOKEN:-}" ]; then
+if [ -z "${help_requested}" ] && [ -z "${GITHUB_TOKEN:-}" ]; then
   printf 'error: GITHUB_TOKEN env var is required.\n' >&2
   printf '\n' >&2
   printf '  To use your local gh CLI credential (one-shot):\n' >&2
@@ -162,7 +166,38 @@ if [ -z "${GITHUB_TOKEN:-}" ]; then
   printf '  (Not auto-sourced: would expose the credential to the\n' >&2
   printf '   untrusted codex review subprocess. See commit message\n' >&2
   printf '   on this script for details.)\n' >&2
+  printf '\n' >&2
+  printf '  To inspect CLI options without a token, use --help or -h.\n' >&2
   exit 1
 fi
 
-"${python_bin}" "${audit_script}" "${audit_args[@]}"
+# Capture GITHUB_TOKEN/GH_TOKEN into local bash variables and remove
+# them from THIS shell's environment. Without this, the audit
+# subprocess (codex review running PR-controlled tooling) can walk up
+# the process tree via /proc/<bash_pid>/environ on Linux (or
+# equivalent same-user introspection) and recover the credential
+# despite Python's _build_subprocess_env sanitization. Codex P1 audit
+# on cube-snap#194 and cube-two-view-debugger#354 caught this.
+#
+# We re-export the token only as an inline-scoped env var on the
+# python invocation below, so the python child sees it briefly until
+# its own _extract_and_clear_github_token() pops it from os.environ.
+# After that point, neither this shell's env nor python's env contain
+# the token, and the codex subprocess walking up either pid finds
+# nothing. The user's interactive shell may still hold the token —
+# that's the user's deliberate export and outside this wrapper's
+# scope to clear.
+_token_to_pass=""
+if [ -n "${GITHUB_TOKEN:-}" ]; then
+  _token_to_pass="${GITHUB_TOKEN}"
+  unset GITHUB_TOKEN
+fi
+unset GH_TOKEN  # strip alt-name even if unused, for completeness
+
+if [ -n "${_token_to_pass}" ]; then
+  GITHUB_TOKEN="${_token_to_pass}" "${python_bin}" "${audit_script}" "${audit_args[@]}"
+else
+  # No token in env — this is the --help/-h bypass path. Let python
+  # show its argparse usage; no token needed for that.
+  "${python_bin}" "${audit_script}" "${audit_args[@]}"
+fi

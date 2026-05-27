@@ -782,6 +782,48 @@ def test_build_subprocess_env_noop_when_venv_path_is_none(monkeypatch):
     assert "VIRTUAL_ENV" not in env
 
 
+def test_extract_and_clear_github_token_removes_from_os_environ(monkeypatch):
+    """The parent Python process's os.environ must not retain GITHUB_TOKEN
+    after _extract_and_clear_github_token() runs. The codex review
+    subprocess walks the process tree (/proc/<ppid>/environ on Linux,
+    equivalent on other same-user systems) and would otherwise recover
+    the credential from the parent Python process's environment despite
+    the _build_subprocess_env sanitization.
+
+    Caught by Codex P1 audit on cube-two-view-debugger#354: env
+    sanitization on the subprocess copy alone is insufficient — the
+    real parent process env must also be cleared. The bash wrapper does
+    the same for its own env before exec'ing this script (see
+    tools/run_codex_audit_pr.sh).
+    """
+    import tools.codex_audit_pr as c
+    monkeypatch.setenv("GITHUB_TOKEN", "ghp_secret_value_12345")
+    monkeypatch.setenv("GH_TOKEN", "ghp_other_secret_67890")
+
+    token = c._extract_and_clear_github_token()
+
+    assert token == "ghp_secret_value_12345", (
+        "function must return the captured token in a local variable for "
+        "the caller to use; only the env-var copy gets cleared"
+    )
+    assert "GITHUB_TOKEN" not in os.environ, (
+        "GITHUB_TOKEN must be removed from this process's os.environ so "
+        "/proc/<pid>/environ does not expose it to descendant subprocesses"
+    )
+    assert "GH_TOKEN" not in os.environ, (
+        "GH_TOKEN (alt name) must also be stripped"
+    )
+
+
+def test_extract_and_clear_github_token_returns_none_when_unset(monkeypatch):
+    """When GITHUB_TOKEN is not set, return None. Caller decides whether
+    to fail (e.g. main() prints an error) or proceed (e.g. --help mode)."""
+    import tools.codex_audit_pr as c
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    monkeypatch.delenv("GH_TOKEN", raising=False)
+    assert c._extract_and_clear_github_token() is None
+
+
 def test_build_subprocess_env_strips_github_token_from_subprocess(
     tmp_path, monkeypatch,
 ):

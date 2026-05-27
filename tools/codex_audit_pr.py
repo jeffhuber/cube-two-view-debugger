@@ -854,9 +854,34 @@ def _parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     return ap.parse_args(argv)
 
 
+def _extract_and_clear_github_token() -> Optional[str]:
+    """Read GITHUB_TOKEN from os.environ, then remove it (and GH_TOKEN)
+    from os.environ so this Python process's /proc/<pid>/environ doesn't
+    expose the credential to descendants.
+
+    The codex review subprocess we spawn later receives a sanitized env
+    via _build_subprocess_env, but a malicious PR that walks the
+    process tree can still inspect ancestor processes' environments on
+    same-user systems (Linux /proc/<pid>/environ, macOS via task
+    inspection if entitlements permit). Clearing the token from this
+    process's env closes the ancestor-env attack for the Python layer.
+    The wrapper shell also unsets GITHUB_TOKEN before invoking this
+    script — see the wrapper for the bash-side half of the
+    defense-in-depth.
+
+    Returns the token value (kept only in a local variable, NOT
+    re-exported via os.environ), or None if no token was present.
+    """
+    token = os.environ.pop("GITHUB_TOKEN", None)
+    # GH_TOKEN is the gh CLI's alternate env name; strip it too even if
+    # unused here, since the same exposure applies.
+    os.environ.pop("GH_TOKEN", None)
+    return token
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     args = _parse_args(argv)
-    token = os.environ.get("GITHUB_TOKEN")
+    token = _extract_and_clear_github_token()
     if not token:
         print("error: GITHUB_TOKEN env var is required", file=sys.stderr)
         return 1

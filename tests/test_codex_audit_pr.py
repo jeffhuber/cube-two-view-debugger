@@ -323,6 +323,30 @@ def test_parse_stderr_fallback_rejects_blank_line_pseudo_continuation():
     assert "strict Codex final-verdict shape" in parsed.prose
 
 
+def test_parse_stderr_fallback_rejects_multiline_finding_header():
+    """Codex round-7 P2 audit on ctvd#360 60bf318: the earlier
+    strict-shape regex used `\\s—\\s` around the em dash. `\\s`
+    can match newlines, so a bullet line followed by an em-dash
+    file/line line could satisfy the validator even though the
+    documented Codex finding header must be one physical line.
+
+    Defense: em-dash separators now use `[ \\t]+` on both sides,
+    so the title, em dash, file path, and line number must stay on
+    the same line."""
+    parsed = c.parse_codex_output(
+        stdout="exec progress without final marker",
+        stderr="codex\n"
+               "The summary line here is intentionally substantive "
+               "and well over forty characters so it passes the "
+               "summary check on its own.\n"
+               "- [P2] fake bullet split across lines\n"
+               "— generated.md:1\n"
+               "  with an indented continuation line\n",
+    )
+    assert parsed.verdict == "UNKNOWN"
+    assert "strict Codex final-verdict shape" in parsed.prose
+
+
 def test_parse_stderr_fallback_rejects_strict_finding_without_summary():
     """Even a strictly-shaped finding bullet (em-dash + file:line +
     indented continuation) is not enough on its own. Real Codex

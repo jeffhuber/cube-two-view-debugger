@@ -402,6 +402,19 @@ def dump_cli_failure(
     exists with the umask perms before being restricted. (Codex P2
     audit on cube-snap#196 5e97011.)
 
+    Symlink / pre-existing-path safety: open uses `O_EXCL | O_NOFOLLOW`
+    in addition to `O_CREAT`, so a PR-controlled subprocess that
+    pre-creates the dump path (predictable filename) as either a
+    symlink-to-sensitive-target or a world-readable regular file
+    cannot trick this helper into truncating an arbitrary file or
+    leaving our 0o600 mode unenforced (`mode` is ignored for
+    existing targets). A collision fails the open; the OSError
+    handler returns None and the dump is just skipped — preferable
+    to writing potentially-credential-laden content into an attacker-
+    controlled path. The timestamp includes microseconds to make
+    natural collisions vanishingly rare. (Codex P2 audit on
+    cube-snap#196 17b4156.)
+
     Returns the dump path on success, or None if the dump failed
     (best-effort; we never want this helper to interrupt an audit).
 
@@ -425,7 +438,9 @@ def dump_cli_failure(
 
         owner_name = repo.replace("/", "_")
         short_sha = (head_sha or "unknown")[:12]
-        ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        # Microsecond resolution — same-second collisions across audits
+        # would have caused O_EXCL (below) to refuse the open.
+        ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S_%fZ")
         path = base_dir / f"{owner_name}_pr{pr_number}_{short_sha}_{ts}.log"
 
         header = (
@@ -445,10 +460,20 @@ def dump_cli_failure(
             + "\n===== STDERR =====\n"
             + (stderr if stderr else "<empty>\n")
         )
-        # Atomic create-with-mode: no umask window between open() and chmod().
+        # Atomic create-with-mode + symlink/pre-existing refusal:
+        # - O_CREAT|O_EXCL: refuses if path already exists; together
+        #   they guarantee our 0o600 mode is enforced (the mode arg
+        #   is ignored by the kernel for existing targets).
+        # - O_NOFOLLOW: refuses if the final path component is a
+        #   symlink, so a pre-planted symlink-to-sensitive-file
+        #   cannot redirect our write.
+        # On collision/symlink: open raises OSError → caught by the
+        # outer try → dump skipped (None returned). Better to lose a
+        # diagnostic dump than write credential-laden bytes to an
+        # attacker-controlled path.
         fd = os.open(
             str(path),
-            os.O_WRONLY | os.O_CREAT | os.O_TRUNC,
+            os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
             0o600,
         )
         with os.fdopen(fd, "w", encoding="utf-8") as f:

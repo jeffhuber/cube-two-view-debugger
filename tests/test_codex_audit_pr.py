@@ -278,6 +278,82 @@ def test_dump_cli_failure_writes_owner_only_file_perms(tmp_path):
     assert mode == 0o600, f"expected 0o600 file perms, got 0o{mode:o}"
 
 
+def test_dump_cli_failure_refuses_to_follow_symlink_at_target(tmp_path):
+    """Codex P2 audit on cube-snap#196 17b4156: an attacker on the
+    same audit host can pre-create the predictable dump filename
+    as a symlink to an arbitrary file (e.g., ~/.ssh/authorized_keys).
+    O_CREAT|O_TRUNC would follow the symlink and overwrite that file
+    AND the 0o600 mode would be ignored. Our O_NOFOLLOW must refuse
+    rather than write, dropping the dump entirely."""
+    # Simulate the predictable filename collision by patching datetime
+    # to return a deterministic UTC string, then pre-creating that
+    # path as a symlink to a sensitive target.
+    fixed_ts = "20260527T000000_000000Z"
+    real_datetime = c.datetime
+
+    class FrozenDT:
+        @staticmethod
+        def now(tz=None):
+            class T:
+                @staticmethod
+                def strftime(fmt):
+                    return fixed_ts
+            return T()
+
+    sensitive_target = tmp_path / "sensitive.txt"
+    sensitive_target.write_text("original sensitive content")
+
+    target_link = tmp_path / f"o_r_pr1_abcdefabcdef_{fixed_ts}.log"
+    target_link.symlink_to(sensitive_target)
+
+    import unittest.mock as mock
+    with mock.patch.object(c, "datetime", FrozenDT):
+        path = c.dump_cli_failure(
+            repo="o/r", pr_number=1, head_sha="abcdefabcdef",
+            stdout="leaked stdout", stderr="leaked stderr",
+            reason="r", base_dir=tmp_path,
+        )
+
+    # Dump must have refused the symlink.
+    assert path is None
+    # Sensitive file content must be untouched.
+    assert sensitive_target.read_text() == "original sensitive content"
+
+
+def test_dump_cli_failure_refuses_pre_existing_regular_file(tmp_path):
+    """Same P2 — an attacker can pre-create the dump path as a
+    regular file with world-readable perms. O_CREAT alone would
+    ignore mode for existing files. O_EXCL must refuse, so our
+    0o600 invariant always holds for files we actually create."""
+    fixed_ts = "20260527T000000_000000Z"
+
+    class FrozenDT:
+        @staticmethod
+        def now(tz=None):
+            class T:
+                @staticmethod
+                def strftime(fmt):
+                    return fixed_ts
+            return T()
+
+    existing = tmp_path / f"o_r_pr1_abcdefabcdef_{fixed_ts}.log"
+    existing.write_text("attacker placeholder")
+    existing.chmod(0o644)
+
+    import unittest.mock as mock
+    with mock.patch.object(c, "datetime", FrozenDT):
+        path = c.dump_cli_failure(
+            repo="o/r", pr_number=1, head_sha="abcdefabcdef",
+            stdout="leaked stdout", stderr="leaked stderr",
+            reason="r", base_dir=tmp_path,
+        )
+
+    assert path is None
+    # Content untouched, perms untouched — we did not write.
+    assert existing.read_text() == "attacker placeholder"
+    assert (existing.stat().st_mode & 0o777) == 0o644
+
+
 def test_dump_cli_failure_chmods_existing_dir_to_owner_only(tmp_path):
     """If the base dir exists with looser perms (e.g., a fresh user
     pre-created `~/.cache/cube-agent-audits/` with the umask), the

@@ -16,7 +16,9 @@ from tools.hull_label_color_repair import (
     assemble_color_repair_payload,
     choose_recommended_method,
     _face_index,
+    _guarded_broad_payload,
     greedy_count_repair,
+    state_delta_payload,
 )
 from tools.extract_color_samples import PairTask
 
@@ -164,7 +166,48 @@ def test_assemble_color_repair_payload_exposes_repaired_draft():
     assert payload["recommended"]["confidence"] == "high"
     assert payload["methods"]["conservative_legal_repaired"]["status"] == "already_valid_count_repair"
     assert payload["methods"]["guarded_broad_legal_repaired"]["gate"]["accepted"] is True
+    assert payload["methods"]["guarded_broad_legal_repaired"]["gate"]["stateDeltaFromCanonical"]["count"] == 0
     assert payload["methods"]["broad_legal_repaired"]["diagnosticOnly"] is True
+
+
+def test_state_delta_gate_uses_count_repaired_delta_not_repair_changes():
+    baseline = "U" * 54
+    set11_like = list(baseline)
+    set11_like[20] = "F"
+    set11_like[53] = "B"
+    set14_like = list(baseline)
+    for index in range(6):
+        set14_like[index] = "R"
+
+    admit = _guarded_broad_payload(
+        {
+            "status": "legal_repair_found",
+            "state": "".join(set11_like),
+            "validState": True,
+            "repairCost": 10.15,
+            "repairChanges": 6,
+            "stateDeltaFromCanonical": state_delta_payload(baseline, "".join(set11_like)),
+        },
+        gt_state=None,
+    )
+    reject = _guarded_broad_payload(
+        {
+            "status": "legal_repair_found",
+            "state": "".join(set14_like),
+            "validState": True,
+            "repairCost": 10.15,
+            "repairChanges": 5,
+            "stateDeltaFromCanonical": state_delta_payload(baseline, "".join(set14_like)),
+        },
+        gt_state=None,
+    )
+
+    assert admit["status"] == "accepted_guarded_broad_legal_repair"
+    assert admit["gate"]["stateDeltaFromCanonical"]["count"] == 2
+    assert admit["repairChanges"] == 6
+    assert reject["status"] == "rejected_guarded_broad_legal_repair"
+    assert reject["gate"]["stateDeltaFromCanonical"]["count"] == 6
+    assert reject["rejectedRepairChanges"] == 5
 
 
 def test_choose_recommended_method_uses_guarded_legal_before_balanced_fallback():

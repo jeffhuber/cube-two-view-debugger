@@ -154,7 +154,6 @@
 | `codex_audit_pr.py` | Codex audit lane CLI. Invokes `codex review --base origin/main` against a worktree at PR head; parses `[P0]/[P1]/[P2]/[P3]` severity tags; posts comment with `CODEX_AUDIT_STATE` trailer. **Mirrored byte-identical.** Calibration-phase informational only. See `tools/CODEX_AUDIT_PROTOCOL.md`. |
 | `codex_audit_labeler.py` | Apply `codex-audit-{done,blocked,needs}` labels. **Mirrored byte-identical.** |
 | `greptile_audit_labeler.py` | Apply `greptile-audit-{done,blocked,needs}` labels by parsing P0/P1/P2/P3 severity badges in Greptile's inline review comments. Fires on `pull_request_review` events from `greptile-apps[bot]`. **Mirrored byte-identical.** Calibration-phase informational only. Dormant until Greptile GitHub App is installed. See `tools/GREPTILE_AUDIT_PROTOCOL.md`. |
-| `request_review.py` | Request Claude/Codex peer review from structured arguments: generated safe comment, routing label, and `review_requested` shared-log event. Use this instead of hand-written review-request heredocs. |
 | `safe_gh_comment.py` | Post/edit PR or issue comments from a file/stdin via JSON-backed `gh api`, so Markdown backticks and `$()` are never shell-interpreted. Prefer this over `gh ... --body "..."`. |
 | `view_photo.py` | EXIF-correct + view a photo (works around Read tool's raw-pixel quirk). |
 

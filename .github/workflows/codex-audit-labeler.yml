@@ -152,6 +152,39 @@ jobs:
                 per_page: 100,
               }
             );
+            // Audit-comment classifier — mirrors Python's
+            // `classify_audit_comment` in tools/codex_audit_labeler.py.
+            // Returns "done" | "blocked" | "needs" | null. Last trailer
+            // wins over prose fallback (which itself wins over no
+            // signal). This block MUST stay in sync with the Python
+            // version: the issue_comment labeler and this synchronize
+            // handler classify the same comment differently otherwise,
+            // and the synchronize handler can delete a label that the
+            // labeler validly applied (Codex P2 round 7 of
+            // cube-snap#205 / ctvd#371 caught the previous
+            // trailer-only filter).
+            function classifyAuditComment(body) {
+              const trailerAll = [
+                ...body.matchAll(/<!--\s*CODEX_AUDIT_STATE:\s*([\w-]+)\s*-->/gi),
+              ];
+              if (trailerAll.length > 0) {
+                const tag = trailerAll[trailerAll.length - 1][1].toLowerCase();
+                if (tag === 'codex-audit-done') return 'done';
+                if (tag === 'codex-audit-blocked') return 'blocked';
+                return 'needs';
+              }
+              // Prose fallbacks (less reliable; only used if trailer
+              // was missed). Matches `Codex Audit [—–:-] PASS` or
+              // `Codex Audit Result [—–:-] BLOCKED/BLOCKER/INCOMPLETE`.
+              if (/Codex Audit(?:\s+Result)?\s*[—–:-]\s*PASS\b/i.test(body)) {
+                return 'done';
+              }
+              if (/Codex Audit(?:\s+Result)?\s*[—–:-]\s*(BLOCKED|BLOCKER|INCOMPLETE)\b/i.test(body)) {
+                return 'blocked';
+              }
+              return null;
+            }
+
             const audits = comments
               // Optional chaining on `c.user` (Codex P2 round 6 of
               // ctvd#371): GitHub returns `user: null` for comments
@@ -162,7 +195,13 @@ jobs:
               // codex-audit-done in place after a push — exactly the
               // failure mode this handler is meant to close.
               .filter(c => botLogins.has((c.user?.login || '').toLowerCase()))
-              .filter(c => /<!--\s*CODEX_AUDIT_STATE:/.test(c.body))
+              // Use the same classifier the Python labeler uses for
+              // applying labels (Codex P2 round 7). The previous
+              // trailer-only filter would skip comments classified
+              // via prose fallback, so a prose-classified PASS/BLOCKED
+              // for the current head wouldn't suppress this handler's
+              // removal step and the valid label could be erased.
+              .filter(c => classifyAuditComment(c.body) !== null)
               .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
             // Trailer-aware preservation (Codex P1 round 4 of ctvd#371).
@@ -170,49 +209,32 @@ jobs:
             // comment SHA matched current head, but a stale
             // codex-audit-done from earlier head + latest comment for
             // current head as BLOCKED would let the stale PASS survive
-            // and falsely authorize a merge. Parse the trailer and
-            // preserve only the label that matches it.
+            // and falsely authorize a merge. Use the classifier and
+            // preserve only the label that matches its verdict.
             const stale_labels = new Set(['codex-audit-done', 'codex-audit-blocked']);
             if (audits.length > 0) {
               const latest = audits[0];
               const shaM = latest.body.match(/Head SHA:\s*`([0-9a-fA-F]{7,40})`/);
-              // Take the LAST CODEX_AUDIT_STATE trailer in the body,
-              // not the first (Codex P1 round 5 of cube-snap#205 /
-              // P2 round 5 of ctvd#371). Comment prose can quote
-              // earlier trailers for context (e.g. a BLOCKED comment
-              // citing a previous round's done trailer), so the first
-              // regex match could land on the quoted occurrence rather
-              // than the authoritative final trailer that
-              // `format_comment` appends. The Python labeler
-              // (classify_audit_comment in tools/codex_audit_labeler.py)
-              // takes the last trailer for exactly this reason — this
-              // block must stay in sync with that semantics.
-              const trailerAll = [
-                ...latest.body.matchAll(/<!--\s*CODEX_AUDIT_STATE:\s*([\w-]+)\s*-->/gi),
-              ];
-              const trailerM = trailerAll.length > 0
-                ? trailerAll[trailerAll.length - 1]
-                : null;
-              if (shaM && trailerM) {
+              const verdict = classifyAuditComment(latest.body);
+              if (shaM && verdict) {
                 const reviewed = shaM[1].toLowerCase();
-                const trailer = trailerM[1].toLowerCase();
                 const headMatches = currentHead === reviewed || currentHead.startsWith(reviewed);
                 if (headMatches) {
-                  // `needs-codex-audit` trailer = audit didn't
-                  // complete; treat as no fresh audit and remove both.
+                  // `needs` verdict = audit didn't complete; treat as
+                  // no fresh audit and remove both audit-* labels.
                   const preserve = (
-                    trailer === 'codex-audit-done' ? 'codex-audit-done' :
-                    trailer === 'codex-audit-blocked' ? 'codex-audit-blocked' :
+                    verdict === 'done' ? 'codex-audit-done' :
+                    verdict === 'blocked' ? 'codex-audit-blocked' :
                     null
                   );
                   if (preserve) {
                     stale_labels.delete(preserve);
                     core.info(
-                      `Latest audit comment (id=${latest.id}) for current head ${currentHead} is ${trailer}; preserving ${preserve}, removing the opposing audit label.`
+                      `Latest audit comment (id=${latest.id}) for current head ${currentHead} classified as ${verdict}; preserving ${preserve}, removing the opposing audit label.`
                     );
                   } else {
                     core.info(
-                      `Latest audit comment (id=${latest.id}) for current head ${currentHead} has trailer ${trailer}; removing all audit labels.`
+                      `Latest audit comment (id=${latest.id}) for current head ${currentHead} classified as ${verdict}; removing all audit labels.`
                     );
                   }
                 }

@@ -176,6 +176,20 @@ jobs:
               // Prose fallbacks (less reliable; only used if trailer
               // was missed). Matches `Codex Audit [—–:-] PASS` or
               // `Codex Audit Result [—–:-] BLOCKED/BLOCKER/INCOMPLETE`.
+              //
+              // Prose-fallback candidates ALSO require a parseable
+              // `Head SHA:` (Codex P2 round 1 of cube-snap#206 /
+              // ctvd#373). The Python labeler's resolve_label_decision
+              // refuses to apply a label when reviewed_sha is missing,
+              // so a no-SHA "Codex Audit: PASS" comment never produced
+              // a real label there — without this guard, the
+              // synchronize handler would over-trust such a comment
+              // (treat it as the latest audit and use its missing SHA
+              // to mark labels stale), erasing labels validly applied
+              // by an earlier real audit.
+              if (!/Head SHA:\s*`[0-9a-fA-F]{7,40}`/.test(body)) {
+                return null;
+              }
               if (/Codex Audit(?:\s+Result)?\s*[—–:-]\s*PASS\b/i.test(body)) {
                 return 'done';
               }

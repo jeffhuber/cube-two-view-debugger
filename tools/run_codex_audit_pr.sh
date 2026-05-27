@@ -83,38 +83,6 @@ else
   die "no controlled Python found. Create ${repo_root}/.venv, set CODEX_AUDIT_PYTHON=/path/to/venv/bin/python, pass --repo-paths <owner/repo>:<path-with-.venv>, or set CODEX_AUDIT_REPO_PATHS in the env. Refusing to use ambient python3."
 fi
 
-# codex_audit_pr.py requires GITHUB_TOKEN for the GitHub API calls
-# (PR metadata fetch, comment post). Fail early with an actionable
-# message rather than letting the Python script die later with a
-# generic "env var required" error.
-#
-# Deliberately NOT auto-sourcing via `gh auth token`: that would
-# put a write-capable GitHub credential into a process whose
-# subprocesses include `codex review` running PR-controlled
-# tooling. Even with the codex_audit_pr.py env sanitization
-# stripping GITHUB_TOKEN/GH_TOKEN from the subprocess env, the
-# subprocess inherits HOME and PATH and can recover the token by
-# invoking `gh auth token` itself or by reading `gh`'s credential
-# store directly. The cleanest mitigation is to force callers to
-# explicitly opt in by setting GITHUB_TOKEN in their own env, so
-# the credential-sharing decision is deliberate. See Codex P1
-# audits on cube-snap#194 and cube-two-view-debugger#354 for the
-# full reasoning behind reverting the auto-fallback.
-if [ -z "${GITHUB_TOKEN:-}" ]; then
-  printf 'error: GITHUB_TOKEN env var is required.\n' >&2
-  printf '\n' >&2
-  printf '  To use your local gh CLI credential (one-shot):\n' >&2
-  printf '    GITHUB_TOKEN="$(gh auth token)" %s %s\n' "$0" "$*" >&2
-  printf '\n' >&2
-  printf '  Or export once for the shell session:\n' >&2
-  printf '    export GITHUB_TOKEN="$(gh auth token)"\n' >&2
-  printf '\n' >&2
-  printf '  (Not auto-sourced: would expose the credential to the\n' >&2
-  printf '   untrusted codex review subprocess. See commit message\n' >&2
-  printf '   on this script for details.)\n' >&2
-  exit 1
-fi
-
 lock_id=""
 if [ -n "${repo_arg}" ] && [ -n "${pr_arg}" ]; then
   set +e
@@ -156,6 +124,45 @@ if [ -n "${repo_arg}" ] && [ -n "${pr_arg}" ]; then
     exit "${rc}"
   }
   trap finish_lock EXIT
+fi
+
+# codex_audit_pr.py requires GITHUB_TOKEN for the GitHub API calls
+# (PR metadata fetch, comment post). Fail with an actionable
+# message rather than letting the Python script die later with a
+# generic "env var required" error.
+#
+# Placed AFTER the lock/trap setup above (Codex P2 audit on
+# cube-two-view-debugger#354): if this early-exit ran before the
+# trap, the failure would not be logged to events.jsonl and the
+# existing test_wrapper_propagates_python_failure_exit_code_to_audit_log
+# regression test would break. Now the trap catches `exit 1` here
+# and writes a `finished` event with status='failed'.
+#
+# Deliberately NOT auto-sourcing via `gh auth token`: that would
+# put a write-capable GitHub credential into a process whose
+# subprocesses include `codex review` running PR-controlled
+# tooling. Even with the codex_audit_pr.py env sanitization
+# stripping GITHUB_TOKEN/GH_TOKEN from the subprocess env, the
+# subprocess inherits HOME and PATH and can recover the token by
+# invoking `gh auth token` itself or by reading `gh`'s credential
+# store directly. The cleanest mitigation is to force callers to
+# explicitly opt in by setting GITHUB_TOKEN in their own env, so
+# the credential-sharing decision is deliberate. See Codex P1
+# audits on cube-snap#194 and cube-two-view-debugger#354 for the
+# full reasoning behind reverting the auto-fallback.
+if [ -z "${GITHUB_TOKEN:-}" ]; then
+  printf 'error: GITHUB_TOKEN env var is required.\n' >&2
+  printf '\n' >&2
+  printf '  To use your local gh CLI credential (one-shot):\n' >&2
+  printf '    GITHUB_TOKEN="$(gh auth token)" %s %s\n' "$0" "$*" >&2
+  printf '\n' >&2
+  printf '  Or export once for the shell session:\n' >&2
+  printf '    export GITHUB_TOKEN="$(gh auth token)"\n' >&2
+  printf '\n' >&2
+  printf '  (Not auto-sourced: would expose the credential to the\n' >&2
+  printf '   untrusted codex review subprocess. See commit message\n' >&2
+  printf '   on this script for details.)\n' >&2
+  exit 1
 fi
 
 "${python_bin}" "${audit_script}" "${audit_args[@]}"

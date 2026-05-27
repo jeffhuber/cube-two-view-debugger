@@ -777,11 +777,12 @@ label + authorization-comment pair we apply. Drafts, docs-only
 micro PRs, protocol mirrors, and trivial diagnostic/report edits
 should NOT carry these labels unless the user explicitly requests
 the paid review. Helper:
-`tools/safe_gh_comment.py --pr <N> --body-file <path>` posts the
-comment without shell-interpreting Markdown (backticks, `$()`);
-follow with `gh pr edit <N> --add-label <name>` in the same turn.
-There is no atomic label+comment helper yet, so the discipline is
-comment first, label second, both in the same turn.
+Use `tools/request_review.py` for review requests. It generates the
+PR comment inside Python, posts through `tools/safe_gh_comment.py`
+(JSON-backed GitHub API, no shell interpretation of backticks or
+`$()`), applies the routing label, and writes the shared
+`review_requested` event in one workflow. Do not hand-roll review
+request comments with shell heredocs.
 
 ### Claude cross-review lane (no-cost iterative review)
 
@@ -797,8 +798,10 @@ Protocol:
 
 1. When a Codex-owned PR is stable enough for peer review, apply
    `needs-claude-review` and leave a short PR comment naming the review
-   scope and expected output (PASS or blockers). Do not apply paid
-   review labels for this step.
+   scope and expected output (PASS or blockers). Use
+   `tools/request_review.py` for this step; do not use hand-written
+   shell heredocs or inline `gh ... --body` comments. Do not apply
+   paid review labels for this step.
 2. If the request is made via CLI/chat instead of only GitHub, the
    sender must also acknowledge it in the sender's chat, e.g. "Asked
    Claude via CLI to review PR #N for X; expecting PASS/blockers."
@@ -823,7 +826,23 @@ Protocol:
    reviews. The same helper and discipline apply symmetrically to
    Codex when manually cross-reviewing a Claude-owned PR (use
    `--lane codex-review`). Example invocation:
+
+   ```bash
+   .venv/bin/python tools/request_review.py \
+     --lane claude-review \
+     --repo jeffhuber/cube-two-view-debugger \
+     --pr 365 \
+     --head "$HEAD_SHA" \
+     --label needs-claude-review \
+     --reviewer Claude \
+     --actor codex \
+     --scope "Review the current head for PASS/blockers." \
+     --validation ".venv/bin/python -m pytest tests/test_request_review.py"
    ```
+
+   Review finalization examples:
+
+   ```bash
    # PASS — comment posted, label removed, finished event logged:
    tools/post_review.sh \
      --lane claude-review \
@@ -995,6 +1014,7 @@ Mirror invariant — these files MUST stay byte-identical across
 - `tools/audit_handoff_log.py`
 - `tools/run_codex_audit_pr.sh`
 - `tools/codex_audit_labeler.py`
+- `tools/request_review.py`
 - `tools/post_review.sh`
 - `tools/safe_gh_comment.py`
 - `tools/claude_session_start_sweep.sh`
@@ -1084,14 +1104,18 @@ workflow is **removed** in both repos (ctvd #237 / cube-snap
   `gh pr create --body "..."` or `gh issue comment --body "..."`.
   Shell backticks inside those strings execute as command
   substitutions, which has caused repeated accidental probe/test runs
-  during PR creation. Write the markdown to a temp file, then call the
-  GitHub CLI with `--body-file`, placing that flag immediately after
-  the subcommand so the repo permission baseline can enforce the safe
-  path. For PR/issue comments, prefer the safer wrapper
+  during PR creation. Review requests must use
+  `tools/request_review.py`, not a handwritten heredoc. For other
+  GitHub markdown writes, write the markdown to a temp file using a
+  quoted heredoc (`<<'EOF'`) or another non-interpreting writer, then
+  call the GitHub CLI with `--body-file`, placing that flag immediately
+  after the subcommand so the repo permission baseline can enforce the
+  safe path. For PR/issue comments, prefer the safer wrapper
   `tools/safe_gh_comment.py`, which serializes the body as JSON and
   cannot shell-interpret backticks or `$()`:
 
   ```bash
+  .venv/bin/python tools/request_review.py --repo jeffhuber/cube-two-view-debugger --pr 31 ...
   gh pr create --body-file /tmp/pr-body.md --repo jeffhuber/cube-two-view-debugger ...
   .venv/bin/python tools/safe_gh_comment.py --repo jeffhuber/cube-two-view-debugger --issue 31 --body-file /tmp/comment.md
   .venv/bin/python tools/safe_gh_comment.py --repo jeffhuber/cube-two-view-debugger --edit-comment-id 123456 --body-file /tmp/comment.md

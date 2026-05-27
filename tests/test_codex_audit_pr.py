@@ -246,15 +246,57 @@ def test_dump_cli_failure_returns_none_on_oserror(tmp_path, monkeypatch):
     """A logging failure (disk full, permission denied) must NEVER
     interrupt the audit. The helper swallows OSError and returns None
     so the caller can keep posting the requeue comment."""
-    def boom(*args, **kwargs):
-        raise OSError("simulated disk full")
+    real_os_open = os.open
 
-    monkeypatch.setattr(Path, "write_text", boom)
+    def boom(path, flags, mode=0o777, *args, **kwargs):
+        # Only intercept opens *inside* tmp_path so pytest plumbing
+        # (logging, fixtures) keeps working. Everything else passes
+        # through.
+        if str(path).startswith(str(tmp_path)):
+            raise OSError("simulated disk full")
+        return real_os_open(path, flags, mode, *args, **kwargs)
+
+    monkeypatch.setattr(os, "open", boom)
     path = c.dump_cli_failure(
         repo="o/r", pr_number=1, head_sha="abc",
         stdout="x", stderr="y", reason="r", base_dir=tmp_path,
     )
     assert path is None
+
+
+def test_dump_cli_failure_writes_owner_only_file_perms(tmp_path):
+    """Codex P2 audit on cube-snap#196 5e97011: the dump can contain
+    source snippets or credentials accidentally printed by
+    PR-controlled subprocesses, so the file must be 0o600 (not
+    world-readable) on shared audit hosts. Verified via stat."""
+    path = c.dump_cli_failure(
+        repo="o/r", pr_number=1, head_sha="abc",
+        stdout="x", stderr="y", reason="r", base_dir=tmp_path,
+    )
+    assert path is not None
+    mode = path.stat().st_mode & 0o777
+    assert mode == 0o600, f"expected 0o600 file perms, got 0o{mode:o}"
+
+
+def test_dump_cli_failure_chmods_existing_dir_to_owner_only(tmp_path):
+    """If the base dir exists with looser perms (e.g., a fresh user
+    pre-created `~/.cache/cube-agent-audits/` with the umask), the
+    helper must tighten it to 0o700 — otherwise an attacker on a
+    shared box could ls the dir to enumerate which repos/PRs had
+    parse failures even if individual files are 0o600."""
+    loose_dir = tmp_path / "preexisting"
+    loose_dir.mkdir(mode=0o755)
+    # Force perms even if umask masked them out at mkdir time.
+    loose_dir.chmod(0o755)
+    assert (loose_dir.stat().st_mode & 0o777) == 0o755
+
+    path = c.dump_cli_failure(
+        repo="o/r", pr_number=1, head_sha="abc",
+        stdout="x", stderr="y", reason="r", base_dir=loose_dir,
+    )
+    assert path is not None
+    mode = loose_dir.stat().st_mode & 0o777
+    assert mode == 0o700, f"expected 0o700 dir perms, got 0o{mode:o}"
 
 
 def test_audit_pr_unknown_branch_dumps_raw_cli_output(monkeypatch, tmp_path):

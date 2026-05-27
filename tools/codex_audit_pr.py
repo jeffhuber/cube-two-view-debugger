@@ -392,6 +392,16 @@ def dump_cli_failure(
     plus stdout/stderr byte counts so it stays useful when attached
     to an issue without the surrounding context.
 
+    File permissions: 0o600 (owner read/write only). Directory: 0o700.
+    The raw output can contain source snippets and credentials
+    accidentally printed by PR-controlled subprocesses, so on a
+    shared audit host the default umask (often 0o644 file / 0o755
+    dir) would leak audit data to other users on the box. Created
+    via `os.open(..., mode=0o600)` rather than `write_text()` +
+    `chmod()` so there's no TOCTOU window where the file briefly
+    exists with the umask perms before being restricted. (Codex P2
+    audit on cube-snap#196 5e97011.)
+
     Returns the dump path on success, or None if the dump failed
     (best-effort; we never want this helper to interrupt an audit).
 
@@ -401,7 +411,17 @@ def dump_cli_failure(
     try:
         if base_dir is None:
             base_dir = DEFAULT_CLI_FAILURE_DIR
-        base_dir.mkdir(parents=True, exist_ok=True)
+        # `mkdir(mode=0o700)` only takes effect on dirs we create; if the
+        # dir already exists with looser perms, mkdir(exist_ok=True) is
+        # a no-op. Chmod afterward to make it idempotent. Wrap in its
+        # own try so a chmod failure (we don't own a pre-existing dir)
+        # doesn't drop the dump — the file's own 0o600 still protects
+        # the content.
+        base_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
+        try:
+            os.chmod(base_dir, 0o700)
+        except OSError:
+            pass
 
         owner_name = repo.replace("/", "_")
         short_sha = (head_sha or "unknown")[:12]
@@ -425,7 +445,14 @@ def dump_cli_failure(
             + "\n===== STDERR =====\n"
             + (stderr if stderr else "<empty>\n")
         )
-        path.write_text(body, encoding="utf-8")
+        # Atomic create-with-mode: no umask window between open() and chmod().
+        fd = os.open(
+            str(path),
+            os.O_WRONLY | os.O_CREAT | os.O_TRUNC,
+            0o600,
+        )
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(body)
         return path
     except OSError as exc:
         # Never propagate: a logging failure must not break the audit.

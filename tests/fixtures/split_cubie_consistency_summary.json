@@ -648,6 +648,7 @@
           "inconsistentNames": []
         },
         "trueStateDeltaFromCanonical": {
+          "available": true,
           "count": 0,
           "indices": [],
           "facePositions": []
@@ -1285,6 +1286,7 @@
           "inconsistentNames": []
         },
         "trueStateDeltaFromCanonical": {
+          "available": true,
           "count": 0,
           "indices": [],
           "facePositions": []
@@ -1922,6 +1924,7 @@
           "inconsistentNames": []
         },
         "trueStateDeltaFromCanonical": {
+          "available": true,
           "count": 0,
           "indices": [],
           "facePositions": []
@@ -2562,6 +2565,7 @@
           "inconsistentNames": []
         },
         "trueStateDeltaFromCanonical": {
+          "available": true,
           "count": 2,
           "indices": [
             20,
@@ -3205,6 +3209,7 @@
           "inconsistentNames": []
         },
         "trueStateDeltaFromCanonical": {
+          "available": true,
           "count": 0,
           "indices": [],
           "facePositions": []
@@ -3842,6 +3847,7 @@
           "inconsistentNames": []
         },
         "trueStateDeltaFromCanonical": {
+          "available": true,
           "count": 0,
           "indices": [],
           "facePositions": []
@@ -4479,6 +4485,7 @@
           "inconsistentNames": []
         },
         "trueStateDeltaFromCanonical": {
+          "available": true,
           "count": 0,
           "indices": [],
           "facePositions": []
@@ -5116,6 +5123,7 @@
           "inconsistentNames": []
         },
         "trueStateDeltaFromCanonical": {
+          "available": true,
           "count": 0,
           "indices": [],
           "facePositions": []
@@ -5753,6 +5761,7 @@
           "inconsistentNames": []
         },
         "trueStateDeltaFromCanonical": {
+          "available": true,
           "count": 0,
           "indices": [],
           "facePositions": []
@@ -6390,6 +6399,7 @@
           "inconsistentNames": []
         },
         "trueStateDeltaFromCanonical": {
+          "available": true,
           "count": 0,
           "indices": [],
           "facePositions": []
@@ -7027,6 +7037,7 @@
           "inconsistentNames": []
         },
         "trueStateDeltaFromCanonical": {
+          "available": true,
           "count": 0,
           "indices": [],
           "facePositions": []
@@ -7664,6 +7675,7 @@
           "inconsistentNames": []
         },
         "trueStateDeltaFromCanonical": {
+          "available": true,
           "count": 0,
           "indices": [],
           "facePositions": []
@@ -8301,6 +8313,7 @@
           "inconsistentNames": []
         },
         "trueStateDeltaFromCanonical": {
+          "available": true,
           "count": 0,
           "indices": [],
           "facePositions": []
@@ -8938,6 +8951,7 @@
           "inconsistentNames": []
         },
         "trueStateDeltaFromCanonical": {
+          "available": true,
           "count": 0,
           "indices": [],
           "facePositions": []
@@ -9575,6 +9589,7 @@
           "inconsistentNames": []
         },
         "trueStateDeltaFromCanonical": {
+          "available": true,
           "count": 0,
           "indices": [],
           "facePositions": []
@@ -10212,6 +10227,7 @@
           "inconsistentNames": []
         },
         "trueStateDeltaFromCanonical": {
+          "available": true,
           "count": 0,
           "indices": [],
           "facePositions": []
@@ -10849,6 +10865,7 @@
           "inconsistentNames": []
         },
         "trueStateDeltaFromCanonical": {
+          "available": true,
           "count": 0,
           "indices": [],
           "facePositions": []
@@ -11486,6 +11503,7 @@
           "inconsistentNames": []
         },
         "trueStateDeltaFromCanonical": {
+          "available": true,
           "count": 0,
           "indices": [],
           "facePositions": []
@@ -12123,6 +12141,7 @@
           "inconsistentNames": []
         },
         "trueStateDeltaFromCanonical": {
+          "available": true,
           "count": 2,
           "indices": [
             14,
@@ -12766,6 +12785,7 @@
           "inconsistentNames": []
         },
         "trueStateDeltaFromCanonical": {
+          "available": true,
           "count": 0,
           "indices": [],
           "facePositions": []

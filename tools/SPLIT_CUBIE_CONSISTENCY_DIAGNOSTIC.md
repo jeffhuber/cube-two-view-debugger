@@ -99,10 +99,16 @@ the original draft.**
 - Original draft (wrong): "empirical yield is zero on the 20 fresh
   rows, so don't build it."
 - Corrected (right): empirical yield on the combined 66-row corpus
-  is real (4/5 cc-failures have cubie inconsistency). But **the
-  state-delta gate already admits all 4 of those rows via the
-  existing broad-legal path**. So Phase 2's marginal value over
-  "gate-tune alone" is zero on the current corpus.
+  is real — 4 of the 5 cc-failure rows have cubie inconsistency.
+  Of those 4, **3 are rescue rows** (65, 69, 11) and **1 is the
+  danger row** (Set 14) that must be rejected. The state-delta
+  gate cleanly handles both halves: it **admits the 3 rescue rows**
+  via the existing broad-legal path, and **rejects Set 14**
+  (state_delta=6 > 4). So Phase 2's marginal value over "gate-tune
+  alone" is zero on the current rescue cases — and Phase 2 wouldn't
+  even change the right verdict for Set 14 (which must stay
+  rejected). On both dimensions Phase 2 is redundant with a
+  state-delta gate change.
 
 If the state-delta gate is adopted, Phase 2 (targeted re-classification
 guided by per-cubie inconsistency) becomes redundant for these
@@ -112,7 +118,8 @@ rows where broad-legal can't produce ANY valid cube from raw
 observations, but a targeted re-classification would).
 
 If the gate-tune is NOT adopted, Phase 2 would lift recognition
-on the 4 cubie-inconsistent rescue rows — but that's a more
+on the 3 cubie-inconsistent rescue rows (not Set 14, which would
+also need to stay rejected under Phase 2) — but that's a more
 expensive build than the gate change.
 
 **If you ever do build Phase 2: build it as whole-cube per-cubie

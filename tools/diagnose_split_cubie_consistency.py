@@ -200,8 +200,13 @@ def analyze_row(row: Mapping[str, Any]) -> Dict[str, Any]:
     bl_check = check_state(bl_state) if bl_state else None
 
     # True delta between canonical_count and broad_legal (the stickers
-    # broad_legal actually flipped from the recommended baseline).
-    true_delta = state_diff_indices(cc_state, bl_state) if (cc_state and bl_state) else []
+    # broad_legal actually flipped from the recommended baseline). When
+    # broad_legal has no state (e.g. status: no_legal_repair), report
+    # the delta as unavailable rather than collapsing to 0, which would
+    # misrepresent a failed/unavailable repair as a zero-delta no-op.
+    delta_available = bool(cc_state and bl_state)
+    true_delta_indices = state_diff_indices(cc_state, bl_state) if delta_available else []
+    true_delta_count = len(true_delta_indices) if delta_available else None
 
     return {
         "setId": setid,
@@ -220,9 +225,10 @@ def analyze_row(row: Mapping[str, Any]) -> Dict[str, Any]:
             "reportedRepairCost": bl.get("repairCost"),
             "cubieConsistency": bl_check,
             "trueStateDeltaFromCanonical": {
-                "count": len(true_delta),
-                "indices": true_delta,
-                "facePositions": [index_to_face_position(i) for i in true_delta],
+                "available": delta_available,
+                "count": true_delta_count,
+                "indices": true_delta_indices,
+                "facePositions": [index_to_face_position(i) for i in true_delta_indices],
             },
         },
     }

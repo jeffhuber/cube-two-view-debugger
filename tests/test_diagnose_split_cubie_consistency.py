@@ -130,6 +130,40 @@ def test_labeled_corpus_fixture_pins_combined_corpus_findings():
     assert payload["summary"]["withNoCubieInconsistency"] == []
 
 
+def test_missing_broad_legal_state_reports_unavailable_not_zero():
+    """Regression: when broad_legal has no state (e.g. status:
+    no_legal_repair), the analyzer must report state_delta as
+    unavailable rather than collapsing to count=0, which would
+    misrepresent a failed/unavailable repair as a zero-delta no-op."""
+    from tools.diagnose_split_cubie_consistency import analyze_row
+
+    SOLVED = "U" * 9 + "R" * 9 + "F" * 9 + "D" * 9 + "L" * 9 + "B" * 9
+    row = {
+        "setId": "synthetic",
+        "canonicalGroundTruthState": SOLVED,
+        "methods": {
+            "canonical_count_repaired": {
+                "state": SOLVED,
+                "hamming": 0,
+                "validState": True,
+            },
+            "broad_legal_repaired": {
+                # No state — repair was unavailable
+                "status": "no_legal_repair",
+                "hamming": None,
+                "validState": False,
+                "repairChanges": None,
+            },
+        },
+    }
+    result = analyze_row(row)
+    delta = result["broadLegal"]["trueStateDeltaFromCanonical"]
+    assert delta["available"] is False, "delta should be flagged unavailable when bl has no state"
+    assert delta["count"] is None, "count must be null (not 0) when bl state is unavailable"
+    assert delta["indices"] == []
+    assert delta["facePositions"] == []
+
+
 def test_state_delta_gate_cleanly_separates_rescues_from_danger():
     """The corrected state_delta finding: gate of state_delta <= 4 admits
     rescue rows (65, 69, 11) and rejects the danger row (14). This is the

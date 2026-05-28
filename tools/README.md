@@ -224,7 +224,8 @@
 
 | Script | What it tests |
 |---|---|
-| `test_global_cube_model.py` | Global cube model unit tests. |
+| `tests/test_global_cube_model.py` | Global cube model unit tests. |
+| `run_global_cube_model.py` | Global cube model diagnostic runner and visualizer. |
 | `test_interior_bezel.py` | Interior bezel detector unit tests. |
 | (under `tests/`) | Project-wide test suite. |
 

@@ -175,6 +175,8 @@ def test_api_diag_smoke(server):
     assert "libraries" in payload
     assert "numpy" in payload["libraries"]
     assert "pillow" in payload["libraries"]
+    prewarm = payload.get("prewarm") or {}
+    assert "constrainedRecognizer" in prewarm
 
 
 def test_api_diag_exposes_git_identity(server):
@@ -251,6 +253,46 @@ def test_runtime_diag_warnings_field_present_and_empty_by_default():
     assert "warnings" in diag, f"expected top-level 'warnings' field, got: {sorted(diag.keys())}"
     assert isinstance(diag["warnings"], list)
     assert diag["warnings"] == []
+
+
+def test_runtime_diag_exposes_constrained_prewarm_state(monkeypatch):
+    import app as app_module
+
+    app_module._set_constrained_prewarm_state("complete", durationMs=12.34)
+
+    diag = app_module._runtime_diag()
+
+    assert diag["prewarm"]["constrainedRecognizer"]["status"] == "complete"
+    assert diag["prewarm"]["constrainedRecognizer"]["durationMs"] == 12.34
+
+
+def test_constrained_prewarm_records_stage_timings(monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(
+        app_module,
+        "_prewarm_constrained_dependencies",
+        lambda: {"imports": 12.34, "rembgSession": 56.78},
+    )
+    app_module._set_constrained_prewarm_state("not_started")
+
+    app_module._run_constrained_recognizer_prewarm()
+
+    state = app_module._constrained_prewarm_diag()
+    assert state["status"] == "complete"
+    assert state["stageTimingsMs"] == {"imports": 12.34, "rembgSession": 56.78}
+    assert state["durationMs"] >= 0
+
+
+def test_constrained_prewarm_can_be_disabled(monkeypatch):
+    import app as app_module
+
+    monkeypatch.setenv(app_module.CONSTRAINED_PREWARM_ENV, "0")
+    monkeypatch.setattr(app_module, "_CONSTRAINED_PREWARM_THREAD", None)
+    app_module._set_constrained_prewarm_state("not_started")
+
+    assert app_module._start_constrained_recognizer_prewarm() is None
+    assert app_module._constrained_prewarm_diag()["status"] == "disabled"
 
 
 def test_runtime_diag_warnings_driven_by_current_not_at_start(monkeypatch):

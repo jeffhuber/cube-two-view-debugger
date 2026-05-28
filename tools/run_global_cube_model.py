@@ -5,7 +5,7 @@ renders the fitted 3-face / 27-cell overlay, and writes per-pair JSON
 sidecars with the fit parameters + quality scores.
 
 Usage:
-    .venv/bin/python tools/test_global_cube_model.py \\
+    .venv/bin/python tools/run_global_cube_model.py \\
         --sets 17 21 30 31 44 47 57 58 61 \\
         --out /tmp/global_cube_model_results
 

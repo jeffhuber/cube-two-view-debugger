@@ -46,7 +46,11 @@ RUNS = ROOT / "runs"
 LABELS = RUNS / "labels"
 CONSTRAINED_SHADOW_LOG_ENV = "CUBE_CONSTRAINED_SHADOW_LOG"
 CONSTRAINED_INFERENCE_MODE_ENV = "CUBE_CONSTRAINED_INFERENCE_MODE"
+CONSTRAINED_PREWARM_ENV = "CUBE_CONSTRAINED_PREWARM"
 _CONSTRAINED_SHADOW_LOG_LOCK = threading.Lock()
+_CONSTRAINED_PREWARM_LOCK = threading.Lock()
+_CONSTRAINED_PREWARM_THREAD: Optional[threading.Thread] = None
+_CONSTRAINED_PREWARM_STATE: Dict[str, Any] = {"status": "not_started"}
 
 
 # Origins permitted to call the recognizer cross-origin. The frontend
@@ -784,6 +788,9 @@ def _runtime_diag() -> Dict[str, Any]:
             "commitsBehindAtStart": at_start.get("commitsBehind"),
             "commitsBehindCheckedAtStart": at_start.get("checkedAt"),
         },
+        "prewarm": {
+            "constrainedRecognizer": _constrained_prewarm_diag(),
+        },
         "warnings": warnings,
     }
 
@@ -841,6 +848,104 @@ def _llm_rectified_session() -> Any:
 
             _LLM_RECTIFIED_SESSION = new_session("u2net")
         return _LLM_RECTIFIED_SESSION
+
+
+def _constrained_prewarm_enabled() -> bool:
+    value = str(os.environ.get(CONSTRAINED_PREWARM_ENV, "1")).strip().lower()
+    return value not in {"", "0", "false", "off", "none"}
+
+
+def _set_constrained_prewarm_state(status: str, **fields: Any) -> None:
+    with _CONSTRAINED_PREWARM_LOCK:
+        _CONSTRAINED_PREWARM_STATE.clear()
+        _CONSTRAINED_PREWARM_STATE.update({"status": status, **fields})
+
+
+def _constrained_prewarm_diag() -> Dict[str, Any]:
+    with _CONSTRAINED_PREWARM_LOCK:
+        return dict(_CONSTRAINED_PREWARM_STATE)
+
+
+def _prewarm_constrained_dependencies() -> Dict[str, float]:
+    stage_timings_ms: Dict[str, float] = {}
+
+    stage_started = time.perf_counter()
+    from PIL import Image, ImageDraw, ImageFont, ImageOps
+    from rembg import remove
+
+    from tools.corner_conventions import wca_face_by_slot
+    from tools.global_cube_model import _slot_center_faces_from_rectified
+    from tools.hull_label_color_repair import repair_from_hull_label_fits
+    from tools.hull_label_assembly import convention_orientation_for_slot
+    from tools.rectify_via_hull_labels import DEFAULT_MASK_THRESHOLDS, select_hull_label_threshold_fit
+
+    _ = (
+        Image,
+        ImageDraw,
+        ImageFont,
+        ImageOps,
+        remove,
+        wca_face_by_slot,
+        _slot_center_faces_from_rectified,
+        repair_from_hull_label_fits,
+        convention_orientation_for_slot,
+        DEFAULT_MASK_THRESHOLDS,
+        select_hull_label_threshold_fit,
+    )
+    stage_timings_ms["imports"] = _elapsed_ms(stage_started)
+
+    stage_started = time.perf_counter()
+    _llm_rectified_session()
+    stage_timings_ms["rembgSession"] = _elapsed_ms(stage_started)
+    return stage_timings_ms
+
+
+def _run_constrained_recognizer_prewarm() -> None:
+    started = time.perf_counter()
+    started_at = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
+    _set_constrained_prewarm_state("running", startedAt=started_at)
+    try:
+        stage_timings_ms = _prewarm_constrained_dependencies()
+    except Exception as exc:  # noqa: BLE001 - diagnostics path must not crash the server.
+        _set_constrained_prewarm_state(
+            "error",
+            startedAt=started_at,
+            completedAt=dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+            durationMs=_elapsed_ms(started),
+            error=f"{type(exc).__name__}: {exc}",
+        )
+        print(
+            f"[rubik-app] warning: constrained recognizer prewarm failed: {type(exc).__name__}: {exc}",
+            file=sys.stderr,
+        )
+        return
+
+    _set_constrained_prewarm_state(
+        "complete",
+        startedAt=started_at,
+        completedAt=dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+        durationMs=_elapsed_ms(started),
+        stageTimingsMs=stage_timings_ms,
+    )
+
+
+def _start_constrained_recognizer_prewarm() -> Optional[threading.Thread]:
+    global _CONSTRAINED_PREWARM_THREAD
+    if not _constrained_prewarm_enabled():
+        _set_constrained_prewarm_state("disabled", env=CONSTRAINED_PREWARM_ENV)
+        return None
+    with _CONSTRAINED_PREWARM_LOCK:
+        if _CONSTRAINED_PREWARM_THREAD is not None and _CONSTRAINED_PREWARM_THREAD.is_alive():
+            return _CONSTRAINED_PREWARM_THREAD
+        if _CONSTRAINED_PREWARM_STATE.get("status") in {"running", "complete"}:
+            return _CONSTRAINED_PREWARM_THREAD
+        _CONSTRAINED_PREWARM_THREAD = threading.Thread(
+            target=_run_constrained_recognizer_prewarm,
+            name="constrained-recognizer-prewarm",
+            daemon=True,
+        )
+        _CONSTRAINED_PREWARM_THREAD.start()
+        return _CONSTRAINED_PREWARM_THREAD
 
 
 def _elapsed_ms(started: float) -> float:
@@ -1452,6 +1557,8 @@ def main() -> None:
     global _GIT_FRESHNESS_AT_START, _GIT_FRESHNESS_CACHE
     _GIT_FRESHNESS_AT_START = _git_freshness(fetch=True)
     _GIT_FRESHNESS_CACHE = dict(_GIT_FRESHNESS_AT_START)  # seed; lazily updated thereafter
+
+    _start_constrained_recognizer_prewarm()
 
     server = ThreadingHTTPServer((args.host, args.port), RubikHandler)
     diag = _runtime_diag()

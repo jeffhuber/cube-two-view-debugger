@@ -8,7 +8,7 @@ full pipeline; <50 px count 9 vs 5; recovers 44_B from 118 → 15 px).
 But it regresses on 5 cases (worst: 42_B 89 → 186 px), so we keep
 rembg as the production default and treat SAM 3 as a diagnostics /
 server-side option behind `--silhouette-source sam3` in
-``test_global_cube_model.py``.
+``run_global_cube_model.py``.
 
 Setup
 -----
@@ -38,7 +38,7 @@ Outputs:
 
 After extraction, pass to the main pipeline via:
 
-    .venv/bin/python tools/test_global_cube_model.py \\
+    .venv/bin/python tools/run_global_cube_model.py \\
         --sets ... --silhouette-source sam3 --sam3-mask-dir /tmp/sam3_masks
 """
 from __future__ import annotations

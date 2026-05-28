@@ -198,7 +198,7 @@ the cv-local Fixer path) is a separate decision predicated on:
 | File | Purpose |
 |---|---|
 | `tools/global_cube_model.py` | Core module: PnP fit, mean3 ensemble, score-gated refinement |
-| `tools/test_global_cube_model.py` | Test driver + 3-panel visualization |
+| `tools/run_global_cube_model.py` | Test driver + 3-panel visualization |
 | `tools/extract_sam3_masks.py` | Offline SAM 3 mask extraction (separate Python 3.13 env) |
 | `tools/GLOBAL_CUBE_MODEL.md` | This doc |
 | `tests/test_global_cube_model.py` | Unit tests (5 passing) |
@@ -208,7 +208,7 @@ the cv-local Fixer path) is a separate decision predicated on:
 
 ```bash
 # Default: rembg silhouette
-.venv/bin/python tools/test_global_cube_model.py \
+.venv/bin/python tools/run_global_cube_model.py \
     --sets 12 14 15 17 21 23 24 26 27 28 29 30 31 32 36 37 42 44 47 57 58 61 \
     --out /tmp/gcm_run
 
@@ -218,7 +218,7 @@ the cv-local Fixer path) is a separate decision predicated on:
     --sets 12 14 15 17 21 23 24 26 27 28 29 30 31 32 36 37 42 44 47 57 58 61 \
     --out /tmp/sam3_masks
 # (back in cube-two-view-debugger env)
-.venv/bin/python tools/test_global_cube_model.py \
+.venv/bin/python tools/run_global_cube_model.py \
     --sets 12 14 15 17 21 23 24 26 27 28 29 30 31 32 36 37 42 44 47 57 58 61 \
     --silhouette-source sam3 --sam3-mask-dir /tmp/sam3_masks \
     --out /tmp/gcm_sam3_run

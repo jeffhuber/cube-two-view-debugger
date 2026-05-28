@@ -55,6 +55,8 @@ _CONSTRAINED_SHADOW_LOG_LOCK = threading.Lock()
 # since browsers treat them as different origins.
 _ALLOWED_ORIGIN_PATTERNS = (
     re.compile(r"^https://jeffhuber\.github\.io$"),
+    re.compile(r"^https://cubesnap\.app$"),
+    re.compile(r"^https://www\.cubesnap\.app$"),
     re.compile(r"^http://localhost(?::\d+)?$"),
     re.compile(r"^http://127\.0\.0\.1(?::\d+)?$"),
 )

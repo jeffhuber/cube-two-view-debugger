@@ -17,6 +17,20 @@ def test_railway_start_command_uses_port_wrapper():
     assert (ROOT / "Procfile").read_text().strip() == "web: python railway_start.py"
 
 
+def test_railway_deploy_guard_uses_clean_worktree():
+    gitignore_lines = (ROOT / ".gitignore").read_text().splitlines()
+    script = (ROOT / "tools" / "deploy_railway_ctvd_recognizer.sh").read_text()
+
+    assert ".worktrees/" in gitignore_lines
+    assert "git -C \"$repo_root\" worktree add --detach \"$deploy_dir\" \"$REF\"" in script
+    assert "cd \"$deploy_dir\"" in script
+    assert "railway up" in script
+    assert "--project \"$PROJECT_ID\"" in script
+    assert "--service \"$SERVICE\"" in script
+    assert "--environment \"$ENVIRONMENT\"" in script
+    assert "configFile=/railway.json" in script
+
+
 def test_runtime_requirements_pin_validated_numpy_minor():
     requirements = (ROOT / "requirements.txt").read_text()
 

@@ -139,9 +139,14 @@ jobs:
             //     github.token lacks issues:write despite the
             //     workflow's permissions block (repo's "Default
             //     workflow permissions" override) → retry with PAT.
-            // Only API calls wrapped in this helper get the retry;
-            // listComments + paginate are read-only and use github.*
-            // directly.
+            // EVERY API call is wrapped — Codex P2 round 3 of
+            // snap#208 / ctvd#377 caught that the `paginate(listComments)`
+            // call had been left unwrapped under the assumption that
+            // read calls would always succeed with either token. In
+            // the broken-primary case the read fails too, so the
+            // unwrapped paginate aborted the run before any labels
+            // could be cleared. All API calls now go through
+            // withFallback for consistency.
             const primaryIsPat = !!process.env.CODEX_AUDIT_LABEL_TOKEN;
             const fallbackToken = primaryIsPat
               ? process.env.GITHUB_TOKEN
@@ -194,15 +199,15 @@ jobs:
                 .filter(Boolean)
             );
 
-            const comments = await github.paginate(
-              github.rest.issues.listComments,
+            const comments = await withFallback(gh => gh.paginate(
+              gh.rest.issues.listComments,
               {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: pr_number,
                 per_page: 100,
               }
-            );
+            ));
             const audits = comments
               // Optional chaining on `c.user` (Codex P2 round 6 of
               // ctvd#371): GitHub returns `user: null` for comments

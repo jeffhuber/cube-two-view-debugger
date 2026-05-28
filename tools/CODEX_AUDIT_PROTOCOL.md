@@ -397,10 +397,15 @@ signal source on this CLI version, not a rare workaround.
 
 Implications:
 
-- **Captured-PASS-via-dump is the operational norm**, not an exceptional
-  case. The merge-auth path documented in CLAUDE.md ("Captured-PASS-via-dump
-  counts as `codex-audit-done`") fires on essentially every Codex audit
-  this CLI version posts.
+- **Captured-PASS-via-dump is the operational norm for clean PASS
+  audits**, not an exceptional case. The merge-auth path documented
+  in CLAUDE.md ("Captured-PASS-via-dump counts as `codex-audit-done`")
+  fires on every UNKNOWN-classified audit whose captured stdout
+  contains zero `[P0]`/`[P1]`/`[P2]` finding bullets. It does NOT
+  apply to BLOCKED audits — stderr-fallback BLOCKED comments stay
+  blocked and require fixing the findings or re-auditing on a new
+  head; the captured-PASS escape hatch is strictly for the
+  UNKNOWN-misclassification-of-clean-PASS case.
 - **A stable (non-alpha) Codex CLI release that emits the marker to
   stdout** would let the parser take the stdout-anchored path and skip
   the strict-shape validator entirely. If/when such a release is

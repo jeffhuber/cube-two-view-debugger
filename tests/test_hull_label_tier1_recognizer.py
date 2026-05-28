@@ -221,6 +221,40 @@ def _constrained_payload(state: str = SOLVED_STATE, *, accepted: bool = True):
                 "confidence": "high",
                 "repairMoveCount": 2,
             },
+            "methods": {
+                "two_view_consistency_repaired": {
+                    "status": "accepted_two_view_consistency_repair",
+                    "validState": True,
+                    "countBalanced": True,
+                    "repairCost": 3.5,
+                    "repairChanges": 2,
+                    "gate": {
+                        "accepted": True,
+                        "reasons": [],
+                        "stateDeltaFromCanonical": {
+                            "available": True,
+                            "count": 2,
+                        },
+                        "baselineCubieConsistency": {
+                            "totalCubies": 20,
+                            "consistentCount": 19,
+                            "inconsistentCount": 1,
+                            "inconsistentSplitCount": 1,
+                            "inconsistentInImageCount": 0,
+                            "inconsistentNames": ["UFL"],
+                            "inconsistentCubies": [{"name": "UFL"}],
+                        },
+                        "candidateCubieConsistency": {
+                            "totalCubies": 20,
+                            "consistentCount": 20,
+                            "inconsistentCount": 0,
+                            "inconsistentSplitCount": 0,
+                            "inconsistentInImageCount": 0,
+                            "inconsistentNames": [],
+                        },
+                    },
+                },
+            },
         },
     }
 
@@ -251,6 +285,8 @@ def test_constrained_shadow_mode_returns_legacy_with_shadow_signal(tmp_path, mon
     signal = payload["recognitionSignals"]["constrainedInference"]
     assert signal["selected"] is False
     assert signal["promotionGate"]["accepted"] is True
+    assert signal["twoViewConsistencyRepair"]["gate"]["accepted"] is True
+    assert "inconsistentCubies" not in signal["twoViewConsistencyRepair"]["gate"]["baselineCubieConsistency"]
 
     log_path = tmp_path / "runs" / "constrained_inference_shadow.jsonl"
     events = [json.loads(line) for line in log_path.read_text(encoding="utf-8").splitlines()]

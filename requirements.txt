@@ -11,7 +11,12 @@
 # and we've only validated 3.11 / 3.12 — older Python may produce
 # different repair-step results even when imports succeed).
 pillow>=12.2.0,<13
-numpy>=2.3.5,<3
+numpy>=2.3.5,<2.4
+# Runtime dependency for the constrained hull-label recognizer path used
+# by CubeSnap's best-available web flow. rembg does not install an ONNX
+# runtime by default, so keep both explicit for deploys.
+rembg>=2.0.75,<2.1
+onnxruntime>=1.26.0,<1.27
 # Phase 4 trust ranker (tools/phase4_trust_ranker.py) — diagnostics-
 # only learned classifier on the Phase 2B matrix. Optional for users
 # of the production recognizer; required to regenerate the committed

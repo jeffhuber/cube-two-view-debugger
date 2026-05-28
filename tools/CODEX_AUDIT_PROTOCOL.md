@@ -65,7 +65,11 @@ Pipeline:
    stdout/stderr.
 5. Parse the output: extract the final verdict block (the last
    `\ncodex\n` marker in the log), count `[P0]/[P1]/[P2]/[P3]`
-   severity tags, classify PASS vs BLOCKED.
+   severity tags, classify PASS vs BLOCKED. (As of Codex CLI
+   v0.133.0-alpha.1 the marker lands on stderr instead of stdout;
+   the wrapper falls back to stderr and CLAUDE.md describes the
+   captured-PASS-via-dump escape hatch this enables. Upstream
+   tracking: [openai/codex#24874](https://github.com/openai/codex/issues/24874).)
 6. Stale-head check: refetch PR head. If it changed mid-review, emit
    the `needs-codex-audit` (stale) trailer.
 7. Post the parsed review as a PR comment with authoritative trailer.

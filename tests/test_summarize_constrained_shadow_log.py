@@ -125,3 +125,17 @@ def test_cli_writes_json_and_markdown_outputs(tmp_path):
     assert "Constrained Shadow Log Summary" in report_text
     assert "Promotion Readiness" in report_text
     assert "`canonical_count_repaired`" in report_text
+
+
+def test_cli_can_fail_when_promotion_readiness_gate_fails(tmp_path, capsys):
+    log = tmp_path / "events.jsonl"
+    log.write_text(
+        json.dumps(_event(selected=True, candidate_exact=False, candidate_hamming=2)) + "\n",
+        encoding="utf-8",
+    )
+
+    status = main(["--log", str(log), "--fail-when-not-ready"])
+
+    captured = capsys.readouterr()
+    assert status == 1
+    assert "known_bad_auto_accepts" in captured.err

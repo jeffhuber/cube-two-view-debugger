@@ -291,6 +291,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         action="store_true",
         help="Require every gate-accepted event to include candidate GT evaluation.",
     )
+    parser.add_argument(
+        "--fail-when-not-ready",
+        action="store_true",
+        help="Exit nonzero when the promotion-readiness gate is not ready.",
+    )
     args = parser.parse_args(argv)
 
     if not args.log.exists():
@@ -312,6 +317,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         args.report.write_text(_render_markdown(args.log, summary, events), encoding="utf-8")
     if not args.json_output and not args.report:
         print(json.dumps(summary, indent=2))
+    readiness = _mapping(summary.get("promotionReadiness"))
+    if args.fail_when_not_ready and readiness.get("ready") is not True:
+        print(
+            "Constrained shadow promotion gate is not ready: "
+            + ", ".join(str(reason) for reason in readiness.get("reasons") or ["unknown"]),
+            file=sys.stderr,
+        )
+        return 1
     return 0
 
 

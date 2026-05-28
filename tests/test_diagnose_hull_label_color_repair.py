@@ -28,6 +28,25 @@ def _balanced_faces() -> list[str]:
     return [face for face in "URFDLB" for _ in range(9)]
 
 
+def _solved_observations() -> list[StickerObservation]:
+    observations = []
+    for face in FACE_ORDER:
+        for face_index in range(9):
+            rgb = CANONICAL_RGB[FACE_TO_COLOR[face]]
+            observations.append(
+                StickerObservation(
+                    index=_face_index(face, face_index),
+                    side="A" if face in "URF" else "B",
+                    slot="upper",
+                    wca_face=face,
+                    face_index=face_index,
+                    rgb=rgb,
+                    raw_color=FACE_TO_COLOR[face],
+                )
+            )
+    return observations
+
+
 def test_greedy_count_repair_preserves_centers_and_repairs_counts():
     faces = _balanced_faces()
     index_to_repair = _face_index("D", 0)
@@ -137,24 +156,8 @@ def test_render_report_highlights_hull_label_center_color_scoreboard():
 
 
 def test_assemble_color_repair_payload_exposes_repaired_draft():
-    observations = []
-    for face in FACE_ORDER:
-        for face_index in range(9):
-            rgb = CANONICAL_RGB[FACE_TO_COLOR[face]]
-            observations.append(
-                StickerObservation(
-                    index=_face_index(face, face_index),
-                    side="A" if face in "URF" else "B",
-                    slot="upper",
-                    wca_face=face,
-                    face_index=face_index,
-                    rgb=rgb,
-                    raw_color=FACE_TO_COLOR[face],
-                )
-            )
-
     payload = assemble_color_repair_payload(
-        observations=observations,
+        observations=_solved_observations(),
         panel_meta={"panels": []},
         yaw_quarter_turns=0,
     )
@@ -171,6 +174,28 @@ def test_assemble_color_repair_payload_exposes_repaired_draft():
     assert payload["methods"]["guarded_broad_legal_repaired"]["gate"]["accepted"] is True
     assert payload["methods"]["guarded_broad_legal_repaired"]["gate"]["stateDeltaFromCanonical"]["count"] == 0
     assert payload["methods"]["broad_legal_repaired"]["diagnosticOnly"] is True
+
+
+def test_assemble_color_repair_payload_can_skip_legal_repair_methods(monkeypatch):
+    def fail_legal_repair(**_kwargs):
+        raise AssertionError("legal repair should be skipped")
+
+    monkeypatch.setattr(
+        "tools.hull_label_color_repair.evaluate_legal_repair_methods",
+        fail_legal_repair,
+    )
+
+    payload = assemble_color_repair_payload(
+        observations=_solved_observations(),
+        panel_meta={"panels": []},
+        yaw_quarter_turns=0,
+        include_legal_repairs=False,
+    )
+
+    assert payload["recommendedMethod"] == "canonical_count_repaired"
+    assert payload["recommended"]["validState"] is True
+    assert "conservative_legal_repaired" not in payload["methods"]
+    assert "guarded_broad_legal_repaired" not in payload["methods"]
 
 
 def test_state_delta_gate_uses_count_repaired_delta_not_repair_changes():

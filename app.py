@@ -1112,7 +1112,11 @@ def prepare_llm_rectified_input(
         )
         return int(threshold), dict(entry)
 
-    def evaluate_pair(side_entries: Mapping[str, Mapping[str, Any]]) -> Dict[str, Any]:
+    def evaluate_pair(
+        side_entries: Mapping[str, Mapping[str, Any]],
+        *,
+        include_legal_repairs: bool = True,
+    ) -> Dict[str, Any]:
         fits_for_yaw = {side: side_entries[side]["fit"] for side in ("A", "B")}
         yaw_inference = _infer_yaw_from_rectified_fits(fits_for_yaw)
         if yaw_quarter_turns is None:
@@ -1132,6 +1136,7 @@ def prepare_llm_rectified_input(
             repair = repair_from_hull_label_fits(
                 side_fits=side_entries,
                 yaw_quarter_turns=selected,
+                include_legal_repairs=include_legal_repairs,
             )
         except Exception as exc:  # noqa: BLE001
             return {
@@ -1156,8 +1161,10 @@ def prepare_llm_rectified_input(
     def compact_combo(
         thresholds: Mapping[str, int],
         side_entries: Mapping[str, Mapping[str, Any]],
+        *,
+        include_legal_repairs: bool = True,
     ) -> Dict[str, Any]:
-        evaluation = evaluate_pair(side_entries)
+        evaluation = evaluate_pair(side_entries, include_legal_repairs=include_legal_repairs)
         score_total = sum(
             float((side_entries[side].get("trace") or {}).get("sticker_score_total") or 0.0)
             for side in ("A", "B")
@@ -1210,19 +1217,70 @@ def prepare_llm_rectified_input(
     stage_started = time.perf_counter()
     current_combo = compact_combo(current_thresholds, current_side_entries)
     pair_candidates: List[Dict[str, Any]] = [current_combo]
+    pair_search_mode = "current_valid_guard"
+    light_evaluated_pair_count = 0
+    full_evaluated_pair_count = 1
+    canonical_shortcut_candidates = 0
     if not repair_valid(current_combo["evaluation"]):
-        pair_candidates = []
+        pair_search_mode = "full_pair_search"
+        threshold_pairs: List[Tuple[int, Dict[str, Any], int, Dict[str, Any]]] = []
         for threshold_a, entry_a in sorted(threshold_entries_by_side["A"].items()):
             for threshold_b, entry_b in sorted(threshold_entries_by_side["B"].items()):
+                threshold_pairs.append((threshold_a, entry_a, threshold_b, entry_b))
+
+        light_pair_candidates = [
+            compact_combo(
+                {"A": threshold_a, "B": threshold_b},
+                {"A": entry_a, "B": entry_b},
+                include_legal_repairs=False,
+            )
+            for threshold_a, entry_a, threshold_b, entry_b in threshold_pairs
+        ]
+        light_evaluated_pair_count = len(light_pair_candidates)
+        canonical_light_candidates = [
+            combo
+            for combo in light_pair_candidates
+            if (combo.get("productionRank") or [9])[0] == 0
+        ]
+        canonical_shortcut_candidates = len(canonical_light_candidates)
+        if canonical_light_candidates:
+            pair_search_mode = "canonical_valid_light_shortcut"
+            selected_light = choose_guarded_pair(
+                current_combo=current_combo,
+                candidates=canonical_light_candidates,
+                fallback_to_current_without_alternative=True,
+            )
+            selected_thresholds = (selected_light or {}).get("thresholds") or current_thresholds
+            selected_combo = compact_combo(
+                selected_thresholds,
+                {
+                    "A": threshold_entries_by_side["A"][int(selected_thresholds["A"])],
+                    "B": threshold_entries_by_side["B"][int(selected_thresholds["B"])],
+                },
+            )
+            full_evaluated_pair_count += 1
+            if selected_light is not None:
+                selected_combo["selectionReason"] = selected_light.get("selectionReason")
+            pair_candidates = light_pair_candidates
+        else:
+            pair_candidates = []
+            for threshold_a, entry_a, threshold_b, entry_b in threshold_pairs:
                 pair_candidates.append(compact_combo(
                     {"A": threshold_a, "B": threshold_b},
                     {"A": entry_a, "B": entry_b},
                 ))
-    selected_combo = choose_guarded_pair(
-        current_combo=current_combo,
-        candidates=pair_candidates,
-        fallback_to_current_without_alternative=True,
-    )
+            full_evaluated_pair_count += len(pair_candidates)
+            selected_combo = choose_guarded_pair(
+                current_combo=current_combo,
+                candidates=pair_candidates,
+                fallback_to_current_without_alternative=True,
+            )
+    else:
+        selected_combo = choose_guarded_pair(
+            current_combo=current_combo,
+            candidates=pair_candidates,
+            fallback_to_current_without_alternative=True,
+        )
     record_stage("selectGuardedPair", stage_started)
     selected_eval = selected_combo["evaluation"]
     yaw_inference = selected_eval.get("yawInference") or {}
@@ -1249,6 +1307,7 @@ def prepare_llm_rectified_input(
         threshold_traces_by_side[side]["pair_selected_mask_threshold"] = selected_combo["thresholds"][side]
     pair_threshold_selection = {
         "strategy": "guarded_pair_when_current_invalid",
+        "searchMode": pair_search_mode,
         "selectionReason": selected_combo.get("selectionReason"),
         "currentThresholds": current_thresholds,
         "selectedThresholds": selected_combo.get("thresholds"),
@@ -1257,6 +1316,9 @@ def prepare_llm_rectified_input(
         "currentProductionRank": current_combo.get("productionRank"),
         "selectedProductionRank": selected_combo.get("productionRank"),
         "evaluatedPairCount": len(pair_candidates),
+        "lightEvaluatedPairCount": light_evaluated_pair_count,
+        "fullEvaluatedPairCount": full_evaluated_pair_count,
+        "canonicalShortcutCandidates": canonical_shortcut_candidates,
         "possiblePairCount": (
             len(threshold_entries_by_side["A"]) * len(threshold_entries_by_side["B"])
         ),

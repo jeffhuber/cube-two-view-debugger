@@ -9,7 +9,7 @@ Same scipy-optional pattern as the bezel detection module:
 4. Geometry derivation produces 7 visible corners + 3 face quads +
    27 sticker cells from valid 6-DOF parameters
 5. Ground-truth-fixture sanity check: the fixture file shape matches
-   what tools/test_global_cube_model.py expects to compare against
+   what tools/run_global_cube_model.py expects to compare against
 """
 from __future__ import annotations
 

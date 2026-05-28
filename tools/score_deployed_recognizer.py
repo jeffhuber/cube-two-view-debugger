@@ -124,6 +124,38 @@ def _hamming(left: str, right: str) -> Optional[int]:
     return 54 - score_match(left, right)
 
 
+def _number(value: Any) -> Optional[float]:
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return float(value)
+    return None
+
+
+def _constrained_performance(constrained: Mapping[str, Any]) -> Dict[str, Any]:
+    performance = constrained.get("performance")
+    if not isinstance(performance, Mapping):
+        return {}
+    timings = performance.get("stageTimingsMs")
+    stage_timings = dict(timings) if isinstance(timings, Mapping) else {}
+    return {
+        "performanceSchema": performance.get("schema"),
+        "rectifiedInputPerformanceSchema": performance.get("rectifiedInputPerformanceSchema"),
+        "contactSheetsIncluded": performance.get("contactSheetsIncluded"),
+        "stageTimingsMs": stage_timings,
+        "recognizeTotalMs": _number(stage_timings.get("recognizeTotal")),
+        "prepareTotalMs": _number(stage_timings.get("prepareTotal")),
+        "prepareConstrainedInputMs": _number(stage_timings.get("prepareConstrainedInput")),
+        "importsMs": _number(stage_timings.get("imports")),
+        "rembgSessionMs": _number(stage_timings.get("rembgSession")),
+        "loadImagesMs": _number(stage_timings.get("loadImages")),
+        "rembgAMs": _number(stage_timings.get("rembgA")),
+        "rembgBMs": _number(stage_timings.get("rembgB")),
+        "hullFitAMs": _number(stage_timings.get("hullFitA")),
+        "hullFitBMs": _number(stage_timings.get("hullFitB")),
+        "selectGuardedPairMs": _number(stage_timings.get("selectGuardedPair")),
+        "legacyFallbackMs": _number(stage_timings.get("legacyFallback")),
+    }
+
+
 def _score_row(row: Mapping[str, Any], endpoint: str, timeout: float) -> Dict[str, Any]:
     if row.get("status") == "skipped_missing_local_file":
         return dict(row)
@@ -146,6 +178,11 @@ def _score_row(row: Mapping[str, Any], endpoint: str, timeout: float) -> Dict[st
     hamming = _hamming(state, expected) if isinstance(state, str) else None
     signals = payload.get("recognitionSignals") if isinstance(payload, Mapping) else {}
     constrained = signals.get("constrainedInference") if isinstance(signals, Mapping) else {}
+    constrained_performance = (
+        _constrained_performance(constrained)
+        if isinstance(constrained, Mapping)
+        else {}
+    )
     return {
         "setId": set_id,
         "status": payload.get("status") if isinstance(payload, Mapping) else "malformed_response",
@@ -167,6 +204,30 @@ def _score_row(row: Mapping[str, Any], endpoint: str, timeout: float) -> Dict[st
             if isinstance(constrained, Mapping) and isinstance(constrained.get("twoViewConsistencyRepair"), Mapping)
             else None
         ),
+        **constrained_performance,
+    }
+
+
+def _metric_summary(rows: Sequence[Mapping[str, Any]], key: str) -> Dict[str, Any]:
+    values = sorted(
+        float(row[key])
+        for row in rows
+        if isinstance(row.get(key), (int, float)) and not isinstance(row.get(key), bool)
+    )
+    if not values:
+        return {"count": 0}
+
+    def pct(p: float) -> float:
+        index = min(len(values) - 1, max(0, round((len(values) - 1) * p)))
+        return round(values[index], 2)
+
+    return {
+        "count": len(values),
+        "min": round(values[0], 2),
+        "p50": pct(0.50),
+        "p90": pct(0.90),
+        "max": round(values[-1], 2),
+        "avg": round(sum(values) / len(values), 2),
     }
 
 
@@ -185,13 +246,30 @@ def _summary(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
         "recommendedMethodCounts": _counts(row.get("recommendedMethod") for row in scored),
         "recognitionCategoryCounts": _counts(row.get("recognitionCategory") for row in scored),
         "twoViewStatusCounts": _counts(row.get("twoViewStatus") for row in scored),
+        "performanceSchemaCounts": _counts(row.get("performanceSchema") for row in scored),
+        "contactSheetsIncludedCounts": _counts(row.get("contactSheetsIncluded") for row in scored),
+        "timings": {
+            "latencyMs": _metric_summary(scored, "latencyMs"),
+            "recognizeTotalMs": _metric_summary(scored, "recognizeTotalMs"),
+            "prepareTotalMs": _metric_summary(scored, "prepareTotalMs"),
+            "prepareConstrainedInputMs": _metric_summary(scored, "prepareConstrainedInputMs"),
+            "importsMs": _metric_summary(scored, "importsMs"),
+            "rembgSessionMs": _metric_summary(scored, "rembgSessionMs"),
+            "loadImagesMs": _metric_summary(scored, "loadImagesMs"),
+            "rembgAMs": _metric_summary(scored, "rembgAMs"),
+            "rembgBMs": _metric_summary(scored, "rembgBMs"),
+            "hullFitAMs": _metric_summary(scored, "hullFitAMs"),
+            "hullFitBMs": _metric_summary(scored, "hullFitBMs"),
+            "selectGuardedPairMs": _metric_summary(scored, "selectGuardedPairMs"),
+            "legacyFallbackMs": _metric_summary(scored, "legacyFallbackMs"),
+        },
     }
 
 
 def _counts(values: Iterable[Any]) -> Dict[str, int]:
     out: Dict[str, int] = {}
     for value in values:
-        key = str(value or "none")
+        key = "none" if value is None or value == "" else str(value)
         out[key] = out.get(key, 0) + 1
     return dict(sorted(out.items()))
 
@@ -228,6 +306,21 @@ def _render_report(payload: Mapping[str, Any]) -> str:
     lines.extend(["", "Two-view repair statuses:", ""])
     for key, value in summary["twoViewStatusCounts"].items():
         lines.append(f"- `{key}`: `{value}`")
+    lines.extend(["", "Performance schemas:", ""])
+    for key, value in summary["performanceSchemaCounts"].items():
+        lines.append(f"- `{key}`: `{value}`")
+    lines.extend(["", "Timing summary:", ""])
+    lines.extend([
+        "| Metric | Count | Min | P50 | P90 | Max | Avg |",
+        "|---|---:|---:|---:|---:|---:|---:|",
+    ])
+    for key, metric in summary["timings"].items():
+        if metric.get("count", 0) == 0:
+            continue
+        lines.append(
+            f"| `{key}` | {metric['count']} | {metric['min']} | {metric['p50']} | "
+            f"{metric['p90']} | {metric['max']} | {metric['avg']} |"
+        )
     lines.extend(["", "## Non-exact Rows", ""])
     if not non_exact:
         lines.append("_None._")

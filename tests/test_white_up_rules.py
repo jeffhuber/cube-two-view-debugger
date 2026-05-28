@@ -312,7 +312,7 @@ def test_recognize_from_analyses_reuses_workset_for_direct_and_repair(monkeypatc
     workset = RecognitionWorkset(options_a=[], options_b=[], merged_candidates=[])
     calls = {"workset": 0, "direct": 0, "repair": 0}
 
-    def fake_workset(analysis_a, analysis_b):
+    def fake_workset(analysis_a, analysis_b, **kwargs):
         calls["workset"] += 1
         return workset
 
@@ -328,7 +328,7 @@ def test_recognize_from_analyses_reuses_workset_for_direct_and_repair(monkeypatc
         return []
 
     monkeypatch.setattr(recognizer, "_base_recognition_signals", lambda analysis_a, analysis_b: {})
-    monkeypatch.setattr(recognizer, "_white_up_checks", lambda analysis_a, analysis_b: [])
+    monkeypatch.setattr(recognizer, "_white_up_checks", lambda analysis_a, analysis_b, **kwargs: [])
     monkeypatch.setattr(recognizer, "_recognition_workset", fake_workset)
     monkeypatch.setattr(WhiteUpRecognizer, "_state_candidates_from_workset", fake_state_candidates)
     monkeypatch.setattr(WhiteUpRecognizer, "_legal_repair_candidate_details_from_workset", fake_repair_details)
@@ -344,7 +344,7 @@ def test_recognize_from_analyses_skips_repair_for_low_direct_candidate_count(mon
     workset = RecognitionWorkset(options_a=[], options_b=[], merged_candidates=[])
     calls = {"workset": 0, "direct": 0, "repair": 0}
 
-    def fake_workset(analysis_a, analysis_b):
+    def fake_workset(analysis_a, analysis_b, **kwargs):
         calls["workset"] += 1
         return workset
 
@@ -358,7 +358,7 @@ def test_recognize_from_analyses_skips_repair_for_low_direct_candidate_count(mon
         raise AssertionError("low-candidate direct rejects should not enter repair")
 
     monkeypatch.setattr(recognizer, "_base_recognition_signals", lambda analysis_a, analysis_b: {})
-    monkeypatch.setattr(recognizer, "_white_up_checks", lambda analysis_a, analysis_b: [])
+    monkeypatch.setattr(recognizer, "_white_up_checks", lambda analysis_a, analysis_b, **kwargs: [])
     monkeypatch.setattr(recognizer, "_recognition_workset", fake_workset)
     monkeypatch.setattr(WhiteUpRecognizer, "_state_candidates_from_workset", fake_state_candidates)
     monkeypatch.setattr(WhiteUpRecognizer, "_legal_repair_candidate_details_from_workset", fake_repair_details)
@@ -428,8 +428,8 @@ def test_recognize_from_analyses_attaches_direct_legal_candidate_summary(monkeyp
     second_state = "R" * 54
 
     monkeypatch.setattr(recognizer, "_base_recognition_signals", lambda analysis_a, analysis_b: {})
-    monkeypatch.setattr(recognizer, "_white_up_checks", lambda analysis_a, analysis_b: [])
-    monkeypatch.setattr(recognizer, "_recognition_workset", lambda analysis_a, analysis_b: workset)
+    monkeypatch.setattr(recognizer, "_white_up_checks", lambda analysis_a, analysis_b, **kwargs: [])
+    monkeypatch.setattr(recognizer, "_recognition_workset", lambda analysis_a, analysis_b, **kwargs: workset)
     monkeypatch.setattr(
         WhiteUpRecognizer,
         "_state_candidates_from_workset",
@@ -498,8 +498,8 @@ def test_recognize_from_analyses_reports_empty_backfill_attempt(monkeypatch):
         return []
 
     monkeypatch.setattr(recognizer, "_base_recognition_signals", lambda analysis_a, analysis_b: {})
-    monkeypatch.setattr(recognizer, "_white_up_checks", lambda analysis_a, analysis_b: [])
-    monkeypatch.setattr(recognizer, "_recognition_workset", lambda analysis_a, analysis_b: workset)
+    monkeypatch.setattr(recognizer, "_white_up_checks", lambda analysis_a, analysis_b, **kwargs: [])
+    monkeypatch.setattr(recognizer, "_recognition_workset", lambda analysis_a, analysis_b, **kwargs: workset)
     monkeypatch.setattr(WhiteUpRecognizer, "_state_candidates_from_workset", lambda self, candidate_workset: [])
     monkeypatch.setattr(WhiteUpRecognizer, "_legal_repair_candidate_details_from_workset", fake_standard_repair)
     monkeypatch.setattr(WhiteUpRecognizer, "_legal_repair_candidate_details_from_merges", fake_backfill_repair)
@@ -548,8 +548,8 @@ def test_recognize_from_analyses_uses_conflict_backfill_repair_source(monkeypatc
         ]
 
     monkeypatch.setattr(recognizer, "_base_recognition_signals", lambda analysis_a, analysis_b: {})
-    monkeypatch.setattr(recognizer, "_white_up_checks", lambda analysis_a, analysis_b: [])
-    monkeypatch.setattr(recognizer, "_recognition_workset", lambda analysis_a, analysis_b: workset)
+    monkeypatch.setattr(recognizer, "_white_up_checks", lambda analysis_a, analysis_b, **kwargs: [])
+    monkeypatch.setattr(recognizer, "_recognition_workset", lambda analysis_a, analysis_b, **kwargs: workset)
     monkeypatch.setattr(WhiteUpRecognizer, "_state_candidates_from_workset", lambda self, candidate_workset: [])
     monkeypatch.setattr(WhiteUpRecognizer, "_legal_repair_candidate_details_from_workset", fake_standard_repair)
     monkeypatch.setattr(WhiteUpRecognizer, "_legal_repair_candidate_details_from_merges", fake_backfill_repair)
@@ -615,8 +615,8 @@ def test_recognize_from_analyses_tries_backfill_for_unstable_standard_repair(mon
         ]
 
     monkeypatch.setattr(recognizer, "_base_recognition_signals", lambda analysis_a, analysis_b: {})
-    monkeypatch.setattr(recognizer, "_white_up_checks", lambda analysis_a, analysis_b: [])
-    monkeypatch.setattr(recognizer, "_recognition_workset", lambda analysis_a, analysis_b: workset)
+    monkeypatch.setattr(recognizer, "_white_up_checks", lambda analysis_a, analysis_b, **kwargs: [])
+    monkeypatch.setattr(recognizer, "_recognition_workset", lambda analysis_a, analysis_b, **kwargs: workset)
     monkeypatch.setattr(WhiteUpRecognizer, "_state_candidates_from_workset", lambda self, candidate_workset: [])
     monkeypatch.setattr(WhiteUpRecognizer, "_legal_repair_candidate_details_from_workset", fake_standard_repair)
     monkeypatch.setattr(WhiteUpRecognizer, "_legal_repair_candidate_details_from_merges", fake_backfill_repair)
@@ -676,8 +676,8 @@ def test_recognize_from_analyses_keeps_backfill_skipped_for_pre_count_skew(monke
         return []
 
     monkeypatch.setattr(recognizer, "_base_recognition_signals", lambda analysis_a, analysis_b: {})
-    monkeypatch.setattr(recognizer, "_white_up_checks", lambda analysis_a, analysis_b: [])
-    monkeypatch.setattr(recognizer, "_recognition_workset", lambda analysis_a, analysis_b: workset)
+    monkeypatch.setattr(recognizer, "_white_up_checks", lambda analysis_a, analysis_b, **kwargs: [])
+    monkeypatch.setattr(recognizer, "_recognition_workset", lambda analysis_a, analysis_b, **kwargs: workset)
     monkeypatch.setattr(WhiteUpRecognizer, "_state_candidates_from_workset", lambda self, candidate_workset: [])
     monkeypatch.setattr(WhiteUpRecognizer, "_legal_repair_candidate_details_from_workset", fake_standard_repair)
     monkeypatch.setattr(WhiteUpRecognizer, "_legal_repair_candidate_details_from_merges", fake_backfill_repair)

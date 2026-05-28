@@ -1516,6 +1516,52 @@ def _candidate_evaluation_from_payload(
     }
 
 
+def _compact_cubie_consistency_signal(raw: Any) -> Optional[Dict[str, Any]]:
+    if not isinstance(raw, Mapping):
+        return None
+    return {
+        key: raw.get(key)
+        for key in (
+            "totalCubies",
+            "consistentCount",
+            "inconsistentCount",
+            "inconsistentSplitCount",
+            "inconsistentInImageCount",
+            "inconsistentNames",
+        )
+        if key in raw
+    }
+
+
+def _two_view_consistency_signal_from_repair(repair: Mapping[str, Any]) -> Optional[Dict[str, Any]]:
+    methods = repair.get("methods")
+    if not isinstance(methods, Mapping):
+        return None
+    two_view = methods.get("two_view_consistency_repaired")
+    if not isinstance(two_view, Mapping):
+        return None
+    gate = two_view.get("gate")
+    gate_payload = gate if isinstance(gate, Mapping) else {}
+    return {
+        "status": two_view.get("status"),
+        "validState": two_view.get("validState"),
+        "countBalanced": two_view.get("countBalanced"),
+        "repairCost": two_view.get("repairCost"),
+        "repairChanges": two_view.get("repairChanges"),
+        "gate": {
+            "accepted": gate_payload.get("accepted"),
+            "reasons": gate_payload.get("reasons"),
+            "stateDeltaFromCanonical": gate_payload.get("stateDeltaFromCanonical"),
+            "baselineCubieConsistency": _compact_cubie_consistency_signal(
+                gate_payload.get("baselineCubieConsistency")
+            ),
+            "candidateCubieConsistency": _compact_cubie_consistency_signal(
+                gate_payload.get("candidateCubieConsistency")
+            ),
+        },
+    }
+
+
 def _constrained_signal_from_payload(
     payload: Mapping[str, Any],
     *,
@@ -1546,6 +1592,7 @@ def _constrained_signal_from_payload(
             "repairChanges": recommended_payload.get("repairChanges"),
             "stateDeltaFromCanonical": recommended_payload.get("stateDeltaFromCanonical"),
         },
+        "twoViewConsistencyRepair": _two_view_consistency_signal_from_repair(repair_payload),
         "candidateEvaluation": _candidate_evaluation_from_payload(payload, expected_state),
     }
 

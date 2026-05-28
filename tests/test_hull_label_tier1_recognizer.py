@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import io
 import json
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from PIL import Image
 
@@ -152,7 +152,11 @@ def test_constrained_env_default_runs_shadow_when_query_omitted(tmp_path, monkey
     recognizer = FakeRecognizer()
     monkeypatch.setattr(app_module, "RUNS", tmp_path / "runs", raising=False)
     monkeypatch.setenv(app_module.CONSTRAINED_INFERENCE_MODE_ENV, "shadow")
-    monkeypatch.setattr(app_module, "prepare_llm_rectified_input", lambda _a, _b: _constrained_payload(SOLVED_STATE))
+    monkeypatch.setattr(
+        app_module,
+        "prepare_llm_rectified_input",
+        lambda _a, _b, **_kwargs: _constrained_payload(SOLVED_STATE),
+    )
 
     pair = ImagePair("env-constrained-shadow", ImageUpload("a.jpg", b"a"), ImageUpload("b.jpg", b"b"))
     payload = app_module.recognize_and_persist(
@@ -237,7 +241,11 @@ def test_constrained_shadow_mode_returns_legacy_with_shadow_signal(tmp_path, mon
             return RecognitionResult(status="success", state="U" * 54, confidence=0.8, reason="legacy")
 
     monkeypatch.setattr(app_module, "RUNS", tmp_path / "runs", raising=False)
-    monkeypatch.setattr(app_module, "prepare_llm_rectified_input", lambda _a, _b: _constrained_payload(SOLVED_STATE))
+    monkeypatch.setattr(
+        app_module,
+        "prepare_llm_rectified_input",
+        lambda _a, _b, **_kwargs: _constrained_payload(SOLVED_STATE),
+    )
 
     pair = ImagePair("constrained-shadow", ImageUpload("a.jpg", b"a"), ImageUpload("b.jpg", b"b"))
     payload = app_module.recognize_and_persist(
@@ -281,7 +289,11 @@ def test_constrained_shadow_log_can_be_disabled(tmp_path, monkeypatch):
 
     monkeypatch.setattr(app_module, "RUNS", tmp_path / "runs", raising=False)
     monkeypatch.setenv(app_module.CONSTRAINED_SHADOW_LOG_ENV, "off")
-    monkeypatch.setattr(app_module, "prepare_llm_rectified_input", lambda _a, _b: _constrained_payload("R" * 54))
+    monkeypatch.setattr(
+        app_module,
+        "prepare_llm_rectified_input",
+        lambda _a, _b, **_kwargs: _constrained_payload("R" * 54),
+    )
 
     pair = ImagePair("constrained-shadow-disabled", ImageUpload("a.jpg", b"a"), ImageUpload("b.jpg", b"b"))
     app_module.recognize_and_persist(
@@ -297,26 +309,42 @@ def test_constrained_prefer_mode_returns_candidate_when_gate_accepts(tmp_path, m
     import app as app_module
 
     class FakeRecognizer:
+        def __init__(self):
+            self.modes: List[Optional[str]] = []
+
         def recognize(self, image_a, image_b, *, hull_label_tier1_mode=None):
+            self.modes.append(hull_label_tier1_mode)
             return RecognitionResult(status="rejected", reason="legacy rejected")
 
+    prepare_kwargs: List[Dict[str, object]] = []
+
+    def fake_prepare(_a, _b, **kwargs):
+        prepare_kwargs.append(kwargs)
+        return _constrained_payload(SOLVED_STATE)
+
+    recognizer = FakeRecognizer()
     monkeypatch.setattr(app_module, "RUNS", tmp_path / "runs", raising=False)
-    monkeypatch.setattr(app_module, "prepare_llm_rectified_input", lambda _a, _b: _constrained_payload(SOLVED_STATE))
+    monkeypatch.setattr(app_module, "prepare_llm_rectified_input", fake_prepare)
 
     pair = ImagePair("constrained-prefer", ImageUpload("a.jpg", b"a"), ImageUpload("b.jpg", b"b"))
     payload = app_module.recognize_and_persist(
-        FakeRecognizer(),  # type: ignore[arg-type]
+        recognizer,  # type: ignore[arg-type]
         pair,
         hull_label_tier1_mode="constrained",
         expected_state=SOLVED_STATE,
     )
 
+    assert recognizer.modes == []
+    assert prepare_kwargs == [{"include_contact_sheets": False}]
     assert payload["status"] == "success"
     assert payload["state"] == SOLVED_STATE
     signal = payload["recognitionSignals"]["constrainedInference"]
     assert signal["selected"] is True
     assert signal["promotionGate"]["accepted"] is True
     assert signal["candidateEvaluation"]["exact"] is True
+    assert signal["performance"]["schema"] == "constrained_recognize_performance_v1"
+    assert signal["performance"]["contactSheetsIncluded"] is False
+    assert "legacyFallback" not in signal["performance"]["stageTimingsMs"]
 
     event = json.loads((tmp_path / "runs" / "constrained_inference_shadow.jsonl").read_text(encoding="utf-8"))
     assert event["mode"] == "prefer"
@@ -329,23 +357,34 @@ def test_constrained_prefer_mode_falls_back_when_gate_rejects(tmp_path, monkeypa
     import app as app_module
 
     class FakeRecognizer:
+        def __init__(self):
+            self.modes: List[Optional[str]] = []
+
         def recognize(self, image_a, image_b, *, hull_label_tier1_mode=None):
+            self.modes.append(hull_label_tier1_mode)
             return RecognitionResult(status="success", state="U" * 54, confidence=0.8, reason="legacy")
 
+    recognizer = FakeRecognizer()
     monkeypatch.setattr(app_module, "RUNS", tmp_path / "runs", raising=False)
-    monkeypatch.setattr(app_module, "prepare_llm_rectified_input", lambda _a, _b: _constrained_payload(accepted=False))
+    monkeypatch.setattr(
+        app_module,
+        "prepare_llm_rectified_input",
+        lambda _a, _b, **_kwargs: _constrained_payload(accepted=False),
+    )
 
     pair = ImagePair("constrained-fallback", ImageUpload("a.jpg", b"a"), ImageUpload("b.jpg", b"b"))
     payload = app_module.recognize_and_persist(
-        FakeRecognizer(),  # type: ignore[arg-type]
+        recognizer,  # type: ignore[arg-type]
         pair,
         hull_label_tier1_mode="constrained-prefer",
     )
 
+    assert recognizer.modes == ["off"]
     assert payload["state"] == "U" * 54
     signal = payload["recognitionSignals"]["constrainedInference"]
     assert signal["selected"] is False
     assert signal["promotionGate"]["accepted"] is False
+    assert signal["performance"]["stageTimingsMs"]["legacyFallback"] >= 0
 
 
 def _analysis_with_hull_label_centers(side: str, yaw: int) -> ImageAnalysis:

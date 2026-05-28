@@ -211,8 +211,20 @@ jobs:
             // cube-snap#205 / ctvd#371 caught the previous
             // trailer-only filter).
             function classifyAuditComment(body) {
+              // Strict trailer alternation mirrors Python's
+              // TRAILER_PATTERN in tools/codex_audit_labeler.py
+              // (Codex P2 round 1 of cube-snap#206 / ctvd#373 merge
+              // commit). The previous `[\w-]+` capture would match a
+              // malformed trailer like `<!-- CODEX_AUDIT_STATE: foo -->`
+              // and return 'needs', while the Python regex only matches
+              // the three valid values and falls through to the prose
+              // fallback. A real PASS/BLOCKED comment with a corrupt
+              // trailer plus valid prose would therefore be labeled
+              // 'done'/'blocked' by Python but 'needs' here, and the
+              // synchronize handler would erase the valid label on the
+              // next push. Three-value alternation closes that gap.
               const trailerAll = [
-                ...body.matchAll(/<!--\s*CODEX_AUDIT_STATE:\s*([\w-]+)\s*-->/gi),
+                ...body.matchAll(/<!--\s*CODEX_AUDIT_STATE:\s*(codex-audit-done|codex-audit-blocked|needs-codex-audit)\s*-->/gi),
               ];
               if (trailerAll.length > 0) {
                 const tag = trailerAll[trailerAll.length - 1][1].toLowerCase();

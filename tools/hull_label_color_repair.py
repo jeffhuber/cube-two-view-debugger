@@ -692,6 +692,7 @@ def assemble_color_repair_payload(
     yaw_quarter_turns: int,
     side_traces: Optional[Mapping[str, Any]] = None,
     gt_state: Optional[str] = None,
+    include_legal_repairs: bool = True,
 ) -> Dict[str, Any]:
     canonical = evaluate_palette(
         observations=observations,
@@ -707,13 +708,14 @@ def assemble_color_repair_payload(
         gt_state=gt_state,
     )
     methods = {**canonical, **adaptive_methods}
-    methods.update(
-        evaluate_legal_repair_methods(
-            observations=observations,
-            baseline_state=canonical["canonical_count_repaired"].get("state"),
-            gt_state=gt_state,
+    if include_legal_repairs:
+        methods.update(
+            evaluate_legal_repair_methods(
+                observations=observations,
+                baseline_state=canonical["canonical_count_repaired"].get("state"),
+                gt_state=gt_state,
+            )
         )
-    )
     recommended_name = choose_recommended_method(methods)
     recommended = dict(methods[recommended_name]) if recommended_name else {}
     if recommended:
@@ -738,6 +740,7 @@ def repair_from_hull_label_fits(
     side_fits: Mapping[str, Any],
     yaw_quarter_turns: int,
     gt_state: Optional[str] = None,
+    include_legal_repairs: bool = True,
 ) -> Dict[str, Any]:
     observations, panel_meta = sample_observations(
         side_fits=side_fits,
@@ -753,4 +756,5 @@ def repair_from_hull_label_fits(
         yaw_quarter_turns=yaw_quarter_turns,
         side_traces=side_traces,
         gt_state=gt_state,
+        include_legal_repairs=include_legal_repairs,
     )

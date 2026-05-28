@@ -843,6 +843,10 @@ def _llm_rectified_session() -> Any:
         return _LLM_RECTIFIED_SESSION
 
 
+def _elapsed_ms(started: float) -> float:
+    return round((time.perf_counter() - started) * 1000.0, 2)
+
+
 def prepare_llm_rectified_input(
     image_a_bytes: bytes,
     image_b_bytes: bytes,
@@ -850,6 +854,7 @@ def prepare_llm_rectified_input(
     yaw_quarter_turns: Optional[int] = None,
     max_side: int = 1600,
     panel_size: int = 300,
+    include_contact_sheets: bool = True,
 ) -> Dict[str, Any]:
     """Create labeled WCA face contact sheets for LLM color reading.
 
@@ -861,6 +866,10 @@ def prepare_llm_rectified_input(
     rectified slot-center colors before assigning panels to WCA faces.
     """
 
+    performance_started = time.perf_counter()
+    stage_timings_ms: Dict[str, float] = {}
+
+    stage_started = time.perf_counter()
     from PIL import Image, ImageDraw, ImageFont, ImageOps
     from rembg import remove
 
@@ -869,6 +878,10 @@ def prepare_llm_rectified_input(
     from tools.hull_label_color_repair import repair_from_hull_label_fits
     from tools.hull_label_assembly import convention_orientation_for_slot
     from tools.rectify_via_hull_labels import DEFAULT_MASK_THRESHOLDS, select_hull_label_threshold_fit
+    stage_timings_ms["imports"] = _elapsed_ms(stage_started)
+
+    def record_stage(stage: str, started: float) -> None:
+        stage_timings_ms[stage] = _elapsed_ms(started)
 
     def load_image(payload: bytes) -> Image.Image:
         with Image.open(io.BytesIO(payload)) as img:
@@ -1052,15 +1065,26 @@ def prepare_llm_rectified_input(
             "stickerScoreTotal": round(score_total, 2),
         }
 
+    stage_started = time.perf_counter()
     image_a = load_image(image_a_bytes)
     image_b = load_image(image_b_bytes)
+    record_stage("loadImages", stage_started)
+
+    stage_started = time.perf_counter()
     session = _llm_rectified_session()
+    record_stage("rembgSession", stage_started)
+
     threshold_entries_by_side: Dict[str, Dict[int, Dict[str, Any]]] = {}
     threshold_diagnostics_by_side: Dict[str, Any] = {}
     for side, image in (("A", image_a), ("B", image_b)):
+        stage_started = time.perf_counter()
         rgba = remove(image, session=session).convert("RGBA")
         alpha = _np.asarray(rgba.split()[-1], dtype=_np.uint8)
+        record_stage(f"rembg{side}", stage_started)
+
+        stage_started = time.perf_counter()
         entries, threshold_diagnostics = fit_threshold_candidates(side, image, alpha)
+        record_stage(f"hullFit{side}", stage_started)
         if not entries:
             raise RuntimeError(
                 f"hull-label rectification failed for side {side}: "
@@ -1069,13 +1093,16 @@ def prepare_llm_rectified_input(
         threshold_entries_by_side[side] = entries
         threshold_diagnostics_by_side[side] = threshold_diagnostics
 
+    stage_started = time.perf_counter()
     current_thresholds: Dict[str, int] = {}
     current_side_entries: Dict[str, Dict[str, Any]] = {}
     for side in ("A", "B"):
         threshold, entry = current_entry(threshold_entries_by_side[side])
         current_thresholds[side] = threshold
         current_side_entries[side] = entry
+    record_stage("selectCurrentThresholds", stage_started)
 
+    stage_started = time.perf_counter()
     current_combo = compact_combo(current_thresholds, current_side_entries)
     pair_candidates: List[Dict[str, Any]] = [current_combo]
     if not repair_valid(current_combo["evaluation"]):
@@ -1091,6 +1118,7 @@ def prepare_llm_rectified_input(
         candidates=pair_candidates,
         fallback_to_current_without_alternative=True,
     )
+    record_stage("selectGuardedPair", stage_started)
     selected_eval = selected_combo["evaluation"]
     yaw_inference = selected_eval.get("yawInference") or {}
     if selected_eval.get("status") == "yaw_unavailable" and yaw_quarter_turns is None:
@@ -1129,65 +1157,86 @@ def prepare_llm_rectified_input(
         ),
     }
 
-    panels_by_face: Dict[str, Image.Image] = {}
-    panel_metadata: List[Dict[str, Any]] = []
-    for side, fit in (("A", fits_by_side["A"]), ("B", fits_by_side["B"])):
-        assignments = wca_face_by_slot(side, selected_yaw)
-        for slot, wca_face in assignments.items():
-            orientation = convention_orientation_for_slot(
-                side=side,
-                slot=slot,
-                yaw_quarter_turns=selected_yaw,
-                wca_face=wca_face,
-                quad=fit.face_quads[slot],
-            )
-            if orientation is None:
-                raise RuntimeError(f"could not orient side {side} slot {slot} as WCA face {wca_face}")
-            panels_by_face[wca_face] = apply_orientation(fit.rectified_faces[slot], *orientation)
-            panel_metadata.append({
-                "side": side,
-                "image": "imageA" if side == "A" else "imageB",
-                "slot": slot,
-                "wcaFace": wca_face,
-                "yawQuarterTurns": selected_yaw,
-                "mirror": orientation[0],
-                "rotQuarter": orientation[1],
-            })
-
-    missing = sorted(set("URFDLB") - set(panels_by_face))
-    if missing:
-        raise RuntimeError(f"rectified panels missing WCA faces: {', '.join(missing)}")
-    image_a_sheet = make_face_sheet("Image 1", _LLM_RECTIFIED_WCA_GROUPS["imageA"])
-    image_b_sheet = make_face_sheet("Image 2", _LLM_RECTIFIED_WCA_GROUPS["imageB"])
-    image_a_b64, image_a_size = jpeg_base64(image_a_sheet)
-    image_b_b64, image_b_size = jpeg_base64(image_b_sheet)
-    panel_metadata.sort(key=lambda item: "URFDLB".index(str(item["wcaFace"])))
     deterministic_repair = selected_eval.get("repair") or {
         "schema": "hull_label_color_repair_v1",
         "status": selected_eval.get("status", "unavailable"),
     }
+
+    stage_started = time.perf_counter()
     promotion_gate = evaluate_runtime_payload_gate(
         repair=deterministic_repair,
         pair_threshold_selection=pair_threshold_selection,
         side_traces=threshold_traces_by_side,
         yaw_inference=yaw_inference,
     )
-    return {
+    record_stage("promotionGate", stage_started)
+
+    panel_payload: Dict[str, Any] = {}
+    if include_contact_sheets:
+        stage_started = time.perf_counter()
+        panels_by_face: Dict[str, Image.Image] = {}
+        panel_metadata: List[Dict[str, Any]] = []
+        for side, fit in (("A", fits_by_side["A"]), ("B", fits_by_side["B"])):
+            assignments = wca_face_by_slot(side, selected_yaw)
+            for slot, wca_face in assignments.items():
+                orientation = convention_orientation_for_slot(
+                    side=side,
+                    slot=slot,
+                    yaw_quarter_turns=selected_yaw,
+                    wca_face=wca_face,
+                    quad=fit.face_quads[slot],
+                )
+                if orientation is None:
+                    raise RuntimeError(f"could not orient side {side} slot {slot} as WCA face {wca_face}")
+                panels_by_face[wca_face] = apply_orientation(fit.rectified_faces[slot], *orientation)
+                panel_metadata.append({
+                    "side": side,
+                    "image": "imageA" if side == "A" else "imageB",
+                    "slot": slot,
+                    "wcaFace": wca_face,
+                    "yawQuarterTurns": selected_yaw,
+                    "mirror": orientation[0],
+                    "rotQuarter": orientation[1],
+                })
+
+        missing = sorted(set("URFDLB") - set(panels_by_face))
+        if missing:
+            raise RuntimeError(f"rectified panels missing WCA faces: {', '.join(missing)}")
+        image_a_sheet = make_face_sheet("Image 1", _LLM_RECTIFIED_WCA_GROUPS["imageA"])
+        image_b_sheet = make_face_sheet("Image 2", _LLM_RECTIFIED_WCA_GROUPS["imageB"])
+        image_a_b64, image_a_size = jpeg_base64(image_a_sheet)
+        image_b_b64, image_b_size = jpeg_base64(image_b_sheet)
+        panel_metadata.sort(key=lambda item: "URFDLB".index(str(item["wcaFace"])))
+        panel_payload = {
+            "imageA": image_a_b64,
+            "imageB": image_b_b64,
+            "imageABytes": image_a_size,
+            "imageBBytes": image_b_size,
+            "panels": panel_metadata,
+        }
+        record_stage("buildContactSheets", stage_started)
+
+    payload = {
         "status": "success",
         "prompt": "rectified",
-        "imageA": image_a_b64,
-        "imageB": image_b_b64,
-        "imageABytes": image_a_size,
-        "imageBBytes": image_b_size,
         "yawQuarterTurns": selected_yaw,
         "yawSource": yaw_source,
         "yawInference": yaw_inference,
-        "panels": panel_metadata,
         "hullLabelMaskThresholds": threshold_traces_by_side,
         "hullLabelPairThresholdSelection": pair_threshold_selection,
         "deterministicColorRepair": deterministic_repair,
         "constrainedInferencePromotionGate": promotion_gate,
+        **panel_payload,
     }
+    stage_timings_ms["prepareTotal"] = _elapsed_ms(performance_started)
+    payload["performance"] = {
+        "schema": "llm_rectified_input_performance_v1",
+        "contactSheetsIncluded": include_contact_sheets,
+        "maxSide": max_side,
+        "panelSize": panel_size,
+        "stageTimingsMs": stage_timings_ms,
+    }
+    return payload
 
 
 def _infer_yaw_from_rectified_fits(fits_by_side: Dict[str, Any]) -> Dict[str, Any]:
@@ -1582,6 +1631,7 @@ def _constrained_signal_from_payload(
         "yawInference": payload.get("yawInference"),
         "pairThresholdSelection": payload.get("hullLabelPairThresholdSelection"),
         "promotionGate": payload.get("constrainedInferencePromotionGate"),
+        "performance": payload.get("performance"),
         "recommendedMethod": repair_payload.get("recommendedMethod"),
         "recommended": {
             "validState": recommended_payload.get("validState"),
@@ -1649,7 +1699,13 @@ def _attach_constrained_shadow_signal(
     result.recognition_signals = signals
 
 
-def _attach_constrained_error_signal(result: RecognitionResult, exc: Exception, *, mode: str) -> None:
+def _attach_constrained_error_signal(
+    result: RecognitionResult,
+    exc: Exception,
+    *,
+    mode: str,
+    performance: Optional[Mapping[str, Any]] = None,
+) -> None:
     signals = dict(result.recognition_signals or {})
     signals["constrainedInference"] = {
         "schema": "constrained_inference_recognize_signal_v1",
@@ -1658,8 +1714,53 @@ def _attach_constrained_error_signal(result: RecognitionResult, exc: Exception, 
         "mode": mode,
         "status": "error",
         "error": f"{type(exc).__name__}: {exc}",
+        **({"performance": dict(performance)} if performance else {}),
     }
     result.recognition_signals = signals
+
+
+def _constrained_recognize_performance(
+    stage_timings_ms: Mapping[str, float],
+    *,
+    contact_sheets_included: bool,
+) -> Dict[str, Any]:
+    return {
+        "schema": "constrained_recognize_performance_v1",
+        "contactSheetsIncluded": contact_sheets_included,
+        "stageTimingsMs": {
+            str(stage): round(float(ms), 2)
+            for stage, ms in stage_timings_ms.items()
+        },
+    }
+
+
+def _merge_constrained_recognize_performance(
+    payload: Dict[str, Any],
+    stage_timings_ms: Mapping[str, float],
+) -> None:
+    performance = payload.get("performance")
+    if not isinstance(performance, dict):
+        performance = {
+            "schema": "constrained_recognize_performance_v1",
+            "contactSheetsIncluded": False,
+            "stageTimingsMs": {},
+        }
+    else:
+        performance = dict(performance)
+        if performance.get("schema"):
+            performance.setdefault("rectifiedInputPerformanceSchema", performance.get("schema"))
+        performance["schema"] = "constrained_recognize_performance_v1"
+    timings = performance.get("stageTimingsMs")
+    if not isinstance(timings, dict):
+        timings = {}
+    timings.update(
+        {
+            str(stage): round(float(ms), 2)
+            for stage, ms in stage_timings_ms.items()
+        }
+    )
+    performance["stageTimingsMs"] = timings
+    payload["performance"] = performance
 
 
 def _constrained_shadow_log_path() -> Optional[Path]:
@@ -1787,17 +1888,52 @@ def _recognize_with_constrained_inference_mode(
     *,
     expected_state: Optional[str] = None,
 ) -> RecognitionResult:
-    legacy = recognizer.recognize(image_a, image_b, hull_label_tier1_mode="off")
+    recognize_started = time.perf_counter()
+    stage_timings_ms: Dict[str, float] = {}
+
     try:
-        payload = prepare_llm_rectified_input(image_a, image_b)
+        stage_started = time.perf_counter()
+        payload = prepare_llm_rectified_input(
+            image_a,
+            image_b,
+            include_contact_sheets=False,
+        )
+        stage_timings_ms["prepareConstrainedInput"] = _elapsed_ms(stage_started)
     except Exception as exc:  # noqa: BLE001
-        _attach_constrained_error_signal(legacy, exc, mode=mode)
+        stage_started = time.perf_counter()
+        legacy = recognizer.recognize(image_a, image_b, hull_label_tier1_mode="off")
+        stage_timings_ms["legacyFallback"] = _elapsed_ms(stage_started)
+        stage_timings_ms["recognizeTotal"] = _elapsed_ms(recognize_started)
+        _attach_constrained_error_signal(
+            legacy,
+            exc,
+            mode=mode,
+            performance=_constrained_recognize_performance(
+                stage_timings_ms,
+                contact_sheets_included=False,
+            ),
+        )
         return legacy
 
+    stage_started = time.perf_counter()
     candidate = _constrained_candidate_result(payload, expected_state=expected_state)
+    stage_timings_ms["buildCandidate"] = _elapsed_ms(stage_started)
     if mode == "prefer" and candidate is not None:
+        stage_timings_ms["recognizeTotal"] = _elapsed_ms(recognize_started)
+        _merge_constrained_recognize_performance(payload, stage_timings_ms)
+        _attach_constrained_shadow_signal(
+            candidate,
+            payload,
+            selected=True,
+            expected_state=expected_state,
+        )
         return candidate
 
+    stage_started = time.perf_counter()
+    legacy = recognizer.recognize(image_a, image_b, hull_label_tier1_mode="off")
+    stage_timings_ms["legacyFallback"] = _elapsed_ms(stage_started)
+    stage_timings_ms["recognizeTotal"] = _elapsed_ms(recognize_started)
+    _merge_constrained_recognize_performance(payload, stage_timings_ms)
     _attach_constrained_shadow_signal(legacy, payload, selected=False, expected_state=expected_state)
     return legacy
 

@@ -188,7 +188,7 @@ class RubikHandler(BaseHTTPRequestHandler):
         if path == "/api/recognition-events/report":
             try:
                 since_hours = self._query_float("sinceHours")
-                recent_limit = self._query_int("recentLimit", default=20)
+                recent_limit = self._query_int("recentLimit", default=0)
                 self._send_json(
                     _recognition_event_report_payload(
                         since_hours=since_hours,
@@ -1016,7 +1016,7 @@ def _recognition_event_report_payload(
         "schema": "recognition_event_report_api_v1",
         "generatedAtUtc": dt.datetime.now(dt.timezone.utc).isoformat(),
         "enabled": path is not None,
-        "database": str(path) if path is not None else None,
+        "database": "configured" if path is not None else "disabled",
         "exists": bool(path and path.exists()),
         "sinceHours": since_hours,
         "summary": build_summary([], recent_limit=recent_limit),

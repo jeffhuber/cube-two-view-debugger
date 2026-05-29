@@ -17,9 +17,11 @@ import sys
 from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence
+from urllib import parse, request
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_DB = REPO_ROOT / "runs" / "recognition_events.sqlite3"
+DEFAULT_ENDPOINT = "https://api.cubesnap.app/api/recognition-events/report"
 EVENT_DB_ENV = "CUBE_RECOGNITION_EVENT_DB_PATH"
 DEFAULT_STAGES = (
     "recognizeTotal",
@@ -266,8 +268,18 @@ def _rows_as_dicts(rows: Sequence[sqlite3.Row]) -> List[Dict[str, Any]]:
 def _parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--db", type=Path, default=default_db_path())
+    parser.add_argument(
+        "--endpoint",
+        default=None,
+        help=(
+            "Fetch a production report from an HTTPS report endpoint instead "
+            "of reading a local SQLite DB. Example: "
+            f"{DEFAULT_ENDPOINT}"
+        ),
+    )
     parser.add_argument("--since-hours", type=float, default=None)
     parser.add_argument("--recent-limit", type=int, default=20)
+    parser.add_argument("--timeout", type=float, default=30.0)
     parser.add_argument("--out-json", type=Path, default=None)
     parser.add_argument("--report", type=Path, default=None)
     parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
@@ -292,16 +304,64 @@ def load_report_payload(
     }
 
 
+def _endpoint_report_url(
+    endpoint: str,
+    *,
+    since_hours: Optional[float],
+    recent_limit: int,
+) -> str:
+    url = parse.urlparse(endpoint)
+    query = dict(parse.parse_qsl(url.query, keep_blank_values=True))
+    if since_hours is not None:
+        query["sinceHours"] = str(since_hours)
+    query["recentLimit"] = str(max(0, recent_limit))
+    return parse.urlunparse(url._replace(query=parse.urlencode(query)))
+
+
+def load_endpoint_report_payload(
+    endpoint: str,
+    *,
+    since_hours: Optional[float] = None,
+    recent_limit: int = 20,
+    timeout: float = 30.0,
+) -> Dict[str, Any]:
+    url = _endpoint_report_url(
+        endpoint,
+        since_hours=since_hours,
+        recent_limit=recent_limit,
+    )
+    req = request.Request(
+        url,
+        headers={
+            "Accept": "application/json",
+            "User-Agent": "ctvd-recognition-event-report/1",
+        },
+    )
+    with request.urlopen(req, timeout=timeout) as resp:
+        payload = json.loads(resp.read().decode("utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError(f"report endpoint returned {type(payload).__name__}, expected object")
+    return payload
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     args = _parse_args(argv)
-    if not args.db.exists():
-        print(f"recognition event DB not found: {args.db}", file=sys.stderr)
-        return 2
-    payload = load_report_payload(
-        args.db,
-        since_hours=args.since_hours,
-        recent_limit=args.recent_limit,
-    )
+    if args.endpoint:
+        payload = load_endpoint_report_payload(
+            args.endpoint,
+            since_hours=args.since_hours,
+            recent_limit=args.recent_limit,
+            timeout=args.timeout,
+        )
+    else:
+        if not args.db.exists():
+            print(f"recognition event DB not found: {args.db}", file=sys.stderr)
+            return 2
+        payload = load_report_payload(
+            args.db,
+            since_hours=args.since_hours,
+            recent_limit=args.recent_limit,
+        )
     if args.out_json:
         args.out_json.parent.mkdir(parents=True, exist_ok=True)
         args.out_json.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")

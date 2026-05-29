@@ -115,13 +115,12 @@ discipline from the EXIF section above to *any* comparative claim.
 The EXIF rule is "view the photo before reading it"; this rule is
 "view both photos before comparing them."
 
-## Recognizer architecture: from LLM-as-oracle to constrained inference (2026-05-26)
+## Recognizer architecture: deployed constrained inference (2026-05-29)
 
-The recognizer architecture has shifted significantly over the past
-week. **The current direction is constrained cube-state inference,
-not LLM-as-oracle.** Future contributors should orient around this
-framing rather than the older "LLM reads colors, deterministic repair
-cleans up" mental model.
+The recognizer architecture has shifted significantly. **The product
+path is now constrained cube-state inference, not LLM-as-oracle.**
+Future contributors should orient around this framing rather than the
+older "LLM reads colors, deterministic repair cleans up" mental model.
 
 ### The shift, in one paragraph
 
@@ -144,32 +143,43 @@ shared cubies) slash the solution space. Find the most-likely valid
 cube state given the noisy evidence. **LLMs become one input to a
 constrained solver, not the source of truth.**
 
-### Empirical state (46-pair shadow corpus)
+### Current deployed score
 
-| Variant | Exact / 46 | Within 3 stickers |
-|---|---|---|
-| Old fixed-α-mask + LLM | 0 | 0 |
-| Hull-label + LLM raw (`prefer`) | 20 (43%) | 38 (83%) |
-| `canonical_count_repaired` | 42 (91%) | 45 (98%) |
-| `conservative_legal_repaired` | 43 (93%) | 45 (98%) |
-| `broad_legal_repaired` *(diagnostic-only)* | 46 (100%) | 46 (100%) |
+Fresh production-path score, generated 2026-05-29 against
+`https://api.cubesnap.app/api/recognize?slim=1&hullLabelTier1=constrained`:
 
-PR trail: #318 hull-label validation refresh · #319 color repair
-diagnostic · #320 mask threshold diagnostic · #322 production
-threshold selector · #324 color-repair helper + API · #325
-post-repair scoreboard · #326 legal-repair probe.
+| Corpus | Exact | Within 3 stickers | Rejected |
+|---|---:|---:|---:|
+| 71-row local manifest | 71/71 | 71/71 | 0 |
 
-The `broad_legal_repaired` 46/46 is **NOT** a recognition number —
-it's an upper-bound diagnostic showing a legal cube exists within
-the search cap (some rows require 8-11 sticker changes). The
-production-candidate number is `canonical_count_repaired` at 42/46
-exact, or `conservative_legal_repaired` at 43/46.
+Timing from the same deployed run, concurrency 1:
+
+| Metric | P50 | P90 | Max |
+|---|---:|---:|---:|
+| End-to-end latency | 3158 ms | 3444 ms | 8217 ms |
+| Server `recognizeTotal` | 2678 ms | 2882 ms | 7874 ms |
+
+Recommended methods in that run: `canonical_count_repaired` 67,
+`conservative_legal_repaired` 2, `guarded_broad_legal_repaired` 1,
+`two_view_consistency_repaired` 1. Contact sheets were omitted in all
+71 production responses.
+
+The old 46-pair shadow-corpus table was a useful development snapshot,
+but it is now stale and should not be used as a launch-quality number.
+If you need a current accuracy claim, rerun
+`tools/score_deployed_recognizer.py` against the deployed endpoint and
+cite that artifact.
 
 ### What's currently wired
 
-- **`/api/recognize` (default)**: still the original cloud-LLM
-  passthrough on raw photos. **Unchanged.** Production behavior
-  preserved while we iterate on the constrained-inference stack.
+- **`/api/recognize?hullLabelTier1=constrained`**: the production path
+  consumed by cube-snap via `api.cubesnap.app`. It runs constrained
+  inference first, returns the constrained candidate when the runtime
+  gate accepts it, and fast-rejects obvious non-cube/bad-orientation
+  inputs without legacy fallback.
+- **`/api/recognize` without the constrained query**: retained for
+  compatibility/debugging. Do not infer cube-snap production behavior
+  from this raw default; the web app supplies the constrained query.
 - **`/api/llm-rectified-input`** (Fixer-side endpoint): serves
   hull-label-rectified panels + `deterministicColorRepair` per pair.
   Consumed by cube-snap's "claude-sonnet-rectified" Fixer option
@@ -182,39 +192,38 @@ exact, or `conservative_legal_repaired` at 43/46.
   `diagnose_hull_label_legal_repair.py`, `diagnose_hull_label_mask_thresholds.py`,
   + their committed JSON/markdown fixtures. Read these for current
   per-set behavior before opening a recognizer PR.
+- **Durable metadata logging**: Railway production writes metadata-only
+  recognition events to `CUBE_RECOGNITION_EVENT_DB_PATH`, currently
+  `/data/recognition_events.sqlite3`, and `/api/diag` exposes aggregate
+  counters. No image bytes or 54-char states are persisted there.
 
 ### Open levers (approximate descending leverage)
 
-1. **Two-view consistency on shared cubies.** Image A's R-face center
-   and image B's L-face center are unrelated, but image A's
-   front-right-top corner sticker IS image B's back-right-top corner
-   sticker — same physical sticker, two reads. Hard constraint.
-   Not yet pulled. Likely the single biggest accuracy lever
-   remaining.
+1. **Real-traffic telemetry review.** The durable event table now exists;
+   the next leverage is watching real uploaded photos, reject reasons,
+   latency tails, and per-category drift instead of relying only on the
+   local manifest.
 2. **Lab + LLM evidence ensemble per sticker.** Currently LLM-only;
    adding a Lab-distance read as a second independent evidence
    source would tighten the per-sticker posterior before any
    constraint solving. Cheap to add (Lab classification is already
    used in the diagnostic pipeline) and probably the next-largest
    per-sticker accuracy lift.
-3. **Confidence-gated auto-merge as production policy.** high →
-   auto-recognize; med → flag uncertain stickers; low → Fixer with
-   draft. The `recommended.confidence` field on the repair output
-   already exists; needs to be threaded into `/api/recognize`.
-4. **Graduate `canonical_count_repaired` (or `conservative_legal_repaired`)
-   to the default recognizer.** Currently Fixer-side opt-in only.
-   Wiring as a post-processor on `/api/recognize` with confidence
-   gating is the natural next production move once two-view consistency
-   lands.
+3. **Gloss/glint and hard-background robustness.** The local corpus is
+   clean after constrained inference, so remaining quality work should
+   be driven by real-photo failures and targeted hard cases.
+4. **Confidence-aware user experience.** Clean results should solve
+   directly; medium/low confidence should route to the Fixer/correction
+   UI with the most useful uncertainty surfaced.
 
 ### What this section is NOT for
 
 - Replacing recognizer source-code documentation. Pipeline-stage
   explanations live inline in `rubik_recognizer/`.
 - Freezing the architecture. Constrained inference is the current
-  best framing; if two-view consistency turns out to over- or
-  underclaim, or a new color-evidence source materializes, the
-  framing will evolve. Treat this as the 2026-05-26 snapshot.
+  best framing; if real-traffic data exposes a new failure mode, or a
+  new color-evidence source materializes, the framing should evolve.
+  Treat this as the 2026-05-29 snapshot.
 
 Read this if you're about to: open a recognizer-architecture PR,
 scope new diagnostic work, claim an accuracy number in external

@@ -57,10 +57,13 @@ Post-deploy Railway score, after merging #396:
 - `hullFitWall`: p50 743.94 ms, p90 807.27 ms
 - `selectGuardedPairMs`: p50 192.24 ms, p90 209.49 ms, max 4938.70 ms
 
-Compared with the previous deployed scoreboard, the common path improved from
-`prepareConstrainedInputMs` p50 2360.63 ms to 2058.88 ms. The remaining latency
-problem is now concentrated in guarded-pair tail cases, especially sets 11, 14,
-59, 65, and 69.
+Compared with the previous deployed scoreboard, total
+`prepareConstrainedInputMs` p50 was lower in this run: 2360.63 ms to 2058.88 ms.
+Treat this as a post-deploy health/timing snapshot, not a controlled proof of
+the parallelization benefit, because rembg timings also shifted materially
+between runs. The next measurement step is a same-instance A/B of serial vs.
+parallel hull fitting. The remaining observed latency problem is concentrated
+in guarded-pair tail cases, especially sets 11, 14, 59, 65, and 69.
 
 ## Next candidates
 

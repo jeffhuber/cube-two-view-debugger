@@ -1203,9 +1203,16 @@ def _stub_face_grid(face, *, matched_count=9, fit_error=1.0, grid_samples=0, cel
     )()
 
 
-def test_corner_assignment_preserves_legacy_ud_agnostic_side_order():
+def test_corner_assignment_rejects_wrong_ud_corner_color():
     assert _corner_assignment(("D", "F", "R")) == (4, 0)
-    assert _corner_assignment(("U", "F", "R")) == (4, 0)
+    assert _corner_assignment(("U", "R", "F")) == (0, 0)
+    assert _corner_assignment(("U", "F", "R")) is None
+
+
+def test_corner_assignment_preserves_side_color_order_for_real_corners():
+    assert _corner_assignment(("D", "F", "R")) == (4, 0)
+    assert _corner_assignment(("R", "D", "F")) == (4, 1)
+    assert _corner_assignment(("F", "R", "D")) == (4, 2)
 
 
 def test_validation_failed_checks_ignores_one_sided_red_orange_skew():

@@ -423,6 +423,107 @@ def test_constrained_prefer_mode_falls_back_when_gate_rejects(tmp_path, monkeypa
     assert signal["performance"]["stageTimingsMs"]["legacyFallback"] >= 0
 
 
+def test_constrained_fast_reject_skips_legacy_fallback(tmp_path, monkeypatch):
+    import app as app_module
+
+    class FakeRecognizer:
+        def __init__(self):
+            self.modes: List[Optional[str]] = []
+
+        def recognize(self, image_a, image_b, *, hull_label_tier1_mode=None):
+            self.modes.append(hull_label_tier1_mode)
+            return RecognitionResult(status="success", state="U" * 54, confidence=0.8, reason="legacy")
+
+    def fake_prepare(_a, _b, **_kwargs):
+        raise app_module.ConstrainedInferenceFastReject(
+            "CubeSnap could not find a cube-like silhouette in image A.",
+            failed_checks=[
+                "non_cube_image_fast_reject",
+                "hull_label_no_accepted_threshold_a",
+            ],
+            detail={
+                "schema": "constrained_fast_reject_v1",
+                "side": "A",
+                "image": "imageA",
+            },
+            performance={
+                "schema": "llm_rectified_input_performance_v1",
+                "stageTimingsMs": {"rembgA": 12.0, "hullFitA": 3.0},
+            },
+        )
+
+    recognizer = FakeRecognizer()
+    monkeypatch.setattr(app_module, "RUNS", tmp_path / "runs", raising=False)
+    monkeypatch.setattr(app_module, "prepare_llm_rectified_input", fake_prepare)
+
+    pair = ImagePair("constrained-fast-reject", ImageUpload("a.jpg", b"a"), ImageUpload("b.jpg", b"b"))
+    payload = app_module.recognize_and_persist(
+        recognizer,  # type: ignore[arg-type]
+        pair,
+        hull_label_tier1_mode="constrained-prefer",
+    )
+
+    assert recognizer.modes == []
+    assert payload["status"] == "rejected"
+    assert payload["recognitionCategory"] == "reject_retake"
+    assert payload["failedChecks"] == [
+        "non_cube_image_fast_reject",
+        "hull_label_no_accepted_threshold_a",
+    ]
+    signal = payload["recognitionSignals"]["constrainedInference"]
+    assert signal["selected"] is False
+    assert signal["fallbackToLegacy"] is False
+    assert signal["status"] == "fast_reject"
+    assert signal["fastReject"]["side"] == "A"
+    assert signal["fastReject"]["preparePerformance"]["stageTimingsMs"]["rembgA"] == 12.0
+    assert signal["performance"]["stageTimingsMs"]["prepareConstrainedInput"] >= 0
+    assert "legacyFallback" not in signal["performance"]["stageTimingsMs"]
+
+
+def test_low_evidence_yaw_failure_fast_rejects_without_legacy(tmp_path, monkeypatch):
+    import app as app_module
+
+    class FakeRecognizer:
+        def __init__(self):
+            self.modes: List[Optional[str]] = []
+
+        def recognize(self, image_a, image_b, *, hull_label_tier1_mode=None):
+            self.modes.append(hull_label_tier1_mode)
+            return RecognitionResult(status="success", state="U" * 54, confidence=0.8, reason="legacy")
+
+    def fake_prepare(_a, _b, **_kwargs):
+        raise app_module.LlmRectifiedYawInferenceError(
+            "could not infer capture yaw",
+            {
+                "accepted": False,
+                "bestYawQuarterTurns": 0,
+                "bestScore": 1,
+                "secondScore": 1,
+                "margin": 0,
+            },
+        )
+
+    recognizer = FakeRecognizer()
+    monkeypatch.setattr(app_module, "RUNS", tmp_path / "runs", raising=False)
+    monkeypatch.setattr(app_module, "prepare_llm_rectified_input", fake_prepare)
+
+    pair = ImagePair("low-evidence-yaw", ImageUpload("a.jpg", b"a"), ImageUpload("b.jpg", b"b"))
+    payload = app_module.recognize_and_persist(
+        recognizer,  # type: ignore[arg-type]
+        pair,
+        hull_label_tier1_mode="constrained",
+    )
+
+    assert recognizer.modes == []
+    assert payload["status"] == "rejected"
+    assert "constrained_yaw_low_center_evidence" in payload["failedChecks"]
+    signal = payload["recognitionSignals"]["constrainedInference"]
+    assert signal["status"] == "fast_reject"
+    assert signal["fallbackToLegacy"] is False
+    assert signal["fastReject"]["source"] == "hull_label_center_yaw_inference"
+    assert "legacyFallback" not in signal["performance"]["stageTimingsMs"]
+
+
 def _analysis_with_hull_label_centers(side: str, yaw: int) -> ImageAnalysis:
     assignments = wca_face_by_slot(side, yaw)
     return ImageAnalysis(

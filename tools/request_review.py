@@ -25,7 +25,7 @@ except ImportError:  # pragma: no cover - direct script execution fallback
     import safe_gh_comment  # type: ignore
 
 
-RunFn = Callable[..., subprocess.CompletedProcess[str]]
+RunFn = Callable[..., subprocess.CompletedProcess]
 PostCommentFn = Callable[[str, int, str], None]
 
 

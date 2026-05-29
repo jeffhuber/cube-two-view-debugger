@@ -50,6 +50,8 @@ CONSTRAINED_SHADOW_LOG_ENV = "CUBE_CONSTRAINED_SHADOW_LOG"
 CONSTRAINED_INFERENCE_MODE_ENV = "CUBE_CONSTRAINED_INFERENCE_MODE"
 CONSTRAINED_PREWARM_ENV = "CUBE_CONSTRAINED_PREWARM"
 CONSTRAINED_HULL_FIT_MODE_ENV = "CUBE_CONSTRAINED_HULL_FIT_MODE"
+CONSTRAINED_IMAGE_MAX_SIDE_ENV = "CUBE_CONSTRAINED_IMAGE_MAX_SIDE"
+DEFAULT_CONSTRAINED_IMAGE_MAX_SIDE = 1600
 RECOGNITION_EVENT_DB_ENV = "CUBE_RECOGNITION_EVENT_DB_PATH"
 _CONSTRAINED_SHADOW_LOG_LOCK = threading.Lock()
 _RECOGNITION_EVENT_LOG_LOCK = threading.Lock()
@@ -182,6 +184,26 @@ class RubikHandler(BaseHTTPRequestHandler):
             # post-hoc is to know what was running. See README "Pinned
             # dependencies" section.
             self._send_json(_runtime_diag())
+            return
+        if path == "/api/recognition-events/report":
+            try:
+                since_hours = self._query_float("sinceHours")
+                recent_limit = self._query_int("recentLimit", default=20)
+                self._send_json(
+                    _recognition_event_report_payload(
+                        since_hours=since_hours,
+                        recent_limit=max(0, min(recent_limit, 100)),
+                    )
+                )
+            except ValueError as exc:
+                self._send_json(
+                    {
+                        "schema": "recognition_event_report_api_v1",
+                        "status": "rejected",
+                        "reason": str(exc),
+                    },
+                    HTTPStatus.BAD_REQUEST,
+                )
             return
         if path.startswith("/runs/"):
             self._send_run_file(path)
@@ -410,6 +432,24 @@ class RubikHandler(BaseHTTPRequestHandler):
             if unquote(key) == name:
                 return unquote(value) if value else ""
         return None
+
+    def _query_float(self, name: str) -> Optional[float]:
+        raw = self._query_param(name)
+        if raw in (None, ""):
+            return None
+        try:
+            return float(raw)
+        except ValueError as exc:
+            raise ValueError(f"{name} must be a number.") from exc
+
+    def _query_int(self, name: str, *, default: int) -> int:
+        raw = self._query_param(name)
+        if raw in (None, ""):
+            return default
+        try:
+            return int(raw)
+        except ValueError as exc:
+            raise ValueError(f"{name} must be an integer.") from exc
 
     def _send_run_file(self, request_path: str) -> None:
         relative = Path(unquote(request_path.removeprefix("/runs/")))
@@ -862,6 +902,7 @@ def _api_routes() -> List[Dict[str, str]]:
         {"method": "GET",  "path": "/static/*",            "brief": "Static assets (CSS, JS)."},
         {"method": "GET",  "path": "/api/routes",          "brief": "This route list."},
         {"method": "GET",  "path": "/api/diag",            "brief": "Runtime environment fingerprint (Python/NumPy/Pillow versions, git SHA) plus recognition-event counters."},
+        {"method": "GET",  "path": "/api/recognition-events/report", "brief": "Metadata-only recognition event report. Query: ?sinceHours=24&recentLimit=20."},
         {"method": "GET",  "path": "/api/runs",            "brief": "List of recent saved recognition runs (per-pair summaries)."},
         {"method": "GET",  "path": "/api/labels",          "brief": "List of recently saved cube-geometry label JSON documents."},
         {"method": "GET",  "path": "/runs/pairs/<id>/...", "brief": "Static access to a saved run's files (result.json, debug.json, overlays, samples.csv, original photos)."},
@@ -961,6 +1002,37 @@ def _recognition_event_log_diag() -> Dict[str, Any]:
     except Exception as exc:  # noqa: BLE001 - diagnostics must not break /api/diag.
         diag["error"] = f"{type(exc).__name__}: {exc}"
     return diag
+
+
+def _recognition_event_report_payload(
+    *,
+    since_hours: Optional[float],
+    recent_limit: int,
+) -> Dict[str, Any]:
+    from tools.report_recognition_events import build_summary, load_report_payload
+
+    path = _recognition_event_db_path()
+    payload: Dict[str, Any] = {
+        "schema": "recognition_event_report_api_v1",
+        "generatedAtUtc": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "enabled": path is not None,
+        "database": str(path) if path is not None else None,
+        "exists": bool(path and path.exists()),
+        "sinceHours": since_hours,
+        "summary": build_summary([], recent_limit=recent_limit),
+    }
+    if path is None or not path.exists():
+        return payload
+    try:
+        report = load_report_payload(
+            path,
+            since_hours=since_hours,
+            recent_limit=recent_limit,
+        )
+        payload["summary"] = report["summary"]
+    except Exception as exc:  # noqa: BLE001 - report API must not break server health.
+        payload["error"] = f"{type(exc).__name__}: {exc}"
+    return payload
 
 
 _SQLITE_COUNTS_ALLOWED_COLUMNS = frozenset(
@@ -1074,6 +1146,17 @@ def _constrained_hull_fit_mode(requested: Optional[str] = None) -> str:
     if value in {"serial", "single", "single-thread", "single_thread"}:
         return "serial"
     return "threaded"
+
+
+def _constrained_image_max_side(requested: Optional[int] = None) -> int:
+    raw: Any = requested if requested is not None else os.environ.get(CONSTRAINED_IMAGE_MAX_SIDE_ENV)
+    if raw in (None, ""):
+        return DEFAULT_CONSTRAINED_IMAGE_MAX_SIDE
+    try:
+        value = int(raw)
+    except (TypeError, ValueError):
+        return DEFAULT_CONSTRAINED_IMAGE_MAX_SIDE
+    return max(512, min(value, 2400))
 
 
 def prepare_llm_rectified_input(
@@ -2585,6 +2668,7 @@ def _recognize_with_constrained_inference_mode(
     *,
     expected_state: Optional[str] = None,
     hull_fit_mode: Optional[str] = None,
+    max_side: Optional[int] = None,
 ) -> RecognitionResult:
     recognize_started = time.perf_counter()
     stage_timings_ms: Dict[str, float] = {}
@@ -2594,6 +2678,7 @@ def _recognize_with_constrained_inference_mode(
         payload = prepare_llm_rectified_input(
             image_a,
             image_b,
+            max_side=_constrained_image_max_side(max_side),
             include_contact_sheets=False,
             hull_fit_mode=hull_fit_mode,
         )

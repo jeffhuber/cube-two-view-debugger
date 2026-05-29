@@ -72,6 +72,51 @@ class LlmRectifiedYawInferenceError(RuntimeError):
         self.yaw_inference = yaw_inference
 
 
+class ConstrainedInferenceFastReject(RuntimeError):
+    def __init__(
+        self,
+        reason: str,
+        *,
+        failed_checks: Sequence[str],
+        detail: Optional[Mapping[str, Any]] = None,
+        performance: Optional[Mapping[str, Any]] = None,
+    ):
+        super().__init__(reason)
+        self.reason = reason
+        self.failed_checks = list(failed_checks)
+        self.detail = dict(detail or {})
+        self.performance = dict(performance or {})
+
+
+def _compact_threshold_candidate(candidate: Mapping[str, Any]) -> Dict[str, Any]:
+    keys = (
+        "threshold",
+        "accepted",
+        "status",
+        "hard_failures",
+        "sticker_score_total",
+        "sticker_score_per_face",
+        "projective_residual_norm",
+        "vertex_cloud_spread_px",
+        "mask_area_ratio",
+        "contour_count",
+    )
+    return {key: candidate[key] for key in keys if key in candidate}
+
+
+def _compact_threshold_diagnostics(diagnostics: Mapping[str, Any]) -> Dict[str, Any]:
+    candidates = diagnostics.get("threshold_candidates") or []
+    return {
+        "thresholds": list(diagnostics.get("thresholds") or []),
+        "acceptedThresholds": list(diagnostics.get("accepted_thresholds") or []),
+        "thresholdCandidates": [
+            _compact_threshold_candidate(candidate)
+            for candidate in candidates
+            if isinstance(candidate, Mapping)
+        ],
+    }
+
+
 def _origin_is_allowed(origin: Optional[str]) -> bool:
     if not origin:
         return False
@@ -1198,9 +1243,34 @@ def prepare_llm_rectified_input(
         entries, threshold_diagnostics = fit_threshold_candidates(side, image, alpha)
         record_stage(f"hullFit{side}", stage_started)
         if not entries:
-            raise RuntimeError(
-                f"hull-label rectification failed for side {side}: "
-                "no alpha threshold candidate accepted"
+            stage_timings_ms["prepareTotal"] = _elapsed_ms(performance_started)
+            performance = {
+                "schema": "llm_rectified_input_performance_v1",
+                "contactSheetsIncluded": include_contact_sheets,
+                "maxSide": max_side,
+                "panelSize": panel_size,
+                "stageTimingsMs": dict(stage_timings_ms),
+            }
+            detail = {
+                "schema": "constrained_fast_reject_v1",
+                "source": "hull_label_threshold_acceptance",
+                "reason": "no_accepted_hull_label_threshold",
+                "side": side,
+                "image": "imageA" if side == "A" else "imageB",
+                "thresholdDiagnostics": _compact_threshold_diagnostics(threshold_diagnostics),
+            }
+            raise ConstrainedInferenceFastReject(
+                (
+                    "CubeSnap could not find a cube-like silhouette in image "
+                    f"{side}. Upload one clear white-up photo and one clear "
+                    "yellow-up photo of the same Rubik's cube with the whole cube in frame."
+                ),
+                failed_checks=[
+                    "non_cube_image_fast_reject",
+                    f"hull_label_no_accepted_threshold_{side.lower()}",
+                ],
+                detail=detail,
+                performance=performance,
             )
         threshold_entries_by_side[side] = entries
         threshold_diagnostics_by_side[side] = threshold_diagnostics
@@ -1888,6 +1958,49 @@ def _attach_constrained_error_signal(
     result.recognition_signals = signals
 
 
+def _constrained_fast_reject_result(
+    exc: ConstrainedInferenceFastReject,
+    *,
+    mode: str,
+    performance: Mapping[str, Any],
+) -> RecognitionResult:
+    fast_reject = dict(exc.detail)
+    if exc.performance:
+        fast_reject["preparePerformance"] = dict(exc.performance)
+    return RecognitionResult(
+        status="rejected",
+        confidence=0.0,
+        reason=exc.reason,
+        failed_checks=list(exc.failed_checks),
+        recognition_signals={
+            "constrainedInference": {
+                "schema": "constrained_inference_recognize_signal_v1",
+                "selected": False,
+                "fallbackToLegacy": False,
+                "mode": mode,
+                "status": "fast_reject",
+                "fastReject": fast_reject,
+                "performance": dict(performance),
+            },
+        },
+    )
+
+
+def _yaw_inference_low_evidence(yaw_inference: Mapping[str, Any]) -> bool:
+    def as_int(value: Any) -> int:
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return 0
+
+    if yaw_inference.get("accepted") is True:
+        return False
+    return (
+        as_int(yaw_inference.get("bestScore")) <= 1
+        and as_int(yaw_inference.get("margin")) <= 1
+    )
+
+
 def _constrained_recognize_performance(
     stage_timings_ms: Mapping[str, float],
     *,
@@ -2068,6 +2181,61 @@ def _recognize_with_constrained_inference_mode(
             include_contact_sheets=False,
         )
         stage_timings_ms["prepareConstrainedInput"] = _elapsed_ms(stage_started)
+    except ConstrainedInferenceFastReject as exc:
+        stage_timings_ms["prepareConstrainedInput"] = _elapsed_ms(stage_started)
+        stage_timings_ms["recognizeTotal"] = _elapsed_ms(recognize_started)
+        return _constrained_fast_reject_result(
+            exc,
+            mode=mode,
+            performance=_constrained_recognize_performance(
+                stage_timings_ms,
+                contact_sheets_included=False,
+            ),
+        )
+    except LlmRectifiedYawInferenceError as exc:
+        if _yaw_inference_low_evidence(exc.yaw_inference):
+            stage_timings_ms["prepareConstrainedInput"] = _elapsed_ms(stage_started)
+            stage_timings_ms["recognizeTotal"] = _elapsed_ms(recognize_started)
+            return _constrained_fast_reject_result(
+                ConstrainedInferenceFastReject(
+                    (
+                        "CubeSnap could not confirm the required white-up and "
+                        "yellow-up cube orientation from those images. Upload "
+                        "one clear white-up photo and one clear yellow-up photo "
+                        "of the same Rubik's cube."
+                    ),
+                    failed_checks=[
+                        "non_cube_image_fast_reject",
+                        "constrained_yaw_inference_unavailable",
+                        "constrained_yaw_low_center_evidence",
+                    ],
+                    detail={
+                        "schema": "constrained_fast_reject_v1",
+                        "source": "hull_label_center_yaw_inference",
+                        "reason": "low_center_yaw_evidence",
+                        "yawInference": dict(exc.yaw_inference),
+                    },
+                ),
+                mode=mode,
+                performance=_constrained_recognize_performance(
+                    stage_timings_ms,
+                    contact_sheets_included=False,
+                ),
+            )
+        stage_started = time.perf_counter()
+        legacy = recognizer.recognize(image_a, image_b, hull_label_tier1_mode="off")
+        stage_timings_ms["legacyFallback"] = _elapsed_ms(stage_started)
+        stage_timings_ms["recognizeTotal"] = _elapsed_ms(recognize_started)
+        _attach_constrained_error_signal(
+            legacy,
+            exc,
+            mode=mode,
+            performance=_constrained_recognize_performance(
+                stage_timings_ms,
+                contact_sheets_included=False,
+            ),
+        )
+        return legacy
     except Exception as exc:  # noqa: BLE001
         stage_started = time.perf_counter()
         legacy = recognizer.recognize(image_a, image_b, hull_label_tier1_mode="off")

@@ -352,11 +352,12 @@ def test_recognition_event_log_writes_metadata_only(tmp_path, monkeypatch):
             """
             SELECT status, recognition_category, constrained_status,
                    constrained_fallback_to_legacy, client_source, app_version,
-                   image_a_sha256, image_b_sha256, event_json
+                   image_a_sha256, image_b_sha256, latency_ms,
+                   recognize_total_ms, prepare_constrained_input_ms, event_json
             FROM recognition_events
             """
         ).fetchone()
-    assert row[:8] == (
+    assert row[:11] == (
         "rejected",
         "reject_retake",
         "fast_reject",
@@ -365,11 +366,33 @@ def test_recognition_event_log_writes_metadata_only(tmp_path, monkeypatch):
         "0.0.1",
         "a" * 64,
         "b" * 64,
+        322.5,
+        322.5,
+        321.5,
     )
-    event_json = row[8]
+    event_json = row[11]
     assert "image-a-bytes" not in event_json
     assert "image-b-bytes" not in event_json
     assert "non_cube_image_fast_reject" in event_json
+
+
+def test_recognition_event_helpers_guard_sql_and_preserve_zero_timings():
+    import app as app_module
+
+    assert app_module._first_timing_or_none(
+        {"recognizeTotal": 0.0, "prepareConstrainedInput": 321.5},
+        "recognizeTotal",
+        "prepareConstrainedInput",
+    ) == 0.0
+    assert app_module._first_timing_or_none(
+        {"prepareConstrainedInput": 321.5, "prepareTotal": 999.0},
+        "recognizeTotal",
+        "prepareConstrainedInput",
+        "prepareTotal",
+    ) == 321.5
+
+    with pytest.raises(ValueError, match="disallowed column"):
+        app_module._sqlite_counts(None, "status; DROP TABLE recognition_events")  # type: ignore[arg-type]
 
 
 def test_constrained_prewarm_records_stage_timings(monkeypatch):

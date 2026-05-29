@@ -961,7 +961,14 @@ def _recognition_event_log_diag() -> Dict[str, Any]:
     return diag
 
 
+_SQLITE_COUNTS_ALLOWED_COLUMNS = frozenset(
+    {"status", "recognition_category", "constrained_status"}
+)
+
+
 def _sqlite_counts(db: sqlite3.Connection, column: str) -> Dict[str, int]:
+    if column not in _SQLITE_COUNTS_ALLOWED_COLUMNS:
+        raise ValueError(f"_sqlite_counts: disallowed column name: {column!r}")
     rows = db.execute(
         f"""
         SELECT COALESCE(NULLIF({column}, ''), 'none') AS key, COUNT(*) AS count
@@ -2475,7 +2482,12 @@ def _recognition_event_row(event: Mapping[str, Any]) -> Dict[str, Any]:
         "constrained_selected": _bool_to_db(constrained.get("selected")),
         "constrained_fallback_to_legacy": _bool_to_db(constrained.get("fallbackToLegacy")),
         "recommended_method": constrained.get("recommendedMethod"),
-        "latency_ms": _number_or_none(timings.get("recognizeTotal") or timings.get("prepareTotal")),
+        "latency_ms": _first_timing_or_none(
+            timings,
+            "recognizeTotal",
+            "prepareConstrainedInput",
+            "prepareTotal",
+        ),
         "recognize_total_ms": _number_or_none(timings.get("recognizeTotal")),
         "prepare_constrained_input_ms": _number_or_none(timings.get("prepareConstrainedInput")),
         "image_a_sha256": image_a.get("sha256"),
@@ -2492,6 +2504,17 @@ def _recognition_event_row(event: Mapping[str, Any]) -> Dict[str, Any]:
         "client_json": json.dumps(client, sort_keys=True),
         "event_json": json.dumps(event, sort_keys=True),
     }
+
+
+def _first_timing_or_none(timings: Mapping[str, Any], *keys: str) -> Optional[float]:
+    for key in keys:
+        value = timings.get(key)
+        if value is None:
+            continue
+        number = _number_or_none(value)
+        if number is not None:
+            return number
+    return None
 
 
 def _bool_to_db(value: Any) -> Optional[int]:

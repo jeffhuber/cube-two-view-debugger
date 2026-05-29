@@ -54,5 +54,15 @@ curl -fsS https://api.cubesnap.app/api/diag
 ```
 
 The response includes `recognitionEvents.totalEvents`, status/category counts,
-and the latest event timestamp. For deeper ad hoc queries, connect to the
-service shell and inspect `/data/recognition_events.sqlite3` with SQLite.
+and the latest event timestamp. For a structured report from a copied or local
+database, run:
+
+```bash
+.venv/bin/python tools/report_recognition_events.py \
+  --db /data/recognition_events.sqlite3 \
+  --since-hours 24 \
+  --report runs/recognition_event_report.md
+```
+
+For deeper ad hoc queries, connect to the service shell and inspect
+`/data/recognition_events.sqlite3` with SQLite.

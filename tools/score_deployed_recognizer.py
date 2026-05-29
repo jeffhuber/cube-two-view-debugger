@@ -140,6 +140,7 @@ def _constrained_performance(constrained: Mapping[str, Any]) -> Dict[str, Any]:
         "performanceSchema": performance.get("schema"),
         "rectifiedInputPerformanceSchema": performance.get("rectifiedInputPerformanceSchema"),
         "contactSheetsIncluded": performance.get("contactSheetsIncluded"),
+        "hullFitMode": performance.get("hullFitMode"),
         "stageTimingsMs": stage_timings,
         "recognizeTotalMs": _number(stage_timings.get("recognizeTotal")),
         "prepareTotalMs": _number(stage_timings.get("prepareTotal")),
@@ -248,6 +249,7 @@ def _summary(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
         "twoViewStatusCounts": _counts(row.get("twoViewStatus") for row in scored),
         "performanceSchemaCounts": _counts(row.get("performanceSchema") for row in scored),
         "contactSheetsIncludedCounts": _counts(row.get("contactSheetsIncluded") for row in scored),
+        "hullFitModeCounts": _counts(row.get("hullFitMode") for row in scored),
         "timings": {
             "latencyMs": _metric_summary(scored, "latencyMs"),
             "recognizeTotalMs": _metric_summary(scored, "recognizeTotalMs"),
@@ -308,6 +310,9 @@ def _render_report(payload: Mapping[str, Any]) -> str:
         lines.append(f"- `{key}`: `{value}`")
     lines.extend(["", "Performance schemas:", ""])
     for key, value in summary["performanceSchemaCounts"].items():
+        lines.append(f"- `{key}`: `{value}`")
+    lines.extend(["", "Hull fit modes:", ""])
+    for key, value in summary["hullFitModeCounts"].items():
         lines.append(f"- `{key}`: `{value}`")
     lines.extend(["", "Timing summary:", ""])
     lines.extend([

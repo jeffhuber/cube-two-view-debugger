@@ -49,6 +49,7 @@ LABELS = RUNS / "labels"
 CONSTRAINED_SHADOW_LOG_ENV = "CUBE_CONSTRAINED_SHADOW_LOG"
 CONSTRAINED_INFERENCE_MODE_ENV = "CUBE_CONSTRAINED_INFERENCE_MODE"
 CONSTRAINED_PREWARM_ENV = "CUBE_CONSTRAINED_PREWARM"
+CONSTRAINED_HULL_FIT_MODE_ENV = "CUBE_CONSTRAINED_HULL_FIT_MODE"
 RECOGNITION_EVENT_DB_ENV = "CUBE_RECOGNITION_EVENT_DB_PATH"
 _CONSTRAINED_SHADOW_LOG_LOCK = threading.Lock()
 _RECOGNITION_EVENT_LOG_LOCK = threading.Lock()
@@ -1067,6 +1068,14 @@ def _elapsed_ms(started: float) -> float:
     return round((time.perf_counter() - started) * 1000.0, 2)
 
 
+def _constrained_hull_fit_mode(requested: Optional[str] = None) -> str:
+    raw = requested if requested is not None else os.environ.get(CONSTRAINED_HULL_FIT_MODE_ENV)
+    value = str(raw or "threaded").strip().lower()
+    if value in {"serial", "single", "single-thread", "single_thread"}:
+        return "serial"
+    return "threaded"
+
+
 def prepare_llm_rectified_input(
     image_a_bytes: bytes,
     image_b_bytes: bytes,
@@ -1075,6 +1084,7 @@ def prepare_llm_rectified_input(
     max_side: int = 1600,
     panel_size: int = 300,
     include_contact_sheets: bool = True,
+    hull_fit_mode: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Create labeled WCA face contact sheets for LLM color reading.
 
@@ -1319,13 +1329,20 @@ def prepare_llm_rectified_input(
             "hullFitMs": _elapsed_ms(stage_started),
         }
 
+    selected_hull_fit_mode = _constrained_hull_fit_mode(hull_fit_mode)
     stage_started = time.perf_counter()
-    with ThreadPoolExecutor(max_workers=2, thread_name_prefix="constrained-hull-fit") as executor:
-        futures_by_side = {
-            "A": executor.submit(fit_side, "A", image_a, alpha_by_side["A"]),
-            "B": executor.submit(fit_side, "B", image_b, alpha_by_side["B"]),
+    if selected_hull_fit_mode == "serial":
+        side_results = {
+            side: fit_side(side, image, alpha_by_side[side])
+            for side, image in (("A", image_a), ("B", image_b))
         }
-        side_results = {side: futures_by_side[side].result() for side in ("A", "B")}
+    else:
+        with ThreadPoolExecutor(max_workers=2, thread_name_prefix="constrained-hull-fit") as executor:
+            futures_by_side = {
+                "A": executor.submit(fit_side, "A", image_a, alpha_by_side["A"]),
+                "B": executor.submit(fit_side, "B", image_b, alpha_by_side["B"]),
+            }
+            side_results = {side: futures_by_side[side].result() for side in ("A", "B")}
     record_stage("hullFitWall", stage_started)
 
     for side in ("A", "B"):
@@ -1562,6 +1579,7 @@ def prepare_llm_rectified_input(
         "contactSheetsIncluded": include_contact_sheets,
         "maxSide": max_side,
         "panelSize": panel_size,
+        "hullFitMode": selected_hull_fit_mode,
         "stageTimingsMs": stage_timings_ms,
     }
     return payload
@@ -2566,6 +2584,7 @@ def _recognize_with_constrained_inference_mode(
     mode: str,
     *,
     expected_state: Optional[str] = None,
+    hull_fit_mode: Optional[str] = None,
 ) -> RecognitionResult:
     recognize_started = time.perf_counter()
     stage_timings_ms: Dict[str, float] = {}
@@ -2576,6 +2595,7 @@ def _recognize_with_constrained_inference_mode(
             image_a,
             image_b,
             include_contact_sheets=False,
+            hull_fit_mode=hull_fit_mode,
         )
         stage_timings_ms["prepareConstrainedInput"] = _elapsed_ms(stage_started)
     except ConstrainedInferenceFastReject as exc:

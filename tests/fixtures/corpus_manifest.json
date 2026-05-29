@@ -476,9 +476,9 @@
     },
     {
       "setId": "41",
-      "imageAPath": "/Users/jhuber/Downloads/Set 41 - A - white up IMG_7161.JPG",
-      "imageBPath": "/Users/jhuber/Downloads/Set 41 - B - white up IMG_7162.JPG",
-      "groundTruthPath": "/Users/jhuber/Downloads/Set 41 - cube-ground-truth-1778723468375.json",
+      "imageAPath": "/Users/jhuber/cube-corpus/Set 41 - A - white up IMG_7161.JPG",
+      "imageBPath": "/Users/jhuber/cube-corpus/Set 41 - B - white up IMG_7162.JPG",
+      "groundTruthPath": "/Users/jhuber/cube-corpus/Set 41 - cube-ground-truth-1778723468375.json",
       "imageA_sha256_expected": "e2874cd211c37946c0927a312022c7557f5c92f902468594861649fd6d439655",
       "imageB_sha256_expected": "2cb616966ee2c8e1f7b34c285f06559e2cd8537169863eabb7a133cb554967a7",
       "groundTruth_sha256_expected": "ee6bfb4d8570ebd3eea7658f29d63f3bdba63d470e63b8b67427ce00153c8b1f",

@@ -29,3 +29,30 @@ Then smoke-test:
 ```bash
 curl -fsS https://ctvd-recognizer-production.up.railway.app/api/diag
 ```
+
+## Durable Recognition Event Logging
+
+Production recognition metadata should be written to a Railway volume, not the
+container filesystem. The app writes metadata-only SQLite events when
+`CUBE_RECOGNITION_EVENT_DB_PATH` points at a database path. The event records
+include status, recognition category, failed checks, constrained-recognizer
+decision fields, stage timings, image hashes/sizes/dimensions, and optional
+CubeSnap client metadata. They do **not** include image bytes.
+
+Railway setup:
+
+```bash
+railway volume add --service ctvd-recognizer --environment production --mount-path /data --json
+railway variable set CUBE_RECOGNITION_EVENT_DB_PATH=/data/recognition_events.sqlite3 --service ctvd-recognizer --environment production --skip-deploys --json
+tools/deploy_railway_ctvd_recognizer.sh
+```
+
+Verify with:
+
+```bash
+curl -fsS https://api.cubesnap.app/api/diag
+```
+
+The response includes `recognitionEvents.totalEvents`, status/category counts,
+and the latest event timestamp. For deeper ad hoc queries, connect to the
+service shell and inspect `/data/recognition_events.sqlite3` with SQLite.

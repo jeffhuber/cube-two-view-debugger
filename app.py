@@ -11,6 +11,7 @@ import json
 import mimetypes
 import os
 import re
+import sqlite3
 import subprocess
 import sys
 import threading
@@ -47,7 +48,9 @@ LABELS = RUNS / "labels"
 CONSTRAINED_SHADOW_LOG_ENV = "CUBE_CONSTRAINED_SHADOW_LOG"
 CONSTRAINED_INFERENCE_MODE_ENV = "CUBE_CONSTRAINED_INFERENCE_MODE"
 CONSTRAINED_PREWARM_ENV = "CUBE_CONSTRAINED_PREWARM"
+RECOGNITION_EVENT_DB_ENV = "CUBE_RECOGNITION_EVENT_DB_PATH"
 _CONSTRAINED_SHADOW_LOG_LOCK = threading.Lock()
+_RECOGNITION_EVENT_LOG_LOCK = threading.Lock()
 _CONSTRAINED_PREWARM_LOCK = threading.Lock()
 _CONSTRAINED_PREWARM_THREAD: Optional[threading.Thread] = None
 _CONSTRAINED_PREWARM_STATE: Dict[str, Any] = {"status": "not_started"}
@@ -206,6 +209,7 @@ class RubikHandler(BaseHTTPRequestHandler):
             image_b = _first_field(fields, "imageB")
             expected = _text_field(fields, "expectedState")
             set_id = _text_field(fields, "setId")
+            client_metadata = _recognition_client_metadata(fields, self.headers)
             hull_label_tier1_mode = (
                 self._query_param("hullLabelTier1")
                 or self._query_param("hull_label_tier1")
@@ -239,6 +243,7 @@ class RubikHandler(BaseHTTPRequestHandler):
                 ),
                 expected_state=expected,
                 hull_label_tier1_mode=hull_label_tier1_mode,
+                client_metadata=client_metadata,
             )
             # `payload["runtime"]` is now set inside `recognize_and_persist`
             # before `save_run` writes the on-disk `result.json`, so both
@@ -836,6 +841,7 @@ def _runtime_diag() -> Dict[str, Any]:
         "prewarm": {
             "constrainedRecognizer": _constrained_prewarm_diag(),
         },
+        "recognitionEvents": _recognition_event_log_diag(),
         "warnings": warnings,
     }
 
@@ -853,7 +859,7 @@ def _api_routes() -> List[Dict[str, str]]:
         {"method": "GET",  "path": "/",                    "brief": "Static UI (index.html)."},
         {"method": "GET",  "path": "/static/*",            "brief": "Static assets (CSS, JS)."},
         {"method": "GET",  "path": "/api/routes",          "brief": "This route list."},
-        {"method": "GET",  "path": "/api/diag",            "brief": "Runtime environment fingerprint (Python/NumPy/Pillow versions, git SHA)."},
+        {"method": "GET",  "path": "/api/diag",            "brief": "Runtime environment fingerprint (Python/NumPy/Pillow versions, git SHA) plus recognition-event counters."},
         {"method": "GET",  "path": "/api/runs",            "brief": "List of recent saved recognition runs (per-pair summaries)."},
         {"method": "GET",  "path": "/api/labels",          "brief": "List of recently saved cube-geometry label JSON documents."},
         {"method": "GET",  "path": "/runs/pairs/<id>/...", "brief": "Static access to a saved run's files (result.json, debug.json, overlays, samples.csv, original photos)."},
@@ -909,6 +915,69 @@ def _set_constrained_prewarm_state(status: str, **fields: Any) -> None:
 def _constrained_prewarm_diag() -> Dict[str, Any]:
     with _CONSTRAINED_PREWARM_LOCK:
         return dict(_CONSTRAINED_PREWARM_STATE)
+
+
+def _recognition_event_db_path() -> Optional[Path]:
+    raw = os.environ.get(RECOGNITION_EVENT_DB_ENV)
+    if raw is not None and raw.strip().lower() in {"", "0", "false", "off", "none"}:
+        return None
+    if raw:
+        return Path(raw).expanduser()
+    return RUNS / "recognition_events.sqlite3"
+
+
+def _recognition_event_log_diag() -> Dict[str, Any]:
+    path = _recognition_event_db_path()
+    if path is None:
+        return {
+            "schema": "recognition_event_log_diag_v1",
+            "enabled": False,
+            "env": RECOGNITION_EVENT_DB_ENV,
+        }
+    diag: Dict[str, Any] = {
+        "schema": "recognition_event_log_diag_v1",
+        "enabled": True,
+        "env": RECOGNITION_EVENT_DB_ENV,
+        "path": str(path),
+        "exists": path.exists(),
+        "totalEvents": 0,
+        "statusCounts": {},
+        "recognitionCategoryCounts": {},
+        "constrainedStatusCounts": {},
+        "latestCreatedAt": None,
+    }
+    if not path.exists():
+        return diag
+    try:
+        with sqlite3.connect(f"file:{path}?mode=ro", uri=True, timeout=2) as db:
+            diag["totalEvents"] = int(db.execute("SELECT COUNT(*) FROM recognition_events").fetchone()[0])
+            diag["statusCounts"] = _sqlite_counts(db, "status")
+            diag["recognitionCategoryCounts"] = _sqlite_counts(db, "recognition_category")
+            diag["constrainedStatusCounts"] = _sqlite_counts(db, "constrained_status")
+            latest = db.execute("SELECT MAX(created_at) FROM recognition_events").fetchone()[0]
+            diag["latestCreatedAt"] = latest
+    except Exception as exc:  # noqa: BLE001 - diagnostics must not break /api/diag.
+        diag["error"] = f"{type(exc).__name__}: {exc}"
+    return diag
+
+
+_SQLITE_COUNTS_ALLOWED_COLUMNS = frozenset(
+    {"status", "recognition_category", "constrained_status"}
+)
+
+
+def _sqlite_counts(db: sqlite3.Connection, column: str) -> Dict[str, int]:
+    if column not in _SQLITE_COUNTS_ALLOWED_COLUMNS:
+        raise ValueError(f"_sqlite_counts: disallowed column name: {column!r}")
+    rows = db.execute(
+        f"""
+        SELECT COALESCE(NULLIF({column}, ''), 'none') AS key, COUNT(*) AS count
+        FROM recognition_events
+        GROUP BY key
+        ORDER BY key
+        """
+    ).fetchall()
+    return {str(key): int(count) for key, count in rows}
 
 
 def _prewarm_constrained_dependencies() -> Dict[str, float]:
@@ -1717,11 +1786,41 @@ def _text_field(fields: Dict[str, List[Tuple[str, bytes]]], name: str) -> Option
     return value[1].decode("utf-8", errors="replace").strip() or None
 
 
+def _recognition_client_metadata(
+    fields: Dict[str, List[Tuple[str, bytes]]],
+    headers: Mapping[str, str],
+) -> Dict[str, Any]:
+    def text(name: str) -> Optional[str]:
+        return _text_field(fields, name)
+
+    def header(name: str) -> Optional[str]:
+        value = headers.get(name)
+        return value.strip() if isinstance(value, str) and value.strip() else None
+
+    return {
+        "source": text("clientSource") or header("X-CubeSnap-Source"),
+        "flowId": text("clientFlowId") or header("X-CubeSnap-Flow-Id"),
+        "attempt": {
+            "index": text("clientAttemptIndex") or header("X-CubeSnap-Attempt-Index"),
+            "total": text("clientAttemptTotal") or header("X-CubeSnap-Attempt-Total"),
+            "order": text("clientAttemptOrder") or header("X-CubeSnap-Attempt-Order"),
+        },
+        "app": {
+            "version": text("clientAppVersion") or header("X-CubeSnap-App-Version"),
+            "buildSha": text("clientBuildSha") or header("X-CubeSnap-Build-Sha"),
+            "builtAt": text("clientBuildAt") or header("X-CubeSnap-Build-At"),
+        },
+        "href": text("clientHref") or header("X-CubeSnap-Href"),
+        "userAgent": header("User-Agent"),
+    }
+
+
 def recognize_and_persist(
     recognizer: WhiteUpRecognizer,
     pair: ImagePair,
     expected_state: Optional[str] = None,
     hull_label_tier1_mode: Optional[str] = None,
+    client_metadata: Optional[Mapping[str, Any]] = None,
 ) -> Dict:
     effective_mode = _effective_hull_label_tier1_mode(hull_label_tier1_mode)
     constrained_mode = _normalize_constrained_inference_mode(effective_mode)
@@ -1757,6 +1856,12 @@ def recognize_and_persist(
     payload["runtime"] = _per_request_runtime(pair.image_a.data, pair.image_b.data)
     run_info = save_run(pair, payload, result, expected_state)
     payload.update(run_info)
+    _append_recognition_event(
+        pair,
+        payload,
+        effective_mode,
+        client_metadata=client_metadata or {},
+    )
     if constrained_mode:
         _append_constrained_shadow_event(pair, payload, constrained_mode)
     return payload
@@ -2160,6 +2265,276 @@ def _append_constrained_shadow_event(
             f"[rubik-app] warning: failed to append constrained shadow event to {path}: {exc}",
             file=sys.stderr,
         )
+
+
+def _append_recognition_event(
+    pair: ImagePair,
+    payload: Mapping[str, Any],
+    mode: Optional[str],
+    *,
+    client_metadata: Mapping[str, Any],
+) -> None:
+    path = _recognition_event_db_path()
+    if path is None:
+        return
+    event = _compact_recognition_event(pair, payload, mode, client_metadata)
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with _RECOGNITION_EVENT_LOG_LOCK:
+            with sqlite3.connect(path, timeout=5) as db:
+                _ensure_recognition_event_table(db)
+                db.execute(
+                    """
+                    INSERT INTO recognition_events (
+                        created_at, run_id, set_id, status, recognition_category,
+                        failed_checks_json, constrained_status,
+                        constrained_selected, constrained_fallback_to_legacy,
+                        recommended_method, latency_ms, recognize_total_ms,
+                        prepare_constrained_input_ms, image_a_sha256,
+                        image_b_sha256, image_a_bytes, image_b_bytes,
+                        image_a_width, image_a_height, image_b_width,
+                        image_b_height, client_source, app_version,
+                        app_build_sha, client_json, event_json
+                    ) VALUES (
+                        :created_at, :run_id, :set_id, :status,
+                        :recognition_category, :failed_checks_json,
+                        :constrained_status, :constrained_selected,
+                        :constrained_fallback_to_legacy, :recommended_method,
+                        :latency_ms, :recognize_total_ms,
+                        :prepare_constrained_input_ms, :image_a_sha256,
+                        :image_b_sha256, :image_a_bytes, :image_b_bytes,
+                        :image_a_width, :image_a_height, :image_b_width,
+                        :image_b_height, :client_source, :app_version,
+                        :app_build_sha, :client_json, :event_json
+                    )
+                    """,
+                    _recognition_event_row(event),
+                )
+    except Exception as exc:  # noqa: BLE001 - telemetry must never break recognition.
+        print(
+            f"[rubik-app] warning: failed to append recognition event to {path}: {exc}",
+            file=sys.stderr,
+        )
+
+
+def _ensure_recognition_event_table(db: sqlite3.Connection) -> None:
+    db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS recognition_events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            created_at TEXT NOT NULL,
+            run_id TEXT,
+            set_id TEXT,
+            status TEXT,
+            recognition_category TEXT,
+            failed_checks_json TEXT NOT NULL,
+            constrained_status TEXT,
+            constrained_selected INTEGER,
+            constrained_fallback_to_legacy INTEGER,
+            recommended_method TEXT,
+            latency_ms REAL,
+            recognize_total_ms REAL,
+            prepare_constrained_input_ms REAL,
+            image_a_sha256 TEXT,
+            image_b_sha256 TEXT,
+            image_a_bytes INTEGER,
+            image_b_bytes INTEGER,
+            image_a_width INTEGER,
+            image_a_height INTEGER,
+            image_b_width INTEGER,
+            image_b_height INTEGER,
+            client_source TEXT,
+            app_version TEXT,
+            app_build_sha TEXT,
+            client_json TEXT NOT NULL,
+            event_json TEXT NOT NULL
+        )
+        """
+    )
+    db.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_recognition_events_created_at
+        ON recognition_events(created_at)
+        """
+    )
+    db.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_recognition_events_status_category
+        ON recognition_events(status, recognition_category)
+        """
+    )
+
+
+def _compact_recognition_event(
+    pair: ImagePair,
+    payload: Mapping[str, Any],
+    mode: Optional[str],
+    client_metadata: Mapping[str, Any],
+) -> Dict[str, Any]:
+    signals = payload.get("recognitionSignals") if isinstance(payload.get("recognitionSignals"), Mapping) else {}
+    constrained = (
+        signals.get("constrainedInference")
+        if isinstance(signals, Mapping) and isinstance(signals.get("constrainedInference"), Mapping)
+        else {}
+    )
+    performance = payload.get("performance") if isinstance(payload.get("performance"), Mapping) else {}
+    if not performance and isinstance(constrained, Mapping):
+        performance = constrained.get("performance") if isinstance(constrained.get("performance"), Mapping) else {}
+    timings = performance.get("stageTimingsMs") if isinstance(performance.get("stageTimingsMs"), Mapping) else {}
+    runtime = payload.get("runtime") if isinstance(payload.get("runtime"), Mapping) else {}
+    inputs = runtime.get("inputs") if isinstance(runtime.get("inputs"), Mapping) else {}
+
+    return {
+        "schema": "ctvd.recognitionEvent.v1",
+        "createdAt": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "runId": payload.get("runId"),
+        "runUrl": payload.get("runUrl"),
+        "setId": pair.set_id,
+        "mode": mode,
+        "result": {
+            "status": payload.get("status"),
+            "recognitionCategory": payload.get("recognitionCategory"),
+            "recognitionCategoryReason": payload.get("recognitionCategoryReason"),
+            "failedChecks": list(payload.get("failedChecks") or []),
+            "confidence": payload.get("confidence"),
+            "reason": payload.get("reason"),
+            "statePresent": isinstance(payload.get("state"), str) and len(str(payload.get("state"))) == 54,
+        },
+        "constrainedInference": _compact_constrained_event_signal(constrained),
+        "performance": {
+            "schema": performance.get("schema"),
+            "contactSheetsIncluded": performance.get("contactSheetsIncluded"),
+            "stageTimingsMs": {
+                str(stage): round(float(ms), 2)
+                for stage, ms in timings.items()
+                if isinstance(ms, (int, float)) and not isinstance(ms, bool)
+            },
+        },
+        "inputs": {
+            "imageA": _compact_input_event(inputs.get("imageA")),
+            "imageB": _compact_input_event(inputs.get("imageB")),
+        },
+        "client": _compact_client_event(client_metadata),
+    }
+
+
+def _compact_constrained_event_signal(signal: Any) -> Dict[str, Any]:
+    if not isinstance(signal, Mapping):
+        return {}
+    gate = signal.get("promotionGate") if isinstance(signal.get("promotionGate"), Mapping) else {}
+    fast_reject = signal.get("fastReject") if isinstance(signal.get("fastReject"), Mapping) else {}
+    return {
+        "selected": signal.get("selected"),
+        "fallbackToLegacy": signal.get("fallbackToLegacy"),
+        "status": signal.get("status"),
+        "recommendedMethod": signal.get("recommendedMethod"),
+        "yawQuarterTurns": signal.get("yawQuarterTurns"),
+        "yawSource": signal.get("yawSource"),
+        "promotionGate": {
+            "accepted": gate.get("accepted"),
+            "decision": gate.get("decision"),
+            "rejectReasons": list(gate.get("rejectReasons") or []),
+        },
+        "fastReject": {
+            "source": fast_reject.get("source"),
+        } if fast_reject else None,
+    }
+
+
+def _compact_input_event(value: Any) -> Optional[Dict[str, Any]]:
+    if not isinstance(value, Mapping):
+        return None
+    return {
+        "name": value.get("name"),
+        "sha256": value.get("sha256"),
+        "bytes": value.get("bytes"),
+        "width": value.get("width"),
+        "height": value.get("height"),
+    }
+
+
+def _compact_client_event(value: Mapping[str, Any]) -> Dict[str, Any]:
+    return {key: val for key, val in value.items() if val not in (None, "", {}, [])}
+
+
+def _recognition_event_row(event: Mapping[str, Any]) -> Dict[str, Any]:
+    result = event.get("result") if isinstance(event.get("result"), Mapping) else {}
+    constrained = (
+        event.get("constrainedInference")
+        if isinstance(event.get("constrainedInference"), Mapping)
+        else {}
+    )
+    performance = event.get("performance") if isinstance(event.get("performance"), Mapping) else {}
+    timings = performance.get("stageTimingsMs") if isinstance(performance.get("stageTimingsMs"), Mapping) else {}
+    inputs = event.get("inputs") if isinstance(event.get("inputs"), Mapping) else {}
+    image_a = inputs.get("imageA") if isinstance(inputs.get("imageA"), Mapping) else {}
+    image_b = inputs.get("imageB") if isinstance(inputs.get("imageB"), Mapping) else {}
+    client = event.get("client") if isinstance(event.get("client"), Mapping) else {}
+    app = client.get("app") if isinstance(client.get("app"), Mapping) else {}
+    return {
+        "created_at": event.get("createdAt"),
+        "run_id": event.get("runId"),
+        "set_id": event.get("setId"),
+        "status": result.get("status"),
+        "recognition_category": result.get("recognitionCategory"),
+        "failed_checks_json": json.dumps(result.get("failedChecks") or [], sort_keys=True),
+        "constrained_status": constrained.get("status"),
+        "constrained_selected": _bool_to_db(constrained.get("selected")),
+        "constrained_fallback_to_legacy": _bool_to_db(constrained.get("fallbackToLegacy")),
+        "recommended_method": constrained.get("recommendedMethod"),
+        "latency_ms": _first_timing_or_none(
+            timings,
+            "recognizeTotal",
+            "prepareConstrainedInput",
+            "prepareTotal",
+        ),
+        "recognize_total_ms": _number_or_none(timings.get("recognizeTotal")),
+        "prepare_constrained_input_ms": _number_or_none(timings.get("prepareConstrainedInput")),
+        "image_a_sha256": image_a.get("sha256"),
+        "image_b_sha256": image_b.get("sha256"),
+        "image_a_bytes": _int_or_none(image_a.get("bytes")),
+        "image_b_bytes": _int_or_none(image_b.get("bytes")),
+        "image_a_width": _int_or_none(image_a.get("width")),
+        "image_a_height": _int_or_none(image_a.get("height")),
+        "image_b_width": _int_or_none(image_b.get("width")),
+        "image_b_height": _int_or_none(image_b.get("height")),
+        "client_source": client.get("source"),
+        "app_version": app.get("version"),
+        "app_build_sha": app.get("buildSha"),
+        "client_json": json.dumps(client, sort_keys=True),
+        "event_json": json.dumps(event, sort_keys=True),
+    }
+
+
+def _first_timing_or_none(timings: Mapping[str, Any], *keys: str) -> Optional[float]:
+    for key in keys:
+        value = timings.get(key)
+        if value is None:
+            continue
+        number = _number_or_none(value)
+        if number is not None:
+            return number
+    return None
+
+
+def _bool_to_db(value: Any) -> Optional[int]:
+    if value is True:
+        return 1
+    if value is False:
+        return 0
+    return None
+
+
+def _number_or_none(value: Any) -> Optional[float]:
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return float(value)
+    return None
+
+
+def _int_or_none(value: Any) -> Optional[int]:
+    if isinstance(value, int) and not isinstance(value, bool):
+        return value
+    return None
 
 
 def _recognize_with_constrained_inference_mode(

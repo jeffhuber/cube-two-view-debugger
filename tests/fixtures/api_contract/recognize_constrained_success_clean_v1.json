@@ -1,0 +1,34 @@
+{
+  "status": "success",
+  "state": "LRLLUFBDDFUDLRDRFDLBRRFBUBBFUUUDLURBBDDULBFLLFDUFBRRFR",
+  "confidence": 0.94,
+  "reason": "Recognized a legal cube state with the constrained recognizer.",
+  "recognitionCategory": "success_clean",
+  "recognitionCategoryReason": "direct_unique_legal_high_confidence",
+  "failedChecks": [],
+  "candidates": 1,
+  "recognitionSignals": {
+    "constrainedInference": {
+      "selected": true,
+      "fallbackToLegacy": false,
+      "status": "accepted",
+      "recommendedMethod": "canonical_count_repaired",
+      "yawQuarterTurns": 0,
+      "yawSource": "center-inference",
+      "promotionGate": {
+        "accepted": true,
+        "decision": "accept",
+        "rejectReasons": []
+      },
+      "performance": {
+        "schema": "constrained_recognize_performance_v1",
+        "contactSheetsIncluded": false,
+        "stageTimingsMs": {
+          "prepareConstrainedInput": 3383.91,
+          "recognizeTotal": 3384.15,
+          "selectGuardedPair": 115.42
+        }
+      }
+    }
+  }
+}

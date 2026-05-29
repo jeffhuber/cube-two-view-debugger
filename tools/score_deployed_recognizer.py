@@ -27,7 +27,7 @@ from tools.audit_recognition_pair import parse_ground_truth, score_match  # noqa
 
 
 DEFAULT_MANIFEST = REPO_ROOT / "tests" / "fixtures" / "corpus_manifest.json"
-DEFAULT_ENDPOINT = "https://ctvd-recognizer-production.up.railway.app/api/recognize"
+DEFAULT_ENDPOINT = "https://api.cubesnap.app/api/recognize"
 
 
 def _load_manifest(path: Path, only_sets: Optional[set[str]]) -> List[Dict[str, Any]]:

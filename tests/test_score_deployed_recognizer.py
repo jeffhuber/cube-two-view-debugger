@@ -9,6 +9,7 @@ def test_constrained_performance_flattens_stage_timings():
             "schema": "constrained_recognize_performance_v1",
             "rectifiedInputPerformanceSchema": "llm_rectified_input_performance_v1",
             "contactSheetsIncluded": False,
+            "hullFitMode": "threaded",
             "stageTimingsMs": {
                 "recognizeTotal": 2600.55,
                 "prepareTotal": 2600.36,
@@ -21,6 +22,7 @@ def test_constrained_performance_flattens_stage_timings():
     assert perf["performanceSchema"] == "constrained_recognize_performance_v1"
     assert perf["rectifiedInputPerformanceSchema"] == "llm_rectified_input_performance_v1"
     assert perf["contactSheetsIncluded"] is False
+    assert perf["hullFitMode"] == "threaded"
     assert perf["recognizeTotalMs"] == 2600.55
     assert perf["prepareTotalMs"] == 2600.36
     assert perf["importsMs"] == 0.04
@@ -36,6 +38,7 @@ def test_summary_includes_performance_distributions():
             "recommendedMethod": "canonical_count_repaired",
             "performanceSchema": "constrained_recognize_performance_v1",
             "contactSheetsIncluded": False,
+            "hullFitMode": "threaded",
             "latencyMs": 3100,
             "recognizeTotalMs": 2600.0,
             "importsMs": 0.04,
@@ -48,6 +51,7 @@ def test_summary_includes_performance_distributions():
             "recommendedMethod": "canonical_count_repaired",
             "performanceSchema": "constrained_recognize_performance_v1",
             "contactSheetsIncluded": False,
+            "hullFitMode": "threaded",
             "latencyMs": 39000,
             "recognizeTotalMs": 38600.0,
             "importsMs": 32300.0,
@@ -58,5 +62,6 @@ def test_summary_includes_performance_distributions():
     assert summary["exactCount"] == 2
     assert summary["performanceSchemaCounts"] == {"constrained_recognize_performance_v1": 2}
     assert summary["contactSheetsIncludedCounts"] == {"False": 2}
+    assert summary["hullFitModeCounts"] == {"threaded": 2}
     assert summary["timings"]["latencyMs"]["max"] == 39000.0
     assert summary["timings"]["importsMs"]["max"] == 32300.0

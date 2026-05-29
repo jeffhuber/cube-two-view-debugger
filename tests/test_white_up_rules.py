@@ -7,10 +7,12 @@ from rubik_recognizer.recognizer import (
     IMAGE_B_VISIBLE_FACE_EVIDENCE_WEAK_CHECK,
     RED_ORANGE_PAIR_CALIBRATION_SUSPECTED_CHECK,
     BACKGROUND_STICKER_NOISE_CHECK,
+    PieceOption,
     RecognitionResult,
     RecognitionWorkset,
     WhiteUpRecognizer,
     _anchor_grid_candidates,
+    _append_top_piece_solution,
     _assigned_grid_by_face,
     _attach_failed_pair_color_calibration_signal,
     _capture_yaw_state_to_wca,
@@ -86,6 +88,30 @@ def test_white_up_checks_reject_missing_credible_white_up_face():
     b = StubAnalysis(["D", "L", "B"])
 
     assert "image_a_U_anchor_missing" in _white_up_checks(a, b)
+
+
+def test_append_top_piece_solution_prunes_dominated_bucket_entries():
+    bucket = [
+        (5.0, 2, (PieceOption(0, 0, ("U",), 5.0, 2),)),
+        (6.0, 2, (PieceOption(1, 0, ("R",), 6.0, 2),)),
+        (7.0, 2, (PieceOption(2, 0, ("F",), 7.0, 2),)),
+        (8.0, 2, (PieceOption(3, 0, ("D",), 8.0, 2),)),
+        (9.0, 2, (PieceOption(4, 0, ("L",), 9.0, 2),)),
+    ]
+
+    _append_top_piece_solution(
+        bucket,
+        (1.0, 1, (PieceOption(5, 0, ("B",), 1.0, 1),)),
+    )
+    _append_top_piece_solution(
+        bucket,
+        (99.0, 9, (PieceOption(6, 0, ("U",), 99.0, 9),)),
+    )
+
+    ranks = {(changes, cost) for cost, changes, _ in bucket}
+    assert len(bucket) == 5
+    assert (1, 1.0) in ranks
+    assert (2, 9.0) not in ranks
 
 
 def test_u_anchor_candidates_include_low_confidence_logo_center():

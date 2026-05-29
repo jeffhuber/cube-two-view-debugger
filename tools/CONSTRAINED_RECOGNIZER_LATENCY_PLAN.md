@@ -67,11 +67,17 @@ in guarded-pair tail cases, especially sets 11, 14, 59, 65, and 69.
 
 ## Next candidates
 
+- Controlled benchmark: use
+  `tools/benchmark_constrained_recognizer.py --only-sets 11 14 59 65 69`
+  to compare serial/threaded hull fitting and guarded-pair tails in one local
+  process before interpreting deploy-to-deploy timing deltas.
 - Rembg cost: evaluate smaller `max_side` or pre-rembg resize policies against
   the full corpus, because rembg dominates p50 and p90.
 - Rembg replacement path: test whether a deterministic cube-silhouette proposer
   can bypass rembg on easy cases while falling back to rembg on uncertainty.
-- Guarded-pair tail: investigate the rare multi-second `selectGuardedPair` max
-  while preserving the full selected-pair recomputation guarantee.
+- Guarded-pair tail: the repair DP now prunes each bucket incrementally instead
+  of after bucket growth. This preserves the same per-key top-solution limit
+  while reducing repair-heavy pair-search CPU. Keep watching
+  `selectGuardedPair` max in deployed scoreboards.
 - Frontend input size: confirm CubeSnap is not uploading larger-than-needed
   images before the backend resizes them.

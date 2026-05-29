@@ -4394,7 +4394,10 @@ def _top_piece_solutions(
                         parity ^ (previous_greater % 2),
                     )
                     bucket = next_dp.setdefault(next_key, [])
-                    bucket.append((next_cost, next_changes, selected + (option,)))
+                    _append_top_piece_solution(
+                        bucket,
+                        (next_cost, next_changes, selected + (option,)),
+                    )
         dp = {
             key: sorted(bucket, key=lambda item: (item[1], item[0]))[:MAX_LEGAL_REPAIR_SOLUTIONS_PER_KEY]
             for key, bucket in next_dp.items()
@@ -4407,6 +4410,35 @@ def _top_piece_solutions(
             solutions.append((cost, changes, parity, selected))
     solutions.sort(key=lambda item: (item[1], item[0]))
     return solutions[:MAX_LEGAL_REPAIR_SOLUTIONS]
+
+
+def _append_top_piece_solution(
+    bucket: List[Tuple[float, int, Tuple[PieceOption, ...]]],
+    item: Tuple[float, int, Tuple[PieceOption, ...]],
+) -> None:
+    """Keep only the best partial repair solutions for one DP key.
+
+    A DP key has the same used-piece mask, orientation sum, and parity. Future
+    transitions therefore see the same remaining cubies, so higher-change/cost
+    partials are dominated by lower-change/cost partials for the same key. The
+    previous implementation pruned to this same limit after each piece position;
+    doing it while appending avoids multi-second bucket growth in repair-heavy
+    guarded-pair searches.
+    """
+    rank = (item[1], item[0])
+    if len(bucket) < MAX_LEGAL_REPAIR_SOLUTIONS_PER_KEY:
+        bucket.append(item)
+        return
+
+    worst_index = -1
+    worst_rank: Optional[Tuple[int, float]] = None
+    for index, candidate in enumerate(bucket):
+        candidate_rank = (candidate[1], candidate[0])
+        if worst_rank is None or candidate_rank > worst_rank:
+            worst_index = index
+            worst_rank = candidate_rank
+    if worst_rank is not None and rank < worst_rank:
+        bucket[worst_index] = item
 
 
 def _state_from_piece_solution(corners: Sequence[PieceOption], edges: Sequence[PieceOption]) -> str:

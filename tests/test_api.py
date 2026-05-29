@@ -39,6 +39,7 @@ def test_api_routes_lists_known_endpoints():
     # Spot-check the routes that exist in dispatch.
     assert "/api/routes" in paths
     assert "/api/diag" in paths
+    assert "/api/recognition-events/report" in paths
     assert "/api/runs" in paths
     assert "/api/labels" in paths
     assert "/api/recognize" in paths
@@ -347,6 +348,16 @@ def test_recognition_event_log_writes_metadata_only(tmp_path, monkeypatch):
     assert diag["recognitionCategoryCounts"] == {"reject_retake": 1}
     assert diag["constrainedStatusCounts"] == {"fast_reject": 1}
 
+    report = app_module._recognition_event_report_payload(since_hours=None, recent_limit=5)
+    assert report["schema"] == "recognition_event_report_api_v1"
+    assert report["exists"] is True
+    assert report["summary"]["totalEvents"] == 1
+    assert report["summary"]["clientSourceCounts"] == {"photo-upload": 1}
+    assert report["summary"]["failureReasonCounts"] == {
+        "CubeSnap could not confirm the required orientation.": 1
+    }
+    assert report["summary"]["recentAttempts"][0]["status"] == "rejected"
+
     with sqlite3.connect(event_db) as db:
         row = db.execute(
             """
@@ -393,6 +404,20 @@ def test_recognition_event_helpers_guard_sql_and_preserve_zero_timings():
 
     with pytest.raises(ValueError, match="disallowed column"):
         app_module._sqlite_counts(None, "status; DROP TABLE recognition_events")  # type: ignore[arg-type]
+
+
+def test_constrained_image_max_side_default_env_and_bounds(monkeypatch):
+    import app as app_module
+
+    monkeypatch.delenv(app_module.CONSTRAINED_IMAGE_MAX_SIDE_ENV, raising=False)
+    assert app_module._constrained_image_max_side() == app_module.DEFAULT_CONSTRAINED_IMAGE_MAX_SIDE
+
+    monkeypatch.setenv(app_module.CONSTRAINED_IMAGE_MAX_SIDE_ENV, "bad")
+    assert app_module._constrained_image_max_side() == app_module.DEFAULT_CONSTRAINED_IMAGE_MAX_SIDE
+
+    assert app_module._constrained_image_max_side(256) == 512
+    assert app_module._constrained_image_max_side(9999) == 2400
+    assert app_module._constrained_image_max_side(1200) == 1200
 
 
 def test_constrained_prewarm_records_stage_timings(monkeypatch):

@@ -274,21 +274,34 @@ def _parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def load_report_payload(
+    db_path: Path,
+    *,
+    since_hours: Optional[float] = None,
+    recent_limit: int = 20,
+) -> Dict[str, Any]:
+    with sqlite3.connect(f"file:{db_path}?mode=ro", uri=True, timeout=5) as db:
+        db.row_factory = sqlite3.Row
+        rows = _rows_as_dicts(_query_rows(db, since_hours=since_hours))
+    return {
+        "schema": "recognition_event_report_v1",
+        "generatedAtUtc": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "database": str(db_path),
+        "sinceHours": since_hours,
+        "summary": build_summary(rows, recent_limit=max(0, recent_limit)),
+    }
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     args = _parse_args(argv)
     if not args.db.exists():
         print(f"recognition event DB not found: {args.db}", file=sys.stderr)
         return 2
-    with sqlite3.connect(f"file:{args.db}?mode=ro", uri=True, timeout=5) as db:
-        db.row_factory = sqlite3.Row
-        rows = _rows_as_dicts(_query_rows(db, since_hours=args.since_hours))
-    payload = {
-        "schema": "recognition_event_report_v1",
-        "generatedAtUtc": dt.datetime.now(dt.timezone.utc).isoformat(),
-        "database": str(args.db),
-        "sinceHours": args.since_hours,
-        "summary": build_summary(rows, recent_limit=max(0, args.recent_limit)),
-    }
+    payload = load_report_payload(
+        args.db,
+        since_hours=args.since_hours,
+        recent_limit=args.recent_limit,
+    )
     if args.out_json:
         args.out_json.parent.mkdir(parents=True, exist_ok=True)
         args.out_json.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")

@@ -8,6 +8,8 @@ def test_benchmark_summary_reports_variant_stage_timings():
         {
             "setId": "14",
             "variant": "threaded",
+            "hullFitMode": "threaded",
+            "maxSide": 1200,
             "iteration": 1,
             "status": "success",
             "exactMatch": True,
@@ -23,6 +25,8 @@ def test_benchmark_summary_reports_variant_stage_timings():
         {
             "setId": "14",
             "variant": "serial",
+            "hullFitMode": "serial",
+            "maxSide": 1200,
             "iteration": 1,
             "status": "success",
             "exactMatch": True,
@@ -55,7 +59,9 @@ def test_benchmark_report_includes_core_latency_table():
         "summary": build_summary([
             {
                 "setId": "14",
-                "variant": "threaded",
+                "variant": "threaded@1200",
+                "hullFitMode": "threaded",
+                "maxSide": 1200,
                 "iteration": 1,
                 "status": "success",
                 "exactMatch": True,
@@ -76,5 +82,5 @@ def test_benchmark_report_includes_core_latency_table():
     report = render_report(payload)
 
     assert "# Constrained Recognizer Benchmark" in report
-    assert "`threaded`" in report
+    assert "`threaded@1200`" in report
     assert "Slowest Guarded Pair Rows" in report

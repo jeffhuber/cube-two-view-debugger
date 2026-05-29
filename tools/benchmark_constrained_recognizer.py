@@ -110,7 +110,9 @@ def _run_once(
     *,
     recognizer: WhiteUpRecognizer,
     task: PairTask,
+    hull_fit_mode: str,
     variant: str,
+    max_side: int,
     iteration: int,
 ) -> Dict[str, Any]:
     expected = _expected_state(task.ground_truth)
@@ -123,7 +125,8 @@ def _run_once(
         image_b,
         "prefer",
         expected_state=expected,
-        hull_fit_mode=variant,
+        hull_fit_mode=hull_fit_mode,
+        max_side=max_side,
     )
     wall_ms = round((time.perf_counter() - started) * 1000.0, 2)
     payload = result.to_api_dict(include_overlays=False)
@@ -134,6 +137,8 @@ def _run_once(
     return {
         "setId": task.set_id,
         "variant": variant,
+        "hullFitMode": hull_fit_mode,
+        "maxSide": max_side,
         "iteration": iteration,
         "status": payload.get("status"),
         "recognitionCategory": payload.get("recognitionCategory"),
@@ -294,6 +299,13 @@ def _parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser.add_argument("--only-sets", nargs="*", default=list(DEFAULT_TAIL_SETS))
     parser.add_argument("--all", action="store_true", help="Run every manifest pair instead of the default tail sets.")
     parser.add_argument("--variants", nargs="+", default=["threaded", "serial"], choices=["threaded", "serial"])
+    parser.add_argument(
+        "--max-sides",
+        nargs="+",
+        type=int,
+        default=[app_module._constrained_image_max_side()],  # noqa: SLF001 - benchmark boundary.
+        help="Constrained pre-resize max-side values to compare.",
+    )
     parser.add_argument("--iterations", type=int, default=1)
     parser.add_argument("--warmup", type=int, default=0)
     parser.add_argument("--out-json", type=Path, default=DEFAULT_OUT)
@@ -307,33 +319,46 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     tasks = _load_tasks(args.manifest, set_ids)
     recognizer = WhiteUpRecognizer()
     rows: List[Dict[str, Any]] = []
+    max_sides = [app_module._constrained_image_max_side(value) for value in args.max_sides]  # noqa: SLF001
+
+    def variant_label(hull_fit_mode: str, max_side: int) -> str:
+        if len(max_sides) == 1:
+            return hull_fit_mode
+        return f"{hull_fit_mode}@{max_side}"
 
     for variant in args.variants:
-        for warmup_index in range(args.warmup):
-            for task in tasks:
-                _run_once(
-                    recognizer=recognizer,
-                    task=task,
-                    variant=variant,
-                    iteration=-(warmup_index + 1),
-                )
-        for iteration in range(1, max(1, args.iterations) + 1):
-            for task in tasks:
-                row = _run_once(
-                    recognizer=recognizer,
-                    task=task,
-                    variant=variant,
-                    iteration=iteration,
-                )
-                rows.append(row)
-                timings = row.get("stageTimingsMs") or {}
-                print(
-                    f"[benchmark] {variant} set {task.set_id} iter {iteration}: "
-                    f"{row.get('status')} h={row.get('hamming')} "
-                    f"wall={row.get('wallMs')}ms guarded={timings.get('selectGuardedPair')}ms",
-                    file=sys.stderr,
-                    flush=True,
-                )
+        for max_side in max_sides:
+            label = variant_label(variant, max_side)
+            for warmup_index in range(args.warmup):
+                for task in tasks:
+                    _run_once(
+                        recognizer=recognizer,
+                        task=task,
+                        hull_fit_mode=variant,
+                        variant=label,
+                        max_side=max_side,
+                        iteration=-(warmup_index + 1),
+                    )
+            for iteration in range(1, max(1, args.iterations) + 1):
+                for task in tasks:
+                    row = _run_once(
+                        recognizer=recognizer,
+                        task=task,
+                        hull_fit_mode=variant,
+                        variant=label,
+                        max_side=max_side,
+                        iteration=iteration,
+                    )
+                    rows.append(row)
+                    timings = row.get("stageTimingsMs") or {}
+                    print(
+                        f"[benchmark] {label} set {task.set_id} iter {iteration}: "
+                        f"{row.get('status')} h={row.get('hamming')} "
+                        f"wall={row.get('wallMs')}ms rembgA={timings.get('rembgA')}ms "
+                        f"rembgB={timings.get('rembgB')}ms guarded={timings.get('selectGuardedPair')}ms",
+                        file=sys.stderr,
+                        flush=True,
+                    )
 
     payload = {
         "schema": "constrained_recognizer_benchmark_v1",
@@ -342,6 +367,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         "manifest": _rel(args.manifest),
         "setIds": [task.set_id for task in tasks],
         "variants": list(args.variants),
+        "maxSides": max_sides,
         "iterations": max(1, args.iterations),
         "warmup": max(0, args.warmup),
         "summary": build_summary(rows),

@@ -54,8 +54,14 @@ curl -fsS https://api.cubesnap.app/api/diag
 ```
 
 The response includes `recognitionEvents.totalEvents`, status/category counts,
-and the latest event timestamp. For a structured report from a copied or local
-database, run:
+and the latest event timestamp. For a production-safe operational report over
+HTTPS, use the metadata-only API:
+
+```bash
+curl -fsS 'https://api.cubesnap.app/api/recognition-events/report?sinceHours=24&recentLimit=20'
+```
+
+For a structured report from a copied or local database, run:
 
 ```bash
 .venv/bin/python tools/report_recognition_events.py \

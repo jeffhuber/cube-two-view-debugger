@@ -70,9 +70,21 @@ in guarded-pair tail cases, especially sets 11, 14, 59, 65, and 69.
 - Controlled benchmark: use
   `tools/benchmark_constrained_recognizer.py --only-sets 11 14 59 65 69`
   to compare serial/threaded hull fitting and guarded-pair tails in one local
-  process before interpreting deploy-to-deploy timing deltas.
+  process before interpreting deploy-to-deploy timing deltas. Add
+  `--max-sides 1600 1200` to compare rembg pre-resize policies on the same
+  code path.
 - Rembg cost: evaluate smaller `max_side` or pre-rembg resize policies against
   the full corpus, because rembg dominates p50 and p90.
+- 2026-05-29 resize check: 1200/1400/1500 were rejected as production
+  defaults because they misread Set 11 by 15 stickers. 1560 looked promising on
+  the tail-set smoke, but the benefit is too fiddly relative to launch risk.
+  Keep production at 1600 unless a future model/segmentation change gives a
+  broad, full-corpus win.
+- Operational feedback: use
+  `/api/recognition-events/report?sinceHours=24&recentLimit=20` for a
+  metadata-only production summary of success/reject rates, latency, source,
+  failure reason, and recommended method without needing SSH access to the
+  Railway volume.
 - Rembg replacement path: test whether a deterministic cube-silhouette proposer
   can bypass rembg on easy cases while falling back to rembg on uncertainty.
 - Guarded-pair tail: the repair DP now prunes each bucket incrementally instead

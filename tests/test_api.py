@@ -26,6 +26,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from app import RubikHandler, _api_routes  # noqa: E402
+from rubik_recognizer.dataset import ImagePair, ImageUpload  # noqa: E402
 
 
 def test_api_routes_lists_known_endpoints():
@@ -177,6 +178,9 @@ def test_api_diag_smoke(server):
     assert "pillow" in payload["libraries"]
     prewarm = payload.get("prewarm") or {}
     assert "constrainedRecognizer" in prewarm
+    events = payload.get("recognitionEvents") or {}
+    assert events["schema"] == "recognition_event_log_diag_v1"
+    assert "enabled" in events
 
 
 def test_api_diag_exposes_git_identity(server):
@@ -264,6 +268,108 @@ def test_runtime_diag_exposes_constrained_prewarm_state(monkeypatch):
 
     assert diag["prewarm"]["constrainedRecognizer"]["status"] == "complete"
     assert diag["prewarm"]["constrainedRecognizer"]["durationMs"] == 12.34
+
+
+def test_recognition_event_log_writes_metadata_only(tmp_path, monkeypatch):
+    import sqlite3
+
+    import app as app_module
+
+    event_db = tmp_path / "recognition-events.sqlite3"
+    monkeypatch.setenv("CUBE_RECOGNITION_EVENT_DB_PATH", str(event_db))
+    pair = ImagePair(
+        set_id="Set Telemetry",
+        image_a=ImageUpload("A.jpg", b"image-a-bytes"),
+        image_b=ImageUpload("B.jpg", b"image-b-bytes"),
+    )
+    payload = {
+        "status": "rejected",
+        "state": None,
+        "reason": "CubeSnap could not confirm the required orientation.",
+        "recognitionCategory": "reject_retake",
+        "recognitionCategoryReason": "orientation_or_pair_retake",
+        "failedChecks": ["non_cube_image_fast_reject"],
+        "runId": "run-123",
+        "runUrl": "/runs/pairs/run-123/summary.json",
+        "runtime": {
+            "inputs": {
+                "imageA": {
+                    "name": "A.jpg",
+                    "sha256": "a" * 64,
+                    "bytes": 123,
+                    "width": 720,
+                    "height": 720,
+                },
+                "imageB": {
+                    "name": "B.jpg",
+                    "sha256": "b" * 64,
+                    "bytes": 456,
+                    "width": 720,
+                    "height": 720,
+                },
+            },
+        },
+        "recognitionSignals": {
+            "constrainedInference": {
+                "selected": False,
+                "fallbackToLegacy": False,
+                "status": "fast_reject",
+                "recommendedMethod": None,
+                "performance": {
+                    "schema": "constrained_recognize_performance_v1",
+                    "contactSheetsIncluded": False,
+                    "stageTimingsMs": {
+                        "prepareConstrainedInput": 321.5,
+                        "recognizeTotal": 322.5,
+                    },
+                },
+                "fastReject": {"source": "hull_label_center_yaw_inference"},
+            },
+        },
+    }
+
+    app_module._append_recognition_event(
+        pair,
+        payload,
+        "constrained",
+        client_metadata={
+            "source": "photo-upload",
+            "app": {"version": "0.0.1", "buildSha": "abc123"},
+            "attempt": {"index": "1", "total": "2", "order": "filename"},
+        },
+    )
+
+    diag = app_module._recognition_event_log_diag()
+    assert diag["enabled"] is True
+    assert diag["exists"] is True
+    assert diag["totalEvents"] == 1
+    assert diag["statusCounts"] == {"rejected": 1}
+    assert diag["recognitionCategoryCounts"] == {"reject_retake": 1}
+    assert diag["constrainedStatusCounts"] == {"fast_reject": 1}
+
+    with sqlite3.connect(event_db) as db:
+        row = db.execute(
+            """
+            SELECT status, recognition_category, constrained_status,
+                   constrained_fallback_to_legacy, client_source, app_version,
+                   image_a_sha256, image_b_sha256, event_json
+            FROM recognition_events
+            """
+        ).fetchone()
+    assert row[:8] == (
+        "rejected",
+        "reject_retake",
+        "fast_reject",
+        0,
+        "photo-upload",
+        "0.0.1",
+        "a" * 64,
+        "b" * 64,
+    )
+    event_json = row[8]
+    assert "image-a-bytes" not in event_json
+    assert "image-b-bytes" not in event_json
+    assert "non_cube_image_fast_reject" in event_json
 
 
 def test_constrained_prewarm_records_stage_timings(monkeypatch):

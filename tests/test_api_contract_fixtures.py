@@ -41,6 +41,43 @@ def test_recognize_contract_fixture_pins_cube_snap_consumed_fields():
     assert len(signals["selectedRepairCandidate"]["state"]) == 54
 
 
+def test_constrained_success_contract_fixture_pins_cube_snap_consumed_fields():
+    payload = _load_fixture("recognize_constrained_success_clean_v1.json")
+
+    assert payload["status"] == "success"
+    assert len(payload["state"]) == 54
+    assert payload["recognitionCategory"] == "success_clean"
+    assert payload["failedChecks"] == []
+
+    signal = payload["recognitionSignals"]["constrainedInference"]
+    assert signal["selected"] is True
+    assert signal["fallbackToLegacy"] is False
+    assert signal["status"] == "accepted"
+    assert signal["recommendedMethod"] == "canonical_count_repaired"
+    assert signal["promotionGate"]["accepted"] is True
+    assert signal["performance"]["schema"] == "constrained_recognize_performance_v1"
+    assert signal["performance"]["contactSheetsIncluded"] is False
+    assert signal["performance"]["stageTimingsMs"]["recognizeTotal"] > 0
+
+
+def test_constrained_fast_reject_contract_fixture_pins_cube_snap_consumed_fields():
+    payload = _load_fixture("recognize_constrained_fast_reject_v1.json")
+
+    assert payload["status"] == "rejected"
+    assert payload["state"] is None
+    assert payload["recognitionCategory"] == "reject_retake"
+    assert "non_cube_image_fast_reject" in payload["failedChecks"]
+
+    signal = payload["recognitionSignals"]["constrainedInference"]
+    assert signal["selected"] is False
+    assert signal["fallbackToLegacy"] is False
+    assert signal["status"] == "fast_reject"
+    assert signal["fastReject"]["source"] == "hull_label_center_yaw_inference"
+    assert signal["performance"]["schema"] == "constrained_recognize_performance_v1"
+    assert signal["performance"]["contactSheetsIncluded"] is False
+    assert "legacyFallback" not in signal["performance"]["stageTimingsMs"]
+
+
 def test_llm_rectified_contract_fixture_pins_deterministic_repair_fields():
     payload = _load_fixture("llm_rectified_input_success_v1.json")
 

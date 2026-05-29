@@ -1,0 +1,40 @@
+{
+  "status": "rejected",
+  "state": null,
+  "confidence": 0.0,
+  "reason": "CubeSnap could not confirm the required white-up and yellow-up cube orientation from those images. Upload one clear white-up photo and one clear yellow-up photo of the same Rubik's cube.",
+  "recognitionCategory": "reject_retake",
+  "recognitionCategoryReason": "constrained_fast_reject",
+  "failedChecks": [
+    "non_cube_image_fast_reject",
+    "constrained_yaw_inference_unavailable",
+    "constrained_yaw_low_center_evidence"
+  ],
+  "candidates": 0,
+  "recognitionSignals": {
+    "constrainedInference": {
+      "selected": false,
+      "fallbackToLegacy": false,
+      "status": "fast_reject",
+      "recommendedMethod": null,
+      "promotionGate": {
+        "accepted": false,
+        "decision": "reject",
+        "rejectReasons": [
+          "non_cube_image_fast_reject"
+        ]
+      },
+      "fastReject": {
+        "source": "hull_label_center_yaw_inference"
+      },
+      "performance": {
+        "schema": "constrained_recognize_performance_v1",
+        "contactSheetsIncluded": false,
+        "stageTimingsMs": {
+          "prepareConstrainedInput": 2519.88,
+          "recognizeTotal": 2520.05
+        }
+      }
+    }
+  }
+}

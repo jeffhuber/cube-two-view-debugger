@@ -1,6 +1,6 @@
 # Deployed constrained recognizer scoreboard
 
-Generated: `2026-05-29T08:31:58.094763+00:00`
+Generated: `2026-05-29T11:01:06.777394+00:00`
 Endpoint: `https://api.cubesnap.app/api/recognize?slim=1&hullLabelTier1=constrained`
 Manifest: `/Users/jhuber/cube-two-view-debugger/tests/fixtures/corpus_manifest.json`
 
@@ -30,18 +30,18 @@ Timing summary:
 
 | Metric | Count | Min | P50 | P90 | Max | Avg |
 |---|---:|---:|---:|---:|---:|---:|
-| `latencyMs` | 71 | 1983.0 | 2798.0 | 3789.0 | 8021.0 | 3041.08 |
-| `recognizeTotalMs` | 71 | 1680.48 | 2360.65 | 3278.5 | 7446.44 | 2628.7 |
-| `prepareTotalMs` | 71 | 1680.4 | 2360.57 | 3278.42 | 7446.31 | 2628.6 |
-| `prepareConstrainedInputMs` | 71 | 1680.46 | 2360.63 | 3278.48 | 7446.42 | 2628.68 |
-| `importsMs` | 71 | 0.02 | 0.03 | 0.03 | 0.03 | 0.03 |
-| `rembgSessionMs` | 71 | 0.0 | 0.01 | 0.01 | 0.01 | 0.01 |
-| `loadImagesMs` | 71 | 260.93 | 272.29 | 282.04 | 290.04 | 273.17 |
-| `rembgAMs` | 71 | 376.69 | 866.61 | 1315.98 | 2027.16 | 900.91 |
-| `rembgBMs` | 71 | 399.07 | 699.28 | 1103.59 | 1786.29 | 760.02 |
-| `hullFitAMs` | 71 | 118.69 | 203.72 | 276.76 | 299.32 | 195.41 |
-| `hullFitBMs` | 71 | 113.56 | 208.78 | 287.71 | 297.95 | 215.41 |
-| `selectGuardedPairMs` | 71 | 31.12 | 32.63 | 34.3 | 4360.4 | 283.53 |
+| `latencyMs` | 71 | 2165.0 | 2532.0 | 2800.0 | 7304.0 | 2794.9 |
+| `recognizeTotalMs` | 71 | 1873.5 | 2058.9 | 2220.47 | 6834.43 | 2323.22 |
+| `prepareTotalMs` | 71 | 1873.37 | 2058.68 | 2220.32 | 6833.14 | 2322.99 |
+| `prepareConstrainedInputMs` | 71 | 1873.48 | 2058.88 | 2220.45 | 6834.4 | 2323.2 |
+| `importsMs` | 71 | 0.02 | 0.02 | 0.03 | 0.09 | 0.02 |
+| `rembgSessionMs` | 71 | 0.01 | 0.01 | 0.01 | 0.02 | 0.01 |
+| `loadImagesMs` | 71 | 358.83 | 375.82 | 389.42 | 395.33 | 376.65 |
+| `rembgAMs` | 71 | 232.01 | 325.12 | 343.95 | 392.73 | 324.8 |
+| `rembgBMs` | 71 | 382.81 | 428.76 | 496.76 | 548.54 | 440.5 |
+| `hullFitAMs` | 71 | 518.12 | 709.18 | 802.59 | 899.15 | 717.28 |
+| `hullFitBMs` | 71 | 615.25 | 707.1 | 798.77 | 873.64 | 717.69 |
+| `selectGuardedPairMs` | 71 | 115.1 | 192.24 | 209.49 | 4938.7 | 437.19 |
 
 ## Non-exact Rows
 

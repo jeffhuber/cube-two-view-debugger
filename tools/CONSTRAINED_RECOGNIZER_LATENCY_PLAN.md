@@ -50,6 +50,18 @@ Validation:
 - Set 41 constrained validation: 1/1 exact
 - Full constrained validation: 71/71 exact, 71/71 within 3, 0 regressions
 
+Post-deploy Railway score, after merging #396:
+
+- Full deployed corpus: 71/71 exact, 71/71 within 3, 0 rejected
+- `prepareConstrainedInputMs`: p50 2058.88 ms, p90 2220.45 ms
+- `hullFitWall`: p50 743.94 ms, p90 807.27 ms
+- `selectGuardedPairMs`: p50 192.24 ms, p90 209.49 ms, max 4938.70 ms
+
+Compared with the previous deployed scoreboard, the common path improved from
+`prepareConstrainedInputMs` p50 2360.63 ms to 2058.88 ms. The remaining latency
+problem is now concentrated in guarded-pair tail cases, especially sets 11, 14,
+59, 65, and 69.
+
 ## Next candidates
 
 - Rembg cost: evaluate smaller `max_side` or pre-rembg resize policies against

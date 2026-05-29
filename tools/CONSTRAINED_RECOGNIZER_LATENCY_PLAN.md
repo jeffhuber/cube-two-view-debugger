@@ -84,7 +84,14 @@ in guarded-pair tail cases, especially sets 11, 14, 59, 65, and 69.
   `/api/recognition-events/report?sinceHours=24&recentLimit=20` for a
   metadata-only production summary of success/reject rates, latency, source,
   failure reason, and recommended method without needing SSH access to the
-  Railway volume.
+  Railway volume. Use `tools/report_recognition_events.py --endpoint ...` for
+  daily/adhoc Markdown snapshots.
+- Validation traffic: deployed scorer requests send `clientSource` metadata, so
+  operational reports can separate Codex score/smoke runs from CubeSnap user
+  traffic.
+- Wall-clock overhead: deployed scoreboards now include client read/multipart,
+  HTTP-to-headers, response read, JSON parse, and `clientWallOverheadMs`
+  distributions alongside server recognizer stage timings.
 - Rembg replacement path: test whether a deterministic cube-silhouette proposer
   can bypass rembg on easy cases while falling back to rembg on uncertainty.
 - Guarded-pair tail: the repair DP now prunes each bucket incrementally instead

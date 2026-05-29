@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from tools.report_recognition_events import build_summary, render_report
+from tools.report_recognition_events import _endpoint_report_url, build_summary, render_report
 
 
 def _event_row(**overrides):
@@ -77,3 +77,16 @@ def test_recognition_event_report_renders_recent_attempts():
     assert "# Recognition Event Report" in report
     assert "Status counts" in report
     assert "Recent Attempts" in report
+
+
+def test_endpoint_report_url_adds_camel_case_query_params():
+    url = _endpoint_report_url(
+        "https://api.cubesnap.app/api/recognition-events/report?recentLimit=99",
+        since_hours=24,
+        recent_limit=5,
+    )
+
+    assert url == (
+        "https://api.cubesnap.app/api/recognition-events/report?"
+        "recentLimit=5&sinceHours=24"
+    )

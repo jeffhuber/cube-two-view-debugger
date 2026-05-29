@@ -61,6 +61,17 @@ HTTPS, use the metadata-only API:
 curl -fsS 'https://api.cubesnap.app/api/recognition-events/report?sinceHours=24&recentLimit=20'
 ```
 
+For a daily/adhoc production report without shell access, render the endpoint
+response through the report tool:
+
+```bash
+.venv/bin/python tools/report_recognition_events.py \
+  --endpoint https://api.cubesnap.app/api/recognition-events/report \
+  --since-hours 24 \
+  --recent-limit 20 \
+  --report runs/recognition_event_report.md
+```
+
 For a structured report from a copied or local database, run:
 
 ```bash

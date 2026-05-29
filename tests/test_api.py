@@ -350,6 +350,7 @@ def test_recognition_event_log_writes_metadata_only(tmp_path, monkeypatch):
 
     report = app_module._recognition_event_report_payload(since_hours=None, recent_limit=5)
     assert report["schema"] == "recognition_event_report_api_v1"
+    assert report["database"] == "configured"
     assert report["exists"] is True
     assert report["summary"]["totalEvents"] == 1
     assert report["summary"]["clientSourceCounts"] == {"photo-upload": 1}

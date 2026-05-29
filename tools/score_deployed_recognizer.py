@@ -28,6 +28,7 @@ from tools.audit_recognition_pair import parse_ground_truth, score_match  # noqa
 
 DEFAULT_MANIFEST = REPO_ROOT / "tests" / "fixtures" / "corpus_manifest.json"
 DEFAULT_ENDPOINT = "https://api.cubesnap.app/api/recognize"
+DEFAULT_CLIENT_SOURCE = "codex-deployed-score"
 
 
 def _load_manifest(path: Path, only_sets: Optional[set[str]]) -> List[Dict[str, Any]]:
@@ -73,29 +74,60 @@ def _recognize_url(endpoint: str, mode: str) -> str:
     return parse.urlunparse(url._replace(query=parse.urlencode(query)))
 
 
-def _multipart_body(fields: Sequence[Tuple[str, str, bytes, str]]) -> Tuple[bytes, str]:
+def _ms(started: float) -> float:
+    return round((time.perf_counter() - started) * 1000.0, 2)
+
+
+def _multipart_body(fields: Sequence[Tuple[str, Optional[str], bytes, str]]) -> Tuple[bytes, str]:
     boundary = f"----cubesnap-score-{uuid.uuid4().hex}"
     chunks: List[bytes] = []
     for name, filename, data, content_type in fields:
         chunks.append(f"--{boundary}\r\n".encode("ascii"))
-        chunks.append(
-            (
+        if filename is None:
+            disposition = f'Content-Disposition: form-data; name="{name}"\r\n'
+        else:
+            disposition = (
                 f'Content-Disposition: form-data; name="{name}"; '
                 f'filename="{filename}"\r\n'
-                f"Content-Type: {content_type}\r\n\r\n"
-            ).encode("utf-8")
-        )
+            )
+        chunks.append((disposition + f"Content-Type: {content_type}\r\n\r\n").encode("utf-8"))
         chunks.append(data)
         chunks.append(b"\r\n")
     chunks.append(f"--{boundary}--\r\n".encode("ascii"))
     return b"".join(chunks), boundary
 
 
-def _post_pair(endpoint: str, image_a: Path, image_b: Path, timeout: float) -> Tuple[int, Dict[str, Any]]:
-    body, boundary = _multipart_body([
-        ("imageA", image_a.name, image_a.read_bytes(), "image/jpeg"),
-        ("imageB", image_b.name, image_b.read_bytes(), "image/jpeg"),
-    ])
+def _post_pair(
+    endpoint: str,
+    image_a: Path,
+    image_b: Path,
+    timeout: float,
+    *,
+    client_source: Optional[str],
+) -> Tuple[int, Dict[str, Any], Dict[str, Any]]:
+    timings: Dict[str, Any] = {"clientTimingSchema": "deployed_score_client_timing_v1"}
+    post_started = time.perf_counter()
+    started = time.perf_counter()
+    image_a_bytes = image_a.read_bytes()
+    image_b_bytes = image_b.read_bytes()
+    timings["clientReadImagesMs"] = _ms(started)
+
+    fields: List[Tuple[str, Optional[str], bytes, str]] = [
+        ("imageA", image_a.name, image_a_bytes, "image/jpeg"),
+        ("imageB", image_b.name, image_b_bytes, "image/jpeg"),
+    ]
+    if client_source:
+        fields.append((
+            "clientSource",
+            None,
+            client_source.encode("utf-8"),
+            "text/plain; charset=utf-8",
+        ))
+    started = time.perf_counter()
+    body, boundary = _multipart_body(fields)
+    timings["clientMultipartBuildMs"] = _ms(started)
+    timings["requestBytes"] = len(body)
+
     req = request.Request(
         endpoint,
         data=body,
@@ -105,17 +137,33 @@ def _post_pair(endpoint: str, image_a: Path, image_b: Path, timeout: float) -> T
             "Accept": "application/json",
         },
     )
+    request_started = time.perf_counter()
     try:
         with request.urlopen(req, timeout=timeout) as resp:
-            payload = json.loads(resp.read().decode("utf-8"))
-            return int(resp.status), payload
+            timings["clientHttpToHeadersMs"] = _ms(request_started)
+            started = time.perf_counter()
+            raw = resp.read()
+            timings["clientResponseReadMs"] = _ms(started)
+            timings["responseBytes"] = len(raw)
+            started = time.perf_counter()
+            payload = json.loads(raw.decode("utf-8"))
+            timings["clientJsonParseMs"] = _ms(started)
+            timings["clientPostPairMs"] = _ms(post_started)
+            return int(resp.status), payload, timings
     except error.HTTPError as exc:
+        timings["clientHttpToHeadersMs"] = _ms(request_started)
+        started = time.perf_counter()
         raw = exc.read().decode("utf-8", errors="replace")
+        timings["clientResponseReadMs"] = _ms(started)
+        timings["responseBytes"] = len(raw.encode("utf-8"))
+        started = time.perf_counter()
         try:
             payload = json.loads(raw)
         except json.JSONDecodeError:
             payload = {"status": "http_error", "reason": raw[:1000]}
-        return int(exc.code), payload
+        timings["clientJsonParseMs"] = _ms(started)
+        timings["clientPostPairMs"] = _ms(post_started)
+        return int(exc.code), payload, timings
 
 
 def _hamming(left: str, right: str) -> Optional[int]:
@@ -157,7 +205,13 @@ def _constrained_performance(constrained: Mapping[str, Any]) -> Dict[str, Any]:
     }
 
 
-def _score_row(row: Mapping[str, Any], endpoint: str, timeout: float) -> Dict[str, Any]:
+def _score_row(
+    row: Mapping[str, Any],
+    endpoint: str,
+    timeout: float,
+    *,
+    client_source: Optional[str],
+) -> Dict[str, Any]:
     if row.get("status") == "skipped_missing_local_file":
         return dict(row)
     set_id = str(row["setId"])
@@ -165,16 +219,27 @@ def _score_row(row: Mapping[str, Any], endpoint: str, timeout: float) -> Dict[st
     image_b = row["imageB"]
     ground_truth = row["groundTruth"]
     started = time.perf_counter()
+    stage_started = time.perf_counter()
     _sha, _raw, expected, canonicalized = parse_ground_truth(str(ground_truth))
+    client_timings: Dict[str, Any] = {"clientGroundTruthMs": _ms(stage_started)}
     try:
-        http_status, payload = _post_pair(endpoint, image_a, image_b, timeout)
+        http_status, payload, post_timings = _post_pair(
+            endpoint,
+            image_a,
+            image_b,
+            timeout,
+            client_source=client_source,
+        )
+        client_timings.update(post_timings)
     except Exception as exc:  # noqa: BLE001 - production smoke should keep going.
         return {
             "setId": set_id,
             "status": "request_exception",
             "error": f"{type(exc).__name__}: {exc}",
-            "latencyMs": round((time.perf_counter() - started) * 1000),
+            "latencyMs": _ms(started),
+            **client_timings,
         }
+    stage_started = time.perf_counter()
     state = payload.get("state") if isinstance(payload, Mapping) else None
     hamming = _hamming(state, expected) if isinstance(state, str) else None
     signals = payload.get("recognitionSignals") if isinstance(payload, Mapping) else {}
@@ -184,11 +249,17 @@ def _score_row(row: Mapping[str, Any], endpoint: str, timeout: float) -> Dict[st
         if isinstance(constrained, Mapping)
         else {}
     )
+    client_timings["clientScoreMs"] = _ms(stage_started)
+    latency_ms = _ms(started)
+    recognize_total_ms = _number(constrained_performance.get("recognizeTotalMs"))
+    if recognize_total_ms is not None:
+        client_timings["clientWallOverheadMs"] = round(latency_ms - recognize_total_ms, 2)
     return {
         "setId": set_id,
         "status": payload.get("status") if isinstance(payload, Mapping) else "malformed_response",
         "httpStatus": http_status,
-        "latencyMs": round((time.perf_counter() - started) * 1000),
+        "latencyMs": latency_ms,
+        "clientSource": client_source,
         "state": state,
         "expectedState": expected,
         "groundTruthCanonicalized": canonicalized,
@@ -206,6 +277,7 @@ def _score_row(row: Mapping[str, Any], endpoint: str, timeout: float) -> Dict[st
             else None
         ),
         **constrained_performance,
+        **client_timings,
     }
 
 
@@ -250,8 +322,19 @@ def _summary(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
         "performanceSchemaCounts": _counts(row.get("performanceSchema") for row in scored),
         "contactSheetsIncludedCounts": _counts(row.get("contactSheetsIncluded") for row in scored),
         "hullFitModeCounts": _counts(row.get("hullFitMode") for row in scored),
+        "clientSourceCounts": _counts(row.get("clientSource") for row in scored),
+        "clientTimingSchemaCounts": _counts(row.get("clientTimingSchema") for row in scored),
         "timings": {
             "latencyMs": _metric_summary(scored, "latencyMs"),
+            "clientWallOverheadMs": _metric_summary(scored, "clientWallOverheadMs"),
+            "clientPostPairMs": _metric_summary(scored, "clientPostPairMs"),
+            "clientHttpToHeadersMs": _metric_summary(scored, "clientHttpToHeadersMs"),
+            "clientResponseReadMs": _metric_summary(scored, "clientResponseReadMs"),
+            "clientJsonParseMs": _metric_summary(scored, "clientJsonParseMs"),
+            "clientReadImagesMs": _metric_summary(scored, "clientReadImagesMs"),
+            "clientMultipartBuildMs": _metric_summary(scored, "clientMultipartBuildMs"),
+            "clientGroundTruthMs": _metric_summary(scored, "clientGroundTruthMs"),
+            "clientScoreMs": _metric_summary(scored, "clientScoreMs"),
             "recognizeTotalMs": _metric_summary(scored, "recognizeTotalMs"),
             "prepareTotalMs": _metric_summary(scored, "prepareTotalMs"),
             "prepareConstrainedInputMs": _metric_summary(scored, "prepareConstrainedInputMs"),
@@ -314,6 +397,9 @@ def _render_report(payload: Mapping[str, Any]) -> str:
     lines.extend(["", "Hull fit modes:", ""])
     for key, value in summary["hullFitModeCounts"].items():
         lines.append(f"- `{key}`: `{value}`")
+    lines.extend(["", "Client sources:", ""])
+    for key, value in summary["clientSourceCounts"].items():
+        lines.append(f"- `{key}`: `{value}`")
     lines.extend(["", "Timing summary:", ""])
     lines.extend([
         "| Metric | Count | Min | P50 | P90 | Max | Avg |",
@@ -353,6 +439,11 @@ def _parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser.add_argument("--only-sets", nargs="*", default=None)
     parser.add_argument("--concurrency", type=int, default=2)
     parser.add_argument("--timeout", type=float, default=180.0)
+    parser.add_argument(
+        "--client-source",
+        default=DEFAULT_CLIENT_SOURCE,
+        help="clientSource metadata sent to the deployed recognizer.",
+    )
     parser.add_argument("--out-json", type=Path, default=Path("/tmp/deployed_constrained_scoreboard.json"))
     parser.add_argument("--report", type=Path, default=None)
     return parser.parse_args(argv)
@@ -365,7 +456,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     results: List[Dict[str, Any]] = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, args.concurrency)) as executor:
         future_to_set = {
-            executor.submit(_score_row, row, endpoint, args.timeout): row.get("setId")
+            executor.submit(
+                _score_row,
+                row,
+                endpoint,
+                args.timeout,
+                client_source=args.client_source,
+            ): row.get("setId")
             for row in rows
         }
         for future in concurrent.futures.as_completed(future_to_set):

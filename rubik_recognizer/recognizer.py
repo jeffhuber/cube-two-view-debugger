@@ -191,12 +191,13 @@ REPAIR_ORIENTATION_RERANK_MAX_BONUS = 0.03
 REPAIR_ADJACENT_COLOR_PAIRS = {frozenset(("red", "orange")), frozenset(("green", "blue"))}
 VALID_EDGE_COLOR_SETS = {frozenset(colors) for colors in EDGE_COLORS}
 VALID_CORNER_COLOR_SETS = {frozenset(colors) for colors in CORNER_COLORS}
-# Corner cubie identity follows the legacy assignment rule: side-color order
-# selects the cubie, while either U/D in the twist slot is allowed.
+# Corner cubie identity follows the validator's strict assignment rule: the
+# ordered side colors select the cubie, and the twist slot must use that
+# cubie's actual U/D color. The older U/D-agnostic lookup let impossible
+# U<->D corner swaps enter legal-repair candidate generation.
 CORNER_ASSIGNMENTS = {
     colors: (cubie, orientation)
-    for cubie, (_, first_side, second_side) in enumerate(CORNER_COLORS)
-    for ud_color in ("U", "D")
+    for cubie, (ud_color, first_side, second_side) in enumerate(CORNER_COLORS)
     for colors, orientation in (
         ((ud_color, first_side, second_side), 0),
         ((second_side, ud_color, first_side), 1),

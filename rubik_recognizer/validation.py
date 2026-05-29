@@ -58,12 +58,16 @@ EDGE_COLORS = [
     ("B", "R"),
 ]
 
-# Match the recognizer's legacy corner assignment rule: side-color order
-# selects the cubie, while either U/D in the twist slot is allowed.
+# Identify each corner by the ORDERED triple of its three cyclic rotations,
+# using the corner's ACTUAL U/D color (CORNER_COLORS[cubie][0]). An earlier
+# version accepted EITHER U or D in the twist slot (to mirror the recognizer's
+# lenient assignment rule), but for a *validator* that let a U<->D corner
+# sticker swap validate as solvable -- an unreachable state. Pinning the real
+# U/D color closes that hole; chirality (side-color order) is already enforced
+# by keying on the ordered triple. (Mirrors cube-snap's validateCubeState.ts.)
 CORNER_CUBIE_LOOKUP = {
     colors: (cubie, orientation)
-    for cubie, (_, first_side, second_side) in enumerate(CORNER_COLORS)
-    for ud_color in ("U", "D")
+    for cubie, (ud_color, first_side, second_side) in enumerate(CORNER_COLORS)
     for colors, orientation in (
         ((ud_color, first_side, second_side), 0),
         ((second_side, ud_color, first_side), 1),

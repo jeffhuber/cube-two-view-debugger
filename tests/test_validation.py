@@ -40,6 +40,39 @@ def test_validate_state_rejects_invalid_piece_even_with_counts():
     assert any(error.startswith("corner_") or error.startswith("edge_") for error in result.errors)
 
 
+def test_validate_state_rejects_ud_corner_sticker_swap():
+    # Swap the U facelet of the URF corner (idx 8) with the D facelet of the
+    # DFR corner (idx 29). Counts and centers stay valid, but neither corner is
+    # a valid oriented corner anymore (wrong U/D color). The earlier lenient
+    # lookup (accepting either U or D in the twist slot) validated this
+    # unreachable state as solvable.
+    chars = list(SOLVED)
+    chars[8], chars[29] = chars[29], chars[8]
+    state = "".join(chars)
+    result = validate_state(state)
+
+    assert not result.valid
+    assert not is_valid_state(state)
+    assert "corner_0_invalid_color_set" in result.errors
+    assert "corner_4_invalid_color_set" in result.errors
+    assert not any(error.endswith("_count_not_9") for error in result.errors)
+
+
+def test_validate_state_rejects_mirrored_corner():
+    # Swap the R and F facelets of the URF corner (idx 9 and 20): same color
+    # set {U, R, F} but reversed cyclic order, which no legal move can produce.
+    # Already rejected by the ordered lookup; pinned here for parity with
+    # cube-snap's validateCubeState.ts coverage.
+    chars = list(SOLVED)
+    chars[9], chars[20] = chars[20], chars[9]
+    state = "".join(chars)
+    result = validate_state(state)
+
+    assert not result.valid
+    assert not is_valid_state(state)
+    assert "corner_0_invalid_color_set" in result.errors
+
+
 def test_parity_matches_inversion_count_for_permutations():
     for permutation in permutations(range(5)):
         inversions = 0

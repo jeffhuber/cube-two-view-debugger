@@ -59,6 +59,7 @@
 | "What is current-main production solvable-rate / per-sticker accuracy on corpus + hard cases?" | `tests/fixtures/main_solvable_baseline.json` + `MAIN_SOLVABLE_BASELINE.md` |
 | "Which yaw source should the hull-label path use?" | `tests/fixtures/hull_label_slot_yaw_assignment.json` + `tools/HULL_LABEL_SLOT_YAW_ASSIGNMENT.md` |
 | "Is the hidden Hull-Label Tier 1 recognizer path ready to promote?" | `tests/fixtures/hull_label_tier1_recognizer_validation.json` + `tools/HULL_LABEL_TIER1_RECOGNIZER_VALIDATION.md` |
+| "Where is constrained recognizer latency going?" | `tools/DEPLOYED_CONSTRAINED_RECOGNIZER_SCOREBOARD.md` + `tools/CONSTRAINED_RECOGNIZER_LATENCY_PLAN.md` |
 | "Did my PR regress geometry on any case?" | `tools/baseline_post_218.py --diff prev curr` |
 | "Which sets are always-failing across reruns?" | `POST_218_BASELINE_AND_TAXONOMY.md` "Case-level stability" table |
 | "Why did Set X fail?" | Look up its category in the baseline JSON, then read the failure-mode meaning in `FAILURE_TAXONOMY.md`. Visual: `tools/render_global_cube_model_v0_overlays.py` for that case. |

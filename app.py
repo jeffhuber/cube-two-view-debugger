@@ -17,6 +17,7 @@ import sys
 import threading
 import time
 import traceback
+from concurrent.futures import ThreadPoolExecutor
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -1302,15 +1303,36 @@ def prepare_llm_rectified_input(
 
     threshold_entries_by_side: Dict[str, Dict[int, Dict[str, Any]]] = {}
     threshold_diagnostics_by_side: Dict[str, Any] = {}
+    alpha_by_side: Dict[str, _np.ndarray] = {}
     for side, image in (("A", image_a), ("B", image_b)):
         stage_started = time.perf_counter()
         rgba = remove(image, session=session).convert("RGBA")
-        alpha = _np.asarray(rgba.split()[-1], dtype=_np.uint8)
+        alpha_by_side[side] = _np.asarray(rgba.split()[-1], dtype=_np.uint8)
         record_stage(f"rembg{side}", stage_started)
 
+    def fit_side(side: str, image: Image.Image, alpha: _np.ndarray) -> Dict[str, Any]:
         stage_started = time.perf_counter()
         entries, threshold_diagnostics = fit_threshold_candidates(side, image, alpha)
-        record_stage(f"hullFit{side}", stage_started)
+        return {
+            "entries": entries,
+            "thresholdDiagnostics": threshold_diagnostics,
+            "hullFitMs": _elapsed_ms(stage_started),
+        }
+
+    stage_started = time.perf_counter()
+    with ThreadPoolExecutor(max_workers=2, thread_name_prefix="constrained-hull-fit") as executor:
+        futures_by_side = {
+            "A": executor.submit(fit_side, "A", image_a, alpha_by_side["A"]),
+            "B": executor.submit(fit_side, "B", image_b, alpha_by_side["B"]),
+        }
+        side_results = {side: futures_by_side[side].result() for side in ("A", "B")}
+    record_stage("hullFitWall", stage_started)
+
+    for side in ("A", "B"):
+        side_result = side_results[side]
+        stage_timings_ms[f"hullFit{side}"] = side_result["hullFitMs"]
+        entries = side_result["entries"]
+        threshold_diagnostics = side_result["thresholdDiagnostics"]
         if not entries:
             stage_timings_ms["prepareTotal"] = _elapsed_ms(performance_started)
             performance = {

@@ -30,7 +30,39 @@
 | [`BENCHMARK_INDEX.md`](BENCHMARK_INDEX.md) | Which fixture/report/script answers which question. |
 | [`README.md`](README.md) | This file. |
 
-### 🟢 Active — system / pipeline specs
+### 🟢 Active — constrained inference (production pipeline, 2026-05-26+)
+
+| File | What it documents |
+|---|---|
+| [`CURRENT_HULL_LABEL_SCOREBOARD.md`](CURRENT_HULL_LABEL_SCOREBOARD.md) | Current constrained-inference accuracy snapshot: 71/71 exact on 71-pair GT corpus. |
+| [`CONSTRAINED_INFERENCE_PROMOTION_GATE.md`](CONSTRAINED_INFERENCE_PROMOTION_GATE.md) | GT-free production-shaped gate evaluation: 71/71 accepted. |
+| [`CONSTRAINED_RECOGNIZER_LATENCY_PLAN.md`](CONSTRAINED_RECOGNIZER_LATENCY_PLAN.md) | Deployed bottleneck analysis (rembg ~76% of p50) and optimization roadmap. |
+| [`CONSTRAINED_RECOGNIZE_MODE_VALIDATION.md`](CONSTRAINED_RECOGNIZE_MODE_VALIDATION.md) | Constrained vs legacy mode comparison at the recognizer boundary. |
+| [`DEPLOYED_CONSTRAINED_RECOGNIZER_SCOREBOARD.md`](DEPLOYED_CONSTRAINED_RECOGNIZER_SCOREBOARD.md) | Deployed (Railway) latency + accuracy scoreboard. |
+| [`HULL_LABEL_COLOR_REPAIR_DIAGNOSTIC.md`](HULL_LABEL_COLOR_REPAIR_DIAGNOSTIC.md) | Deterministic color, count, two-view, and legality repair on the 71-pair corpus. |
+| [`HULL_LABEL_LEGAL_REPAIR_DIAGNOSTIC.md`](HULL_LABEL_LEGAL_REPAIR_DIAGNOSTIC.md) | Legal repair variant comparison (canonical_count → conservative_legal → broad_legal). |
+| [`PAIR_THRESHOLD_REPAIR_DIAGNOSTIC.md`](PAIR_THRESHOLD_REPAIR_DIAGNOSTIC.md) | Per-side vs pair-threshold selection comparison. |
+| [`CURRENT_SCOREBOARD_FAILURE_GALLERY.md`](CURRENT_SCOREBOARD_FAILURE_GALLERY.md) | Visual walkthrough of remaining scoreboard misses (pre-pair-threshold). |
+| [`HULL_LABEL_MASK_THRESHOLD_DIAGNOSTIC.md`](HULL_LABEL_MASK_THRESHOLD_DIAGNOSTIC.md) | Mask threshold selector analysis across corpus. |
+| [`HULL_LABELS_CORPUS_REPORT.md`](HULL_LABELS_CORPUS_REPORT.md) | Hull-label rectification quality on full corpus (69/70 → 71/71 progression). |
+| [`HULL_LABEL_ACCEPTANCE_GATES.md`](HULL_LABEL_ACCEPTANCE_GATES.md) | Acceptance gate design for hull-label candidates. |
+| [`HULL_LABEL_CENTER_YAW_SOURCE.md`](HULL_LABEL_CENTER_YAW_SOURCE.md) | Center-color yaw source comparison. |
+| [`HULL_LABEL_SLOT_YAW_ASSIGNMENT.md`](HULL_LABEL_SLOT_YAW_ASSIGNMENT.md) | Slot/yaw assignment diagnostic. |
+| [`HULL_LABEL_TIER1_WIRING.md`](HULL_LABEL_TIER1_WIRING.md) | Tier 1 hull-label pipeline wiring spec. |
+| [`HULL_LABEL_TIER1_SHADOW_VALIDATION.md`](HULL_LABEL_TIER1_SHADOW_VALIDATION.md) | Shadow validation for Tier 1 pipeline. |
+| [`HULL_LABEL_TIER1_E2E_BENCH.md`](HULL_LABEL_TIER1_E2E_BENCH.md) | End-to-end Tier 1 benchmark. |
+| [`RECTIFY_VIA_HULL_LABELS_REPORT.md`](RECTIFY_VIA_HULL_LABELS_REPORT.md) | Hull-label rectification quality report. |
+| [`FRESH_GT_CONSTRAINED_INFERENCE_REPORT.md`](FRESH_GT_CONSTRAINED_INFERENCE_REPORT.md) | Fresh GT corpus constrained inference evaluation. |
+| [`SHADOW_TRACE_ANALYSIS.md`](SHADOW_TRACE_ANALYSIS.md) | Shadow-trace acceptance/rejection distribution analysis. |
+| [`PRODUCTION_VS_ORACLE_CONTACT_SHEET.md`](PRODUCTION_VS_ORACLE_CONTACT_SHEET.md) | Production vs oracle rectified-face contact sheet comparison. |
+| [`RAILWAY_DEPLOY.md`](RAILWAY_DEPLOY.md) | Railway deployment configuration and procedures. |
+| [`SPLIT_CUBIE_CONSISTENCY_DIAGNOSTIC.md`](SPLIT_CUBIE_CONSISTENCY_DIAGNOSTIC.md) | Two-view split-cubie consistency diagnostic. |
+| [`TWO_VIEW_CONSISTENCY.md`](TWO_VIEW_CONSISTENCY.md) | Two-view consistency design and analysis. |
+| [`TWO_VIEW_CONSISTENCY_PRODUCTION_PATH.md`](TWO_VIEW_CONSISTENCY_PRODUCTION_PATH.md) | Two-view consistency production integration path. |
+| [`TWO_VIEW_CANONICALIZATION.md`](TWO_VIEW_CANONICALIZATION.md) | Two-view canonicalization spec. |
+| [`ORACLE_RECTIFIED_FACES_DESIGN.md`](ORACLE_RECTIFIED_FACES_DESIGN.md) | Oracle rectified-faces design doc. |
+
+### 🟢 Active — system / pipeline specs (legacy + geometry)
 
 | File | What it documents |
 |---|---|
@@ -46,6 +78,28 @@
 | [`REMBG_PROPOSERS.md`](REMBG_PROPOSERS.md) | rembg-based proposers (silhouette → anchors). |
 | [`CV_LOCAL_IMPROVEMENTS.md`](CV_LOCAL_IMPROVEMENTS.md) | cv-local production-side improvements roadmap. |
 | [`SYNTHETIC_CORPUS.md`](SYNTHETIC_CORPUS.md) | Synthetic-corpus rendering for training/eval. |
+
+### 🟡 Historical — phase / trust / audit experiments
+
+| File | Outcome |
+|---|---|
+| `PHASE_2A_PHASE_CONFIDENCE_CALIBRATION.md` | Phase 2A: solo phase_sep ceiling 45.8% recall / 9.2% FPR — below bar. |
+| `PHASE_2B_TRUST_SIGNAL_MATRIX.md` | Phase 2B initial: 18 rules, closest at 66.7%/30.3% — no rule clears both bars. |
+| `PHASE_2B_TRUST_SIGNAL_MATRIX_RECOMPUTED.md` | Phase 2B recomputed: 54 rules over 6 signals — hand-tuned rules can't clear both bars. Pivoted to constrained inference. |
+| `PHASE_4_TRUST_RANKER_V1.md` | Phase 4 learned ranker — superseded by constrained inference approach. |
+| `PIPELINE_PHASE_PARITY_FAILURE_MODES.md` | Phase/parity failure mode taxonomy. |
+| `AFFINE_PHASE_TIEBREAKER_REPORT.md` | Affine phase tiebreaker analysis. |
+| `AXIS_CORRECTNESS_REPORT.md` | Axis correctness measurement report. |
+| `CENTER_COLOR_PHASE_GATE_DIAGNOSTIC.md` | Center-color phase gate diagnostic. |
+| `CENTER_COLOR_PHASE_METRIC_REPORT.md` | Center-color phase metric report. |
+| `CHIRALITY_DETECTOR_FAILURE_ANALYSIS.md` | Chirality detector failure analysis. |
+| `FIT_STAGE_TRANSITION_REPORT.md` | Fit stage transition analysis. |
+| `CORPUS_SETS_63_68_REPORT.md` | Sets 63–68 corpus expansion report. |
+| `PROCRUSTES_CORRESPONDENCE_REPORT.md` | Procrustes correspondence quality report. |
+| `PROJECTIVE_VERTEX_REPORT.md` | Projective vertex construction report. |
+| `SET_11_GUARD_TUNING_WALKTHROUGH.md` | Set 11 guard-tuning walkthrough (blocked by data inconsistencies). |
+| `YAW_PROBE_PROPOSED.md` | Proposed yaw probe design. |
+| `QWEN_AUDIT_PROTOCOL.md` | Qwen audit lane protocol (calibration-phase, informational). |
 
 ### 🟡 Historical — negative results & superseded experiments
 
@@ -128,11 +182,58 @@
 | `label_geometry_baseline.py` | Baseline geometry labeling tool. |
 | `propose_geometry_labels.py` | Propose geometry labels for human review. |
 
-### 🟢 Active — production recognizer support
+### 🟢 Active — constrained inference pipeline
 
 | Script | What it does |
 |---|---|
-| `recognize_pair.py` | Recognize an A+B pair (production-style). |
+| **`benchmark_constrained_recognizer.py`** | **Deployed constrained recognizer benchmark.** Runs corpus against deployed or local endpoint, emits latency + accuracy scoreboard. Supports `--only-sets` and `--max-sides` for targeted profiling. |
+| **`score_deployed_recognizer.py`** | **Score deployed recognizer** against GT corpus with full accuracy + latency breakdown. |
+| **`validate_constrained_inference_promotion.py`** | **Promotion gate validation.** Runs GT-free production-shaped gate on guarded pair-threshold candidate. |
+| **`validate_constrained_recognize_mode.py`** | **Constrained vs legacy mode validation.** Compares constrained and legacy paths at the recognizer boundary. |
+| **`report_recognition_events.py`** | **Recognition event reporter.** Queries durable event log for metadata-only production summaries (success/reject, latency, source). |
+| `constrained_inference_gate.py` | Constrained inference gate evaluation logic. |
+| `hull_label_pair_selector.py` | Guarded pair-threshold selector for constrained inference. |
+| `hull_label_color_repair.py` | Deterministic color repair on hull-label candidates. |
+| `hull_label_acceptance.py` | Hull-label acceptance gate evaluator. |
+| `hull_label_assembly.py` | Hull-label assembly (slot → WCA facelet mapping). |
+| `hull_label_yaw.py` | Hull-label yaw inference. |
+| `rectify_via_hull_labels.py` | Hull-label-based face rectification. |
+| `measure_hull_labels_corpus.py` | Corpus-wide hull-label measurement. |
+| `analyze_shadow_traces.py` | Shadow-trace analyzer for Tier 1 hull-label gates. |
+| `summarize_constrained_shadow_log.py` | Summarize constrained shadow JSONL log. |
+| `render_current_scoreboard_failure_gallery.py` | Render visual walkthrough of scoreboard failures. |
+| `render_production_vs_oracle_contact_sheet.py` | Production vs oracle rectified-face contact sheet. |
+| `build_oracle_rectified_faces.py` | Build oracle rectified-face dataset. |
+| `shared_cubie_consistency.py` | Two-view shared-cubie consistency analysis. |
+| `validate_hull_label_tier1_shadow.py` | Shadow validation for Tier 1 pipeline. |
+| `two_view_canonicalization.py` | Two-view canonicalization utility. |
+
+### 🟢 Active — constrained inference diagnostics
+
+| Script | What it does |
+|---|---|
+| `diagnose_hull_label_color_repair.py` | Diagnose color repair across corpus. |
+| `diagnose_hull_label_legal_repair.py` | Diagnose legal repair variants. |
+| `diagnose_hull_label_mask_thresholds.py` | Diagnose mask threshold selector. |
+| `diagnose_hull_label_yaw_source.py` | Diagnose yaw source comparison. |
+| `diagnose_pair_threshold_repair.py` | Diagnose pair-threshold vs per-side selection. |
+| `diagnose_split_cubie_consistency.py` | Diagnose two-view split-cubie consistency. |
+| `diagnose_projective_vertex.py` | Diagnose projective vertex construction. |
+| `diagnose_procrustes_correspondence.py` | Diagnose Procrustes correspondence quality. |
+| `diagnose_affine_phase_tiebreakers.py` | Diagnose affine phase tiebreaker decisions. |
+| `diagnose_center_color_phase_gate.py` | Diagnose center-color phase gate. |
+| `diagnose_chirality_failures.py` | Diagnose chirality detection failures. |
+| `diagnose_fit_stage_transitions.py` | Diagnose fit stage transitions. |
+| `diagnose_pipeline_phase_parity.py` | Diagnose pipeline phase/parity failure modes. |
+| `oracle_color_evidence_report.py` | Oracle color evidence comparison report. |
+| `projective_vertex.py` | Projective vertex from vanishing-point construction. |
+| `corner_conventions.py` | Corner convention reference utility. |
+
+### 🟢 Active — legacy production recognizer support
+
+| Script | What it does |
+|---|---|
+| `recognize_pair.py` | Recognize an A+B pair (legacy production-style). |
 | `audit_recognition_pair.py` | Audit production output against ground truth. |
 | `extract_color_samples.py` | Extract per-sticker color samples for training. |
 | `extract_clean_dataset.py` | Curate a clean labeled dataset. |
@@ -192,6 +293,18 @@
 | `export_sam3_masks_v0.py` | SAM3 mask export utility (v0). |
 | `extract_sam3_masks.py` | SAM3 mask extraction utility. |
 | `geometry_first_face_split_v0.py` | Geometry-first face split — superseded by hybrid pipeline. |
+
+### 🟡 Historical — phase / trust diagnostic scripts
+
+| Script | What it answered |
+|---|---|
+| `phase2a_phase_confidence_calibration.py` | Phase 2A confidence calibration — below bar. |
+| `phase2b_recompute.py` | Phase 2B recomputed trust signal matrix. |
+| `phase4_trust_ranker.py` | Phase 4 learned ranker — superseded. |
+| `measure_axis_correctness.py` | Axis correctness measurement. |
+| `probe_center_color_phase_metric.py` | Center-color phase metric probe. |
+| `probe_wrong_call_feature_separation.py` | Wrong-call feature separation probe. |
+| `probe_yaw_from_right_slot_center.py` | Yaw-from-right-slot-center probe. |
 
 ### 🟡 Historical — diagnostic probes (one-shot)
 

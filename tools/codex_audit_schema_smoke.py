@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -112,7 +113,7 @@ def _parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--codex-cli-path",
-        default=DEFAULT_CODEX_CLI_PATH,
+        default=os.environ.get("CODEX_CLI_PATH", DEFAULT_CODEX_CLI_PATH),
         help="Path to the Codex CLI binary.",
     )
     parser.add_argument(

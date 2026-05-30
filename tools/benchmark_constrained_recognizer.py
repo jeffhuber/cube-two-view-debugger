@@ -55,6 +55,7 @@ DEFAULT_STAGES = (
     "selectGuardedPair.fullGuardSelection",
     "selectGuardedPair.selectedFullPairEvaluatePair",
     "selectGuardedPair.yawInference",
+    "selectGuardedPair.repairCanonicalLight",
     "selectGuardedPair.repairCanonicalOnly",
     "selectGuardedPair.repairWithLegal",
     "selectGuardedPair.rankAndScore",
@@ -172,6 +173,7 @@ def _run_once(
             "fullEvaluatedPairCount": pair.get("fullEvaluatedPairCount"),
             "lightEvaluatedPairCount": pair.get("lightEvaluatedPairCount"),
             "possiblePairCount": pair.get("possiblePairCount"),
+            "cheapCurrentCanonicalShadow": pair.get("cheapCurrentCanonicalShadow"),
         },
     }
 
@@ -200,6 +202,14 @@ def _counts(values: Iterable[Any]) -> Dict[str, int]:
     return dict(sorted(counts.items()))
 
 
+def _cheap_current_shadow(row: Mapping[str, Any]) -> Mapping[str, Any]:
+    pair = row.get("pairThresholdSelection")
+    if not isinstance(pair, Mapping):
+        return {}
+    shadow = pair.get("cheapCurrentCanonicalShadow")
+    return shadow if isinstance(shadow, Mapping) else {}
+
+
 def build_summary(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
     variants = sorted({str(row.get("variant")) for row in rows})
     by_variant: Dict[str, Any] = {}
@@ -222,6 +232,14 @@ def build_summary(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
                 (row.get("pairThresholdSelection") or {}).get("selectionReason")
                 for row in variant_rows
             ),
+            "cheapCurrentCanonicalShadowCounts": {
+                "evaluated": sum(1 for row in variant_rows if _cheap_current_shadow(row)),
+                "couldHaveSkippedCurrentLegal": _counts(
+                    _cheap_current_shadow(row).get("couldHaveSkippedCurrentLegalForThisInput")
+                    for row in variant_rows
+                    if _cheap_current_shadow(row)
+                ),
+            },
             "wallMs": _metric([
                 float(row["wallMs"])
                 for row in variant_rows
@@ -267,8 +285,11 @@ def render_report(payload: Mapping[str, Any]) -> str:
         "| Variant | Rows | Exact | Wall p50 | Wall p90 | Prepare p50 | rembg A p50 | rembg B p50 | Hull wall p50 | Guarded pair max |",
         "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
+    shadow_lines: List[str] = []
     for variant, row in summary["variants"].items():
         stages = row["stageTimingsMs"]
+        shadow = row.get("cheapCurrentCanonicalShadowCounts") or {}
+        shadow_wins = (shadow.get("couldHaveSkippedCurrentLegal") or {}).get("True", 0)
         lines.append(
             f"| `{variant}` | {row['rowCount']} | {row['exactCount']} | "
             f"{row['wallMs'].get('p50', 'n/a')} | {row['wallMs'].get('p90', 'n/a')} | "
@@ -277,6 +298,14 @@ def render_report(payload: Mapping[str, Any]) -> str:
             f"{stages['hullFitWall'].get('p50', 'n/a')} | "
             f"{stages['selectGuardedPair'].get('max', 'n/a')} |"
         )
+        if shadow.get("evaluated"):
+            shadow_lines.append(
+                f"  - `{variant}` cheap-current shadow: evaluated "
+                f"`{shadow.get('evaluated')}`, potential current-legal skips `{shadow_wins}`."
+            )
+    if shadow_lines:
+        lines.extend(["", "Cheap-current shadow:", ""])
+        lines.extend(shadow_lines)
     lines.extend(["", "## Slowest Guarded Pair Rows", ""])
     if not summary["slowestSelectGuardedPairRows"]:
         lines.append("_None._")

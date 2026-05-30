@@ -1063,7 +1063,10 @@ def _prewarm_constrained_dependencies() -> Dict[str, float]:
 
     from tools.corner_conventions import wca_face_by_slot
     from tools.global_cube_model import _slot_center_faces_from_rectified
-    from tools.hull_label_color_repair import repair_from_hull_label_fits
+    from tools.hull_label_color_repair import (
+        canonical_count_repair_from_hull_label_fits,
+        repair_from_hull_label_fits,
+    )
     from tools.hull_label_assembly import convention_orientation_for_slot
     from tools.rectify_via_hull_labels import DEFAULT_MASK_THRESHOLDS, select_hull_label_threshold_fit
 
@@ -1075,6 +1078,7 @@ def _prewarm_constrained_dependencies() -> Dict[str, float]:
         remove,
         wca_face_by_slot,
         _slot_center_faces_from_rectified,
+        canonical_count_repair_from_hull_label_fits,
         repair_from_hull_label_fits,
         convention_orientation_for_slot,
         DEFAULT_MASK_THRESHOLDS,
@@ -1188,7 +1192,10 @@ def prepare_llm_rectified_input(
 
     from tools.corner_conventions import wca_face_by_slot
     from tools.global_cube_model import _slot_center_faces_from_rectified
-    from tools.hull_label_color_repair import repair_from_hull_label_fits
+    from tools.hull_label_color_repair import (
+        canonical_count_repair_from_hull_label_fits,
+        repair_from_hull_label_fits,
+    )
     from tools.hull_label_assembly import convention_orientation_for_slot
     from tools.rectify_via_hull_labels import DEFAULT_MASK_THRESHOLDS, select_hull_label_threshold_fit
     stage_timings_ms["imports"] = _elapsed_ms(stage_started)
@@ -1335,6 +1342,7 @@ def prepare_llm_rectified_input(
         side_entries: Mapping[str, Mapping[str, Any]],
         *,
         include_legal_repairs: bool = True,
+        canonical_light_only: bool = False,
         profile: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         fits_for_yaw = {side: side_entries[side]["fit"] for side in ("A", "B")}
@@ -1355,26 +1363,29 @@ def prepare_llm_rectified_input(
         else:
             selected = yaw_quarter_turns % 4
             source = "explicit"
+        repair_stage = (
+            "repairCanonicalLight"
+            if canonical_light_only
+            else ("repairWithLegal" if include_legal_repairs else "repairCanonicalOnly")
+        )
         try:
             stage_started = time.perf_counter()
-            repair = repair_from_hull_label_fits(
-                side_fits=side_entries,
-                yaw_quarter_turns=selected,
-                include_legal_repairs=include_legal_repairs,
-            )
-            if profile is not None:
-                add_profile_time(
-                    profile,
-                    "repairWithLegal" if include_legal_repairs else "repairCanonicalOnly",
-                    stage_started,
+            if canonical_light_only:
+                repair = canonical_count_repair_from_hull_label_fits(
+                    side_fits=side_entries,
+                    yaw_quarter_turns=selected,
                 )
+            else:
+                repair = repair_from_hull_label_fits(
+                    side_fits=side_entries,
+                    yaw_quarter_turns=selected,
+                    include_legal_repairs=include_legal_repairs,
+                )
+            if profile is not None:
+                add_profile_time(profile, repair_stage, stage_started)
         except Exception as exc:  # noqa: BLE001
             if profile is not None:
-                add_profile_time(
-                    profile,
-                    "repairWithLegal" if include_legal_repairs else "repairCanonicalOnly",
-                    stage_started,
-                )
+                add_profile_time(profile, repair_stage, stage_started)
                 increment_profile_count(profile, "repairErrors")
             return {
                 "status": "repair_error",
@@ -1400,6 +1411,7 @@ def prepare_llm_rectified_input(
         side_entries: Mapping[str, Mapping[str, Any]],
         *,
         include_legal_repairs: bool = True,
+        canonical_light_only: bool = False,
         profile: Optional[Dict[str, Any]] = None,
         profile_stage: Optional[str] = None,
     ) -> Dict[str, Any]:
@@ -1407,6 +1419,7 @@ def prepare_llm_rectified_input(
         evaluation = evaluate_pair(
             side_entries,
             include_legal_repairs=include_legal_repairs,
+            canonical_light_only=canonical_light_only,
             profile=profile,
         )
         if profile is not None and profile_stage:
@@ -1524,6 +1537,7 @@ def prepare_llm_rectified_input(
         "stageTimingsMs": {},
         "counts": {},
     }
+    cheap_current_canonical_shadow: Optional[Dict[str, Any]] = None
     current_combo = compact_combo(
         current_thresholds,
         current_side_entries,
@@ -1553,7 +1567,7 @@ def prepare_llm_rectified_input(
             compact_combo(
                 {"A": threshold_a, "B": threshold_b},
                 {"A": entry_a, "B": entry_b},
-                include_legal_repairs=False,
+                canonical_light_only=True,
                 profile=select_guarded_pair_profile,
                 profile_stage="lightPair",
             )
@@ -1561,6 +1575,33 @@ def prepare_llm_rectified_input(
         ]
         add_profile_time(select_guarded_pair_profile, "lightPairSearch", profile_stage_started)
         light_evaluated_pair_count = len(light_pair_candidates)
+        current_light_combo = next(
+            (
+                combo
+                for combo in light_pair_candidates
+                if combo.get("thresholds") == current_thresholds
+            ),
+            None,
+        )
+        if current_light_combo is not None:
+            current_canonical_valid = repair_valid(current_light_combo["evaluation"])
+            current_legal_valid = repair_valid(current_combo["evaluation"])
+            cheap_current_canonical_shadow = {
+                "schema": "cheap_current_canonical_shadow_v1",
+                "mode": "observed_after_full_current_repair",
+                "currentCanonicalValid": current_canonical_valid,
+                "currentLegalValid": current_legal_valid,
+                "currentCanonicalProductionRank": current_light_combo.get("productionRank"),
+                "currentLegalProductionRank": current_combo.get("productionRank"),
+                "couldHaveSkippedCurrentLegalForThisInput": (
+                    not current_canonical_valid and not current_legal_valid
+                ),
+            }
+            increment_profile_count(select_guarded_pair_profile, "currentCanonicalShadowEvaluations")
+            if current_canonical_valid:
+                increment_profile_count(select_guarded_pair_profile, "currentCanonicalShadowValid")
+            if cheap_current_canonical_shadow["couldHaveSkippedCurrentLegalForThisInput"]:
+                increment_profile_count(select_guarded_pair_profile, "currentLegalSkipShadowWins")
         profile_stage_started = time.perf_counter()
         canonical_light_candidates = [
             combo
@@ -1683,6 +1724,7 @@ def prepare_llm_rectified_input(
         "possiblePairCount": (
             len(threshold_entries_by_side["A"]) * len(threshold_entries_by_side["B"])
         ),
+        "cheapCurrentCanonicalShadow": cheap_current_canonical_shadow,
         "profile": select_guarded_pair_profile,
     }
 
@@ -2647,6 +2689,16 @@ def _compact_constrained_event_signal(signal: Any) -> Dict[str, Any]:
         return {}
     gate = signal.get("promotionGate") if isinstance(signal.get("promotionGate"), Mapping) else {}
     fast_reject = signal.get("fastReject") if isinstance(signal.get("fastReject"), Mapping) else {}
+    pair_selection = (
+        signal.get("pairThresholdSelection")
+        if isinstance(signal.get("pairThresholdSelection"), Mapping)
+        else {}
+    )
+    cheap_current_shadow = (
+        pair_selection.get("cheapCurrentCanonicalShadow")
+        if isinstance(pair_selection.get("cheapCurrentCanonicalShadow"), Mapping)
+        else {}
+    )
     return {
         "selected": signal.get("selected"),
         "fallbackToLegacy": signal.get("fallbackToLegacy"),
@@ -2662,6 +2714,19 @@ def _compact_constrained_event_signal(signal: Any) -> Dict[str, Any]:
         "fastReject": {
             "source": fast_reject.get("source"),
         } if fast_reject else None,
+        "pairThresholdSelection": {
+            "selectionReason": pair_selection.get("selectionReason"),
+            "searchMode": pair_selection.get("searchMode"),
+            "currentThresholds": pair_selection.get("currentThresholds"),
+            "selectedThresholds": pair_selection.get("selectedThresholds"),
+            "cheapCurrentCanonicalShadow": {
+                "currentCanonicalValid": cheap_current_shadow.get("currentCanonicalValid"),
+                "currentLegalValid": cheap_current_shadow.get("currentLegalValid"),
+                "couldHaveSkippedCurrentLegalForThisInput": cheap_current_shadow.get(
+                    "couldHaveSkippedCurrentLegalForThisInput"
+                ),
+            } if cheap_current_shadow else None,
+        } if pair_selection else None,
     }
 
 

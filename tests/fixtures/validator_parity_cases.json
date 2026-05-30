@@ -1,0 +1,63 @@
+{
+  "schema": "cube.validatorParityCases.v1",
+  "cases": [
+    {
+      "name": "solved",
+      "state": "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB",
+      "valid": true,
+      "errors": []
+    },
+    {
+      "name": "wrong_length",
+      "state": "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBB",
+      "valid": false,
+      "errors": ["state_length_not_54"]
+    },
+    {
+      "name": "bad_counts",
+      "state": "URUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB",
+      "valid": false,
+      "errors": ["U_count_not_9", "R_count_not_9"]
+    },
+    {
+      "name": "swapped_centers",
+      "state": "UUUURUUUURRRRURRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB",
+      "valid": false,
+      "errors": ["U_center_invalid", "R_center_invalid"]
+    },
+    {
+      "name": "ud_corner_sticker_swap",
+      "state": "UUUUUUUUDRRRRRRRRRFFFFFFFFFDDUDDDDDDLLLLLLLLLBBBBBBBBB",
+      "valid": false,
+      "errors": [
+        "corner_0_invalid_color_set",
+        "corner_4_invalid_color_set",
+        "corner_cubie_count_invalid"
+      ]
+    },
+    {
+      "name": "mirrored_corner",
+      "state": "UUUUUUUUUFRRRRRRRRFFRFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB",
+      "valid": false,
+      "errors": ["corner_0_invalid_color_set", "corner_cubie_count_invalid"]
+    },
+    {
+      "name": "edge_flip",
+      "state": "UUUUURUUURURRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB",
+      "valid": false,
+      "errors": ["edge_orientation_invalid"]
+    },
+    {
+      "name": "corner_twist",
+      "state": "UUUUUUUUFURRRRRRRRFFRFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB",
+      "valid": false,
+      "errors": ["corner_orientation_invalid"]
+    },
+    {
+      "name": "corner_permutation_parity",
+      "state": "UUUUUUUUUFRRRRRRRRRFLFFFFFFDDDDDDDDDLLFLLLLLLBBBBBBBBB",
+      "valid": false,
+      "errors": ["permutation_parity_invalid"]
+    }
+  ]
+}

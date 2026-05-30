@@ -1,9 +1,22 @@
+import json
 from itertools import permutations
+from pathlib import Path
 
 from rubik_recognizer.validation import _parity, is_valid_state, validate_state
 
 
 SOLVED = "U" * 9 + "R" * 9 + "F" * 9 + "D" * 9 + "L" * 9 + "B" * 9
+VALIDATOR_PARITY_CASES = json.loads(
+    (Path(__file__).parent / "fixtures" / "validator_parity_cases.json").read_text()
+)["cases"]
+
+
+def test_validate_state_matches_shared_parity_fixtures():
+    for case in VALIDATOR_PARITY_CASES:
+        result = validate_state(case["state"])
+        assert result.valid is case["valid"], case["name"]
+        assert result.errors == case["errors"], case["name"]
+        assert is_valid_state(case["state"]) is case["valid"], case["name"]
 
 
 def test_validate_state_accepts_solved_cube():

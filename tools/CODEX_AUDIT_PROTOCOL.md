@@ -95,6 +95,17 @@ Add `--dry-run` to print the audit comment to stdout instead of posting.
 Exit codes: 0 (success), 1 (error), 2 (stale/unknown — caller may
 requeue), 20 (active matching audit already running).
 
+Structured-output smoke/preflight:
+
+```bash
+tools/codex_audit_schema_smoke.py
+```
+
+Run this after Codex CLI upgrades, schema edits, or repeated UNKNOWN
+audits. It performs one cheap generic `codex exec --output-schema` call
+against the committed schema and validates the returned artifact with
+the same wrapper parser used by PR audits.
+
 ### Local audit handoff log / duplicate guard
 
 `tools/audit_handoff_log.py` stores local audit events and active locks
@@ -334,18 +345,25 @@ for the now-paused Qwen lane, kept on disk as a starting point.)
 Qwen was the original calibration partner before being paused; see
 `tools/QWEN_AUDIT_PROTOCOL.md` for that lane's design.
 
-## Calibration plan
+## Structured-output bake-in plan
 
-After 10–20 PRs of Codex audits in parallel with Devin:
+As of cube-snap#258 / ctvd#405, Codex already has merge-authority
+eligibility through the structured `cubesnap.codexAudit.v1` artifact and
+the `codex-audit-done` / `codex-audit-blocked` / `needs-codex-audit`
+trailers.
 
-- If Codex's findings on Devin-PASS PRs are mostly real (>80% true positive
-  rate when independently checked), promote Codex to merge-authority
-  eligibility (update `CLAUDE.md` to also accept `codex-audit-done`).
-- If Codex's false-positive rate is high, tighten the prompt or fall
-  back to "Codex as iterative reviewer, Devin as final-state gate."
-- Independent of merge authority, Codex is already valuable as an
-  iterative-review tool BEFORE landing — catches issues that would
-  otherwise reach Devin's review queue.
+For the next 5–10 clean audits:
+
+- Treat structured labels/trailers as the only live Codex merge signal.
+- Track any UNKNOWNs and inspect local CLI-failure dumps only when the
+  structured artifact genuinely fails validation.
+- Use `tools/codex_audit_schema_smoke.py` after CLI upgrades, schema
+  edits, or repeated UNKNOWNs to catch CLI/schema drift before a real PR
+  audit gets stuck.
+
+After the structured lane proves stable, remove the legacy
+`parse_codex_output` / stderr-fallback parser machinery and the
+captured-PASS operational workaround from docs and code.
 
 ## Decommissioning
 
@@ -353,6 +371,8 @@ If Codex calibration doesn't pan out, cleanup is:
 
 ```bash
 rm tools/codex_audit_pr.py tools/codex_audit_labeler.py
+rm tools/run_codex_audit_pr.sh tools/codex_audit_verdict.schema.json
+rm tools/codex_audit_schema_smoke.py
 rm .github/workflows/codex-audit-labeler.yml
 rm tools/CODEX_AUDIT_PROTOCOL.md
 rm tests/test_codex_audit_pr.py

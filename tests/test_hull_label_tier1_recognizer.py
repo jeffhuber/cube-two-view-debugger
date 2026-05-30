@@ -371,7 +371,11 @@ def test_constrained_prefer_mode_returns_candidate_when_gate_accepts(tmp_path, m
     )
 
     assert recognizer.modes == []
-    assert prepare_kwargs == [{"include_contact_sheets": False}]
+    assert prepare_kwargs == [{
+        "include_contact_sheets": False,
+        "hull_fit_mode": None,
+        "max_side": 1600,
+    }]
     assert payload["status"] == "success"
     assert payload["state"] == SOLVED_STATE
     signal = payload["recognitionSignals"]["constrainedInference"]

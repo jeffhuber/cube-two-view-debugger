@@ -1320,13 +1320,28 @@ def prepare_llm_rectified_input(
         )
         return int(threshold), dict(entry)
 
+    def add_profile_time(profile: Dict[str, Any], name: str, started: float) -> None:
+        timings = profile.setdefault("stageTimingsMs", {})
+        timings[name] = round(
+            float(timings.get(name) or 0.0) + _elapsed_ms(started),
+            2,
+        )
+
+    def increment_profile_count(profile: Dict[str, Any], name: str, amount: int = 1) -> None:
+        counts = profile.setdefault("counts", {})
+        counts[name] = int(counts.get(name) or 0) + int(amount)
+
     def evaluate_pair(
         side_entries: Mapping[str, Mapping[str, Any]],
         *,
         include_legal_repairs: bool = True,
+        profile: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         fits_for_yaw = {side: side_entries[side]["fit"] for side in ("A", "B")}
+        stage_started = time.perf_counter()
         yaw_inference = _infer_yaw_from_rectified_fits(fits_for_yaw)
+        if profile is not None:
+            add_profile_time(profile, "yawInference", stage_started)
         if yaw_quarter_turns is None:
             if not yaw_inference.get("accepted"):
                 return {
@@ -1341,12 +1356,26 @@ def prepare_llm_rectified_input(
             selected = yaw_quarter_turns % 4
             source = "explicit"
         try:
+            stage_started = time.perf_counter()
             repair = repair_from_hull_label_fits(
                 side_fits=side_entries,
                 yaw_quarter_turns=selected,
                 include_legal_repairs=include_legal_repairs,
             )
+            if profile is not None:
+                add_profile_time(
+                    profile,
+                    "repairWithLegal" if include_legal_repairs else "repairCanonicalOnly",
+                    stage_started,
+                )
         except Exception as exc:  # noqa: BLE001
+            if profile is not None:
+                add_profile_time(
+                    profile,
+                    "repairWithLegal" if include_legal_repairs else "repairCanonicalOnly",
+                    stage_started,
+                )
+                increment_profile_count(profile, "repairErrors")
             return {
                 "status": "repair_error",
                 "yawInference": yaw_inference,
@@ -1371,17 +1400,31 @@ def prepare_llm_rectified_input(
         side_entries: Mapping[str, Mapping[str, Any]],
         *,
         include_legal_repairs: bool = True,
+        profile: Optional[Dict[str, Any]] = None,
+        profile_stage: Optional[str] = None,
     ) -> Dict[str, Any]:
-        evaluation = evaluate_pair(side_entries, include_legal_repairs=include_legal_repairs)
+        stage_started = time.perf_counter()
+        evaluation = evaluate_pair(
+            side_entries,
+            include_legal_repairs=include_legal_repairs,
+            profile=profile,
+        )
+        if profile is not None and profile_stage:
+            add_profile_time(profile, f"{profile_stage}EvaluatePair", stage_started)
+            increment_profile_count(profile, f"{profile_stage}Evaluations")
+        stage_started = time.perf_counter()
         score_total = sum(
             float((side_entries[side].get("trace") or {}).get("sticker_score_total") or 0.0)
             for side in ("A", "B")
         )
+        production_rank = list(repair_rank(evaluation))
+        if profile is not None:
+            add_profile_time(profile, "rankAndScore", stage_started)
         return {
             "thresholds": {"A": int(thresholds["A"]), "B": int(thresholds["B"])},
             "sideFits": {side: dict(side_entries[side]) for side in ("A", "B")},
             "evaluation": evaluation,
-            "productionRank": list(repair_rank(evaluation)),
+            "productionRank": production_rank,
             "stickerScoreTotal": round(score_total, 2),
         }
 
@@ -1476,7 +1519,17 @@ def prepare_llm_rectified_input(
     record_stage("selectCurrentThresholds", stage_started)
 
     stage_started = time.perf_counter()
-    current_combo = compact_combo(current_thresholds, current_side_entries)
+    select_guarded_pair_profile: Dict[str, Any] = {
+        "schema": "select_guarded_pair_profile_v1",
+        "stageTimingsMs": {},
+        "counts": {},
+    }
+    current_combo = compact_combo(
+        current_thresholds,
+        current_side_entries,
+        profile=select_guarded_pair_profile,
+        profile_stage="currentPair",
+    )
     pair_candidates: List[Dict[str, Any]] = [current_combo]
     pair_search_mode = "current_valid_guard"
     light_evaluated_pair_count = 0
@@ -1484,32 +1537,54 @@ def prepare_llm_rectified_input(
     canonical_shortcut_candidates = 0
     if not repair_valid(current_combo["evaluation"]):
         pair_search_mode = "full_pair_search"
+        profile_stage_started = time.perf_counter()
         threshold_pairs: List[Tuple[int, Dict[str, Any], int, Dict[str, Any]]] = []
         for threshold_a, entry_a in sorted(threshold_entries_by_side["A"].items()):
             for threshold_b, entry_b in sorted(threshold_entries_by_side["B"].items()):
                 threshold_pairs.append((threshold_a, entry_a, threshold_b, entry_b))
+        add_profile_time(
+            select_guarded_pair_profile,
+            "thresholdPairEnumeration",
+            profile_stage_started,
+        )
 
+        profile_stage_started = time.perf_counter()
         light_pair_candidates = [
             compact_combo(
                 {"A": threshold_a, "B": threshold_b},
                 {"A": entry_a, "B": entry_b},
                 include_legal_repairs=False,
+                profile=select_guarded_pair_profile,
+                profile_stage="lightPair",
             )
             for threshold_a, entry_a, threshold_b, entry_b in threshold_pairs
         ]
+        add_profile_time(select_guarded_pair_profile, "lightPairSearch", profile_stage_started)
         light_evaluated_pair_count = len(light_pair_candidates)
+        profile_stage_started = time.perf_counter()
         canonical_light_candidates = [
             combo
             for combo in light_pair_candidates
             if (combo.get("productionRank") or [9])[0] == 0
         ]
         canonical_shortcut_candidates = len(canonical_light_candidates)
+        add_profile_time(
+            select_guarded_pair_profile,
+            "canonicalLightFilter",
+            profile_stage_started,
+        )
         if canonical_light_candidates:
             pair_search_mode = "canonical_valid_light_shortcut"
+            profile_stage_started = time.perf_counter()
             selected_light = choose_guarded_pair(
                 current_combo=current_combo,
                 candidates=canonical_light_candidates,
                 fallback_to_current_without_alternative=True,
+            )
+            add_profile_time(
+                select_guarded_pair_profile,
+                "lightGuardSelection",
+                profile_stage_started,
             )
             selected_thresholds = (selected_light or {}).get("thresholds") or current_thresholds
             selected_combo = compact_combo(
@@ -1518,6 +1593,8 @@ def prepare_llm_rectified_input(
                     "A": threshold_entries_by_side["A"][int(selected_thresholds["A"])],
                     "B": threshold_entries_by_side["B"][int(selected_thresholds["B"])],
                 },
+                profile=select_guarded_pair_profile,
+                profile_stage="selectedFullPair",
             )
             full_evaluated_pair_count += 1
             if selected_light is not None:
@@ -1525,24 +1602,47 @@ def prepare_llm_rectified_input(
             pair_candidates = light_pair_candidates
         else:
             pair_candidates = []
+            profile_stage_started = time.perf_counter()
             for threshold_a, entry_a, threshold_b, entry_b in threshold_pairs:
                 pair_candidates.append(compact_combo(
                     {"A": threshold_a, "B": threshold_b},
                     {"A": entry_a, "B": entry_b},
+                    profile=select_guarded_pair_profile,
+                    profile_stage="fullPair",
                 ))
+            add_profile_time(select_guarded_pair_profile, "fullPairSearch", profile_stage_started)
             full_evaluated_pair_count += len(pair_candidates)
+            profile_stage_started = time.perf_counter()
             selected_combo = choose_guarded_pair(
                 current_combo=current_combo,
                 candidates=pair_candidates,
                 fallback_to_current_without_alternative=True,
             )
+            add_profile_time(
+                select_guarded_pair_profile,
+                "fullGuardSelection",
+                profile_stage_started,
+            )
     else:
+        profile_stage_started = time.perf_counter()
         selected_combo = choose_guarded_pair(
             current_combo=current_combo,
             candidates=pair_candidates,
             fallback_to_current_without_alternative=True,
         )
+        add_profile_time(
+            select_guarded_pair_profile,
+            "currentGuardSelection",
+            profile_stage_started,
+        )
     record_stage("selectGuardedPair", stage_started)
+    for profile_stage_name, profile_stage_ms in (
+        select_guarded_pair_profile.get("stageTimingsMs") or {}
+    ).items():
+        if isinstance(profile_stage_ms, (int, float)):
+            stage_timings_ms[f"selectGuardedPair.{profile_stage_name}"] = float(
+                profile_stage_ms
+            )
     selected_eval = selected_combo["evaluation"]
     yaw_inference = selected_eval.get("yawInference") or {}
     if selected_eval.get("status") == "yaw_unavailable" and yaw_quarter_turns is None:
@@ -1583,6 +1683,7 @@ def prepare_llm_rectified_input(
         "possiblePairCount": (
             len(threshold_entries_by_side["A"]) * len(threshold_entries_by_side["B"])
         ),
+        "profile": select_guarded_pair_profile,
     }
 
     deterministic_repair = selected_eval.get("repair") or {

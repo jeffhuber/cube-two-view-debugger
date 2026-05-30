@@ -723,88 +723,32 @@ authorized.
   this codebase per the bake-off calibration — see
   `tools/CODEX_AUDIT_PROTOCOL.md`).
 
-  **Captured-PASS-via-dump counts as `codex-audit-done`.** The
-  current Codex CLI release (v0.133.0-alpha.1, model=gpt-5.5,
-  reasoning effort=xhigh) deterministically routes the final
-  review prose to stdout WITHOUT the column-0 `codex` marker the
-  wrapper parses for. The marker lands in stderr instead. **When
-  the captured stdout is a clean PASS** (substantive Codex
-  summary, zero `[P0]`/`[P1]`/`[P2]` finding bullets), the
-  wrapper falls to UNKNOWN and the comment carries the
-  `needs-codex-audit` trailer despite the review being clean.
-  Empirically observed on 87 of 87 dumps captured during the
-  cube-snap session ending 2026-05-27 — see
-  `tools/CODEX_AUDIT_PROTOCOL.md` for the investigation. The
-  `dump_cli_failure()` instrumentation (cube-snap#202 / ctvd#368)
-  captures Codex's actual stdout prose to
-  `~/.cache/cube-agent-audits/cli-failures/` on every such
-  occurrence. When that captured stdout (a) contains a substantive
-  Codex summary line, (b) shows zero `[P0]`/`[P1]`/`[P2]` finding
-  bullets, and (c) reads as a PASS verdict (e.g. "did not find any
-  actionable regressions", "no introduced correctness issues", "no
-  regressions introduced by this patch"), that captured prose IS
-  the Codex verdict. The mechanical UNKNOWN label is the CLI
-  behavior, not a missing review.
+  **Structured Codex audit is the normal Codex merge signal.** As
+  of cube-snap#258 / ctvd#405, the wrapper captures the built-in
+  review prose with `--output-last-message`, then uses generic
+  `codex exec --output-schema` to emit a `cubesnap.codexAudit.v1`
+  verdict artifact. Treat the formal `codex-audit-done`,
+  `codex-audit-blocked`, and `needs-codex-audit` labels/trailers
+  as authoritative for current audits.
 
-  **This path is UNKNOWN-only — it does NOT apply to
-  stderr-fallback BLOCKED.** When the wrapper's stderr-fallback
-  path accepts a blocker-shaped block from stderr, it posts a
-  BLOCKED verdict with the `codex-audit-blocked` trailer. That
-  outcome is a real BLOCKED audit and stays blocked. The
-  captured-PASS escape hatch below is strictly for the
-  UNKNOWN-classified case where the captured stdout has zero
-  blocker findings.
+  `needs-codex-audit` now means the head was stale or the
+  structured artifact failed validation (missing file, malformed
+  JSON, schema drift, or clean+"blocked" mismatch). Re-run the
+  audit or inspect the local CLI-failure dump; do not manually
+  convert UNKNOWN to PASS.
 
-  **Verify the dump matches the PR's current head before merging.**
-  Both the formal `codex-audit-done` label and the captured-PASS
-  dump are signals tied to a specific head SHA that can go stale
-  on later pushes. The labeler workflow (cube-snap#205 / ctvd#371)
-  clears `codex-audit-done` / `codex-audit-blocked` on every
-  `pull_request.synchronize` event, so the formal label path is
-  safely head-bound by the workflow itself. The captured-PASS dump
-  lives in the operator's local `~/.cache/` and persists across
-  pushes — so the operator MUST manually verify head-match before
-  using it:
-
-  ```bash
-  CURRENT=$(gh pr view <N> --repo <owner>/<repo> \
-    --json headRefOid --jq .headRefOid)
-  ls ~/.cache/cube-agent-audits/cli-failures/<owner>_<name>_pr<N>_${CURRENT:0:12}_*.log
-  grep "^# head_sha: $CURRENT$" <that-file>
-  ```
-
-  Both checks must pass. Mismatch = captured-PASS does NOT apply;
-  either re-run the audit or wait for the formal label.
-
-  **Transparency comment requirements.** Before merging on the
-  captured-PASS path, post a comment that names the dump file and
-  quotes Codex's actual verdict prose. Two phrasing constraints
-  from the labeler-prose-fallback shape:
-  - Do NOT use the exact phrase `Codex Audit: PASS` (or any
-    `Codex Audit [—–:-] PASS` variant) — the labeler's prose
-    fallback matches that pattern and would silently apply
-    `codex-audit-done` if your login ever ended up in
-    `CODEX_BOT_AUTHORS`. Use prose-only wording like "Captured
-    PASS verdict on `<sha>`" instead.
-  - Do NOT fabricate a `<!-- CODEX_AUDIT_STATE: codex-audit-done -->`
-    trailer — that would impersonate Codex.
-
-  Empirical basis: snap#202/#368/#201/#366/#204/#370 (three mirror
-  pairs across one session, all UNKNOWN with captured PASS, all
-  merged under user authorization on this exact pattern). Codex
-  caught both the head-match gap (P1) and the prose-fallback gap
-  (P2) on the first two rounds of cube-snap#205 / ctvd#371 itself;
-  the labeler-side `synchronize` handler in the same PR pair
-  closes the head-stale-label class entirely.
+  Captured-PASS-via-dump is legacy only. It existed for pre-#258 /
+  pre-#405 alpha-CLI audits where stdout/stderr marker drift made
+  clean PASSes unparseable. Do not use that path for new merges
+  unless explicitly debugging an old pre-structured audit comment
+  on an unchanged head.
 
   Greptile is informational only and never required for merge. Do
   NOT extend this to PRs owned by Codex-the-collaborator
   (different from `codex-audit-done`), to PRs missing both
-  audit-done labels (and also missing a captured-PASS dump per the
-  variant above), or to anything that needs `--admin` to bypass
-  branch protection. If the user redirects
-  elsewhere ("work on X instead"), the merge auth doesn't carry
-  over to that next thing.
+  audit-done labels, or to anything that needs `--admin` to bypass
+  branch protection. If the user redirects elsewhere ("work on X
+  instead"), the merge auth doesn't carry over to that next thing.
 - Merging despite unresolved or ambiguous Devin comments, failing
   checks, merge conflicts, or anything requiring `--admin`
 - Sending external messages (emails, Slack DMs to non-collaborators)
@@ -1143,6 +1087,25 @@ authoritative `<!-- CODEX_AUDIT_STATE: ... -->` trailer, and
 `.github/workflows/codex-audit-labeler.yml` on `issue_comment`)
 flips the label.
 
+Structured verdict path (cube-snap#258 / ctvd#405): the wrapper
+runs built-in `codex exec review` for review quality, captures its
+final prose with `--output-last-message`, then runs generic
+`codex exec --output-schema` outside the PR worktree using the
+trusted schema in this checkout. UNKNOWN means the structured
+artifact was stale or failed validation; it is not an implicit pass.
+CLI-failure dumps are diagnostic only.
+
+Bake-in: track the next 5-10 structured audits. If repeated UNKNOWNs
+or schema drift appear, inspect dumps and fix the wrapper/schema.
+After the structured lane proves stable, remove the legacy
+`parse_codex_output` / stderr-fallback parser machinery and the old
+captured-PASS operational workaround.
+
+Schema smoke: run `tools/codex_audit_schema_smoke.py` after Codex CLI
+upgrades, schema edits, or repeated UNKNOWNs. It checks that generic
+`codex exec --output-schema` still accepts the committed schema and
+that the wrapper parser validates the returned artifact.
+
 Before starting a manual audit outside the wrapper, check
 `tools/audit_handoff_log.py status --repo OWNER/REPO --pr N`; if a
 matching active audit exists, do not start another one. Treat it as
@@ -1163,6 +1126,8 @@ Mirror invariant — these files MUST stay byte-identical across
 - `tools/post_review.sh`
 - `tools/safe_gh_comment.py`
 - `tools/claude_session_start_sweep.sh`
+- `tools/codex_audit_verdict.schema.json`
+- `tools/codex_audit_schema_smoke.py`
 - `tools/CODEX_AUDIT_PROTOCOL.md`
 - `.github/workflows/codex-audit-labeler.yml`
 

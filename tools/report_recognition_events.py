@@ -34,6 +34,7 @@ DEFAULT_STAGES = (
     "hullFitB",
     "selectGuardedPair",
     "selectGuardedPair.thresholdPairEnumeration",
+    "selectGuardedPair.currentCanonicalProbeEvaluatePair",
     "selectGuardedPair.currentPairEvaluatePair",
     "selectGuardedPair.currentGuardSelection",
     "selectGuardedPair.lightPairEvaluatePair",
@@ -93,6 +94,30 @@ def _metric(values: Sequence[float]) -> Dict[str, Any]:
         "max": round(ordered[-1], 2),
         "avg": round(sum(ordered) / len(ordered), 2),
     }
+
+
+def _latency_drivers(stage_metrics: Mapping[str, Mapping[str, Any]], *, limit: int = 8) -> List[Dict[str, Any]]:
+    rows = [
+        {
+            "stage": stage,
+            "count": metric.get("count", 0),
+            "p50": metric.get("p50"),
+            "p90": metric.get("p90"),
+            "max": metric.get("max"),
+            "avg": metric.get("avg"),
+        }
+        for stage, metric in stage_metrics.items()
+        if int(metric.get("count") or 0) > 0 and isinstance(metric.get("p90"), (int, float))
+    ]
+    return sorted(
+        rows,
+        key=lambda row: (
+            float(row.get("p90") or 0.0),
+            float(row.get("max") or 0.0),
+            str(row.get("stage") or ""),
+        ),
+        reverse=True,
+    )[:limit]
 
 
 def _since_iso(hours: Optional[float]) -> Optional[str]:
@@ -179,6 +204,29 @@ def build_summary(rows: Sequence[Mapping[str, Any]], *, recent_limit: int = 20) 
         for row in rows
         if _cheap_current_shadow(row)
     ]
+    stage_metrics = {
+        stage: _metric(values)
+        for stage, values in stage_values.items()
+    }
+    slowest_attempts = sorted(
+        [
+            {
+                "createdAt": row.get("created_at"),
+                "setId": row.get("set_id"),
+                "status": row.get("status"),
+                "category": row.get("recognition_category"),
+                "recommendedMethod": row.get("recommended_method"),
+                "latencyMs": row.get("latency_ms"),
+                "clientSource": row.get("client_source"),
+                "pairSelectionReason": _pair_selection(row).get("selectionReason"),
+                "pairSearchMode": _pair_selection(row).get("searchMode"),
+            }
+            for row in rows
+            if isinstance(row.get("latency_ms"), (int, float))
+        ],
+        key=lambda row: float(row.get("latencyMs") or 0.0),
+        reverse=True,
+    )[:10]
     return {
         "totalEvents": len(rows),
         "statusCounts": _counts(row.get("status") for row in rows),
@@ -207,10 +255,9 @@ def build_summary(rows: Sequence[Mapping[str, Any]], *, recent_limit: int = 20) 
             for row in rows
             if isinstance(row.get("prepare_constrained_input_ms"), (int, float))
         ]),
-        "stageTimingsMs": {
-            stage: _metric(values)
-            for stage, values in stage_values.items()
-        },
+        "stageTimingsMs": stage_metrics,
+        "latencyDrivers": _latency_drivers(stage_metrics),
+        "slowestAttempts": slowest_attempts,
         "pairSelectionReasonCounts": _counts(
             _pair_selection(row).get("selectionReason")
             for row in rows
@@ -221,6 +268,23 @@ def build_summary(rows: Sequence[Mapping[str, Any]], *, recent_limit: int = 20) 
             for row in rows
             if _pair_selection(row)
         ),
+        "currentLegalRepairCounts": {
+            "evaluated": _counts(
+                _pair_selection(row).get("currentLegalRepairEvaluated")
+                for row in rows
+                if _pair_selection(row)
+            ),
+            "skipped": _counts(
+                _pair_selection(row).get("currentLegalRepairSkipped")
+                for row in rows
+                if _pair_selection(row)
+            ),
+            "currentCanonicalProbeValid": _counts(
+                _pair_selection(row).get("currentCanonicalProbeValid")
+                for row in rows
+                if _pair_selection(row)
+            ),
+        },
         "cheapCurrentCanonicalShadow": {
             "evaluatedCount": len(cheap_shadow_rows),
             "currentCanonicalValidCounts": _counts(
@@ -229,6 +293,10 @@ def build_summary(rows: Sequence[Mapping[str, Any]], *, recent_limit: int = 20) 
             ),
             "currentLegalValidCounts": _counts(
                 _cheap_current_shadow(row).get("currentLegalValid")
+                for row in cheap_shadow_rows
+            ),
+            "currentLegalRepairSkippedCounts": _counts(
+                _cheap_current_shadow(row).get("currentLegalRepairSkipped")
                 for row in cheap_shadow_rows
             ),
             "couldHaveSkippedCurrentLegalCounts": _counts(
@@ -249,6 +317,7 @@ def build_summary(rows: Sequence[Mapping[str, Any]], *, recent_limit: int = 20) 
                 "appVersion": row.get("app_version"),
                 "pairSelectionReason": _pair_selection(row).get("selectionReason"),
                 "pairSearchMode": _pair_selection(row).get("searchMode"),
+                "currentLegalRepairSkipped": _pair_selection(row).get("currentLegalRepairSkipped"),
                 "cheapCurrentCanonicalShadow": dict(_cheap_current_shadow(row) or {}),
                 "failureReason": _failure_reason(row) if row.get("status") != "success" else None,
             }
@@ -295,9 +364,24 @@ def render_report(payload: Mapping[str, Any]) -> str:
     else:
         for key, value in pair_search_mode_counts.items():
             lines.append(f"- `{key}`: `{value}`")
+    current_legal_counts = summary.get("currentLegalRepairCounts") or {}
+    lines.extend(["", "Current legal repair:", ""])
+    skipped_counts = current_legal_counts.get("skipped") or {}
+    evaluated_counts = current_legal_counts.get("evaluated") or {}
+    probe_counts = current_legal_counts.get("currentCanonicalProbeValid") or {}
+    if not skipped_counts and not evaluated_counts and not probe_counts:
+        lines.append("- _None._")
+    else:
+        for key, value in evaluated_counts.items():
+            lines.append(f"- `evaluated={key}`: `{value}`")
+        for key, value in skipped_counts.items():
+            lines.append(f"- `skipped={key}`: `{value}`")
+        for key, value in probe_counts.items():
+            lines.append(f"- `currentCanonicalProbeValid={key}`: `{value}`")
     shadow = summary.get("cheapCurrentCanonicalShadow") or {
         "evaluatedCount": 0,
         "couldHaveSkippedCurrentLegalCounts": {},
+        "currentLegalRepairSkippedCounts": {},
     }
     lines.extend([
         "",
@@ -305,6 +389,8 @@ def render_report(payload: Mapping[str, Any]) -> str:
         "",
         f"- Evaluated: `{shadow['evaluatedCount']}`",
     ])
+    for key, value in (shadow.get("currentLegalRepairSkippedCounts") or {}).items():
+        lines.append(f"- `currentLegalRepairSkipped={key}`: `{value}`")
     for key, value in shadow["couldHaveSkippedCurrentLegalCounts"].items():
         lines.append(f"- `couldHaveSkippedCurrentLegalForThisInput={key}`: `{value}`")
     lines.extend(["", "Failure reasons:", ""])
@@ -316,6 +402,25 @@ def render_report(payload: Mapping[str, Any]) -> str:
     lines.extend([
         "",
         "## Latency",
+        "",
+        "### Latency Drivers",
+        "",
+        "| Stage | Count | P50 | P90 | Max | Avg |",
+        "|---|---:|---:|---:|---:|---:|",
+    ])
+    latency_drivers = summary.get("latencyDrivers") or _latency_drivers(
+        summary.get("stageTimingsMs") or {}
+    )
+    for row in latency_drivers:
+        lines.append(
+            f"| `{row.get('stage')}` | {row.get('count')} | {row.get('p50')} | "
+            f"{row.get('p90')} | {row.get('max')} | {row.get('avg')} |"
+        )
+    if not latency_drivers:
+        lines.append("| _None._ | 0 |  |  |  |  |")
+    lines.extend([
+        "",
+        "### All Timed Stages",
         "",
         "| Metric | Count | P50 | P90 | Max | Avg |",
         "|---|---:|---:|---:|---:|---:|",
@@ -337,6 +442,24 @@ def render_report(payload: Mapping[str, Any]) -> str:
             f"| `{key}` | {metric['count']} | {metric['p50']} | "
             f"{metric['p90']} | {metric['max']} | {metric['avg']} |"
         )
+    lines.extend(["", "## Slowest Attempts", ""])
+    slowest_attempts = summary.get("slowestAttempts") or []
+    if not slowest_attempts:
+        lines.append("_None._")
+    else:
+        lines.extend([
+            "| Time | Status | Category | Method | Latency ms | Source | Search mode | Selection |",
+            "|---|---|---|---|---:|---|---|---|",
+        ])
+        for row in slowest_attempts:
+            selection = str(row.get("pairSelectionReason") or "").replace("|", "\\|")
+            search_mode = str(row.get("pairSearchMode") or "").replace("|", "\\|")
+            lines.append(
+                f"| `{row.get('createdAt')}` | `{row.get('status')}` | "
+                f"`{row.get('category')}` | `{row.get('recommendedMethod')}` | "
+                f"{row.get('latencyMs')} | `{row.get('clientSource')}` | "
+                f"`{search_mode}` | {selection[:80]} |"
+            )
     lines.extend(["", "## Recent Attempts", ""])
     if not summary["recentAttempts"]:
         lines.append("_None._")

@@ -44,6 +44,7 @@ DEFAULT_STAGES = (
     "hullFitB",
     "selectGuardedPair",
     "selectGuardedPair.thresholdPairEnumeration",
+    "selectGuardedPair.currentCanonicalProbeEvaluatePair",
     "selectGuardedPair.currentPairEvaluatePair",
     "selectGuardedPair.currentGuardSelection",
     "selectGuardedPair.lightPairEvaluatePair",
@@ -170,6 +171,9 @@ def _run_once(
             "currentThresholds": pair.get("currentThresholds"),
             "selectedThresholds": pair.get("selectedThresholds"),
             "searchMode": pair.get("searchMode"),
+            "currentCanonicalProbeValid": pair.get("currentCanonicalProbeValid"),
+            "currentLegalRepairEvaluated": pair.get("currentLegalRepairEvaluated"),
+            "currentLegalRepairSkipped": pair.get("currentLegalRepairSkipped"),
             "fullEvaluatedPairCount": pair.get("fullEvaluatedPairCount"),
             "lightEvaluatedPairCount": pair.get("lightEvaluatedPairCount"),
             "possiblePairCount": pair.get("possiblePairCount"),
@@ -232,8 +236,17 @@ def build_summary(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
                 (row.get("pairThresholdSelection") or {}).get("selectionReason")
                 for row in variant_rows
             ),
+            "currentLegalRepairSkippedCounts": _counts(
+                (row.get("pairThresholdSelection") or {}).get("currentLegalRepairSkipped")
+                for row in variant_rows
+            ),
             "cheapCurrentCanonicalShadowCounts": {
                 "evaluated": sum(1 for row in variant_rows if _cheap_current_shadow(row)),
+                "currentLegalRepairSkipped": _counts(
+                    _cheap_current_shadow(row).get("currentLegalRepairSkipped")
+                    for row in variant_rows
+                    if _cheap_current_shadow(row)
+                ),
                 "couldHaveSkippedCurrentLegal": _counts(
                     _cheap_current_shadow(row).get("couldHaveSkippedCurrentLegalForThisInput")
                     for row in variant_rows
@@ -289,6 +302,7 @@ def render_report(payload: Mapping[str, Any]) -> str:
     for variant, row in summary["variants"].items():
         stages = row["stageTimingsMs"]
         shadow = row.get("cheapCurrentCanonicalShadowCounts") or {}
+        active_skips = (row.get("currentLegalRepairSkippedCounts") or {}).get("True", 0)
         shadow_wins = (shadow.get("couldHaveSkippedCurrentLegal") or {}).get("True", 0)
         lines.append(
             f"| `{variant}` | {row['rowCount']} | {row['exactCount']} | "
@@ -301,7 +315,8 @@ def render_report(payload: Mapping[str, Any]) -> str:
         if shadow.get("evaluated"):
             shadow_lines.append(
                 f"  - `{variant}` cheap-current shadow: evaluated "
-                f"`{shadow.get('evaluated')}`, potential current-legal skips `{shadow_wins}`."
+                f"`{shadow.get('evaluated')}`, active current-legal skips `{active_skips}`, "
+                f"potential current-legal skips `{shadow_wins}`."
             )
     if shadow_lines:
         lines.extend(["", "Cheap-current shadow:", ""])

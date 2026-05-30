@@ -735,6 +735,42 @@ def assemble_color_repair_payload(
     }
 
 
+def assemble_canonical_count_repair_payload(
+    *,
+    observations: Sequence[StickerObservation],
+    yaw_quarter_turns: int,
+    gt_state: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Build the minimal repair payload needed for canonical-count ranking.
+
+    The guarded threshold-pair light search only filters/ranks candidates where
+    ``canonical_count_repaired`` is already a legal cube. Adaptive palettes,
+    cubie repairs, panel metadata, and sticker observation JSON are unnecessary
+    for that first pass, so this payload intentionally keeps only the canonical
+    methods consumed by ``repair_rank``.
+    """
+    methods = evaluate_palette(
+        observations=observations,
+        palette=CANONICAL_RGB,
+        prefix="canonical",
+        gt_state=gt_state,
+    )
+    recommended_name = choose_recommended_method(methods)
+    recommended = dict(methods[recommended_name]) if recommended_name else {}
+    if recommended:
+        recommended["method"] = recommended_name
+        recommended["confidence"] = _confidence_for_method(recommended)
+    return {
+        "schema": "hull_label_color_repair_v1",
+        "status": "assembled",
+        "mode": "canonical_count_light",
+        "yawQuarterTurns": int(yaw_quarter_turns) % 4,
+        "recommendedMethod": recommended_name,
+        "recommended": recommended,
+        "methods": methods,
+    }
+
+
 def repair_from_hull_label_fits(
     *,
     side_fits: Mapping[str, Any],
@@ -757,4 +793,21 @@ def repair_from_hull_label_fits(
         side_traces=side_traces,
         gt_state=gt_state,
         include_legal_repairs=include_legal_repairs,
+    )
+
+
+def canonical_count_repair_from_hull_label_fits(
+    *,
+    side_fits: Mapping[str, Any],
+    yaw_quarter_turns: int,
+    gt_state: Optional[str] = None,
+) -> Dict[str, Any]:
+    observations, _panel_meta = sample_observations(
+        side_fits=side_fits,
+        yaw_quarter_turns=yaw_quarter_turns,
+    )
+    return assemble_canonical_count_repair_payload(
+        observations=observations,
+        yaw_quarter_turns=yaw_quarter_turns,
+        gt_state=gt_state,
     )

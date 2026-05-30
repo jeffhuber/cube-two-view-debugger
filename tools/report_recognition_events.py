@@ -45,6 +45,7 @@ DEFAULT_STAGES = (
     "selectGuardedPair.fullGuardSelection",
     "selectGuardedPair.selectedFullPairEvaluatePair",
     "selectGuardedPair.yawInference",
+    "selectGuardedPair.repairCanonicalLight",
     "selectGuardedPair.repairCanonicalOnly",
     "selectGuardedPair.repairWithLegal",
     "selectGuardedPair.rankAndScore",
@@ -131,6 +132,26 @@ def _stage_timings(row: Mapping[str, Any]) -> Mapping[str, Any]:
     return timings if isinstance(timings, Mapping) else {}
 
 
+def _pair_selection(row: Mapping[str, Any]) -> Mapping[str, Any]:
+    event = _event_payload(row)
+    constrained = (
+        event.get("constrainedInference")
+        if isinstance(event.get("constrainedInference"), Mapping)
+        else {}
+    )
+    pair = (
+        constrained.get("pairThresholdSelection")
+        if isinstance(constrained.get("pairThresholdSelection"), Mapping)
+        else {}
+    )
+    return pair if isinstance(pair, Mapping) else {}
+
+
+def _cheap_current_shadow(row: Mapping[str, Any]) -> Mapping[str, Any]:
+    shadow = _pair_selection(row).get("cheapCurrentCanonicalShadow")
+    return shadow if isinstance(shadow, Mapping) else {}
+
+
 def _failure_reason(row: Mapping[str, Any]) -> str:
     event = _event_payload(row)
     result = event.get("result") if isinstance(event.get("result"), Mapping) else {}
@@ -153,6 +174,11 @@ def build_summary(rows: Sequence[Mapping[str, Any]], *, recent_limit: int = 20) 
                 stage_values[stage].append(float(value))
 
     recent = list(reversed(rows))[:recent_limit]
+    cheap_shadow_rows = [
+        row
+        for row in rows
+        if _cheap_current_shadow(row)
+    ]
     return {
         "totalEvents": len(rows),
         "statusCounts": _counts(row.get("status") for row in rows),
@@ -185,6 +211,31 @@ def build_summary(rows: Sequence[Mapping[str, Any]], *, recent_limit: int = 20) 
             stage: _metric(values)
             for stage, values in stage_values.items()
         },
+        "pairSelectionReasonCounts": _counts(
+            _pair_selection(row).get("selectionReason")
+            for row in rows
+            if _pair_selection(row)
+        ),
+        "pairSearchModeCounts": _counts(
+            _pair_selection(row).get("searchMode")
+            for row in rows
+            if _pair_selection(row)
+        ),
+        "cheapCurrentCanonicalShadow": {
+            "evaluatedCount": len(cheap_shadow_rows),
+            "currentCanonicalValidCounts": _counts(
+                _cheap_current_shadow(row).get("currentCanonicalValid")
+                for row in cheap_shadow_rows
+            ),
+            "currentLegalValidCounts": _counts(
+                _cheap_current_shadow(row).get("currentLegalValid")
+                for row in cheap_shadow_rows
+            ),
+            "couldHaveSkippedCurrentLegalCounts": _counts(
+                _cheap_current_shadow(row).get("couldHaveSkippedCurrentLegalForThisInput")
+                for row in cheap_shadow_rows
+            ),
+        },
         "recentAttempts": [
             {
                 "createdAt": row.get("created_at"),
@@ -196,6 +247,9 @@ def build_summary(rows: Sequence[Mapping[str, Any]], *, recent_limit: int = 20) 
                 "latencyMs": row.get("latency_ms"),
                 "clientSource": row.get("client_source"),
                 "appVersion": row.get("app_version"),
+                "pairSelectionReason": _pair_selection(row).get("selectionReason"),
+                "pairSearchMode": _pair_selection(row).get("searchMode"),
+                "cheapCurrentCanonicalShadow": dict(_cheap_current_shadow(row) or {}),
                 "failureReason": _failure_reason(row) if row.get("status") != "success" else None,
             }
             for row in recent
@@ -227,6 +281,32 @@ def render_report(payload: Mapping[str, Any]) -> str:
     lines.extend(["", "Client sources:", ""])
     for key, value in summary["clientSourceCounts"].items():
         lines.append(f"- `{key}`: `{value}`")
+    lines.extend(["", "Pair selection:", ""])
+    pair_selection_counts = summary.get("pairSelectionReasonCounts") or {}
+    if not pair_selection_counts:
+        lines.append("- _None._")
+    else:
+        for key, value in pair_selection_counts.items():
+            lines.append(f"- `{key}`: `{value}`")
+    lines.extend(["", "Pair search modes:", ""])
+    pair_search_mode_counts = summary.get("pairSearchModeCounts") or {}
+    if not pair_search_mode_counts:
+        lines.append("- _None._")
+    else:
+        for key, value in pair_search_mode_counts.items():
+            lines.append(f"- `{key}`: `{value}`")
+    shadow = summary.get("cheapCurrentCanonicalShadow") or {
+        "evaluatedCount": 0,
+        "couldHaveSkippedCurrentLegalCounts": {},
+    }
+    lines.extend([
+        "",
+        "Cheap current canonical shadow:",
+        "",
+        f"- Evaluated: `{shadow['evaluatedCount']}`",
+    ])
+    for key, value in shadow["couldHaveSkippedCurrentLegalCounts"].items():
+        lines.append(f"- `couldHaveSkippedCurrentLegalForThisInput={key}`: `{value}`")
     lines.extend(["", "Failure reasons:", ""])
     if not summary["failureReasonCounts"]:
         lines.append("- _None._")
@@ -262,15 +342,17 @@ def render_report(payload: Mapping[str, Any]) -> str:
         lines.append("_None._")
     else:
         lines.extend([
-            "| Time | Status | Category | Method | Latency ms | Source | Failure |",
-            "|---|---|---|---|---:|---|---|",
+            "| Time | Status | Category | Method | Latency ms | Source | Selection | Failure |",
+            "|---|---|---|---|---:|---|---|---|",
         ])
         for row in summary["recentAttempts"]:
             failure = str(row.get("failureReason") or "").replace("|", "\\|")
+            selection = str(row.get("pairSelectionReason") or "").replace("|", "\\|")
             lines.append(
                 f"| `{row.get('createdAt')}` | `{row.get('status')}` | "
                 f"`{row.get('category')}` | `{row.get('recommendedMethod')}` | "
-                f"{row.get('latencyMs')} | `{row.get('clientSource')}` | {failure[:120]} |"
+                f"{row.get('latencyMs')} | `{row.get('clientSource')}` | "
+                f"{selection[:80]} | {failure[:120]} |"
             )
     lines.append("")
     return "\n".join(lines)

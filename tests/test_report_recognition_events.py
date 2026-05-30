@@ -8,6 +8,17 @@ from tools.report_recognition_events import _endpoint_report_url, build_summary,
 def _event_row(**overrides):
     event = {
         "result": {"status": "success", "reason": None},
+        "constrainedInference": {
+            "pairThresholdSelection": {
+                "selectionReason": "current_invalid_selected_best_pair",
+                "searchMode": "canonical_valid_light_shortcut",
+                "cheapCurrentCanonicalShadow": {
+                    "currentCanonicalValid": False,
+                    "currentLegalValid": False,
+                    "couldHaveSkippedCurrentLegalForThisInput": True,
+                },
+            }
+        },
         "performance": {
             "stageTimingsMs": {
                 "recognizeTotal": 1000.0,
@@ -61,6 +72,10 @@ def test_recognition_event_summary_counts_and_stage_latency():
     assert summary["statusCounts"] == {"rejected": 1, "success": 1}
     assert summary["failureReasonCounts"] == {"not a cube": 1}
     assert summary["stageTimingsMs"]["selectGuardedPair"]["p50"] == 20.0
+    assert summary["pairSelectionReasonCounts"] == {"current_invalid_selected_best_pair": 1}
+    assert summary["pairSearchModeCounts"] == {"canonical_valid_light_shortcut": 1}
+    assert summary["cheapCurrentCanonicalShadow"]["evaluatedCount"] == 1
+    assert summary["cheapCurrentCanonicalShadow"]["couldHaveSkippedCurrentLegalCounts"] == {"True": 1}
     assert len(summary["recentAttempts"]) == 1
 
 
@@ -76,6 +91,8 @@ def test_recognition_event_report_renders_recent_attempts():
 
     assert "# Recognition Event Report" in report
     assert "Status counts" in report
+    assert "Pair selection" in report
+    assert "Cheap current canonical shadow" in report
     assert "Recent Attempts" in report
 
 

@@ -13,6 +13,7 @@ from tools.hull_label_color_repair import (
     CANONICAL_RGB,
     FACE_TO_COLOR,
     StickerObservation,
+    assemble_canonical_count_repair_payload,
     assemble_color_repair_payload,
     choose_recommended_method,
     _face_index,
@@ -196,6 +197,34 @@ def test_assemble_color_repair_payload_can_skip_legal_repair_methods(monkeypatch
     assert payload["recommended"]["validState"] is True
     assert "conservative_legal_repaired" not in payload["methods"]
     assert "guarded_broad_legal_repaired" not in payload["methods"]
+
+
+def test_assemble_canonical_count_repair_payload_skips_adaptive_and_legal(monkeypatch):
+    def fail_adaptive(*_args, **_kwargs):
+        raise AssertionError("adaptive palette should be skipped")
+
+    def fail_legal_repair(**_kwargs):
+        raise AssertionError("legal repair should be skipped")
+
+    monkeypatch.setattr("tools.hull_label_color_repair.adaptive_palette", fail_adaptive)
+    monkeypatch.setattr(
+        "tools.hull_label_color_repair.evaluate_legal_repair_methods",
+        fail_legal_repair,
+    )
+
+    payload = assemble_canonical_count_repair_payload(
+        observations=_solved_observations(),
+        yaw_quarter_turns=0,
+    )
+
+    assert payload["mode"] == "canonical_count_light"
+    assert payload["recommendedMethod"] == "canonical_count_repaired"
+    assert payload["recommended"]["validState"] is True
+    assert set(payload["methods"]) == {
+        "canonical",
+        "canonical_center_forced",
+        "canonical_count_repaired",
+    }
 
 
 def test_state_delta_gate_uses_count_repaired_delta_not_repair_changes():

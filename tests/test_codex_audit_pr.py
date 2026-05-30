@@ -8,6 +8,7 @@ monkeypatching the GitHub helpers and the subprocess call.
 from __future__ import annotations
 
 import os
+import json
 import subprocess
 import sys
 import warnings
@@ -50,6 +51,28 @@ exec
 codex
 The changes add the recomputed signal workflow and associated fixtures/tests without introducing a clear correctness, runtime, or schema issue in the modified code paths. The generated matrices match the committed outputs and the targeted tests pass when run with the repository on PYTHONPATH.
 """
+
+VALID_PASS_VERDICT = {
+    "schema": "cubesnap.codexAudit.v1",
+    "verdict": "pass",
+    "summary": "The review found no blocking issues in the modified paths.",
+    "findings": [],
+}
+
+VALID_BLOCKED_VERDICT = {
+    "schema": "cubesnap.codexAudit.v1",
+    "verdict": "blocked",
+    "summary": "The review found a real correctness issue.",
+    "findings": [
+        {
+            "severity": "P2",
+            "title": "Treat model-fit failures as retakes",
+            "file": "tools/phase2b_trust_matrix.py",
+            "line": 236,
+            "detail": "Model-fit failures are not represented as retake predicates.",
+        }
+    ],
+}
 
 
 # ----- Parser tests -----
@@ -489,6 +512,141 @@ def test_parse_stderr_routed_blocked_verdict_with_p2_still_parses():
     assert "race in event queue" not in parsed.prose
 
 
+# ----- Structured verdict tests -----
+
+
+def test_parse_structured_verdict_valid_pass():
+    parsed = c.parse_structured_codex_verdict(VALID_PASS_VERDICT)
+    assert parsed.verdict == "PASS"
+    assert parsed.blocker_count == 0
+    assert parsed.findings == []
+    assert "Findings: none." in parsed.prose
+
+
+def test_parse_structured_verdict_valid_blocked():
+    parsed = c.parse_structured_codex_verdict(VALID_BLOCKED_VERDICT)
+    assert parsed.verdict == "BLOCKED"
+    assert parsed.p2_count == 1
+    assert parsed.blocker_count == 1
+    assert "Treat model-fit failures as retakes" in parsed.prose
+    assert "tools/phase2b_trust_matrix.py:236" in parsed.prose
+
+
+def test_parse_structured_verdict_p3_only_is_pass():
+    verdict = {
+        **VALID_PASS_VERDICT,
+        "findings": [
+            {
+                "severity": "P3",
+                "title": "Clarify wording",
+                "file": "docs/example.md",
+                "line": 12,
+                "detail": "The wording is slightly stale.",
+            }
+        ],
+    }
+    parsed = c.parse_structured_codex_verdict(verdict)
+    assert parsed.verdict == "PASS"
+    assert parsed.p3_count == 1
+    assert parsed.blocker_count == 0
+
+
+def test_parse_structured_verdict_rejects_extra_fields():
+    verdict = {**VALID_PASS_VERDICT, "extra": "not allowed"}
+    parsed = c.parse_structured_codex_verdict(verdict)
+    assert parsed.verdict == "UNKNOWN"
+    assert "unsupported keys" in parsed.prose
+
+
+def test_parse_structured_verdict_rejects_invalid_json():
+    parsed = c.parse_structured_codex_verdict_text("{not json")
+    assert parsed.verdict == "UNKNOWN"
+    assert "invalid JSON" in parsed.prose
+
+
+def test_load_structured_verdict_missing_file_is_unknown(tmp_path):
+    parsed = c.load_structured_codex_verdict(tmp_path / "missing.json")
+    assert parsed.verdict == "UNKNOWN"
+    assert "was not created" in parsed.prose
+
+
+def test_parse_structured_verdict_blocker_present_but_declared_pass_blocks():
+    verdict = {**VALID_BLOCKED_VERDICT, "verdict": "pass"}
+    parsed = c.parse_structured_codex_verdict(verdict)
+    assert parsed.verdict == "BLOCKED"
+    assert parsed.blocker_count == 1
+    assert "declared pass" in parsed.mismatch_note
+
+
+def test_parse_structured_verdict_declared_blocked_without_blockers_requeues():
+    verdict = {**VALID_PASS_VERDICT, "verdict": "blocked"}
+    parsed = c.parse_structured_codex_verdict(verdict)
+    assert parsed.verdict == "UNKNOWN"
+    assert "no P0/P1/P2 findings" in parsed.prose
+
+
+def test_parse_structured_verdict_rejects_bad_line_number():
+    verdict = {
+        **VALID_BLOCKED_VERDICT,
+        "findings": [
+            {**VALID_BLOCKED_VERDICT["findings"][0], "line": 0}
+        ],
+    }
+    parsed = c.parse_structured_codex_verdict(verdict)
+    assert parsed.verdict == "UNKNOWN"
+    assert "integer >= 1" in parsed.prose
+
+
+def test_format_comment_truncates_oversized_structured_output():
+    parsed = c.CodexVerdict(
+        verdict="BLOCKED",
+        prose="x" * (c.MAX_GITHUB_COMMENT_CHARS + 10_000),
+        p2_count=1,
+    )
+    body = c.format_comment(parsed, "abc123")
+    assert len(body) <= c.MAX_GITHUB_COMMENT_CHARS
+    assert c.BLOCKED_TRAILER in body
+    assert "comment truncated" in body
+
+
+def test_run_codex_verdict_structuring_uses_generic_exec_schema(monkeypatch, tmp_path):
+    calls: List[Dict[str, Any]] = []
+
+    class FakeResult:
+        returncode = 0
+        stdout = "structured stdout"
+        stderr = ""
+
+    def fake_run(command, **kwargs):
+        calls.append({"command": command, "kwargs": kwargs})
+        verdict_path = Path(command[command.index("--output-last-message") + 1])
+        verdict_path.write_text(json.dumps(VALID_PASS_VERDICT))
+        return FakeResult()
+
+    monkeypatch.setattr(c.subprocess, "run", fake_run)
+    monkeypatch.setattr(c.Path, "exists", lambda self: True)
+    config = c.AuditConfig(
+        github_token="x",
+        repo_paths={},
+        codex_cli_path="/fake/codex",
+    )
+    parsed, stdout, stderr = c.run_codex_verdict_structuring(
+        config,
+        "No blocking issues.",
+    )
+
+    assert parsed.verdict == "PASS"
+    assert stdout == "structured stdout"
+    assert stderr == ""
+    command = calls[0]["command"]
+    assert command[:4] == ["/fake/codex", "exec", "--sandbox", "read-only"]
+    assert "--output-schema" in command
+    assert str(c.CODEX_AUDIT_VERDICT_SCHEMA_PATH) in command
+    assert command[-1] == "-"
+    assert "No blocking issues." in calls[0]["kwargs"]["input"]
+    assert calls[0]["kwargs"]["cwd"] == str(c._trusted_repo_root())
+
+
 def test_audit_pr_unknown_verdict_requeues_with_stale_trailer(monkeypatch):
     """Codex round 3 of #234 — P2 follow-on: when parser returns UNKNOWN,
     audit_pr must format a requeue comment (STALE_TRAILER) and report
@@ -795,7 +953,8 @@ def test_audit_pr_unknown_branch_dumps_raw_cli_output(monkeypatch, tmp_path):
     assert call["pr_number"] == 17
     assert call["head_sha"] == "aaaa11112222"
     assert call["stdout"] == "exec output without a codex line"
-    assert call["stderr"] == "some stderr noise"
+    assert "===== CODEX REVIEW STDERR =====" in call["stderr"]
+    assert "some stderr noise" in call["stderr"]
     # reason carries the parser's prose so the dump file's header
     # explains *why* the parser gave up.
     assert "requeue and retry" in call["reason"]
@@ -940,7 +1099,8 @@ def test_audit_pr_stderr_fallback_blocked_dumps_cli_output(monkeypatch, tmp_path
     assert call["pr_number"] == 17
     assert call["head_sha"] == "ddddffff8888"
     assert call["stdout"] == "exec progress without final marker"
-    assert call["stderr"] == stderr_with_strict_finding
+    assert "===== CODEX REVIEW STDERR =====" in call["stderr"]
+    assert stderr_with_strict_finding in call["stderr"]
     # Reason identifies the source path so a directory of dumps stays
     # self-describing without needing to inspect contents.
     assert "stderr-fallback BLOCKED" in call["reason"]
@@ -1217,6 +1377,7 @@ def _install_audit_mocks(
     codex_stderr: str = "",
     pr_meta_after: Dict[str, Any] = None,
     posted_records: List[Dict[str, Any]] = None,
+    structured_verdict: c.CodexVerdict = None,
 ) -> None:
     """Patch network + subprocess + worktree calls in codex_audit_pr."""
     posted_records = posted_records if posted_records is not None else []
@@ -1243,6 +1404,17 @@ def _install_audit_mocks(
     monkeypatch.setattr(
         c, "run_codex_review", lambda *a, **k: (codex_stdout, codex_stderr)
     )
+    monkeypatch.setattr(c, "preflight_codex_cli", lambda *a, **k: "codex-cli test")
+
+    def fake_structure(*args, **kwargs):
+        parsed = (
+            structured_verdict
+            if structured_verdict is not None
+            else c.parse_codex_output(codex_stdout, codex_stderr)
+        )
+        return parsed, "", ""
+
+    monkeypatch.setattr(c, "run_codex_verdict_structuring", fake_structure)
 
 
 def test_audit_pr_pass_path(monkeypatch):

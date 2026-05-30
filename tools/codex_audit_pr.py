@@ -3,26 +3,31 @@
 
 Standalone command + Python module. UNLIKE the Devin bridge (cloud webhook)
 and the Qwen bridge (local OpenAI-compatible endpoint), the Codex bridge
-invokes the local `codex review` CLI as a subprocess. The CLI runs against
-a checked-out worktree of the PR branch and produces a code-traced review
-that has empirically caught real bugs the other reviewers miss on the same
-PR — see the multi-reviewer calibration in PR #233 (Devin PASS + Qwen 7
-false positives + Codex 6 real findings).
+invokes the local Codex CLI as a subprocess. The first call uses the
+built-in review subcommand against a checked-out worktree of the PR
+branch; the second call converts that prose review into a schema-shaped
+verdict JSON artifact. The built-in reviewer has empirically caught real
+bugs the other reviewers miss on the same PR — see the multi-reviewer
+calibration in PR #233 (Devin PASS + Qwen 7 false positives + Codex 6
+real findings).
 
 Pipeline per audit:
 
   1. Resolve the LOCAL repo path for `owner/repo` from
-     `CODEX_AUDIT_REPO_PATHS` (the CLI requires a real git checkout to
-     run `codex review --base origin/main` against).
+     `CODEX_AUDIT_REPO_PATHS` (the CLI requires a real git checkout for
+     the built-in review).
   2. Fetch the PR head SHA via the GitHub API.
   3. `git fetch origin pull/<N>/head` + create a temporary worktree at
      the head SHA (detached, so we don't pollute branch namespace).
-  4. Run `codex review --base origin/main` from that worktree, capturing
-     stdout/stderr.
-  5. Parse the output: extract the final verdict block, count
-     `[P0]/[P1]/[P2]/[P3]` severity tags, classify PASS vs BLOCKED.
-     Policy: P0/P1/P2 = blocker; P3 = concern (non-blocking). This
-     matches how Codex's #233 findings broke down empirically.
+  4. Run `codex exec --sandbox read-only review --base origin/main`
+     from that worktree, capturing the final review prose via
+     `--output-last-message`.
+  5. Run generic `codex exec --output-schema` outside the PR worktree to
+     convert that prose into the wrapper-owned
+     `cubesnap.codexAudit.v1` verdict JSON, then validate it with a
+     stdlib shape checker. Policy: P0/P1/P2 = blocker; P3 = concern
+     (non-blocking). This matches how Codex's #233 findings broke down
+     empirically.
   6. Stale-head check: refetch PR head; if it changed mid-review, emit
      the `needs-codex-audit` trailer instead of PASS/BLOCKED.
   7. Post the parsed review as a PR comment ending with the authoritative
@@ -64,6 +69,7 @@ import argparse
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -83,6 +89,17 @@ DEFAULT_CODEX_CLI_PATH = "/Applications/Codex.app/Contents/Resources/codex"
 DEFAULT_CODEX_TIMEOUT = 900  # 15 min; Codex review can take 5-10 min on a large diff
 DEFAULT_BASE_REF = "origin/main"
 DEFAULT_REPOS = "jeffhuber/cube-snap,jeffhuber/cube-two-view-debugger"
+CODEX_AUDIT_SCHEMA_ID = "cubesnap.codexAudit.v1"
+CODEX_AUDIT_VERDICT_SCHEMA_PATH = (
+    Path(__file__).resolve().with_name("codex_audit_verdict.schema.json")
+)
+MAX_VERDICT_FILE_BYTES = 1_000_000
+MAX_GITHUB_COMMENT_CHARS = 64_000
+MAX_RENDERED_FINDINGS = 50
+MAX_SUMMARY_CHARS = 4_000
+MAX_FINDING_TITLE_CHARS = 300
+MAX_FINDING_FILE_CHARS = 500
+MAX_FINDING_DETAIL_CHARS = 4_000
 
 
 # ----- Data classes -----
@@ -120,7 +137,7 @@ class AuditConfig:
 
 @dataclass
 class CodexVerdict:
-    """Parsed verdict from `codex review` output (stdout, or stderr fallback)."""
+    """Parsed verdict from Codex audit output."""
     verdict: str  # "PASS" | "BLOCKED" | "UNKNOWN"
     prose: str    # the final review block (clean, ready to render as a comment)
     p0_count: int = 0
@@ -136,6 +153,10 @@ class CodexVerdict:
     # the dump the BLOCKED is unfalsifiable, since neither the comment
     # nor the in-memory output survives the audit. cube-snap#202 / ctvd#368.
     suppressed_raw_stderr: bool = False
+    # Local-only diagnostic for structured verdict self-inconsistency
+    # (e.g. verdict=pass but P2 findings are present). This is not
+    # rendered into the public PR comment; audit_pr() logs it to stderr.
+    mismatch_note: str = ""
 
     @property
     def blocker_count(self) -> int:
@@ -153,6 +174,7 @@ class CodexVerdict:
             "p3_count": self.p3_count,
             "blocker_count": self.blocker_count,
             "findings": self.findings,
+            "mismatch_note": self.mismatch_note,
         }
 
 
@@ -553,6 +575,227 @@ def parse_codex_output(stdout: str, stderr: str = "") -> CodexVerdict:
     )
 
 
+# ----- Structured verdict validation -----
+
+
+def _unknown_structured_verdict(reason: str) -> CodexVerdict:
+    return CodexVerdict(
+        verdict="UNKNOWN",
+        prose=(
+            f"(structured Codex verdict is unusable: {reason}; "
+            "requeue and retry)"
+        ),
+    )
+
+
+def _clip_text(value: str, limit: int) -> str:
+    value = value.strip()
+    if len(value) <= limit:
+        return value
+    suffix = "... [truncated]"
+    return value[: max(0, limit - len(suffix))].rstrip() + suffix
+
+
+def _one_line(value: str, limit: int) -> str:
+    return _clip_text(
+        value.replace("\r", " ").replace("\n", " ").replace("`", "'"),
+        limit,
+    )
+
+
+def _require_exact_keys(
+    value: Dict[str, Any],
+    required: set,
+    where: str,
+) -> Optional[str]:
+    keys = set(value.keys())
+    missing = sorted(required - keys)
+    extra = sorted(keys - required)
+    if missing:
+        return f"{where} missing required keys: {', '.join(missing)}"
+    if extra:
+        return f"{where} contains unsupported keys: {', '.join(extra)}"
+    return None
+
+
+def _render_structured_prose(
+    summary: str,
+    findings: List[Dict[str, Any]],
+    total_findings: int,
+) -> str:
+    lines = [
+        "Summary:",
+        "",
+        _clip_text(summary, MAX_SUMMARY_CHARS),
+        "",
+    ]
+    if not findings:
+        lines.append("Findings: none.")
+        return "\n".join(lines)
+
+    lines.extend(["Findings:", ""])
+    for finding in findings:
+        severity = finding["severity"]
+        title = _one_line(finding["title"], MAX_FINDING_TITLE_CHARS)
+        file_path = _one_line(finding["file"], MAX_FINDING_FILE_CHARS)
+        line = finding["line"]
+        detail = _clip_text(finding["detail"], MAX_FINDING_DETAIL_CHARS)
+        lines.append(f"- [{severity}] {title} -- `{file_path}:{line}`")
+        for detail_line in detail.splitlines():
+            lines.append(f"  {detail_line}")
+
+    omitted = total_findings - len(findings)
+    if omitted > 0:
+        lines.extend([
+            "",
+            f"... {omitted} additional finding(s) omitted from the comment "
+            "to stay within GitHub's comment limits.",
+        ])
+    return "\n".join(lines)
+
+
+def parse_structured_codex_verdict(data: Any) -> CodexVerdict:
+    """Validate and classify a structured Codex audit verdict.
+
+    This is deliberately small and stdlib-only. The Codex CLI's
+    `--output-schema` shapes the final message, but the wrapper remains
+    authoritative for the label policy and re-checks every field before
+    posting a trailer-bearing PR comment.
+    """
+    top_keys = {"schema", "verdict", "summary", "findings"}
+    finding_keys = {"severity", "title", "file", "line", "detail"}
+
+    if not isinstance(data, dict):
+        return _unknown_structured_verdict("top-level value is not an object")
+
+    key_error = _require_exact_keys(data, top_keys, "top-level object")
+    if key_error:
+        return _unknown_structured_verdict(key_error)
+
+    if data["schema"] != CODEX_AUDIT_SCHEMA_ID:
+        return _unknown_structured_verdict(
+            f"schema is {data['schema']!r}, expected {CODEX_AUDIT_SCHEMA_ID!r}"
+        )
+
+    declared_verdict = data["verdict"]
+    if declared_verdict not in ("pass", "blocked"):
+        return _unknown_structured_verdict(
+            f"verdict is {declared_verdict!r}, expected 'pass' or 'blocked'"
+        )
+
+    summary = data["summary"]
+    if not isinstance(summary, str) or not summary.strip():
+        return _unknown_structured_verdict("summary must be a non-empty string")
+
+    raw_findings = data["findings"]
+    if not isinstance(raw_findings, list):
+        return _unknown_structured_verdict("findings must be an array")
+
+    p_counts = {0: 0, 1: 0, 2: 0, 3: 0}
+    rendered_findings: List[Dict[str, Any]] = []
+    finding_lines: List[str] = []
+
+    for idx, raw_finding in enumerate(raw_findings):
+        where = f"findings[{idx}]"
+        if not isinstance(raw_finding, dict):
+            return _unknown_structured_verdict(f"{where} is not an object")
+
+        key_error = _require_exact_keys(raw_finding, finding_keys, where)
+        if key_error:
+            return _unknown_structured_verdict(key_error)
+
+        severity = raw_finding["severity"]
+        if severity not in ("P0", "P1", "P2", "P3"):
+            return _unknown_structured_verdict(
+                f"{where}.severity is {severity!r}, expected P0/P1/P2/P3"
+            )
+
+        for field_name in ("title", "file", "detail"):
+            field_value = raw_finding[field_name]
+            if not isinstance(field_value, str) or not field_value.strip():
+                return _unknown_structured_verdict(
+                    f"{where}.{field_name} must be a non-empty string"
+                )
+
+        file_path = raw_finding["file"]
+        if "\n" in file_path or "\r" in file_path:
+            return _unknown_structured_verdict(
+                f"{where}.file must be a single-line path"
+            )
+
+        line = raw_finding["line"]
+        if isinstance(line, bool) or not isinstance(line, int) or line < 1:
+            return _unknown_structured_verdict(
+                f"{where}.line must be an integer >= 1"
+            )
+
+        p_counts[int(severity[1])] += 1
+        finding_lines.append(
+            f"- [{severity}] {_one_line(raw_finding['title'], MAX_FINDING_TITLE_CHARS)} "
+            f"-- {_one_line(file_path, MAX_FINDING_FILE_CHARS)}:{line}"
+        )
+        if len(rendered_findings) < MAX_RENDERED_FINDINGS:
+            rendered_findings.append(raw_finding)
+
+    blocker_count = p_counts[0] + p_counts[1] + p_counts[2]
+    if blocker_count > 0:
+        verdict = "BLOCKED"
+        mismatch_note = (
+            "structured verdict declared pass but blocker findings are present"
+            if declared_verdict == "pass" else ""
+        )
+    elif declared_verdict == "pass":
+        verdict = "PASS"
+        mismatch_note = ""
+    else:
+        return _unknown_structured_verdict(
+            "verdict declared blocked but no P0/P1/P2 findings were present"
+        )
+
+    return CodexVerdict(
+        verdict=verdict,
+        prose=_render_structured_prose(summary, rendered_findings, len(raw_findings)),
+        p0_count=p_counts[0],
+        p1_count=p_counts[1],
+        p2_count=p_counts[2],
+        p3_count=p_counts[3],
+        findings=finding_lines,
+        mismatch_note=mismatch_note,
+    )
+
+
+def parse_structured_codex_verdict_text(text: str) -> CodexVerdict:
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError as exc:
+        return _unknown_structured_verdict(f"invalid JSON: {exc}")
+    return parse_structured_codex_verdict(data)
+
+
+def load_structured_codex_verdict(path: Path) -> CodexVerdict:
+    if not path.exists():
+        return _unknown_structured_verdict(f"verdict file was not created at {path}")
+    try:
+        size = path.stat().st_size
+    except OSError as exc:
+        return _unknown_structured_verdict(f"could not stat verdict file: {exc}")
+    if size <= 0:
+        return _unknown_structured_verdict("verdict file is empty")
+    if size > MAX_VERDICT_FILE_BYTES:
+        return _unknown_structured_verdict(
+            f"verdict file is too large ({size} bytes)"
+        )
+    try:
+        os.chmod(path, 0o600)
+    except OSError:
+        pass
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        return _unknown_structured_verdict(f"could not read verdict file: {exc}")
+    return parse_structured_codex_verdict_text(text)
+
+
 # ----- CLI parse-failure capture -----
 
 
@@ -875,24 +1118,135 @@ def _build_subprocess_env(venv_path: Optional[Path]) -> Dict[str, str]:
     return env
 
 
+def _trusted_repo_root() -> Path:
+    return Path(__file__).resolve().parents[1]
+
+
+def _make_secure_temp_dir(prefix: str) -> Path:
+    path = Path(tempfile.mkdtemp(prefix=prefix))
+    os.chmod(path, 0o700)
+    return path
+
+
+def _read_last_message_file(path: Path, fallback: str = "") -> str:
+    if not path.exists():
+        return fallback
+    try:
+        os.chmod(path, 0o600)
+    except OSError:
+        pass
+    try:
+        return path.read_text(encoding="utf-8")
+    except OSError:
+        return fallback
+
+
+def preflight_codex_cli(config: AuditConfig) -> str:
+    """Check the Codex CLI capabilities this wrapper relies on.
+
+    We track and log the installed CLI version rather than hard-pinning,
+    but fail fast if the relevant `exec`/`exec review` flags disappear.
+    """
+    cli = Path(config.codex_cli_path)
+    if not cli.exists():
+        raise FileNotFoundError(
+            f"Codex CLI not found at {config.codex_cli_path}. "
+            f"Install Codex (https://codex.dev) or override "
+            f"CODEX_CLI_PATH."
+        )
+
+    env = _build_subprocess_env(None)
+    version = subprocess.run(
+        [config.codex_cli_path, "--version"],
+        capture_output=True,
+        text=True,
+        timeout=30,
+        env=env,
+    )
+    if version.returncode != 0:
+        raise subprocess.CalledProcessError(
+            version.returncode,
+            [config.codex_cli_path, "--version"],
+            output=version.stdout,
+            stderr=version.stderr,
+        )
+
+    exec_help = subprocess.run(
+        [config.codex_cli_path, "exec", "--help"],
+        capture_output=True,
+        text=True,
+        timeout=30,
+        env=env,
+    )
+    review_help = subprocess.run(
+        [config.codex_cli_path, "exec", "review", "--help"],
+        capture_output=True,
+        text=True,
+        timeout=30,
+        env=env,
+    )
+    for result, command_name in (
+        (exec_help, "codex exec --help"),
+        (review_help, "codex exec review --help"),
+    ):
+        if result.returncode != 0:
+            raise subprocess.CalledProcessError(
+                result.returncode,
+                command_name.split(),
+                output=result.stdout,
+                stderr=result.stderr,
+            )
+
+    exec_text = exec_help.stdout + exec_help.stderr
+    review_text = review_help.stdout + review_help.stderr
+    missing: List[str] = []
+    for flag in ("--output-schema", "--output-last-message"):
+        if flag not in exec_text:
+            missing.append(f"codex exec {flag}")
+    for flag in ("--base", "--output-last-message"):
+        if flag not in review_text:
+            missing.append(f"codex exec review {flag}")
+    if missing:
+        raise RuntimeError(
+            "Codex CLI is missing required structured-audit capability: "
+            + ", ".join(missing)
+        )
+
+    return (version.stdout or version.stderr).strip()
+
+
+def _structured_verdict_prompt(review_text: str) -> str:
+    return (
+        "Convert the Codex review prose below into the exact structured "
+        "audit verdict schema. This is a transport step, not a second "
+        "review. Use only findings that are explicitly present in the "
+        "review prose; do not invent new findings. Preserve P0/P1/P2/P3 "
+        "severity labels. Verdict policy: if any P0, P1, or P2 finding "
+        "is present, verdict must be \"blocked\". If only P3 findings "
+        "or no findings are present, verdict must be \"pass\". Use schema "
+        f"{CODEX_AUDIT_SCHEMA_ID!r}. For line ranges, use the first line. "
+        "If the review says no blocking issues were found, return an "
+        "empty findings array.\n\n"
+        "Review prose:\n"
+        "----- BEGIN REVIEW -----\n"
+        f"{review_text.rstrip()}\n"
+        "----- END REVIEW -----\n"
+    )
+
+
 def run_codex_review(
     config: AuditConfig,
     worktree_path: Path,
 ) -> Tuple[str, str]:
-    """Run `codex review --base <ref>` from the worktree. Returns
-    `(stdout, stderr)` — keep them separate so the parser only sees the
-    review output proper.
+    """Run the built-in Codex review from the PR worktree.
 
-    Codex round 6 of #234 — P2: previously this returned the
-    concatenation of stdout + stderr, so progress chatter or warning
-    text on stderr (e.g., echoed markdown that contained a `- [P2]`
-    bullet, or a stray `codex` line in a quoted command) would
-    contaminate `parse_codex_output()` and could mislabel a PASS as
-    BLOCKED or trigger a false UNKNOWN.
+    The final review prose is captured via `--output-last-message`, which
+    avoids scraping the streaming CLI log. Returns `(review_prose,
+    diagnostics)`, where diagnostics is stderr from the review process.
 
-    Raises `subprocess.CalledProcessError` on non-zero exit (Codex
-    round 1 of #234 — P2: without this check, broken-Codex runs would
-    silently flow into `codex-audit-done`).
+    Raises `subprocess.CalledProcessError` on non-zero exit; a failed
+    built-in review is a hard audit failure rather than a structured
+    verdict failure.
     """
     if not Path(config.codex_cli_path).exists():
         raise FileNotFoundError(
@@ -901,25 +1255,112 @@ def run_codex_review(
             f"CODEX_CLI_PATH."
         )
     env = _build_subprocess_env(config.venv_path)
-    result = subprocess.run(
-        [config.codex_cli_path, "review", "--base", config.base_ref],
-        cwd=str(worktree_path),
-        capture_output=True,
-        text=True,
-        timeout=config.timeout,
-        env=env,
-    )
-    if result.returncode != 0:
-        raise subprocess.CalledProcessError(
-            result.returncode,
-            [config.codex_cli_path, "review", "--base", config.base_ref],
-            output=result.stdout,
-            stderr=result.stderr,
+    tmp_dir = _make_secure_temp_dir("codex-audit-review-")
+    review_path = tmp_dir / "review.txt"
+    command = [
+        config.codex_cli_path,
+        "exec",
+        "--sandbox",
+        "read-only",
+        "review",
+        "--base",
+        config.base_ref,
+        "--output-last-message",
+        str(review_path),
+    ]
+    try:
+        result = subprocess.run(
+            command,
+            cwd=str(worktree_path),
+            capture_output=True,
+            text=True,
+            timeout=config.timeout,
+            env=env,
         )
-    return result.stdout, result.stderr
+        if result.returncode != 0:
+            raise subprocess.CalledProcessError(
+                result.returncode,
+                command,
+                output=result.stdout,
+                stderr=result.stderr,
+            )
+        return _read_last_message_file(review_path, result.stdout), result.stderr
+    finally:
+        shutil.rmtree(str(tmp_dir), ignore_errors=True)
+
+
+def run_codex_verdict_structuring(
+    config: AuditConfig,
+    review_text: str,
+) -> Tuple[CodexVerdict, str, str]:
+    """Convert review prose to a schema-validated verdict JSON artifact."""
+    if not Path(config.codex_cli_path).exists():
+        raise FileNotFoundError(
+            f"Codex CLI not found at {config.codex_cli_path}. "
+            f"Install Codex (https://codex.dev) or override "
+            f"CODEX_CLI_PATH."
+        )
+    if not CODEX_AUDIT_VERDICT_SCHEMA_PATH.exists():
+        raise FileNotFoundError(
+            f"Codex audit verdict schema not found at "
+            f"{CODEX_AUDIT_VERDICT_SCHEMA_PATH}"
+        )
+
+    tmp_dir = _make_secure_temp_dir("codex-audit-verdict-")
+    verdict_path = tmp_dir / "verdict.json"
+    command = [
+        config.codex_cli_path,
+        "exec",
+        "--sandbox",
+        "read-only",
+        "--output-schema",
+        str(CODEX_AUDIT_VERDICT_SCHEMA_PATH),
+        "--output-last-message",
+        str(verdict_path),
+        "-",
+    ]
+    try:
+        result = subprocess.run(
+            command,
+            cwd=str(_trusted_repo_root()),
+            input=_structured_verdict_prompt(review_text),
+            capture_output=True,
+            text=True,
+            timeout=config.timeout,
+            env=_build_subprocess_env(None),
+        )
+        if result.returncode != 0:
+            return (
+                _unknown_structured_verdict(
+                    "Codex structured-output pass exited "
+                    f"{result.returncode}"
+                ),
+                result.stdout,
+                result.stderr,
+            )
+        return load_structured_codex_verdict(verdict_path), result.stdout, result.stderr
+    finally:
+        shutil.rmtree(str(tmp_dir), ignore_errors=True)
 
 
 # ----- Comment formatting -----
+
+
+def _limit_comment_body(body: str, trailer: str) -> str:
+    if len(body) <= MAX_GITHUB_COMMENT_CHARS:
+        return body
+
+    note = (
+        "\n\n[Codex audit comment truncated to stay under GitHub's "
+        "comment-size limit.]\n\n"
+    )
+    suffix = note + trailer + "\n"
+    allowed_prefix_len = MAX_GITHUB_COMMENT_CHARS - len(suffix)
+    if allowed_prefix_len < 0:
+        return suffix[-MAX_GITHUB_COMMENT_CHARS:]
+
+    prefix = body.rsplit(trailer, 1)[0] if trailer in body else body
+    return prefix[:allowed_prefix_len].rstrip() + suffix
 
 
 def format_comment(
@@ -933,7 +1374,7 @@ def format_comment(
     header = "## Codex audit (calibration phase — informational only)\n\n"
     header += f"Head SHA: `{head_sha}`\n"
     if is_stale:
-        return (
+        body = (
             header
             + f"\nHead SHA changed during review (`{head_sha[:8]}` → "
             + f"`{(stale_end_sha or '?')[:8]}`). Skipping this verdict and "
@@ -941,16 +1382,19 @@ def format_comment(
             + STALE_TRAILER
             + "\n"
         )
+        return _limit_comment_body(body, STALE_TRAILER)
     if is_unknown:
-        return (
+        body = (
             header
-            + "\nCould not parse a Codex verdict from the CLI output "
-            + "(no `codex` final-verdict marker found). The CLI may have "
-            + "produced no review, or its output format may have drifted. "
+            + "\nCould not parse a Codex verdict from the structured "
+            + "verdict artifact. The CLI may have produced no review, "
+            + "the structured-output pass may have failed, or the verdict "
+            + "format may have drifted. "
             + "Requeuing for re-review.\n\n"
             + STALE_TRAILER
             + "\n"
         )
+        return _limit_comment_body(body, STALE_TRAILER)
 
     header += (
         f"Findings: P0={parsed.p0_count}, P1={parsed.p1_count}, "
@@ -973,7 +1417,7 @@ def format_comment(
         "",
         trailer,
     ]
-    return "\n".join(body_lines) + "\n"
+    return _limit_comment_body("\n".join(body_lines) + "\n", trailer)
 
 
 # ----- Orchestration -----
@@ -981,7 +1425,8 @@ def format_comment(
 
 def audit_pr(config: AuditConfig, repo: str, pr_number: int) -> AuditResult:
     """End-to-end audit of one PR. Creates a temporary worktree at the PR
-    head, runs `codex review`, parses output, formats + posts a comment."""
+    head, runs Codex review, structures its verdict, formats + posts a
+    comment."""
     local_repo = config.repo_paths.get(repo)
     if local_repo is None:
         raise ValueError(
@@ -998,6 +1443,12 @@ def audit_pr(config: AuditConfig, repo: str, pr_number: int) -> AuditResult:
 
     print(f"audit {repo}#{pr_number} head={head_sha_start[:8]} "
           f"(local: {local_repo})", file=sys.stderr, flush=True)
+    codex_version = preflight_codex_cli(config)
+    print(
+        f"  codex CLI: {codex_version or '(version unavailable)'}",
+        file=sys.stderr,
+        flush=True,
+    )
 
     # Auto-discover a venv under the local repo and use it for the
     # `codex review` subprocess unless the caller explicitly set one
@@ -1081,14 +1532,41 @@ def audit_pr(config: AuditConfig, repo: str, pr_number: int) -> AuditResult:
 
     try:
         t0 = time.time()
-        codex_stdout, codex_stderr = run_codex_review(config, worktree_path)
+        review_text, review_stderr = run_codex_review(config, worktree_path)
         dt = time.time() - t0
         print(f"  codex review completed in {dt:.0f}s", file=sys.stderr, flush=True)
     finally:
         _remove_worktree(local_repo, worktree_path)
 
-    # Parse Codex's verdict.
-    parsed = parse_codex_output(codex_stdout, codex_stderr)
+    # Convert Codex's prose review into a structured, schema-shaped
+    # verdict artifact. This second call runs outside the PR worktree and
+    # receives only the captured review prose.
+    t0 = time.time()
+    parsed, structure_stdout, structure_stderr = run_codex_verdict_structuring(
+        config,
+        review_text,
+    )
+    dt = time.time() - t0
+    print(
+        f"  codex verdict structuring completed in {dt:.0f}s",
+        file=sys.stderr,
+        flush=True,
+    )
+    if parsed.mismatch_note:
+        print(
+            f"  structured-verdict mismatch: {parsed.mismatch_note}",
+            file=sys.stderr,
+            flush=True,
+        )
+    codex_stdout = review_text
+    codex_stderr = (
+        "===== CODEX REVIEW STDERR =====\n"
+        + (review_stderr if review_stderr else "<empty>\n")
+        + "\n===== STRUCTURE STDOUT =====\n"
+        + (structure_stdout if structure_stdout else "<empty>\n")
+        + "\n===== STRUCTURE STDERR =====\n"
+        + (structure_stderr if structure_stderr else "<empty>\n")
+    )
 
     # Stale-head check: refetch PR head and compare. If it changed mid-review,
     # the verdict applies to a no-longer-current SHA — requeue.
@@ -1102,16 +1580,16 @@ def audit_pr(config: AuditConfig, repo: str, pr_number: int) -> AuditResult:
         result_verdict = "STALE"
         trailer = STALE_TRAILER
     elif parsed.verdict == "UNKNOWN":
-        # Codex round 3 of #234 — P2: when the parser can't find the
-        # `codex` final-verdict marker, requeue rather than auto-PASS.
-        # The trailer is the same as STALE because the downstream
-        # outcome (re-run, don't trust this comment) is identical.
+        # When the structured verdict is missing, malformed, or
+        # unactionable, requeue rather than auto-PASS. The trailer is
+        # the same as STALE because the downstream outcome (re-run,
+        # don't trust this comment) is identical.
         #
-        # Persist the raw CLI bytes that confused the parser. The
+        # Persist the review prose and structuring diagnostics. The
         # post-comment trailer auto-requeues, but the next attempt
-        # overwrites the in-memory capture and the worktree is gone,
-        # so without this dump there's no way to diagnose "real
-        # parser bug or one-shot Codex CLI flake?" after the fact.
+        # overwrites the in-memory capture and the worktree is gone, so
+        # without this dump there's no way to diagnose "real structured
+        # output drift or one-shot Codex CLI flake?" after the fact.
         # Best-effort: a logging failure must not interrupt the audit.
         dump_path = dump_cli_failure(
             repo=repo,
@@ -1378,13 +1856,16 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(f"error: network — {exc}", file=sys.stderr)
         return 1
     except subprocess.TimeoutExpired:
-        print(f"error: codex review timed out after {args.timeout}s",
+        print(f"error: codex audit timed out after {args.timeout}s",
               file=sys.stderr)
         return 1
     except subprocess.CalledProcessError as exc:
         print(f"error: subprocess failed — {exc}", file=sys.stderr)
         return 1
     except FileNotFoundError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+    except RuntimeError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
 

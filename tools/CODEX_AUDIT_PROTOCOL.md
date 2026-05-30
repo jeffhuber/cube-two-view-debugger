@@ -57,23 +57,31 @@ Pipeline:
 
 1. Resolve the LOCAL repo path for `owner/repo` from
    `CODEX_AUDIT_REPO_PATHS` env var. The CLI requires a real git
-   checkout to run `codex review --base origin/main` against.
+   checkout to run the built-in review against.
 2. Fetch PR head SHA via GitHub API.
 3. `git fetch origin pull/<N>/head` to ensure the SHA is local; create
    a temporary detached worktree at that SHA.
-4. Run `codex review --base origin/main` from the worktree, capturing
-   stdout/stderr.
-5. Parse the output: extract the final verdict block (the last
-   `\ncodex\n` marker in the log), count `[P0]/[P1]/[P2]/[P3]`
-   severity tags, classify PASS vs BLOCKED. (As of Codex CLI
-   v0.133.0-alpha.1 the marker lands on stderr instead of stdout;
-   the wrapper falls back to stderr and CLAUDE.md describes the
-   captured-PASS-via-dump escape hatch this enables. Upstream
-   tracking: [openai/codex#24874](https://github.com/openai/codex/issues/24874).)
-6. Stale-head check: refetch PR head. If it changed mid-review, emit
+4. Run `codex exec --sandbox read-only review --base origin/main` from
+   the worktree, capturing the final review prose via
+   `--output-last-message`.
+5. Run generic `codex exec --sandbox read-only --output-schema
+   tools/codex_audit_verdict.schema.json` outside the PR worktree to
+   convert that prose into a wrapper-owned `cubesnap.codexAudit.v1`
+   verdict file. The schema is loaded from this trusted checkout, not
+   from the audited PR worktree. The verdict file lives in a wrapper
+   temp dir outside the worktree (`0700`, file tightened to `0600`).
+6. Validate the verdict with the stdlib-only wrapper checker, count
+   `[P0]/[P1]/[P2]/[P3]` severities, and classify PASS vs BLOCKED. The
+   wrapper is authoritative: any P0/P1/P2 finding blocks, P3 is
+   non-blocking, clean + `pass` passes, and clean + `blocked` requeues
+   as UNKNOWN rather than posting an empty blocked verdict.
+7. Stale-head check: refetch PR head. If it changed mid-review, emit
    the `needs-codex-audit` (stale) trailer.
-7. Post the parsed review as a PR comment with authoritative trailer.
-8. Clean up the worktree.
+8. Post the rendered structured verdict as a PR comment with
+   authoritative trailer. Comment rendering is capped under GitHub's
+   comment-size limit; oversized details are truncated while preserving
+   the trailer.
+9. Clean up the worktree.
 
 CLI usage:
 ```bash
@@ -84,8 +92,8 @@ tools/run_codex_audit_pr.sh --repo jeffhuber/cube-two-view-debugger --pr 233
 
 Add `--dry-run` to print the audit comment to stdout instead of posting.
 
-Exit codes: 0 (success), 1 (error), 2 (stale head — caller may requeue),
-20 (active matching audit already running).
+Exit codes: 0 (success), 1 (error), 2 (stale/unknown — caller may
+requeue), 20 (active matching audit already running).
 
 ### Local audit handoff log / duplicate guard
 
@@ -123,20 +131,20 @@ There are two separate Python controls:
    audit script itself. This prevents GitHub API calls from failing
    before review due to a broken ambient Python certificate store.
 2. `--venv-path` / `CODEX_AUDIT_VENV_PATH` controls the Python PATH
-   injected into the `codex review` subprocess inside the temporary PR
-   worktree.
+   injected into the built-in Codex review subprocess inside the
+   temporary PR worktree.
 
-The `codex review` subprocess inherits the parent's PATH, which on a
-typical macOS dev box resolves to a system anaconda Python instead of
-the canonical `.venv/`. This causes per-pixel drift in any audited tool
-whose output is sensitive to numpy/Pillow version
+The review subprocess inherits the parent's PATH, which on a typical
+macOS dev box resolves to a system anaconda Python instead of the
+canonical `.venv/`. This causes per-pixel drift in any audited tool whose
+output is sensitive to numpy/Pillow version
 (`tools/build_oracle_rectified_faces.py`,
 `tools/probe_center_color_phase_metric.py`, etc.), and surfaced as a
 real Codex P3 finding on PR #262.
 
 Auto-discovery: `audit_pr()` looks for `<local_repo>/.venv/bin/python`.
 If present, prepends `<local_repo>/.venv/bin` to PATH and exports
-`VIRTUAL_ENV` for the `codex review` subprocess. No-op for repos
+`VIRTUAL_ENV` for the review subprocess. No-op for repos
 without a `.venv/` (e.g. cube-snap, which uses npm/vitest for tests).
 
 Explicit override (rarely needed):
@@ -155,9 +163,10 @@ Codex tags findings inline with `[P0]`, `[P1]`, `[P2]`, `[P3]` brackets:
 
 This labeler treats **P0 / P1 / P2 as blockers**, P3 as concerns. This
 matches the empirical severity breakdown on #233 where every P2
-finding was a real bug worth fixing. You can override the policy by
-forking the parser; the verdict logic lives in
-`tools/codex_audit_pr.py::parse_codex_output`.
+finding was a real bug worth fixing. The authoritative verdict logic
+lives in `tools/codex_audit_pr.py::parse_structured_codex_verdict`;
+the older `parse_codex_output` prose parser is retained as legacy
+coverage for historical CLI-output regressions, not the live label path.
 
 ### 2. Labeler: `tools/codex_audit_labeler.py` + `.github/workflows/codex-audit-labeler.yml`
 
@@ -235,7 +244,7 @@ that drift.
 
 | Lane | Used by | Means |
 |---|---|---|
-| `codex-audit` | Codex via `tools/run_codex_audit_pr.sh` | Wrapper-driven automated `codex review` |
+| `codex-audit` | Codex via `tools/run_codex_audit_pr.sh` | Wrapper-driven automated Codex review |
 | `codex-review` | Codex via `tools/post_review.sh --lane codex-review` | Manual Codex cross-review of a Claude PR |
 | `claude-review` | Claude via `tools/post_review.sh --lane claude-review` | Manual Claude cross-review of a Codex PR |
 | `claude-audit` (reserved) | — | Reserved for a future Claude-side automated audit lane; not in use today |
@@ -316,7 +325,7 @@ for the now-paused Qwen lane, kept on disk as a starting point.)
 | Trigger | GitHub webhook when `needs-devin-audit` / `@devin audit` is used | Manual CLI invocation (local subprocess) | GitHub App review when `needs-greptile-audit` is used |
 | Model | Devin's hosted (paid) | OpenAI Codex (paid per OpenAI pricing; uses user's `~/.codex/auth.json`) | Greptile's hosted (paid per review/tier) |
 | Code access | Diff text via webhook | Real git worktree at head SHA | Diff + repo context via Greptile's GitHub App |
-| Latency | 2–10 min typical | 5–10 min typical for `codex review` | 30s–2 min typical |
+| Latency | 2–10 min typical | 5–10 min typical for Codex review | 30s–2 min typical |
 | Review style | Final-state QA + checklist | Whole-repo code tracing | Inline comments with severity badges (P0/P1/P2/P3) |
 | Merge authority | YES | **YES — preferred** (per CLAUDE.md) | NO (informational only, never gating) |
 | Mirror in both repos | Required (byte-identical) | Required (byte-identical) | Required (byte-identical) |
@@ -364,71 +373,20 @@ gh label delete codex-audit-blocked
   original Qwen lane this one paralleled in design (now paused; files
   kept on disk so the lane is trivial to revive).
 - `CLAUDE.md` "Devin PR audit routing" section — the merge-delegation
-  contract that currently authorizes only Devin's labels.
+  contract that grants Codex/Devin merge authority.
 
-## Why captured-PASS-via-dump is the operational norm (Codex CLI v0.133.0-alpha.1)
+## Historical note: captured-PASS-via-dump
 
-Empirical investigation (2026-05-27, 87 CLI-failure dumps captured during a
-single multi-PR cube-snap session): the current Codex CLI release
-deterministically routes the final-verdict marker to **stderr**, while the
-verdict prose lands on **stdout**.
+Before the structured-verdict path, Codex CLI v0.133.0-alpha.1 commonly
+split the final-verdict marker onto stderr while clean PASS prose landed
+on stdout. The prose parser intentionally refused stderr-only PASS-shaped
+text to avoid PR-controlled chatter faking a PASS, so clean reviews often
+landed as UNKNOWN and required the manual captured-PASS-via-dump
+workaround documented in older revisions of `CLAUDE.md`.
 
-| Stat | Count | % |
-|---|---|---|
-| Total dumps | 87 | 100% |
-| Stdout has column-0 `codex` marker | **0** | **0%** |
-| Stdout missing marker | **87** | **100%** |
-| Stderr has column-0 `codex` marker | 87 | 100% |
-
-Sample dump header:
-
-```
-OpenAI Codex v0.133.0-alpha.1
---------
-workdir: /private/var/folders/.../codex-audit-...
-model: gpt-5.5
-provider: openai
-approval: never
-sandbox: workspace-write [workdir, /tmp, $TMPDIR]
-reasoning effort: xhigh
-reasoning summaries: none
-```
-
-This is NOT intermittent (which is what the old "(the CLI flake mode)"
-wording in CLAUDE.md implied) — it is consistent CLI behavior on this
-release. The parser's stderr-fallback path is therefore the *primary*
-signal source on this CLI version, not a rare workaround.
-
-Implications:
-
-- **Captured-PASS-via-dump is the operational norm for clean PASS
-  audits**, not an exceptional case. The merge-auth path documented
-  in CLAUDE.md ("Captured-PASS-via-dump counts as `codex-audit-done`")
-  applies when an UNKNOWN-classified audit's captured stdout meets
-  ALL of: (a) substantive Codex summary line, (b) zero
-  `[P0]`/`[P1]`/`[P2]` finding bullets, AND (c) characteristic PASS
-  verdict prose (e.g. "did not find any actionable regressions",
-  "no introduced correctness issues", "no regressions introduced
-  by this patch"). See `CLAUDE.md` for the authoritative checklist
-  — this bullet only frames how often that path fires in practice
-  on this CLI version. It does NOT apply to:
-  - BLOCKED audits — stderr-fallback BLOCKED comments stay blocked
-    and require fixing the findings or re-auditing on a new head.
-  - UNKNOWN dumps where the captured stdout is empty, truncated,
-    or lacks the substantive-PASS-prose signal — zero blocker
-    bullets in those cases is the absence of a verdict, not
-    evidence of a clean one. Re-run the audit.
-- **A stable (non-alpha) Codex CLI release that emits the marker to
-  stdout** would let the parser take the stdout-anchored path and skip
-  the strict-shape validator entirely. If/when such a release is
-  available, pinning to it would simplify the audit comments back to
-  trailer-anchored `codex-audit-done` / `codex-audit-blocked` directly.
-- **Upstream Codex CLI bug worth filing**: the column-0 `codex`
-  final-verdict marker should land on the same stream as the verdict
-  prose (stdout), not be split across streams. Once fixed, the
-  stderr-fallback code path in `tools/codex_audit_pr.py` can be
-  deprecated.
-
-Sample data lives at `~/.cache/cube-agent-audits/cli-failures/` on the
-audit-operator machine; the 87-dump corpus referenced here is from the
-2026-05-27 cube-snap session ending ~23:00 PT.
+The current two-call path retires that workaround for normal operation:
+the built-in review prose is captured with `--output-last-message`, then
+generic `codex exec --output-schema` emits a JSON verdict artifact that
+the wrapper validates. `dump_cli_failure()` remains only for genuine
+structured-output failures (missing file, malformed JSON, schema drift,
+or unactionable verdict mismatch) and for legacy parser diagnostics.

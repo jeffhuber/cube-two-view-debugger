@@ -12,9 +12,13 @@ def _event_row(**overrides):
             "pairThresholdSelection": {
                 "selectionReason": "current_invalid_selected_best_pair",
                 "searchMode": "canonical_valid_light_shortcut",
+                "currentCanonicalProbeValid": False,
+                "currentLegalRepairEvaluated": False,
+                "currentLegalRepairSkipped": True,
                 "cheapCurrentCanonicalShadow": {
                     "currentCanonicalValid": False,
                     "currentLegalValid": False,
+                    "currentLegalRepairSkipped": True,
                     "couldHaveSkippedCurrentLegalForThisInput": True,
                 },
             }
@@ -24,6 +28,7 @@ def _event_row(**overrides):
                 "recognizeTotal": 1000.0,
                 "prepareConstrainedInput": 900.0,
                 "selectGuardedPair": 20.0,
+                "selectGuardedPair.currentCanonicalProbeEvaluatePair": 5.0,
             }
         },
     }
@@ -72,10 +77,14 @@ def test_recognition_event_summary_counts_and_stage_latency():
     assert summary["statusCounts"] == {"rejected": 1, "success": 1}
     assert summary["failureReasonCounts"] == {"not a cube": 1}
     assert summary["stageTimingsMs"]["selectGuardedPair"]["p50"] == 20.0
+    assert summary["latencyDrivers"][0]["stage"] == "recognizeTotal"
     assert summary["pairSelectionReasonCounts"] == {"current_invalid_selected_best_pair": 1}
     assert summary["pairSearchModeCounts"] == {"canonical_valid_light_shortcut": 1}
+    assert summary["currentLegalRepairCounts"]["skipped"] == {"True": 1}
     assert summary["cheapCurrentCanonicalShadow"]["evaluatedCount"] == 1
+    assert summary["cheapCurrentCanonicalShadow"]["currentLegalRepairSkippedCounts"] == {"True": 1}
     assert summary["cheapCurrentCanonicalShadow"]["couldHaveSkippedCurrentLegalCounts"] == {"True": 1}
+    assert summary["slowestAttempts"][0]["latencyMs"] == 1000.0
     assert len(summary["recentAttempts"]) == 1
 
 
@@ -92,7 +101,10 @@ def test_recognition_event_report_renders_recent_attempts():
     assert "# Recognition Event Report" in report
     assert "Status counts" in report
     assert "Pair selection" in report
+    assert "Current legal repair" in report
     assert "Cheap current canonical shadow" in report
+    assert "Latency Drivers" in report
+    assert "Slowest Attempts" in report
     assert "Recent Attempts" in report
 
 

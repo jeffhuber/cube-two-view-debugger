@@ -1591,6 +1591,7 @@ def prepare_llm_rectified_input(
                 "mode": "observed_after_full_current_repair",
                 "currentCanonicalValid": current_canonical_valid,
                 "currentLegalValid": current_legal_valid,
+                "currentLegalRepairSkipped": False,
                 "currentCanonicalProductionRank": current_light_combo.get("productionRank"),
                 "currentLegalProductionRank": current_combo.get("productionRank"),
                 "couldHaveSkippedCurrentLegalForThisInput": (
@@ -1714,6 +1715,13 @@ def prepare_llm_rectified_input(
         "currentThresholds": current_thresholds,
         "selectedThresholds": selected_combo.get("thresholds"),
         "currentRepairValid": repair_valid(current_combo["evaluation"]),
+        "currentCanonicalProbeValid": (
+            cheap_current_canonical_shadow.get("currentCanonicalValid")
+            if cheap_current_canonical_shadow
+            else None
+        ),
+        "currentLegalRepairEvaluated": True,
+        "currentLegalRepairSkipped": False,
         "selectedRepairValid": repair_valid(selected_eval),
         "currentProductionRank": current_combo.get("productionRank"),
         "selectedProductionRank": selected_combo.get("productionRank"),
@@ -2719,9 +2727,13 @@ def _compact_constrained_event_signal(signal: Any) -> Dict[str, Any]:
             "searchMode": pair_selection.get("searchMode"),
             "currentThresholds": pair_selection.get("currentThresholds"),
             "selectedThresholds": pair_selection.get("selectedThresholds"),
+            "currentCanonicalProbeValid": pair_selection.get("currentCanonicalProbeValid"),
+            "currentLegalRepairEvaluated": pair_selection.get("currentLegalRepairEvaluated"),
+            "currentLegalRepairSkipped": pair_selection.get("currentLegalRepairSkipped"),
             "cheapCurrentCanonicalShadow": {
                 "currentCanonicalValid": cheap_current_shadow.get("currentCanonicalValid"),
                 "currentLegalValid": cheap_current_shadow.get("currentLegalValid"),
+                "currentLegalRepairSkipped": cheap_current_shadow.get("currentLegalRepairSkipped"),
                 "couldHaveSkippedCurrentLegalForThisInput": cheap_current_shadow.get(
                     "couldHaveSkippedCurrentLegalForThisInput"
                 ),

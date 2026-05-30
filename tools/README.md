@@ -186,8 +186,8 @@
 
 | Script | What it does |
 |---|---|
-| **`benchmark_constrained_recognizer.py`** | **Deployed constrained recognizer benchmark.** Runs corpus against deployed or local endpoint, emits latency + accuracy scoreboard. Supports `--only-sets` and `--max-sides` for targeted profiling. |
-| **`score_deployed_recognizer.py`** | **Score deployed recognizer** against GT corpus with full accuracy + latency breakdown. |
+| **`benchmark_constrained_recognizer.py`** | **In-process constrained recognizer benchmark.** Runs corpus through the local constrained pipeline (no HTTP), emits latency + accuracy scoreboard. Supports `--only-sets` and `--max-sides` for targeted profiling. |
+| **`score_deployed_recognizer.py`** | **Deployed (Railway) recognizer benchmark.** Scores the deployed endpoint at `api.cubesnap.app` against GT corpus with full accuracy + latency breakdown. |
 | **`validate_constrained_inference_promotion.py`** | **Promotion gate validation.** Runs GT-free production-shaped gate on guarded pair-threshold candidate. |
 | **`validate_constrained_recognize_mode.py`** | **Constrained vs legacy mode validation.** Compares constrained and legacy paths at the recognizer boundary. |
 | **`report_recognition_events.py`** | **Recognition event reporter.** Queries durable event log for metadata-only production summaries (success/reject, latency, source). |

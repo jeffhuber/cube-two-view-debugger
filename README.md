@@ -32,6 +32,8 @@ The legacy classical-CV path (`WhiteUpRecognizer` in `recognizer.py`) is
 retained for compatibility, debugging, and the local UI's batch mode. The
 production endpoint is `POST /api/recognize?slim=1&hullLabelTier1=constrained`.
 
+### Legacy classical-CV pipeline (retained for local debugging / batch mode)
+
 ```mermaid
 flowchart TD
     User["User uploads A/B images or batch"] --> App["app.py<br/>Web server + CLI"]

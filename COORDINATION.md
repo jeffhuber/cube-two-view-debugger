@@ -61,8 +61,10 @@ Recent additions on top of the rectification foundation:
   production-shaped gate that accepts 71/71 of those candidates. The hidden
   `/api/recognize?hullLabelTier1=constrained` path now validates the same
   candidate at the recognizer boundary: 71/71 exact/legal versus 24/71 exact
-  for the unchanged legacy/default path. This is the current default-recognizer
-  shadow candidate, not a default flip by itself.
+  for the legacy path. **Update (2026-05-29):** The constrained recognizer
+  is now the production default — cube-snap calls
+  `api.cubesnap.app/api/recognize?slim=1&hullLabelTier1=constrained` as the
+  primary solve path.
 
 Open levers, approximate descending leverage:
 

@@ -1,4 +1,4 @@
-# State of the world (2026-05-23)
+# State of the world (2026-05-30)
 
 > One-page map of the project. Start here.
 
@@ -8,37 +8,43 @@ Real-camera Rubik's cube state recognition from **two isometric
 photos** (A: white-up showing U+R+F; B: yellow-up showing D+L+B after
 180° rotation). Two sister repos:
 
-- **`jeffhuber/cube-snap`** — the web app + production recognizer
-  pipeline.
-- **`jeffhuber/cube-two-view-debugger`** (this repo) — the research /
-  evaluation / diagnostics workbench. Hosts experimental geometry
-  tooling, hard-case probes, and the labeled ground-truth fixtures.
+- **`jeffhuber/cube-snap`** — the web app (live at
+  [cubesnap.app](https://cubesnap.app/)) + React frontend + iOS app
+  scaffolding.
+- **`jeffhuber/cube-two-view-debugger`** (this repo) — the Python
+  recognizer backend (deployed on Railway at `api.cubesnap.app`),
+  plus the research / evaluation / diagnostics workbench, ground-truth
+  corpus, and diagnostic tools.
 
-## Production architecture (current main, 2026-05-22)
+## Production architecture (2026-05-29)
 
-The end-to-end production path lives in cube-snap:
-
-```text
-two photos → cv-local recognizer (rubik_recognizer/*) → 54-char state → solver
-```
-
-`cv-local` is the **primary recognizer**. It uses face-quad detection
-+ rectification + per-sticker color classification, with hull
-validation and grid-extrapolation guards. End-to-end per-sticker
-accuracy on the labeled corpus is ~82–83%.
-
-The research pipeline in this repo runs in parallel — it does NOT
-replace cv-local. Its current role is scaffolding around cv-local:
+The end-to-end production path:
 
 ```text
-two photos → cv-local (primary) → state
-                ↓
-           global cube model (research) → trust signals, future learned ranker
+two photos → constrained cube-state inference (this repo, app.py on Railway)
+           → 54-char URFDLB state → Kociemba solver (cube-snap, client-side)
 ```
 
-See [`FIRST_PRINCIPLES_RECOGNIZER_DESIGN.md`](FIRST_PRINCIPLES_RECOGNIZER_DESIGN.md)
-for the north-star architecture and the policy bar that gates first-
-principles work.
+The **constrained recognizer** is the production default. It uses
+hull-label rectification → rembg silhouette masking → per-side
+threshold selection → deterministic color/count/legality repair →
+guarded pair-threshold search → solver validation. The pipeline
+treats LLM color reads and Lab-distance classification as evidence
+sources in a constrained solver, not as the source of truth.
+
+**Accuracy**: 71/71 exact on the 71-pair ground-truth corpus.
+Legacy cv-local on the same corpus: 24/71 exact.
+
+**Latency**: server-side p50 ~2.1s, p90 ~2.2s (Railway deployment).
+Bottleneck is rembg (background removal via U2Net), which accounts
+for ~76% of p50.
+
+The legacy cv-local path (`rubik_recognizer/*`) is retained for
+compatibility and debugging but is no longer the default production
+path. The Vercel LLM endpoint is an availability fallback.
+
+See both repos' `CLAUDE.md` for the constrained-inference architecture
+write-up and `COORDINATION.md` for the decision log.
 
 ## Where to find things
 
@@ -62,25 +68,27 @@ principles work.
 
 | Asset | Path | What it is |
 |---|---|---|
-| **Full-corner convention** | `tools/FULL_CORNER_LABELING.md` | Canonical `Va/Vb + 0..5` convention, A/B face outlines, flattened facelet mapping, and legacy-axis audit note. |
-| **Full-corner truth** | `tests/fixtures/full_corner_ground_truth.json` | Canonical 34-photo full-corner fixture, covering seed sets 20, 38, 40, 41, 43, 45 plus tail/stress sets 63-73. |
-| **Canonical full-corner global baseline** | `tests/fixtures/full_corner_global_model_baseline.json` | First current-main global-model snapshot against full-corner truth. Seed result: 8/12 `PHASE_SWAPPED`, 3/12 `GOOD`, 1/12 `MARGINAL`. |
-| **Axis-labeled ground truth** | `tests/fixtures/gcm_axis_ground_truth.json` | Legacy vertex + `near_*` fixture. Treat as provisional until audited/migrated against full-corner labels; do not assume `near_*` means one-edge truth. |
-| **Post-#218 baseline snapshot** | `tests/fixtures/post_218_baseline.json` | Legacy current-main accuracy snapshot derived from `gcm_axis_ground_truth.json`. Regression-gate semantics are provisional until the fixture is migrated. |
-| **Benchmark harness** | `tools/baseline_post_218.py` | Runs the legacy eval, supports `--diff` mode for row-level deltas. Must be updated/regenerated from full-corner truth before being used as canonical phase/chirality evidence. |
-| **Production recognizer (cv-local)** | `cube-snap` repo, `rubik_recognizer/*` | The primary system. |
-| **Global cube model (research)** | `tools/global_cube_model.py` | Scaffolding around cv-local. NOT a replacement. |
+| **Ground-truth corpus manifest** | `tests/fixtures/corpus_manifest.json` | 71-pair corpus with image paths, ground-truth states, and per-set metadata. |
+| **Hard-case manifest** | `tests/fixtures/hard_case_manifest.json` | Hard-case subset for focused regression testing. |
+| **Full-corner convention** | `tools/FULL_CORNER_LABELING.md` | Canonical `Va/Vb + 0..5` convention, A/B face outlines, flattened facelet mapping. |
+| **Full-corner truth** | `tests/fixtures/full_corner_ground_truth.json` | Canonical full-corner fixture covering sets 20, 38, 40, 41, 43, 45 plus tail/stress sets 63-73. |
+| **Hull-label scoreboard** | `tools/CURRENT_HULL_LABEL_SCOREBOARD.md` | Current constrained-inference accuracy snapshot: 71/71 exact. |
+| **Promotion gate** | `tools/CONSTRAINED_INFERENCE_PROMOTION_GATE.md` | GT-free production-shaped gate evaluation: 71/71 accepted. |
+| **Latency plan** | `tools/CONSTRAINED_RECOGNIZER_LATENCY_PLAN.md` | Deployed bottleneck analysis and optimization roadmap. |
+| **Production recognizer** | `app.py` (this repo, Railway) | Constrained inference endpoint at `api.cubesnap.app`. |
+| **Legacy cv-local** | `rubik_recognizer/*` | Retained for compatibility; no longer the default. |
+| **Global cube model** | `tools/global_cube_model.py` | Hull-label pipeline foundation; now wired into constrained inference. |
 
 ## Phased roadmap
 
 | Phase | Status | What it produces | Success criterion |
 |---|---|---|---|
 | **0 — Consolidate** | ✅ Done (#222) | Docs: this file, FIRST_PRINCIPLES_RECOGNIZER_DESIGN, FAILURE_TAXONOMY, BENCHMARK_INDEX, tools/README, COORDINATION. | All 6 docs landed; no code changes. |
-| **1 — Re-baseline both sides** | Legacy baseline done (#220, #225); canonical full-corner migration started. | Legacy global/cv-local snapshots remain historical. Canonical seed global-model snapshot now uses `tests/fixtures/full_corner_ground_truth.json` and shows 8/12 `PHASE_SWAPPED`, 3/12 `GOOD`, 1/12 `MARGINAL`. | Next: migrate cv-local / Phase 2B / Phase 4 diagnostics onto full-corner truth before mining new trust signals. |
-| **2 — Trust policy diagnostics** | **Done.** Sub-status: **2A** (#228 — solo phase_sep ceiling 45.8% recall / 9.2% FPR, below bar); **2B initial matrix** (#232 — 18 rules over phase_sep + cv-local; closest `phase_sep_alone_T20.0` at 66.7%/30.3%); **2B with recomputed signals** (current PR — 54 rules over 6 continuous signals: fit_residual, pnp_rms, hex_bezel, ensemble_shift, junction_score, phase_sep. `phaseANDcv_OR_ensemble_shift_T60.0` first to clear FPR bar at 8.1%/50% recall; `phase_sep_alone_T20.0` first to clear recall bar at 80%/31% FPR; **no rule clears both bars simultaneously under hand-tuning**). See `PHASE_2B_TRUST_SIGNAL_MATRIX_RECOMPUTED.md`. **Codex's conditional pivot triggered — Phase 4 or 5 next.** | Product-shaped: catches catastrophic / phase-wrong cases with low false-retake on GOOD cases on the 58-case eval. Concretely: ≥80% recall on the catastrophic band at ≤10% false-retake on GOOD. (Aggregate-correlation thresholds like "r > 0.6" are an internal sanity check, not the success bar.) |
-| **3 — Guardrail experiment** | Likely deferred or skipped — Phase 2B has produced evidence-backed pivot to Phase 4/5 (hand-tuned rules can't simultaneously clear both bars). | Production behavior change: low-trust cases route to retake/manual-fixer. First phase where production behavior changes. | Confident-wrong rate drops without abstention >15% (or agreed budget). Tracked in `--diff`. |
-| **4 — Learned geometry / ranker** | **Promoted to next-up** by Phase 2B finding. Train a logistic-regression or small-MLP retake classifier on the 6 continuous signals captured in `phase2b_trust_signal_matrix_recomputed.json` (already shaped as a labeled dataset: per-row features + outcome). | Trained vertex/axis/phase ranker on 58+ labels with held-out splits + calibrated abstention. | Held-out test accuracy + abstention curves match or beat the hand-tuned compounds in Phase 2B. Specifically: ≥80% catastrophic recall AND ≤10% GOOD FPR (the Phase 2 bar that Phase 2B couldn't clear with hand-tuned rules). |
-| **5 — Better capture / UX** | Also promoted by Phase 2B — `ensemble_shift_px` and `hex_bezel_disagree` can drive specific retake instructions ("cube partially occluded, retake from cleaner angle") instead of generic abstention. | Phase-2B diagnostics drive retake instructions / manual fixer rather than forcing repair. | Reduction in user-reported confident-wrong rate (production metric). |
+| **1 — Re-baseline both sides** | ✅ Done. | Legacy global/cv-local snapshots remain historical. Canonical seed global-model snapshot now uses `tests/fixtures/full_corner_ground_truth.json`. | Baselines established. |
+| **2 — Trust policy diagnostics** | ✅ Done. | Hand-tuned rules couldn't simultaneously clear both recall and FPR bars. Pivoted to constrained inference architecture instead. | Completed; superseded by constrained inference. |
+| **3 — Guardrail experiment** | Superseded. | Constrained inference achieves 71/71 exact, eliminating the need for guardrail-based routing. | N/A — superseded. |
+| **4 — Constrained cube-state inference** | ✅ **Shipped as production default (2026-05-29).** | Hull-label rectification + deterministic repair + guarded pair-threshold selection. Deployed on Railway at `api.cubesnap.app`. | 71/71 exact on GT corpus. Server p50 ~2.1s. |
+| **5 — Latency optimization** | **In progress.** | rembg cost reduction, guarded-pair tail capping, client image pre-resize. | Target: sub-2s server p50. See `CONSTRAINED_RECOGNIZER_LATENCY_PLAN.md`. |
 
 ## How to contribute a change
 
@@ -107,25 +115,31 @@ Before opening a geometry-sensitive PR (anything that could affect
 See [`POST_218_BASELINE_AND_TAXONOMY.md`](POST_218_BASELINE_AND_TAXONOMY.md)
 "How to use this as a regression gate" for details.
 
-## Recently shipped (chirality / phase work, May 2026)
+## Recently shipped (May 2026)
 
 | PR | What |
 |---|---|
-| #210 | Chirality detection diagnostic (diagnostic-only). |
-| #213 | Enabled auto-correction with empirically-validated polarity. |
-| #218 | Reordered: vertex ensemble BEFORE phase check. +33pp accuracy. |
-| #220 | Post-#218 baseline + failure taxonomy (decision spine). |
-| #221 | Mechanical rename: chirality → near_far_phase. |
-| #140, #219 | Documented standing in-thread merge delegation. |
+| #396 | Parallelize constrained hull fitting (latency). |
+| #395 | Refresh recognizer architecture docs. |
+| #393 | Durable recognition event logging (Railway production). |
+| #392 | Fast-reject obvious non-cube constrained inputs. |
+| #388 | Short-circuit guarded pair canonical search (latency). |
+| #385 | Guarded Railway deploy script. |
+| #384 | Speed constrained recognize path. |
+| #380 | Railway deployment configuration. |
+| #355 | Parity check speedup (O(n) from O(n²)). |
 
 ## Open questions that need user judgment (not Claude/Codex)
 
 These are deliberately surfaced here so they don't get lost:
 
-- **Labeling cadence**: when do we extend the 58-case set? Active-
-  label queues (based on current-model disagreement) need user time.
-- **Abstention budget**: what fraction of solves can route to retake
-  before UX degrades unacceptably? This sets Phase 3's success bar.
-- **Capture-flow product changes**: Phase 5 implies UX work (retake
-  prompts, manual-fixer flow). Out of scope for first-principles
+- **rembg replacement**: Is a cheaper silhouette estimator worth
+  the risk on edge cases? Could cut p50 from ~2.1s to sub-1s.
+- **Real-traffic telemetry review**: The durable event log exists;
+  when to start systematic review of real-user failure patterns?
+- **Hard-case corpus expansion**: When to add more sets beyond the
+  current 71-pair corpus? Edge cases from real traffic may reveal
+  gaps.
+- **Capture-flow product changes**: Better retake instructions,
+  guided-capture UX. Out of scope for first-principles
   geometry work alone.

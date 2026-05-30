@@ -1,22 +1,38 @@
 # Two-View Rubik's Cube Recognizer
 
-A small local web app for recognizing a Rubik's cube from two isometric photos:
-image A starts with the white face up, then image B shows the cube after the flip
-with the opposite yellow face visible.
+Recognizes a Rubik's cube state from two isometric photos (A: white-up U+R+F;
+B: yellow-up D+L+B after 180° rotation) and returns a strict 54-character
+URFDLB state or a rejection reason.
 
-The recognizer is intentionally strict. It only returns a 54-character URFDLB state when the
-two images provide enough evidence to build a legal cube state. Otherwise it returns a rejection
-reason and annotated overlays for debugging or retaking the photos.
+**Deployed** at `api.cubesnap.app` on Railway. Powers the
+[CubeSnap](https://cubesnap.app/) web app's default recognition path.
 
-Batch mode can compare results against CSV, TSV, or JSON ground-truth files. JSON exports with
-`setName` and `corrected` fields are supported directly, including unique legal net exports that
-need to be canonicalized into standard URFDLB order.
+**Accuracy**: 71/71 exact on the 71-pair ground-truth corpus (constrained
+inference path). Legacy cv-local: 24/71 exact on the same corpus.
+
+**Latency**: server-side p50 ~2.1s, p90 ~2.2s. Bottleneck is rembg
+(background removal via U2Net, ~76% of p50).
+
+The recognizer is intentionally strict. It only returns a state when the
+two images provide enough evidence to build a legal cube state. Otherwise it
+returns a rejection reason and annotated overlays for debugging or retaking.
+
+Batch mode can compare results against CSV, TSV, or JSON ground-truth files.
 
 ## Architecture
 
-The app is split into a small local UI/API layer, a CV pipeline, and a cube-constraint recognition
-layer. The core design is to collect many plausible interpretations from noisy image evidence,
-then accept only interpretations that can become a legal Rubik's cube state.
+The production path is **constrained cube-state inference**: hull-label
+rectification → rembg silhouette masking → per-side threshold selection →
+deterministic color/count/legality repair → guarded pair-threshold search →
+solver validation. The pipeline treats multiple evidence sources (Lab color
+distance, LLM color reads, hull-label geometry) as inputs to a constrained
+solver, not as independent oracles.
+
+The legacy classical-CV path (`WhiteUpRecognizer` in `recognizer.py`) is
+retained for compatibility, debugging, and the local UI's batch mode. The
+production endpoint is `POST /api/recognize?slim=1&hullLabelTier1=constrained`.
+
+### Legacy classical-CV pipeline (retained for local debugging / batch mode)
 
 ```mermaid
 flowchart TD

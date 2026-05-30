@@ -49,7 +49,8 @@ candidate. The promotion-gate diagnostic accepts 71/71 corpus rows and scores
 mode now reproduces that 71/71 exact result at the recognizer boundary while
 the unchanged legacy path is 24/71 exact on the same corpus.
 
-This is a strong shadow/default-candidate signal, but it is not yet a default
-flip: the next production step should run the hidden constrained mode in shadow
-on real traffic and explicitly preserve fallback/manual-review behavior when
-the gate rejects.
+**Update (2026-05-29):** The constrained mode is now the production default.
+cube-snap's main Solve flow calls
+`api.cubesnap.app/api/recognize?slim=1&hullLabelTier1=constrained` as the
+primary recognizer, with the Vercel LLM endpoint as an availability fallback.
+The shadow rollout step was bypassed based on the strength of this evidence.

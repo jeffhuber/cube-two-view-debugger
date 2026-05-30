@@ -61,18 +61,19 @@ Recent additions on top of the rectification foundation:
   production-shaped gate that accepts 71/71 of those candidates. The hidden
   `/api/recognize?hullLabelTier1=constrained` path now validates the same
   candidate at the recognizer boundary: 71/71 exact/legal versus 24/71 exact
-  for the unchanged legacy/default path. This is the current default-recognizer
-  shadow candidate, not a default flip by itself.
+  for the legacy path. **Update (2026-05-29):** The constrained recognizer
+  is now the production default — cube-snap calls
+  `api.cubesnap.app/api/recognize?slim=1&hullLabelTier1=constrained` as the
+  primary solve path.
 
 Open levers, approximate descending leverage:
 
-1. **Real-traffic shadow rollout** for the hidden constrained recognizer mode:
-   run `/api/recognize?hullLabelTier1=constrained-shadow` beside the legacy
-   default. The endpoint now appends compact JSONL events to
-   `runs/constrained_inference_shadow.jsonl` (override with
-   `CUBE_CONSTRAINED_SHADOW_LOG`, disable with `off`); compare accept/reject,
-   method, threshold, and yaw distributions to the 71-pair corpus before
-   replacing the legacy default.
+1. **Real-traffic telemetry review.** The constrained recognizer is now the
+   production default (bypassed shadow rollout). The durable recognition event
+   log (`CUBE_RECOGNITION_EVENT_DB_PATH`) and `/api/recognition-events/report`
+   endpoint provide metadata-only production telemetry. Next leverage is
+   watching real-traffic reject reasons, latency tails, and per-category
+   distributions.
 2. **Lab + LLM ensemble** for per-sticker color reads.
 3. **Confidence-gated auto-merge** of repair variants based on
    inter-variant agreement.
@@ -158,7 +159,7 @@ Update when opening a PR; clear when merged. Keep this current — it's the prim
 
 ### Proposed for Codex (please pick up or push back)
 
-- **Gate calibration in shadow mode against real traffic.** The 70-row corpus shadow-trace analyzer (#292) is the calibration baseline; current acceptance + accepted-with-warnings counts and gate distributions live in `tools/SHADOW_TRACE_ANALYSIS.md` (regenerates with the corpus — read it for current numbers rather than relying on this prose). Before flipping the default from `shadow` → `prefer`: (1) collect shadow traces from production traffic to confirm distribution matches corpus, (2) validate gate accepts ARE the right rows (cross-reference vs ground-truth rectification quality), (3) decide whether the unexercised hard thresholds on `projective_residual_norm` and `sticker_score_total` need calibration against synthetic bad cases or wait for real-traffic data.
+- **Real-traffic telemetry analysis.** The constrained recognizer is now the production default. The durable recognition event log and `/api/recognition-events/report` endpoint are live. Proposed: collect and analyze real-traffic patterns — reject reasons, latency distributions, per-category drift — and compare against the 71-pair corpus distributions. Look for edge cases the corpus doesn't cover (non-standard lighting, damaged cubes, partial occlusion, heavily tilted yaw).
 
 *(Either side: populate your row when you start something.)*
 
@@ -170,17 +171,21 @@ Last 5 per side. Newest first. One line + PR # + the takeaway.
 
 ### Claude
 
-- **#328** — Use flipped B-side prefill in full-corner labeling gallery. Side B prefill now matches the corner order a human labeler sees in the 180°-rotated image (corner_0 at bottom-of-image, etc.); Side A defaults preserved. Pure labeling-tool ergonomics; production recognizer untouched.
-- **#327 / cube-snap #188** — Document audit-wrapper loud-failure contract (defensive comments at `post_pr_comment` call sites) + new CLAUDE.md sections in both repos codifying the 2026-05-26 constrained-cube-state-inference shift. The wrapper change is mirror-invariant; the CLAUDE.md updates are repo-specific.
-- **#326** — Legality repair probe on hull-label corpus. Conservative variant at 43/46 exact; broad variant at 46/46 exact (diagnostic upper-bound, NOT the production recognition number). Probe-only — no production wire-up.
-- **#325** — Post-repair scoreboard on 46-pair shadow corpus across 5 repair variants. Establishes the 0/46 → 20/46 → 42/46 → 43/46 → 46/46 progression as the calibration spine for graduating variants.
-- **#324** — Expose hull-label color repair draft as a deterministic API surface on the rectified samples. Foundation for #325 scoreboard + #326 legality probe.
-- **#323 / cube-snap #186** — Fix `run_codex_audit_pr.sh` silently swallowing Python failures. Wrapper's `finish_lock` was logging `status="completed"` on every run because `local rc; rc=$?` captures the exit of `local`, not the prior command. Structural fix; #327/#188 added defensive comments at the Python call sites.
-- **#321** — Claude session-start queue sweep hook (mirrored as cube-snap #185). On session resume, sweep both repos for `needs-claude-review` PRs and re-arm the audit-log monitor; closes the "monitor died, missed PR" failure mode.
-- **#316** — Label rectified LLM cells by WCA facelet. Center-color yaw inference + per-cell WCA labels in the rectified contact sheet handed to the cloud LLM.
-- **#315** — Harden rectified LLM yaw prep. Edge cases in the yaw inference path that previously silently produced mis-oriented contact sheets now raise or fall back deterministically.
-- **#292** — Shadow-trace analyzer for Tier 1 hull-label gates. `tools/analyze_shadow_traces.py` + `tools/SHADOW_TRACE_ANALYSIS.md` baseline + `tests/fixtures/shadow_trace_corpus.json` artifact. Headline: 69/70 accept, 1/70 reject (30_A bad-hull, caught by `projective_residual_norm`).
-- **#289** — Hybrid affine/projective vertex switch in `rectify_via_hull_labels` (normalized threshold + projective_residual_norm bad-input gate). Resolution-independent: `vertex_cloud_spread_norm > 0.26` switches to projective vertex. 69/70 corpus rectifications clean (was 68/70); 37_B recovered; 30_A still flagged via new `projective_residual_norm` hard gate (correct — bad hull input).
+- **#402** — Trim guarded pair light repair work (latency optimization).
+- **#401** — Add guarded pair profiling telemetry.
+- **#400** — Harden recognition ops reporting.
+- **#399** — Add recognition event report endpoint.
+- **#398** — Constrained latency benchmark and event report tool.
+- **#397** — Refresh deployed latency scoreboard.
+- **#396** — Parallelize constrained hull fitting (latency improvement).
+- **#395** — Refresh recognizer architecture docs.
+- **#394** — Validator: drop U/D leniency in corner lookup (lockstep w/ cube-snap#237).
+- **#393** — Log durable recognition events.
+- **#392** — Fast reject obvious non-cube constrained inputs.
+- **#388** — Short-circuit guarded pair canonical search.
+- **#387** — Prewarm constrained recognizer and fix test hygiene.
+- **#385** — Guarded Railway deploy script.
+- **#384** — Speed constrained recognize path.
 - **#288** — Projective vertex via vanishing-point construction (diagnostic). `tools/projective_vertex.py` computes the analytically-correct cube-vertex from parallel-edge intersections; preserved as diagnostic before the #289 hybrid wiring decided when to use it.
 - **#286** — Schema rename `near_x/y/z` → `axis_x/y/z` in axis-truth + doc. Reader shims in 4 places preserve backward-compat; positions unchanged. Removes the misnomer that "near" labels actually sit at FAR-corner positions per side convention.
 - **#284** — Lazy rembg session init in `measure_hull_labels_corpus.main`. Avoids ImportError on clean installs when no rows resolve. Codex P1.

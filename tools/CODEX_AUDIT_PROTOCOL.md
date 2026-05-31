@@ -50,6 +50,17 @@ already running. It uses `<repo>/.venv/bin/python` when present, then
 `CODEX_AUDIT_REPO_PATHS`; if none exists, it refuses to run rather than
 silently falling back to ambient `python3`.
 
+**Fire from a main-current checkout, never a stale one.** This wrapper and
+`codex_audit_pr.py` are mirror-invariant and evolve over time, so run them
+from a checkout whose `tools/codex_audit_pr.py` matches `origin/main`. A
+stale checkout (e.g. a primary sitting on an old branch) can carry a legacy
+prose-scraping wrapper that silently uses the old UNKNOWN / captured-PASS
+path instead of the structured verdict. Before firing, bring the checkout
+current (`git fetch origin && git reset --hard origin/main`, or keep a
+dedicated main-tracking worktree and `git pull` it). Quick check:
+`grep -c parse_structured_codex_verdict tools/codex_audit_pr.py` must be
+greater than 0 (the structured wrapper).
+
 The underlying CLI reviews ONE PR end-to-end by invoking the
 locally-installed Codex CLI
 (`/Applications/Codex.app/Contents/Resources/codex` by default).

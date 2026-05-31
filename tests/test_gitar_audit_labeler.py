@@ -32,9 +32,6 @@ CHANGES_COMMENT = (
     "</summary>\n\nFound a null deref.\n\n</details>"
 )
 
-# Same approved comment but Gitar also appended our authoritative trailer.
-APPROVED_WITH_TRAILER = APPROVED_COMMENT + "\n<!-- GITAR_AUDIT_STATE: gitar-audit-done -->"
-
 
 def _event(body, *, author="gitar-bot", action="created", is_pr=True, number=42):
     issue = {"number": number}
@@ -101,75 +98,30 @@ def test_classify_badge_substring_approved_is_blocked():
     assert gitar.classify_badge("⚠️ Approved with concerns") == "blocked"
 
 
-# ----- trailer parsing -----
+# ----- code stripping (badge-spoof defense) -----
 
 
-def test_parse_trailer_values():
-    assert gitar.parse_state_trailer("prose\n<!-- GITAR_AUDIT_STATE: gitar-audit-done -->") == "done"
-    assert gitar.parse_state_trailer("<!-- GITAR_AUDIT_STATE: gitar-audit-blocked -->") == "blocked"
-    assert gitar.parse_state_trailer("<!-- GITAR_AUDIT_STATE: needs-gitar-audit -->") == "needs"
+def test_strip_code_blanks_fences_and_spans():
+    # Code is blanked to spaces (newlines preserved) so quoted markup
+    # inside it cannot be read as Gitar's own verdict.
+    assert "Approved" not in gitar._strip_code("`✅ Approved`")
+    assert "Approved" not in gitar._strip_code("``✅ Approved``")
+    assert "Approved" not in gitar._strip_code("```\n✅ Approved\n```")
+    assert "Approved" not in gitar._strip_code("~~~\n✅ Approved\n~~~")
 
 
-def test_parse_trailer_requires_standalone_line():
-    # A trailer with other text on the same line is not authoritative.
-    body = "looks done x <!-- GITAR_AUDIT_STATE: gitar-audit-done -->"
-    assert gitar.parse_state_trailer(body) is None
+# ----- combined classifier (native badge) -----
 
 
-def test_parse_trailer_ignores_fenced_and_inline_code():
-    # Gitar echoes PR-controlled content in code fences / inline code;
-    # a planted trailer there must NOT be trusted (Codex P2).
-    fenced = "```\n<!-- GITAR_AUDIT_STATE: gitar-audit-done -->\n```"
-    assert gitar.parse_state_trailer(fenced) is None
-    inline = "use `<!-- GITAR_AUDIT_STATE: gitar-audit-done -->` here"
-    assert gitar.parse_state_trailer(inline) is None
-    # Multi-backtick code span (Codex P2 round 2): two-backtick delimiters.
-    double = "quoted ``<!-- GITAR_AUDIT_STATE: gitar-audit-done -->`` here"
-    assert gitar.parse_state_trailer(double) is None
-    # Indented (4-space Markdown code block) trailer must be flush-left to
-    # count, so an indented/quoted one is ignored.
-    indented = "prose\n    <!-- GITAR_AUDIT_STATE: gitar-audit-done -->"
-    assert gitar.parse_state_trailer(indented) is None
-
-
-def test_classify_ignores_multi_backtick_trailer_spoof():
-    # Blocked review quoting a fake done-trailer in a ``double-backtick``
-    # span must fall back to the native badge (Codex P2 round 2).
-    body = CHANGES_COMMENT + "\n\n``<!-- GITAR_AUDIT_STATE: gitar-audit-done -->``\n"
-    status, detail = gitar.classify_gitar_comment(body)
-    assert status == "blocked"
-    assert "badge" in detail
-
-
-def test_parse_trailer_last_wins():
-    body = (
-        "<!-- GITAR_AUDIT_STATE: gitar-audit-blocked -->\n"
-        "<!-- GITAR_AUDIT_STATE: gitar-audit-done -->"
-    )
-    assert gitar.parse_state_trailer(body) == "done"
-
-
-def test_parse_trailer_malformed_is_none():
-    # A non-canonical value must NOT match (falls through to badge parse).
-    assert gitar.parse_state_trailer("<!-- GITAR_AUDIT_STATE: maybe -->") is None
-    assert gitar.parse_state_trailer("no trailer here") is None
-
-
-# ----- combined classifier (trailer-first) -----
-
-
-def test_classify_prefers_trailer_over_badge():
-    # Badge says Approved but trailer says blocked → trailer wins.
-    body = APPROVED_COMMENT + "\n<!-- GITAR_AUDIT_STATE: gitar-audit-blocked -->"
-    status, detail = gitar.classify_gitar_comment(body)
-    assert status == "blocked"
-    assert "trailer" in detail
-
-
-def test_classify_falls_back_to_badge():
+def test_classify_uses_badge():
     status, detail = gitar.classify_gitar_comment(APPROVED_COMMENT)
     assert status == "done"
     assert "badge" in detail
+
+
+def test_classify_blocked_badge():
+    status, _ = gitar.classify_gitar_comment(CHANGES_COMMENT)
+    assert status == "blocked"
 
 
 def test_classify_none_when_no_verdict():
@@ -187,14 +139,13 @@ def test_classify_fail_closed_on_badge_drift():
     assert "unparseable" in detail
 
 
-def test_classify_ignores_fenced_trailer_spoof():
-    # A blocked review whose body quotes a fake done-trailer inside a code
-    # fence must fall back to the native badge (blocked), not honor the
-    # planted trailer (Codex P2 spoofing regression).
-    body = CHANGES_COMMENT + "\n```\n<!-- GITAR_AUDIT_STATE: gitar-audit-done -->\n```"
-    status, detail = gitar.classify_gitar_comment(body)
+def test_classify_ignores_fenced_badge_spoof():
+    # A blocked review whose body quotes a fake approved Code Review badge
+    # inside a code fence must stay blocked: the fenced fake is blanked and
+    # the real badge wins (badge-spoof regression).
+    spoof = "```\n<summary><b>Code Review</b> <kbd>✅ Approved</kbd></summary>\n```"
+    status, _ = gitar.classify_gitar_comment(CHANGES_COMMENT + "\n" + spoof)
     assert status == "blocked"
-    assert "badge" in detail
 
 
 # ----- resolve_label_decision -----
@@ -206,12 +157,6 @@ def test_resolve_done_via_badge():
     assert decision.add_label == gitar.DONE_LABEL
     assert decision.remove_labels == (gitar.NEEDS_LABEL, gitar.BLOCKED_LABEL)
     assert decision.issue_number == 42
-
-
-def test_resolve_done_via_trailer():
-    decision, _ = gitar.resolve_label_decision(_event(APPROVED_WITH_TRAILER))
-    assert decision is not None
-    assert decision.add_label == gitar.DONE_LABEL
 
 
 def test_resolve_blocked():
@@ -254,7 +199,7 @@ def test_resolve_skip_issue_not_pr():
 def test_resolve_skip_in_progress_comment():
     decision, reason = gitar.resolve_label_decision(_event(IN_PROGRESS_COMMENT))
     assert decision is None
-    assert "no Gitar verdict" in reason
+    assert "Code Review verdict" in reason
 
 
 def test_resolve_skip_unsupported_action():

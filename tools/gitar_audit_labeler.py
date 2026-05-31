@@ -55,17 +55,23 @@ that badge, and applies one of:
   The exact non-approved badge taxonomy is refined as real non-approved
   verdicts are observed; see GITAR_AUDIT_PROTOCOL.md.
 
-## Trailer protocol (preferred) with native-badge fallback
+## Verdict source: native `<kbd>` badge only
 
-Gitar can be configured (via its dashboard "Custom instructions" or a
-`.gitar/` rule) to append our `<!-- GITAR_AUDIT_STATE: ... -->` trailer,
-exactly like the Codex/Devin lanes. When that trailer is present this
-labeler treats it as AUTHORITATIVE (last trailer wins). When it is
-absent — Gitar honoring the instruction is best-effort and not
-guaranteed — the labeler falls back to parsing the native `<kbd>` Code
-Review badge. The two-layer design means the lane works whether or not
-Gitar emits the trailer, and auto-upgrades to trailer-grade reliability
-if it does.
+The verdict is read solely from Gitar's own Code Review `<kbd>` badge (its
+authoritative dashboard output). We previously also accepted an optional
+`<!-- GITAR_AUDIT_STATE: ... -->` trailer Gitar could be instructed to
+append, but Gitar does not honor that instruction in practice (confirmed
+across several PRs) and the trailer is PR-influenced content that proved a
+recurring spoofing surface, so it was removed. PR-controlled text echoed
+inside code fences/spans is blanked before parsing so a quoted badge
+cannot be mistaken for Gitar's own verdict.
+
+A first-class machine-readable verdict (a read-only API field, or a
+verdict label decoupled from a code-host approval) would be preferable,
+but on the Pro plan the verdict API is Enterprise-gated and the native
+`gitar-approved` label is coupled to Gitar submitting a GitHub approval
+(which conflicts with this lane's advisory-only posture). Badge parsing is
+the correct integration for now; see GITAR_AUDIT_PROTOCOL.md.
 """
 
 from __future__ import annotations
@@ -185,62 +191,34 @@ def classify_badge(badge: Optional[str]) -> Optional[str]:
 
 
 # Gitar echoes PR-controlled content (command examples, quoted snippets)
-# inside code fences and inline-code spans. A `<!-- GITAR_AUDIT_STATE: ... -->`
-# planted there must NOT be trusted, so code is stripped before the trailer
-# search. Run-aware: a Markdown code span/fence is an opening run of N
-# backticks closed by a run of N backticks (single `x`, double ``x``,
-# fenced ```...```), so `(`+).*?\1` strips them ALL. The earlier
-# single-backtick pattern left a two-backtick span like ``<!-- ... -->``
-# behind (Codex P2 round 2 on ctvd#413). ~~~ fences handled too.
+# inside code fences and inline-code spans, so a Code Review badge quoted
+# there must NOT be mistaken for Gitar's own verdict. `_strip_code` blanks
+# code to spaces (preserving newlines/columns) before badge parsing.
+# Run-aware: a Markdown code span/fence is an opening run of N backticks
+# closed by a run of N backticks (single `x`, double ``x``, fenced
+# ```...```), so `(`+).*?\1` covers them ALL; ~~~ fences too.
 _CODE_FENCE_RE = re.compile(r"(`+).*?\1|~~~.*?~~~", re.DOTALL)
 
-# Authoritative trailer Gitar can be configured to emit (preferred over
-# the native badge). It must be FLUSH-LEFT and ALONE on its line — the way
-# an appended HTML trailer is emitted. Anchored ^<!-- (no leading
-# whitespace) so an inline/quoted trailer with other text on the line, or
-# one indented into a 4-space Markdown code block, is not authoritative
-# (Codex P2 on ctvd#413). Strict three-value alternation so a malformed
-# `<!-- GITAR_AUDIT_STATE: foo -->` does not match and falls through to
-# the badge parse (mirrors the Codex labeler's TRAILER_PATTERN
-# tightening, cube-snap#206 / ctvd#373).
-_STATE_TRAILER_RE = re.compile(
-    r"^<!--\s*GITAR_AUDIT_STATE:\s*"
-    r"(gitar-audit-done|gitar-audit-blocked|needs-gitar-audit)\s*-->[ \t]*$",
-    re.IGNORECASE | re.MULTILINE,
-)
 
-
-def parse_state_trailer(comment_body: str) -> Optional[str]:
-    """Return 'done' | 'blocked' | 'needs' from the last standalone-line
-    GITAR_AUDIT_STATE trailer in non-fenced text, or None if absent."""
-    body = _CODE_FENCE_RE.sub("", comment_body)
-    matches = _STATE_TRAILER_RE.findall(body)
-    if not matches:
-        return None
-    tag = matches[-1].lower()  # last trailer wins
-    if tag == DONE_LABEL:
-        return "done"
-    if tag == BLOCKED_LABEL:
-        return "blocked"
-    return "needs"
+def _strip_code(text: str) -> str:
+    """Blank code spans/fences to spaces, preserving newlines and column
+    positions, so a Code Review badge quoted inside PR-controlled code is
+    not read as Gitar's own verdict."""
+    return _CODE_FENCE_RE.sub(lambda m: re.sub(r"[^\n]", " ", m.group(0)), text)
 
 
 def classify_gitar_comment(comment_body: str) -> Tuple[Optional[str], str]:
     """Classify a Gitar comment into ('done'|'blocked'|'needs'|None, detail).
 
-    Trailer-first: if Gitar emitted our authoritative
-    `<!-- GITAR_AUDIT_STATE: ... -->` trailer, use it. Otherwise fall
-    back to the native `<kbd>` Code Review badge. None means this is not
-    a Gitar verdict comment at all and should be skipped.
+    Reads Gitar's native `<kbd>` Code Review badge. None means this is not
+    a Gitar verdict comment at all and should be skipped; a Code Review
+    block whose badge can't be parsed fails closed to 'needs'.
     """
-    trailer = parse_state_trailer(comment_body)
-    if trailer is not None:
-        return trailer, "GITAR_AUDIT_STATE trailer"
-    # Strip code (fenced + inline) so a Code Review block/badge quoted in
+    # Blank code (fenced + inline) so a Code Review block/badge quoted in
     # PR-controlled code is not mistaken for Gitar's own verdict.
-    body = _CODE_FENCE_RE.sub("", comment_body)
+    body = _strip_code(comment_body)
     if not has_code_review_block(body):
-        return None, "no trailer and no Code Review block"
+        return None, "no Code Review block"
     badge = parse_code_review_badge(body)
     if not badge:
         # Block present but the badge is missing/empty or its markup
@@ -317,11 +295,10 @@ def resolve_label_decision(
       1. Action must be created/edited.
       2. The issue must be a pull request.
       3. The comment author must be a Gitar bot.
-      4. The comment must carry a verdict (our GITAR_AUDIT_STATE trailer
-         OR a native Code Review <kbd> badge); else skip — Gitar posts
-         many non-verdict comment types.
-      5. Verdict: trailer wins; else 'Approved' badge -> done; other
-         non-empty badge -> blocked; empty badge -> needs (fail closed).
+      4. The comment must carry a native Code Review <kbd> badge; else
+         skip — Gitar posts many non-verdict comment types.
+      5. Verdict: 'Approved' badge -> done; other non-empty badge ->
+         blocked; badge present but unparseable -> needs (fail closed).
     """
     if event.get("action") not in ("created", "edited"):
         return None, f"unsupported issue_comment action: {event.get('action')}"
@@ -342,7 +319,7 @@ def resolve_label_decision(
     status, detail = classify_gitar_comment(comment.get("body") or "")
 
     if status is None:
-        return None, "no Gitar verdict (trailer or Code Review badge) — skipping"
+        return None, "no Gitar Code Review verdict badge — skipping"
 
     if status == "needs":
         return LabelDecision(

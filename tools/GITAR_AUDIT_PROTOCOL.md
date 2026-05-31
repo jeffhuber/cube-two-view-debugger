@@ -43,29 +43,36 @@ comment, submitted no GitHub review/approval, and pushed no commits.
 Informational only: a `gitar-audit-blocked` label does NOT block merge.
 It surfaces that Gitar flagged something worth a human glance.
 
-## Verdict contract (trailer-first, native-badge fallback)
+## Verdict contract (native `<kbd>` badge)
 
-`tools/gitar_audit_labeler.py` classifies each Gitar comment:
+`tools/gitar_audit_labeler.py` classifies each Gitar comment from Gitar's
+own Code Review `<kbd>` badge:
 
-1. **Preferred — our trailer.** If Gitar emits
-   `<!-- GITAR_AUDIT_STATE: gitar-audit-done|gitar-audit-blocked|needs-gitar-audit -->`
-   (configured via Gitar's dashboard "Custom instructions" or a `.gitar/`
-   rule), the last such trailer is authoritative. Strict three-value
-   alternation: a malformed value does not match and falls through to the
-   badge parse.
-2. **Fallback — native badge.** Otherwise it parses the `<kbd>` badge that
-   follows `Code Review</b>`. "Approved" (case-insensitive) → done; any
-   other non-empty badge → blocked (the safe direction); empty badge →
-   needs (fail closed).
-3. **Skip.** A Gitar comment with neither a trailer nor a Code Review
-   badge (an in-progress "Reviewing your code" comment, a reply, a CI
-   comment) never moves a label.
+1. **Badge.** It parses the `<kbd>` badge that follows `Code Review</b>`.
+   Exactly "Approved" (ignoring a leading emoji/whitespace) → done; any
+   other non-empty badge → blocked (the safe direction). PR-controlled
+   text echoed inside code fences/spans is blanked first so a quoted badge
+   cannot be read as Gitar's own verdict.
+2. **Fail closed.** A Code Review block whose badge is missing/empty or
+   whose markup drifted → needs (rather than silently skipping).
+3. **Skip.** A Gitar comment with no Code Review block (an in-progress
+   "Reviewing your code" comment, a reply, a CI comment) never moves a
+   label.
 
 > Note: the exact non-"Approved" badge strings are confirmed as real
 > non-approved verdicts are observed. Until then, non-"Approved" → blocked
-> is the deliberate fail-closed default. Gitar honoring the trailer is
-> best-effort; on cube-snap #270 / ctvd #411 it did not emit the trailer,
-> so the badge fallback is the working path today.
+> is the deliberate fail-closed default.
+>
+> We previously also accepted an optional `<!-- GITAR_AUDIT_STATE: ... -->`
+> trailer Gitar could be instructed to emit, but Gitar does not honor that
+> instruction in practice (confirmed across cube-snap #270/#271 and
+> ctvd #411) and the trailer is PR-influenced content that was a recurring
+> spoofing surface, so it was removed. A first-class verdict (read-only API
+> field, or a verdict label decoupled from a code-host approval) would be
+> better, but on the Pro plan the verdict API is Enterprise-gated and the
+> native `gitar-approved` label is coupled to Gitar submitting a GitHub
+> approval (conflicts with advisory-only). Badge parsing is the right
+> integration for now.
 
 ## Trigger model
 
@@ -118,7 +125,7 @@ byte-identical). Run with `.venv/bin/pytest tests/test_gitar_audit_labeler.py`.
 | | Greptile | Gitar |
 |---|---|---|
 | Event | `pull_request_review` | `issue_comment` |
-| Verdict | per-line P-badges | dashboard `<kbd>` badge (+ optional trailer) |
+| Verdict | per-line P-badges | dashboard `<kbd>` badge |
 | Cost | paid (opt-in label) | free (act-on-all) |
 | Gating | informational | informational |
 

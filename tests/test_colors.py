@@ -8,6 +8,7 @@ from rubik_recognizer.colors import (
     CLASSIFIER_KNN5_LAB_FULL,
     CLASSIFIER_MODE_ENV,
     COLOR_TO_FACE,
+    DEFAULT_CLASSIFIER_MODE,
     ColorMatch,
     build_adaptive_palette,
     classify_rgb,
@@ -111,6 +112,19 @@ def test_knn5_classifier_mode_changes_red_orange_boundary():
 
     assert classify_rgb_with_mode(rgb, CLASSIFIER_CANONICAL).color == "orange"
     assert classify_rgb_with_mode(rgb, CLASSIFIER_KNN5_LAB).color == "red"
+
+
+def test_default_classifier_uses_guarded_knn5_boundary(monkeypatch):
+    monkeypatch.delenv(CLASSIFIER_MODE_ENV, raising=False)
+
+    assert DEFAULT_CLASSIFIER_MODE == CLASSIFIER_KNN5_LAB
+    assert classify_rgb((144, 72, 49)).color == "red"
+
+
+def test_empty_classifier_env_uses_default_guarded_knn5(monkeypatch):
+    monkeypatch.setenv(CLASSIFIER_MODE_ENV, "")
+
+    assert classify_rgb((144, 72, 49)).color == "red"
 
 
 def test_classify_rgb_env_switch_uses_knn5(monkeypatch):

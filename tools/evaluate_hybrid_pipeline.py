@@ -50,7 +50,11 @@ from PIL import Image, ImageOps
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from rubik_recognizer.colors import COLOR_TO_FACE  # noqa: E402
+from rubik_recognizer.colors import (  # noqa: E402
+    CLASSIFIER_MODE_ENV,
+    COLOR_TO_FACE,
+    DEFAULT_CLASSIFIER_MODE,
+)
 from rubik_recognizer.image_pipeline import analyze_image  # noqa: E402
 from rubik_recognizer.validation import FACE_ORDER  # noqa: E402
 from tools.extract_color_samples import (  # noqa: E402
@@ -90,6 +94,11 @@ OOD_SETS = {"57", "58", "61", "62"}
 # Any analyze_image grid with fewer than this many sticker-center points
 # inside the rembg cube hull is rejected as spatially incoherent.
 HULL_GUARD_INSIDE_MIN = 7
+
+
+def _classifier_mode_label() -> str:
+    mode = os.environ.get(CLASSIFIER_MODE_ENV, DEFAULT_CLASSIFIER_MODE).strip().lower()
+    return mode or DEFAULT_CLASSIFIER_MODE
 
 
 def _load_processing_image(image_path: Path) -> Tuple[Image.Image, np.ndarray]:
@@ -1210,7 +1219,7 @@ def main() -> int:
     slot_src_filter = args.slot_src_filter
     fit_error_fallback = args.fit_error_fallback
     fit_error_threshold = args.fit_error_threshold
-    classifier_mode = os.environ.get("CUBE_RECOGNIZER_CLASSIFIER", "canonical")
+    classifier_mode = _classifier_mode_label()
     print(f"evaluating hybrid pipeline on {len(pairs)} pairs "
           f"(classifier={classifier_mode}, hull_guard={hull_guard}, "
           f"slot_src_filter={slot_src_filter}, "

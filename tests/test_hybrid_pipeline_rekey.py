@@ -24,6 +24,18 @@ import pytest  # noqa: E402
 from tools import evaluate_hybrid_pipeline  # noqa: E402
 
 
+def test_classifier_mode_label_uses_shared_runtime_default(monkeypatch):
+    monkeypatch.delenv(evaluate_hybrid_pipeline.CLASSIFIER_MODE_ENV, raising=False)
+
+    assert evaluate_hybrid_pipeline._classifier_mode_label() == evaluate_hybrid_pipeline.DEFAULT_CLASSIFIER_MODE
+
+
+def test_classifier_mode_label_preserves_explicit_canonical(monkeypatch):
+    monkeypatch.setenv(evaluate_hybrid_pipeline.CLASSIFIER_MODE_ENV, "canonical")
+
+    assert evaluate_hybrid_pipeline._classifier_mode_label() == "canonical"
+
+
 def _fake_grid(center_face: str, matched_count: int, fit_error: float, points):
     """Minimal FaceGrid stand-in for the re-key test. Only the
     attributes actually read by _proposer_face_quads are populated."""

@@ -126,17 +126,33 @@ def is_gitar_comment_author(login: str) -> bool:
 # in-progress badge Gitar prepends while it works, e.g.
 # `<kbd><img ...gitar-spin.svg...> Reviewing your code</kbd>`, which is
 # NOT preceded by the Code Review label.
+# Detect the presence of Gitar's Code Review verdict block (the bold
+# "Code Review" label in its dashboard <summary>), independent of the
+# badge markup. Used to distinguish "not a verdict comment" (skip) from
+# "verdict comment whose badge we could not parse" (fail closed) — Codex
+# P2 on cube-snap#271.
+_CODE_REVIEW_LABEL_RE = re.compile(r"Code Review\s*</b>", re.IGNORECASE)
+
+# Badge extractor. `<kbd[^>]*>` tolerates attribute drift (e.g.
+# `<kbd class="...">`) so a benign markup change degrades to fail-closed
+# (needs) rather than silently mismatching.
 _CODE_REVIEW_BADGE_RE = re.compile(
-    r"Code Review\s*</b>\s*<kbd>\s*(?P<badge>.*?)\s*</kbd>",
+    r"Code Review\s*</b>\s*<kbd[^>]*>\s*(?P<badge>.*?)\s*</kbd>",
     re.IGNORECASE | re.DOTALL,
 )
 
 
+def has_code_review_block(comment_body: str) -> bool:
+    """True if the comment contains Gitar's Code Review verdict block."""
+    return bool(_CODE_REVIEW_LABEL_RE.search(comment_body))
+
+
 def parse_code_review_badge(comment_body: str) -> Optional[str]:
-    """Return the Code Review verdict badge text, or None if this
-    comment has no Code Review verdict block (e.g. an in-progress or
-    non-review Gitar comment). The returned string may be empty if the
-    badge tag was present but empty — the caller fails closed on that."""
+    """Return the Code Review verdict badge text, or None if no
+    `Code Review</b> <kbd>...</kbd>` badge could be extracted (no block at
+    all, or the badge markup drifted). The string may be empty if the
+    <kbd> tag was present but empty. Callers pair this with
+    `has_code_review_block` to fail closed on drift rather than skip."""
     m = _CODE_REVIEW_BADGE_RE.search(comment_body)
     if not m:
         return None
@@ -220,11 +236,18 @@ def classify_gitar_comment(comment_body: str) -> Tuple[Optional[str], str]:
     trailer = parse_state_trailer(comment_body)
     if trailer is not None:
         return trailer, "GITAR_AUDIT_STATE trailer"
-    badge = parse_code_review_badge(comment_body)
-    status = classify_badge(badge)
-    if status is None:
-        return None, "no trailer and no Code Review badge"
-    return status, f"Code Review badge {badge!r}"
+    # Strip code (fenced + inline) so a Code Review block/badge quoted in
+    # PR-controlled code is not mistaken for Gitar's own verdict.
+    body = _CODE_FENCE_RE.sub("", comment_body)
+    if not has_code_review_block(body):
+        return None, "no trailer and no Code Review block"
+    badge = parse_code_review_badge(body)
+    if not badge:
+        # Block present but the badge is missing/empty or its markup
+        # drifted: fail closed to needs rather than silently skipping and
+        # leaving a stale label (Codex P2 on cube-snap#271).
+        return "needs", "Code Review block present but badge unparseable"
+    return classify_badge(badge), f"Code Review badge {badge!r}"
 
 
 # ----- GitHub API helpers -----

@@ -72,6 +72,17 @@ def test_parse_badge_empty_when_tag_empty():
     assert gitar.parse_code_review_badge("<b>Code Review</b> <kbd></kbd>") == ""
 
 
+def test_parse_badge_tolerates_kbd_attributes():
+    body = "<b>Code Review</b> <kbd class='verdict'>✅ Approved</kbd>"
+    assert gitar.parse_code_review_badge(body) == "✅ Approved"
+
+
+def test_has_code_review_block():
+    assert gitar.has_code_review_block(APPROVED_COMMENT)
+    assert not gitar.has_code_review_block(IN_PROGRESS_COMMENT)
+    assert not gitar.has_code_review_block("just a normal reply")
+
+
 def test_classify_badge_values():
     assert gitar.classify_badge(None) is None
     assert gitar.classify_badge("") == "needs"
@@ -166,6 +177,16 @@ def test_classify_none_when_no_verdict():
     assert status is None
 
 
+def test_classify_fail_closed_on_badge_drift():
+    # Code Review block present but the <kbd> badge markup drifted (here a
+    # <span> instead of <kbd>): must fail closed to needs, not silently
+    # skip and leave a stale label (Codex P2 on cube-snap#271).
+    body = "<details>\n<summary><b>Code Review</b> <span>✅ Approved</span></summary>\n</details>"
+    status, detail = gitar.classify_gitar_comment(body)
+    assert status == "needs"
+    assert "unparseable" in detail
+
+
 def test_classify_ignores_fenced_trailer_spoof():
     # A blocked review whose body quotes a fake done-trailer inside a code
     # fence must fall back to the native badge (blocked), not honor the
@@ -203,6 +224,13 @@ def test_resolve_needs_on_empty_badge():
     decision, _ = gitar.resolve_label_decision(
         _event("<b>Code Review</b> <kbd></kbd>")
     )
+    assert decision is not None
+    assert decision.add_label == gitar.NEEDS_LABEL
+
+
+def test_resolve_needs_on_badge_drift():
+    body = "<summary><b>Code Review</b> <span>Approved</span></summary>"
+    decision, _ = gitar.resolve_label_decision(_event(body))
     assert decision is not None
     assert decision.add_label == gitar.NEEDS_LABEL
 

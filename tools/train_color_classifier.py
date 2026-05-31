@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Train and A/B-evaluate candidate color classifiers against the current
-``classify_rgb`` baseline, using leave-one-set-out cross-validation.
+canonical baseline, using leave-one-set-out cross-validation.
 
 No new runtime deps: all candidates are implemented in numpy. The "winning"
 candidate's parameters can be hand-extracted (centroids, coefficients) and
 shipped as constants in ``rubik_recognizer/colors.py``.
 
 Candidates evaluated:
-  * baseline_canonical: current ``classify_rgb`` with default canonical palette
+  * baseline_canonical: pinned canonical palette classifier
   * centroid_lab:       per-color centroid in (L, a, b), classify by nearest
   * centroid_lab_hsv:   per-color centroid in (L, a, b, H*scaled, S, V)
   * knn_lab(k=5):       k-nearest-neighbor in (L, a, b) with majority vote
@@ -37,7 +37,7 @@ import numpy as np
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from rubik_recognizer.colors import classify_rgb, rgb_to_hsv, rgb_to_lab  # noqa: E402
+from rubik_recognizer.colors import CLASSIFIER_CANONICAL, classify_rgb_with_mode, rgb_to_hsv, rgb_to_lab  # noqa: E402
 
 
 COLOR_ORDER = ("white", "yellow", "red", "orange", "green", "blue")
@@ -86,7 +86,7 @@ class BaselineCanonical:
     def predict(self, X_rgb: np.ndarray) -> np.ndarray:
         out = np.empty(len(X_rgb), dtype=np.int64)
         for i, row in enumerate(X_rgb):
-            color = classify_rgb(tuple(int(v) for v in row)).color
+            color = classify_rgb_with_mode(tuple(int(v) for v in row), CLASSIFIER_CANONICAL).color
             out[i] = COLOR_INDEX[color]
         return out
 

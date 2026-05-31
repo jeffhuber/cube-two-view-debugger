@@ -160,7 +160,7 @@
 | `evaluate_axis_ground_truth.py` | Per-axis bearing/length error against a candidate model output. |
 | `evaluate_full_corner_ground_truth.py` | Canonical full-corner scorer for exact `corner_0..5` candidates or model-style one-edge/far triplets. |
 | `evaluate_hybrid_pipeline.py` | End-to-end production-recognizer accuracy on hard-case corpus. |
-| `evaluate_color_classifier_modes.py` | Color classifier mode comparison. |
+| `evaluate_color_classifier_modes.py` | Color classifier mode comparison with markdown summaries and local swatch contact sheets for mistakes/low-confidence samples. |
 | `evaluate_two_view_consistency.py` | A+B center consistency check. |
 | `evaluate_per_sticker_confidence.py` | Per-sticker confidence calibration. |
 | `evaluate_mask_pipeline.py` | Mask-path end-to-end eval. |

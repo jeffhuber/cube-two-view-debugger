@@ -35,9 +35,12 @@ CLASSIFIER_CANONICAL = "canonical"
 CLASSIFIER_KNN5_LAB = "knn5_lab"
 CLASSIFIER_KNN5_LAB_FULL = "knn5_lab_full"
 CLASSIFIER_MODES = (CLASSIFIER_CANONICAL, CLASSIFIER_KNN5_LAB, CLASSIFIER_KNN5_LAB_FULL)
+# Default to the guarded KNN mode: it only overrides canonical when red/orange
+# are already close, and keeps the broader full-KNN mode opt-in.
+DEFAULT_CLASSIFIER_MODE = CLASSIFIER_KNN5_LAB
 KNN5_NEIGHBORS = 5
 KNN5_DISTANCE_SCALE = 48.0
-# Selected from a sweep over the 1,512 clean hull-label samples: this keeps
+# Selected from a sweep over the clean hull-label color samples: this keeps
 # the red/orange wins on Sets 30/31/46 without per-set clean-label regressions
 # and preserves the full corpus and hard-case gates, including Sets 47/48.
 MAX_KNN5_RED_ORANGE_CANONICAL_DELTA = 5.0
@@ -88,9 +91,9 @@ def classify_rgb_with_mode(
 
 
 def _selected_classifier_mode() -> str:
-    mode = os.environ.get(CLASSIFIER_MODE_ENV, CLASSIFIER_CANONICAL).strip().lower()
+    mode = os.environ.get(CLASSIFIER_MODE_ENV, DEFAULT_CLASSIFIER_MODE).strip().lower()
     if not mode:
-        return CLASSIFIER_CANONICAL
+        return DEFAULT_CLASSIFIER_MODE
     if mode not in CLASSIFIER_MODES:
         raise ValueError(
             f"Unsupported {CLASSIFIER_MODE_ENV} value: {mode!r}; "

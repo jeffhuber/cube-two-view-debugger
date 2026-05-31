@@ -1,0 +1,64 @@
+name: Validator parity fixture sync
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tests/fixtures/validator_parity_cases.json'
+      - 'tools/check_validator_parity_fixture_sync.py'
+      - '.github/workflows/validator-parity-sync.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'tests/fixtures/validator_parity_cases.json'
+      - 'tools/check_validator_parity_fixture_sync.py'
+      - '.github/workflows/validator-parity-sync.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Resolve cube-snap ref
+        id: paired-ref
+        shell: bash
+        run: |
+          set -euo pipefail
+          ref="${GITHUB_HEAD_REF:-main}"
+          if git ls-remote --exit-code https://github.com/jeffhuber/cube-snap.git "refs/heads/${ref}" >/dev/null 2>&1; then
+            echo "ref=${ref}" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=main" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check out cube-two-view-debugger
+        uses: actions/checkout@v4
+        with:
+          path: cube-two-view-debugger
+
+      - name: Check out cube-snap
+        uses: actions/checkout@v4
+        with:
+          repository: jeffhuber/cube-snap
+          ref: ${{ steps.paired-ref.outputs.ref }}
+          path: cube-snap
+          persist-credentials: false
+
+      - name: Check validator parity checker sync
+        run: |
+          cmp \
+            cube-two-view-debugger/tools/check_validator_parity_fixture_sync.py \
+            cube-snap/tools/check_validator_parity_fixture_sync.py
+
+      - name: Check validator parity fixture sync
+        run: |
+          python3 cube-two-view-debugger/tools/check_validator_parity_fixture_sync.py \
+            --cube-snap cube-snap \
+            --ctvd cube-two-view-debugger

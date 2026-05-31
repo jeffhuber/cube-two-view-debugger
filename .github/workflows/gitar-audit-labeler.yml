@@ -40,13 +40,16 @@ jobs:
   label:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    # Only the latest event for a PR should apply labels. If Gitar edits
-    # its dashboard comment again (e.g. on a new push) while an earlier run
-    # is still in flight, cancel the earlier run so a stale verdict snapshot
-    # can't overwrite a newer label (Codex P2 on cube-snap#271). The lane is
-    # informational, so this is belt-and-suspenders, not a merge-gate fix.
+    # If Gitar edits its dashboard comment again (e.g. on a new push) while
+    # an earlier run is still in flight, cancel the earlier run so a stale
+    # verdict snapshot can't overwrite a newer label. Group by PR AND
+    # comment author so ONLY Gitar's own successive verdict edits cancel
+    # each other; an unrelated user/bot comment on the same PR is a
+    # different group and won't cancel an in-flight Gitar-verdict run
+    # (Codex P2 on cube-snap#271 — keying by PR alone dropped the label).
+    # Informational lane, so this is belt-and-suspenders, not a merge gate.
     concurrency:
-      group: gitar-audit-labeler-${{ github.event.issue.number }}
+      group: gitar-audit-labeler-${{ github.event.issue.number }}-${{ github.event.comment.user.login }}
       cancel-in-progress: true
     steps:
       - name: Check out labeler code from default branch

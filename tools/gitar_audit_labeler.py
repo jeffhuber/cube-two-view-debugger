@@ -170,9 +170,13 @@ def classify_badge(badge: Optional[str]) -> Optional[str]:
 
 # Gitar echoes PR-controlled content (command examples, quoted snippets)
 # inside code fences and inline-code spans. A `<!-- GITAR_AUDIT_STATE: ... -->`
-# planted there must NOT be trusted, so fenced/inline code is stripped
-# before the trailer search (Codex P2 on ctvd#413).
-_CODE_FENCE_RE = re.compile(r"```.*?```|~~~.*?~~~|`[^`\n]*`", re.DOTALL)
+# planted there must NOT be trusted, so code is stripped before the trailer
+# search. Run-aware: a Markdown code span/fence is an opening run of N
+# backticks closed by a run of N backticks (single `x`, double ``x``,
+# fenced ```...```), so `(`+).*?\1` strips them ALL. The earlier
+# single-backtick pattern left a two-backtick span like ``<!-- ... -->``
+# behind (Codex P2 round 2 on ctvd#413). ~~~ fences handled too.
+_CODE_FENCE_RE = re.compile(r"(`+).*?\1|~~~.*?~~~", re.DOTALL)
 
 # Authoritative trailer Gitar can be configured to emit (preferred over
 # the native badge). It must be ALONE on its line — anchored ^...$ in

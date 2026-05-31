@@ -112,6 +112,18 @@ def test_parse_trailer_ignores_fenced_and_inline_code():
     assert gitar.parse_state_trailer(fenced) is None
     inline = "use `<!-- GITAR_AUDIT_STATE: gitar-audit-done -->` here"
     assert gitar.parse_state_trailer(inline) is None
+    # Multi-backtick code span (Codex P2 round 2): two-backtick delimiters.
+    double = "quoted ``<!-- GITAR_AUDIT_STATE: gitar-audit-done -->`` here"
+    assert gitar.parse_state_trailer(double) is None
+
+
+def test_classify_ignores_multi_backtick_trailer_spoof():
+    # Blocked review quoting a fake done-trailer in a ``double-backtick``
+    # span must fall back to the native badge (Codex P2 round 2).
+    body = CHANGES_COMMENT + "\n\n``<!-- GITAR_AUDIT_STATE: gitar-audit-done -->``\n"
+    status, detail = gitar.classify_gitar_comment(body)
+    assert status == "blocked"
+    assert "badge" in detail
 
 
 def test_parse_trailer_last_wins():

@@ -27,7 +27,18 @@ Serves the web UI at `http://localhost:8080/` and API at `/api/*`. Verify with `
 .venv/bin/python -m pytest tests/ -q
 ```
 
-Note: 8 tests in `test_white_up_rules.py` and `test_diagnose_fit_stage_transitions.py` fail due to pre-existing mock/signature mismatches in the repo (not environment issues). All other ~1190 tests pass.
+As of 2026-05-30, the full pytest suite is expected to pass. If it does not,
+treat the failure as a regression or environment issue to investigate rather
+than an accepted baseline.
+
+The validator parity fixture is mirrored with cube-snap. When changing
+`tests/fixtures/validator_parity_cases.json`, update cube-snap's
+`src/fixtures/validator_parity_cases.json` in lockstep and verify byte-level
+sync:
+
+```bash
+.venv/bin/python tools/check_validator_parity_fixture_sync.py --cube-snap /path/to/cube-snap
+```
 
 ### Linting
 

@@ -1144,6 +1144,26 @@ with cube-snap's).
 
 Full protocol: `tools/CODEX_AUDIT_PROTOCOL.md`.
 
+### Validator parity fixture sync
+
+The deep legality validator parity cases are a paired contract with
+`cube-snap`. The fixture contents must stay byte-identical even though the
+paths differ:
+
+- `tests/fixtures/validator_parity_cases.json` in cube-two-view-debugger
+- `src/fixtures/validator_parity_cases.json` in cube-snap
+
+The checker is mirrored too: `tools/check_validator_parity_fixture_sync.py`
+MUST stay byte-identical across both repos. Run it whenever either fixture
+changes:
+
+```bash
+.venv/bin/python tools/check_validator_parity_fixture_sync.py --cube-snap /path/to/cube-snap
+```
+
+If the sibling checkout uses the standard name, the explicit `--cube-snap`
+path is optional. Temporary worktrees should pass explicit paths.
+
 ### Paid final-review lane (currently Greptile — informational, non-gating)
 
 Greptile runs as a paid SaaS GitHub App. The root `greptile.json`

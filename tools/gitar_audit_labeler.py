@@ -179,16 +179,17 @@ def classify_badge(badge: Optional[str]) -> Optional[str]:
 _CODE_FENCE_RE = re.compile(r"(`+).*?\1|~~~.*?~~~", re.DOTALL)
 
 # Authoritative trailer Gitar can be configured to emit (preferred over
-# the native badge). It must be ALONE on its line — anchored ^...$ in
-# MULTILINE — the way an appended HTML trailer is emitted, so an
-# inline/quoted trailer with other text on the line is not authoritative
+# the native badge). It must be FLUSH-LEFT and ALONE on its line — the way
+# an appended HTML trailer is emitted. Anchored ^<!-- (no leading
+# whitespace) so an inline/quoted trailer with other text on the line, or
+# one indented into a 4-space Markdown code block, is not authoritative
 # (Codex P2 on ctvd#413). Strict three-value alternation so a malformed
 # `<!-- GITAR_AUDIT_STATE: foo -->` does not match and falls through to
 # the badge parse (mirrors the Codex labeler's TRAILER_PATTERN
 # tightening, cube-snap#206 / ctvd#373).
 _STATE_TRAILER_RE = re.compile(
-    r"^\s*<!--\s*GITAR_AUDIT_STATE:\s*"
-    r"(gitar-audit-done|gitar-audit-blocked|needs-gitar-audit)\s*-->\s*$",
+    r"^<!--\s*GITAR_AUDIT_STATE:\s*"
+    r"(gitar-audit-done|gitar-audit-blocked|needs-gitar-audit)\s*-->[ \t]*$",
     re.IGNORECASE | re.MULTILINE,
 )
 

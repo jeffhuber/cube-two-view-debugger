@@ -115,6 +115,10 @@ def test_parse_trailer_ignores_fenced_and_inline_code():
     # Multi-backtick code span (Codex P2 round 2): two-backtick delimiters.
     double = "quoted ``<!-- GITAR_AUDIT_STATE: gitar-audit-done -->`` here"
     assert gitar.parse_state_trailer(double) is None
+    # Indented (4-space Markdown code block) trailer must be flush-left to
+    # count, so an indented/quoted one is ignored.
+    indented = "prose\n    <!-- GITAR_AUDIT_STATE: gitar-audit-done -->"
+    assert gitar.parse_state_trailer(indented) is None
 
 
 def test_classify_ignores_multi_backtick_trailer_spoof():

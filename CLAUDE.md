@@ -1217,6 +1217,55 @@ tests/test_greptile_audit_labeler.py`.
 
 Full protocol: `tools/GREPTILE_AUDIT_PROTOCOL.md`.
 
+### Gitar audit lane (informational — peer to Greptile)
+
+[Gitar](https://gitar.ai) is an AI code-review GitHub App, added as a
+second **informational** lane (never gates merge). Unlike Greptile (paid,
+opt-in, `pull_request_review` events), Gitar is **free, auto-reviews every
+PR**, and posts a **dashboard issue-comment** whose verdict is an HTML
+`<kbd>` Code Review badge (e.g. `<kbd>✅ Approved</kbd>`).
+
+State machine: `needs-gitar-audit` (fail-closed / manual re-look),
+`gitar-audit-done` (exactly "Approved"), `gitar-audit-blocked` (any other
+verdict). Informational only — `gitar-audit-blocked` does not block merge.
+
+`.github/workflows/gitar-audit-labeler.yml` fires on `issue_comment`
+(created/edited), checks out default-branch code, and runs
+`tools/gitar_audit_labeler.py`, which reads Gitar's native `<kbd>` badge.
+PR-controlled text echoed in code fences/spans is blanked before parsing
+(anti-spoof); a Code Review block whose badge can't be parsed fails closed
+to `needs-gitar-audit`; concurrency is scoped per PR **and** comment author
+so only Gitar's own successive verdict edits supersede each other.
+Label-apply failures are non-fatal (exits 0), so the lane can never become
+an accidental merge gate. There is no `clear-stale-on-push` job (the labels
+are advisory; Gitar re-reviews on push).
+
+**Advisory-only is mandatory.** Gitar's App can auto-apply fixes, approve,
+and merge; those are disabled via the Gitar dashboard (Block merges: Never;
+Auto-approve: off; autofix/auto-merge off) plus the version-controlled
+`.gitar/rules/advisory-only.md` backstop in each repo. There is no
+machine-readable verdict we can consume on the Pro plan while staying
+advisory-only: the verdict API is Enterprise-gated, and the native
+`gitar-approved` label is coupled to Gitar submitting a GitHub approval —
+so the native `<kbd>` badge is the integration. (We tried an instructed
+`GITAR_AUDIT_STATE` trailer; Gitar does not honor it, and it was a spoofing
+surface, so it was removed.)
+
+Bot identity via `GITAR_BOT_AUTHORS` (default `gitar-bot`). If the built-in
+token can't label, set `GITAR_AUDIT_LABEL_TOKEN` (Issues read+write).
+
+Mirror invariant — byte-identical across both repos:
+
+- `tools/gitar_audit_labeler.py`
+- `tools/GITAR_AUDIT_PROTOCOL.md`
+- `.github/workflows/gitar-audit-labeler.yml`
+- `.gitar/rules/advisory-only.md`
+
+Tests live in `tests/test_gitar_audit_labeler.py` (both repos,
+byte-identical). Run with `.venv/bin/pytest tests/test_gitar_audit_labeler.py`.
+
+Full protocol: `tools/GITAR_AUDIT_PROTOCOL.md`.
+
 ### Qwen lane (paused)
 
 The Qwen lane (local LM Studio runner) was the original 2nd

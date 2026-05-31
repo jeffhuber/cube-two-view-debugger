@@ -51,6 +51,12 @@ jobs:
           path: cube-snap
           persist-credentials: false
 
+      - name: Check validator parity checker sync
+        run: |
+          cmp \
+            cube-two-view-debugger/tools/check_validator_parity_fixture_sync.py \
+            cube-snap/tools/check_validator_parity_fixture_sync.py
+
       - name: Check validator parity fixture sync
         run: |
           python3 cube-two-view-debugger/tools/check_validator_parity_fixture_sync.py \

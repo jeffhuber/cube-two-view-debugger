@@ -68,10 +68,9 @@ jobs:
         run: python3 tools/codex_audit_labeler.py
 
   clear-stale-on-push:
-    # Clear stale Codex audit labels when the PR head moves. Both the
-    # standing in-thread merge delegation and the captured-PASS-via-dump
-    # escape hatch trust these labels as head-bound signals; without
-    # this handler a stale label survives across pushes and could
+    # Clear stale Codex audit labels when the PR head moves. The standing
+    # in-thread merge delegation trusts these labels as head-bound signals;
+    # without this handler a stale label survives across pushes and could
     # authorize merging an unaudited newer head. Codex P1 on round 2 of
     # cube-snap#205 / ctvd#371.
     #

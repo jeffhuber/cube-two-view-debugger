@@ -53,9 +53,9 @@ silently falling back to ambient `python3`.
 **Fire from a main-current checkout, never a stale one.** This wrapper and
 `codex_audit_pr.py` are mirror-invariant and evolve over time, so run them
 from a checkout whose `tools/codex_audit_pr.py` matches `origin/main`. A
-stale checkout (e.g. a primary sitting on an old branch) can carry a legacy
-prose-scraping wrapper that silently uses the old UNKNOWN / captured-PASS
-path instead of the structured verdict. Before firing, bring the checkout
+stale checkout (e.g. a primary sitting on an old branch) can carry an
+obsolete pre-structured wrapper instead of the current structured-verdict
+flow. Before firing, bring the checkout
 current (`git fetch origin && git reset --hard origin/main`, or keep a
 dedicated main-tracking worktree and `git pull` it). Quick check:
 `grep -c parse_structured_codex_verdict tools/codex_audit_pr.py` must be
@@ -115,7 +115,7 @@ tools/codex_audit_schema_smoke.py
 Run this after Codex CLI upgrades, schema edits, or repeated UNKNOWN
 audits. It performs one cheap generic `codex exec --output-schema` call
 against the committed schema and validates the returned artifact with
-the same wrapper parser used by PR audits.
+the same wrapper validator used by PR audits.
 
 ### Local audit handoff log / duplicate guard
 
@@ -186,9 +186,9 @@ Codex tags findings inline with `[P0]`, `[P1]`, `[P2]`, `[P3]` brackets:
 This labeler treats **P0 / P1 / P2 as blockers**, P3 as concerns. This
 matches the empirical severity breakdown on #233 where every P2
 finding was a real bug worth fixing. The authoritative verdict logic
-lives in `tools/codex_audit_pr.py::parse_structured_codex_verdict`;
-the older `parse_codex_output` prose parser is retained as legacy
-coverage for historical CLI-output regressions, not the live label path.
+lives in `tools/codex_audit_pr.py::parse_structured_codex_verdict`. Current
+tooling does not use a prose/stderr fallback parser; missing or malformed
+structured output requeues as UNKNOWN and writes a local diagnostic dump.
 
 ### 2. Labeler: `tools/codex_audit_labeler.py` + `.github/workflows/codex-audit-labeler.yml`
 
@@ -356,14 +356,13 @@ for the now-paused Qwen lane, kept on disk as a starting point.)
 Qwen was the original calibration partner before being paused; see
 `tools/QWEN_AUDIT_PROTOCOL.md` for that lane's design.
 
-## Structured-output bake-in plan
+## Structured-output status
 
-As of cube-snap#258 / ctvd#405, Codex already has merge-authority
-eligibility through the structured `cubesnap.codexAudit.v1` artifact and
-the `codex-audit-done` / `codex-audit-blocked` / `needs-codex-audit`
-trailers.
-
-For the next 5–10 clean audits:
+As of cube-snap#258 / ctvd#405 and the follow-on bake-in PRs, Codex has
+merge-authority eligibility through the structured `cubesnap.codexAudit.v1`
+artifact and the `codex-audit-done` / `codex-audit-blocked` /
+`needs-codex-audit` trailers. The structured path is the only live Codex
+merge signal.
 
 - Treat structured labels/trailers as the only live Codex merge signal.
 - Track any UNKNOWNs and inspect local CLI-failure dumps only when the
@@ -371,10 +370,6 @@ For the next 5–10 clean audits:
 - Use `tools/codex_audit_schema_smoke.py` after CLI upgrades, schema
   edits, or repeated UNKNOWNs to catch CLI/schema drift before a real PR
   audit gets stuck.
-
-After the structured lane proves stable, remove the legacy
-`parse_codex_output` / stderr-fallback parser machinery and the
-captured-PASS operational workaround from docs and code.
 
 ## Decommissioning
 
@@ -405,19 +400,3 @@ gh label delete codex-audit-blocked
   kept on disk so the lane is trivial to revive).
 - `CLAUDE.md` "Devin PR audit routing" section — the merge-delegation
   contract that grants Codex/Devin merge authority.
-
-## Historical note: captured-PASS-via-dump
-
-Before the structured-verdict path, Codex CLI v0.133.0-alpha.1 commonly
-split the final-verdict marker onto stderr while clean PASS prose landed
-on stdout. The prose parser intentionally refused stderr-only PASS-shaped
-text to avoid PR-controlled chatter faking a PASS, so clean reviews often
-landed as UNKNOWN and required the manual captured-PASS-via-dump
-workaround documented in older revisions of `CLAUDE.md`.
-
-The current two-call path retires that workaround for normal operation:
-the built-in review prose is captured with `--output-last-message`, then
-generic `codex exec --output-schema` emits a JSON verdict artifact that
-the wrapper validates. `dump_cli_failure()` remains only for genuine
-structured-output failures (missing file, malformed JSON, schema drift,
-or unactionable verdict mismatch) and for legacy parser diagnostics.

@@ -34,7 +34,8 @@ than an accepted baseline.
 The validator parity fixture is mirrored with cube-snap. When changing
 `tests/fixtures/validator_parity_cases.json`, update cube-snap's
 `src/fixtures/validator_parity_cases.json` in lockstep and verify byte-level
-sync:
+sync. CI also enforces this through `.github/workflows/validator-parity-sync.yml`
+on fixture/checker changes.
 
 ```bash
 .venv/bin/python tools/check_validator_parity_fixture_sync.py --cube-snap /path/to/cube-snap

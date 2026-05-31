@@ -1093,18 +1093,15 @@ final prose with `--output-last-message`, then runs generic
 `codex exec --output-schema` outside the PR worktree using the
 trusted schema in this checkout. UNKNOWN means the structured
 artifact was stale or failed validation; it is not an implicit pass.
-CLI-failure dumps are diagnostic only.
-
-Bake-in: track the next 5-10 structured audits. If repeated UNKNOWNs
+CLI-failure dumps are diagnostic only. The structured lane is now the
+only live Codex merge signal; the old prose/stderr fallback parser and
+manual workaround are not part of current operations. If repeated UNKNOWNs
 or schema drift appear, inspect dumps and fix the wrapper/schema.
-After the structured lane proves stable, remove the legacy
-`parse_codex_output` / stderr-fallback parser machinery and the old
-captured-PASS operational workaround.
 
 Schema smoke: run `tools/codex_audit_schema_smoke.py` after Codex CLI
 upgrades, schema edits, or repeated UNKNOWNs. It checks that generic
 `codex exec --output-schema` still accepts the committed schema and
-that the wrapper parser validates the returned artifact.
+that the wrapper validator validates the returned artifact.
 
 Before starting a manual audit outside the wrapper, check
 `tools/audit_handoff_log.py status --repo OWNER/REPO --pr N`; if a
@@ -1163,6 +1160,11 @@ changes:
 
 If the sibling checkout uses the standard name, the explicit `--cube-snap`
 path is optional. Temporary worktrees should pass explicit paths.
+
+CI also runs `.github/workflows/validator-parity-sync.yml` when the fixture,
+checker, or workflow changes. If paired PRs use the same branch name in both
+repos, the workflow compares against the sibling branch; otherwise it compares
+against sibling `main`.
 
 ### Paid final-review lane (currently Greptile — informational, non-gating)
 

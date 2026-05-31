@@ -158,27 +158,42 @@ def classify_badge(badge: Optional[str]) -> Optional[str]:
         return None
     if not badge:
         return "needs"
-    if "approved" in badge.lower():
+    # Exact-match the verdict word, ignoring a leading emoji/symbol and
+    # surrounding whitespace (e.g. "✅ Approved" -> "approved"). A substring
+    # check is unsafe: "Not Approved" / "Unapproved" contain "approved" but
+    # are NOT approvals and must fail closed to blocked (Codex P2 on
+    # ctvd#413). Only the exact `Approved` verdict yields done.
+    if re.sub(r"[^a-z]", "", badge.lower()) == "approved":
         return "done"
     return "blocked"
 
 
+# Gitar echoes PR-controlled content (command examples, quoted snippets)
+# inside code fences and inline-code spans. A `<!-- GITAR_AUDIT_STATE: ... -->`
+# planted there must NOT be trusted, so fenced/inline code is stripped
+# before the trailer search (Codex P2 on ctvd#413).
+_CODE_FENCE_RE = re.compile(r"```.*?```|~~~.*?~~~|`[^`\n]*`", re.DOTALL)
+
 # Authoritative trailer Gitar can be configured to emit (preferred over
-# the native badge). Strict alternation over the three valid values so a
-# malformed `<!-- GITAR_AUDIT_STATE: foo -->` does not match and silently
-# requeue — it falls through to the badge parse instead (mirrors the
-# Codex labeler's TRAILER_PATTERN tightening, cube-snap#206 / ctvd#373).
+# the native badge). It must be ALONE on its line — anchored ^...$ in
+# MULTILINE — the way an appended HTML trailer is emitted, so an
+# inline/quoted trailer with other text on the line is not authoritative
+# (Codex P2 on ctvd#413). Strict three-value alternation so a malformed
+# `<!-- GITAR_AUDIT_STATE: foo -->` does not match and falls through to
+# the badge parse (mirrors the Codex labeler's TRAILER_PATTERN
+# tightening, cube-snap#206 / ctvd#373).
 _STATE_TRAILER_RE = re.compile(
-    r"<!--\s*GITAR_AUDIT_STATE:\s*"
-    r"(gitar-audit-done|gitar-audit-blocked|needs-gitar-audit)\s*-->",
-    re.IGNORECASE,
+    r"^\s*<!--\s*GITAR_AUDIT_STATE:\s*"
+    r"(gitar-audit-done|gitar-audit-blocked|needs-gitar-audit)\s*-->\s*$",
+    re.IGNORECASE | re.MULTILINE,
 )
 
 
 def parse_state_trailer(comment_body: str) -> Optional[str]:
-    """Return 'done' | 'blocked' | 'needs' from the last GITAR_AUDIT_STATE
-    trailer in the comment, or None if no valid trailer is present."""
-    matches = _STATE_TRAILER_RE.findall(comment_body)
+    """Return 'done' | 'blocked' | 'needs' from the last standalone-line
+    GITAR_AUDIT_STATE trailer in non-fenced text, or None if absent."""
+    body = _CODE_FENCE_RE.sub("", comment_body)
+    matches = _STATE_TRAILER_RE.findall(body)
     if not matches:
         return None
     tag = matches[-1].lower()  # last trailer wins

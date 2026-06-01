@@ -1087,6 +1087,15 @@ authoritative `<!-- CODEX_AUDIT_STATE: ... -->` trailer, and
 `.github/workflows/codex-audit-labeler.yml` on `issue_comment`)
 flips the label.
 
+Local macOS default: before audits, run `source tools/codex_audit_env.sh`
+and then `tools/codex_audit_env_preflight.py`. This explicitly sets the
+known-good desktop defaults (`CODEX_AUDIT_PYTHON=/usr/bin/python3` and
+`CODEX_CLI_PATH=/Applications/Codex.app/Contents/Resources/codex`) when
+available, without teaching the wrapper to silently fall back to ambient
+Python. The wrapper also runs the preflight with its selected Python
+before starting the long review, so certificate-broken ad hoc venvs fail
+fast with a clear message.
+
 Structured verdict path (cube-snap#258 / ctvd#405): the wrapper
 runs built-in `codex exec review` for review quality, captures its
 final prose with `--output-last-message`, then runs generic
@@ -1098,10 +1107,12 @@ only live Codex merge signal; the old prose/stderr fallback parser and
 manual workaround are not part of current operations. If repeated UNKNOWNs
 or schema drift appear, inspect dumps and fix the wrapper/schema.
 
-Schema smoke: run `tools/codex_audit_schema_smoke.py` after Codex CLI
-upgrades, schema edits, or repeated UNKNOWNs. It checks that generic
-`codex exec --output-schema` still accepts the committed schema and
-that the wrapper validator validates the returned artifact.
+Schema smoke: after `source tools/codex_audit_env.sh`, run
+`tools/codex_audit_env_preflight.py` and then
+`tools/codex_audit_schema_smoke.py` after Codex CLI upgrades, schema
+edits, or repeated UNKNOWNs. It checks that generic
+`codex exec --output-schema` still accepts the committed schema and that
+the wrapper validator validates the returned artifact.
 
 Before starting a manual audit outside the wrapper, check
 `tools/audit_handoff_log.py status --repo OWNER/REPO --pr N`; if a
@@ -1117,6 +1128,8 @@ Mirror invariant — these files MUST stay byte-identical across
 
 - `tools/codex_audit_pr.py`
 - `tools/audit_handoff_log.py`
+- `tools/codex_audit_env.sh`
+- `tools/codex_audit_env_preflight.py`
 - `tools/run_codex_audit_pr.sh`
 - `tools/codex_audit_labeler.py`
 - `tools/request_review.py`
@@ -1126,18 +1139,16 @@ Mirror invariant — these files MUST stay byte-identical across
 - `tools/codex_audit_verdict.schema.json`
 - `tools/codex_audit_schema_smoke.py`
 - `tools/CODEX_AUDIT_PROTOCOL.md`
+- `tests/test_codex_audit_env_preflight.py`
 - `.github/workflows/codex-audit-labeler.yml`
 
 Verify with `diff` before changing either side; PRs land in
 lockstep, exactly as for the Devin lane.
 
-Tests live in `tests/test_codex_audit_pr.py` and
-`tests/test_codex_audit_labeler.py` — **ctvd only**, not
-mirrored to cube-snap (cube-snap doesn't have its own python
-venv with pytest, so running labeler tests there is awkward;
-ctvd's `.venv/bin/pytest tests/test_codex_audit*` works
-against ctvd's copy of the labeler, which is byte-identical
-with cube-snap's).
+Labeler/wrapper tests live in `tests/test_codex_audit_pr.py` and
+`tests/test_codex_audit_labeler.py` — **ctvd only**, not mirrored
+to cube-snap. The lightweight env preflight test lives in both repos:
+`python3 -m pytest tests/test_codex_audit_env_preflight.py`.
 
 Full protocol: `tools/CODEX_AUDIT_PROTOCOL.md`.
 

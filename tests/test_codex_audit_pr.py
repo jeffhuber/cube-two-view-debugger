@@ -1589,6 +1589,7 @@ def test_wrapper_propagates_python_failure_exit_code_to_audit_log(tmp_path, monk
                if k not in ("CODEX_AUDIT_REPO_PATHS", "GITHUB_TOKEN")},
             "AUDIT_HANDOFF_LOG_DIR": str(tmp_path),
             "CODEX_AUDIT_PYTHON": sys.executable,
+            "CODEX_AUDIT_SKIP_ENV_PREFLIGHT": "1",
         },
     )
 
@@ -1669,6 +1670,7 @@ def test_wrapper_finds_python_via_repo_paths_cli_arg(tmp_path, monkeypatch):
             **{k: v for k, v in os.environ.items()
                if k not in ("CODEX_AUDIT_REPO_PATHS", "CODEX_AUDIT_PYTHON")},
             "AUDIT_HANDOFF_LOG_DIR": str(tmp_path / "audit_log"),
+            "CODEX_AUDIT_SKIP_ENV_PREFLIGHT": "1",
         },
     )
 
@@ -1681,6 +1683,51 @@ def test_wrapper_finds_python_via_repo_paths_cli_arg(tmp_path, monkeypatch):
         f"(expected the 'using ... from --repo-paths CLI arg' warning); "
         f"stderr={result.stderr!r}"
     )
+
+
+def test_wrapper_preflight_uses_codex_cli_path_arg(tmp_path, monkeypatch):
+    """The wrapper preflight must honor the same --codex-cli-path override
+    that codex_audit_pr.py will use for the actual audit."""
+    repo_root = Path(__file__).resolve().parents[1]
+
+    fake_repo = tmp_path / "fake_no_venv_repo"
+    fake_tools = fake_repo / "tools"
+    fake_tools.mkdir(parents=True)
+    for name in ("run_codex_audit_pr.sh", "codex_audit_pr.py", "audit_handoff_log.py"):
+        (fake_tools / name).write_bytes((repo_root / "tools" / name).read_bytes())
+    (fake_tools / "run_codex_audit_pr.sh").chmod(0o755)
+
+    args_path = tmp_path / "preflight_args.txt"
+    (fake_tools / "codex_audit_env_preflight.py").write_text(
+        "import os, pathlib, sys\n"
+        "pathlib.Path(os.environ['PREFLIGHT_ARGS_PATH']).write_text('\\n'.join(sys.argv[1:]))\n"
+        "raise SystemExit(42)\n",
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [
+            str(fake_tools / "run_codex_audit_pr.sh"),
+            "--repo", "jeffhuber/cube-two-view-debugger",
+            "--pr", "999999",
+            "--codex-cli-path", "/tmp/custom-codex",
+        ],
+        capture_output=True, text=True,
+        env={
+            **{k: v for k, v in os.environ.items()
+               if k not in ("CODEX_AUDIT_REPO_PATHS", "CODEX_AUDIT_PYTHON")},
+            "AUDIT_HANDOFF_LOG_DIR": str(tmp_path / "audit_log"),
+            "CODEX_AUDIT_PYTHON": sys.executable,
+            "PREFLIGHT_ARGS_PATH": str(args_path),
+        },
+    )
+
+    assert result.returncode != 0
+    assert "audit environment preflight failed" in result.stderr
+    assert args_path.exists(), result.stderr
+    args = args_path.read_text().splitlines()
+    assert "--codex-cli-path" in args
+    assert args[args.index("--codex-cli-path") + 1] == "/tmp/custom-codex"
 
 
 def test_wrapper_still_refuses_when_neither_env_nor_cli_provides_python(tmp_path, monkeypatch):

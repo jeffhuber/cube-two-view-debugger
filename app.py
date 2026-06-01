@@ -60,7 +60,9 @@ RECOGNITION_EVENT_DB_ENV = "CUBE_RECOGNITION_EVENT_DB_PATH"
 IOS_REPRO_UPLOAD_TOKEN_ENV = "CUBE_IOS_REPRO_UPLOAD_TOKEN"
 IOS_REPRO_UPLOAD_DIR_ENV = "CUBE_IOS_REPRO_UPLOAD_DIR"
 IOS_REPRO_UPLOAD_MAX_BYTES_ENV = "CUBE_IOS_REPRO_UPLOAD_MAX_BYTES"
+IOS_REPRO_UPLOAD_RETENTION_DAYS_ENV = "CUBE_IOS_REPRO_UPLOAD_RETENTION_DAYS"
 DEFAULT_IOS_REPRO_UPLOAD_MAX_BYTES = 12_000_000
+DEFAULT_IOS_REPRO_UPLOAD_RETENTION_DAYS = 14
 _ALLOWED_IOS_REPRO_IMAGE_CONTENT_TYPES = {"image/jpeg", "image/jpg", "image/png"}
 _CONSTRAINED_SHADOW_LOG_LOCK = threading.Lock()
 _RECOGNITION_EVENT_LOG_LOCK = threading.Lock()
@@ -456,6 +458,7 @@ class RubikHandler(BaseHTTPRequestHandler):
             bundle = _ios_repro_upload_payload(raw)
             upload_id = _ios_repro_upload_id(bundle, raw)
             root = _ios_repro_upload_dir()
+            retention_deleted_count = _prune_ios_repro_uploads(root)
             target = _create_ios_repro_upload_target(root, upload_id)
             bundle_path = target / "bundle.json"
             bundle_path.write_bytes(raw)
@@ -474,6 +477,8 @@ class RubikHandler(BaseHTTPRequestHandler):
                     "manifestPath": _ios_repro_upload_http_path(target / "manifest.json"),
                     "summaryPath": _ios_repro_upload_http_path(target / "summary.md"),
                     "bundlePath": _ios_repro_upload_http_path(bundle_path),
+                    "retentionDays": _ios_repro_upload_retention_days(),
+                    "retentionDeletedCount": retention_deleted_count,
                 }
             )
         except (ValueError, binascii.Error) as exc:
@@ -1011,7 +1016,7 @@ def _api_routes() -> List[Dict[str, str]]:
         {"method": "POST", "path": "/api/recognize",       "brief": "Recognize one pair. Multipart fields: imageA, imageB; optional setId, expectedState. Query: ?slim=1 to omit overlays/diagnostics; ?hullLabelTier1=shadow|prefer for the hidden hull-label Tier 1 candidate path, or constrained-shadow|constrained for the hidden constrained-inference gate path. Persists a run under /runs/pairs/<id>/."},
         {"method": "POST", "path": "/api/llm-rectified-input", "brief": "Prepare two Claude/GPT-ready rectified WCA contact-sheet JPEGs from imageA/imageB. Multipart fields: imageA, imageB; optional yawQuarterTurns=0..3 or auto. Does not call an LLM or persist a run."},
         {"method": "POST", "path": "/api/recognize-batch", "brief": "Recognize multiple pairs in one call. Multipart field: images (multi-file); optional groundTruth (.csv/.tsv/.json). Pairs files by filename A/B markers or by drop order. Persists a batch under /runs/batches/<id>/."},
-        {"method": "POST", "path": "/api/ios-repro-bundles", "brief": "Opt-in debug upload for CubeSnap iOS repro bundles. Requires X-CubeSnap-Debug-Upload-Token matching CUBE_IOS_REPRO_UPLOAD_TOKEN. Persists decoded images plus manifest under /runs/ios-repro-uploads/<id>/ by default."},
+        {"method": "POST", "path": "/api/ios-repro-bundles", "brief": "Opt-in debug upload for CubeSnap iOS repro bundles. Requires X-CubeSnap-Debug-Upload-Token matching CUBE_IOS_REPRO_UPLOAD_TOKEN. Persists decoded images plus manifest under /runs/ios-repro-uploads/<id>/ by default, pruning uploads older than CUBE_IOS_REPRO_UPLOAD_RETENTION_DAYS (default 14; <=0 disables pruning)."},
         {"method": "POST", "path": "/api/labels",          "brief": "Persist one cube-geometry label JSON document under /runs/labels/."},
     ]
 
@@ -1041,6 +1046,17 @@ def _ios_repro_upload_max_bytes() -> int:
         return max(1, int(raw))
     except ValueError:
         return DEFAULT_IOS_REPRO_UPLOAD_MAX_BYTES
+
+
+def _ios_repro_upload_retention_days() -> Optional[int]:
+    raw = os.environ.get(IOS_REPRO_UPLOAD_RETENTION_DAYS_ENV, "").strip()
+    if not raw:
+        return DEFAULT_IOS_REPRO_UPLOAD_RETENTION_DAYS
+    try:
+        days = int(raw)
+    except ValueError:
+        return DEFAULT_IOS_REPRO_UPLOAD_RETENTION_DAYS
+    return days if days > 0 else None
 
 
 def _ios_repro_upload_dir() -> Path:
@@ -1094,6 +1110,26 @@ def _create_ios_repro_upload_target(root: Path, upload_id: str) -> Path:
         except FileExistsError:
             continue
     raise ValueError("Could not allocate a unique iOS repro upload id.")
+
+
+def _prune_ios_repro_uploads(root: Path, now: Optional[float] = None) -> int:
+    retention_days = _ios_repro_upload_retention_days()
+    if retention_days is None or not root.exists():
+        return 0
+    cutoff = (now if now is not None else time.time()) - retention_days * 24 * 60 * 60
+    deleted = 0
+    for child in root.iterdir():
+        try:
+            if child.is_symlink() or child.stat().st_mtime >= cutoff:
+                continue
+            if child.is_dir():
+                shutil.rmtree(child)
+            else:
+                child.unlink()
+            deleted += 1
+        except OSError:
+            continue
+    return deleted
 
 
 def _ios_repro_upload_http_path(path: Path) -> Optional[str]:

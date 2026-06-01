@@ -73,6 +73,7 @@ audit_args=("$@")
 repo_arg=""
 pr_arg=""
 repo_paths_arg=""
+codex_cli_path_arg=""
 help_requested=""
 token_from_stdin=""
 # Filtered args = audit_args with --token-from-stdin (a wrapper-only flag)
@@ -107,6 +108,15 @@ while [ "${idx}" -lt "${#audit_args[@]}" ]; do
       ;;
     --repo-paths=*)
       repo_paths_arg="${arg#--repo-paths=}"
+      filtered_args+=("${arg}")
+      ;;
+    --codex-cli-path)
+      idx=$((idx + 1))
+      codex_cli_path_arg="${audit_args[${idx}]:-}"
+      filtered_args+=("${arg}" "${audit_args[${idx}]:-}")
+      ;;
+    --codex-cli-path=*)
+      codex_cli_path_arg="${arg#--codex-cli-path=}"
       filtered_args+=("${arg}")
       ;;
     --help|-h)
@@ -160,7 +170,17 @@ elif python_bin="$(choose_python_from_entries "${repo_paths_arg}")"; then
   printf 'warning: %s has no local .venv/bin/python; using %s from --repo-paths CLI arg\n' \
     "${repo_root}" "${python_bin}" >&2
 else
-  die "no controlled Python found. Create ${repo_root}/.venv, set CODEX_AUDIT_PYTHON=/path/to/venv/bin/python, pass --repo-paths <owner/repo>:<path-with-.venv>, or set CODEX_AUDIT_REPO_PATHS in the env. Refusing to use ambient python3."
+  die "no controlled Python found. Source tools/codex_audit_env.sh, create ${repo_root}/.venv, set CODEX_AUDIT_PYTHON=/path/to/venv/bin/python, pass --repo-paths <owner/repo>:<path-with-.venv>, or set CODEX_AUDIT_REPO_PATHS in the env. Refusing to use ambient python3."
+fi
+
+if [ -z "${help_requested}" ] && [ "${CODEX_AUDIT_SKIP_ENV_PREFLIGHT:-}" != "1" ]; then
+  preflight_codex_cli_path="${codex_cli_path_arg:-${CODEX_CLI_PATH:-/Applications/Codex.app/Contents/Resources/codex}}"
+  if ! "${python_bin}" "${script_dir}/codex_audit_env_preflight.py" \
+    --python "${python_bin}" \
+    --codex-cli-path "${preflight_codex_cli_path}" \
+    --quiet; then
+    die "audit environment preflight failed. Run: source tools/codex_audit_env.sh && tools/codex_audit_env_preflight.py"
+  fi
 fi
 
 lock_id=""

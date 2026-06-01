@@ -50,6 +50,23 @@ already running. It uses `<repo>/.venv/bin/python` when present, then
 `CODEX_AUDIT_REPO_PATHS`; if none exists, it refuses to run rather than
 silently falling back to ambient `python3`.
 
+On the local macOS Codex/Claude machines, source the committed env helper
+before audits instead of creating ad hoc venvs:
+
+```bash
+source tools/codex_audit_env.sh
+tools/codex_audit_env_preflight.py
+```
+
+That sets the known-good desktop defaults when available:
+`CODEX_AUDIT_PYTHON=/usr/bin/python3` and
+`CODEX_CLI_PATH=/Applications/Codex.app/Contents/Resources/codex`. The
+wrapper still does not silently fall back to `/usr/bin/python3`; the env
+helper is the explicit opt-in. `tools/run_codex_audit_pr.sh` also runs the
+preflight with its selected Python before starting an audit, so a
+certificate-broken framework-Python venv fails immediately instead of
+after the long review has started.
+
 **Fire from a main-current checkout, never a stale one.** This wrapper and
 `codex_audit_pr.py` are mirror-invariant and evolve over time, so run them
 from a checkout whose `tools/codex_audit_pr.py` matches `origin/main`. A
@@ -96,9 +113,10 @@ Pipeline:
 
 CLI usage:
 ```bash
-CODEX_AUDIT_REPO_PATHS=jeffhuber/cube-snap:/Users/jhuber/cube-snap,jeffhuber/cube-two-view-debugger:/Users/jhuber/cube-two-view-debugger \
-GITHUB_TOKEN=<bot_pat> \
-tools/run_codex_audit_pr.sh --repo jeffhuber/cube-two-view-debugger --pr 233
+source tools/codex_audit_env.sh
+tools/codex_audit_env_preflight.py
+gh auth token | CODEX_AUDIT_REPO_PATHS=jeffhuber/cube-snap:/Users/jhuber/cube-snap,jeffhuber/cube-two-view-debugger:/Users/jhuber/cube-two-view-debugger \
+  tools/run_codex_audit_pr.sh --token-from-stdin --repo jeffhuber/cube-two-view-debugger --pr 233
 ```
 
 Add `--dry-run` to print the audit comment to stdout instead of posting.
@@ -109,6 +127,8 @@ requeue), 20 (active matching audit already running).
 Structured-output smoke/preflight:
 
 ```bash
+source tools/codex_audit_env.sh
+tools/codex_audit_env_preflight.py
 tools/codex_audit_schema_smoke.py
 ```
 

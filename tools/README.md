@@ -254,6 +254,8 @@
 | `qwen_audit_pr.py` / `qwen_audit_bridge.py` | Qwen audit lane CLI + polling daemon (local LM Studio). **Mirrored byte-identical.** Calibration-phase informational only. |
 | `qwen_audit_labeler.py` | Apply `qwen-audit-{done,blocked,needs}` labels. **Mirrored byte-identical.** |
 | `audit_handoff_log.py` | Shared local audit event log + active-lock helper under `~/.cache/cube-agent-audits`, used by Codex/Claude wrappers to avoid duplicate local audits for the same repo/PR/head. **Mirrored byte-identical.** |
+| `codex_audit_env.sh` | Local macOS env helper for structured Codex audits. Explicitly exports the known-good desktop Codex CLI and controlled Python defaults when available. **Mirrored byte-identical.** |
+| `codex_audit_env_preflight.py` | Fast local preflight for structured Codex audits; checks selected Python GitHub TLS and Codex CLI before a long review starts. **Mirrored byte-identical.** |
 | `run_codex_audit_pr.sh` | Wrapper for `codex_audit_pr.py` that selects a controlled Python interpreter before making GitHub API calls. Use this instead of ambient `python3`. **Mirrored byte-identical.** See `tools/CODEX_AUDIT_PROTOCOL.md`. |
 | `codex_audit_pr.py` | Codex audit lane CLI. Invokes `codex review --base origin/main` against a worktree at PR head; parses `[P0]/[P1]/[P2]/[P3]` severity tags; posts comment with `CODEX_AUDIT_STATE` trailer. **Mirrored byte-identical.** Calibration-phase informational only. See `tools/CODEX_AUDIT_PROTOCOL.md`. |
 | `codex_audit_schema_smoke.py` | Local structured-output preflight for the Codex audit verdict schema. **Mirrored byte-identical.** |

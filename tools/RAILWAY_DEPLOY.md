@@ -30,6 +30,32 @@ Then smoke-test:
 curl -fsS https://ctvd-recognizer-production.up.railway.app/api/diag
 ```
 
+## CubeSnap iOS Debug Uploads
+
+The optional iOS repro-bundle upload endpoint is disabled unless
+`CUBE_IOS_REPRO_UPLOAD_TOKEN` is set on the `ctvd-recognizer` service. The
+same token value is baked into internal CubeSnap iOS builds through Xcode
+Cloud's `CUBESNAP_DEBUG_UPLOAD_TOKEN` secret; do not print it in logs or PRs.
+
+Railway setup:
+
+```bash
+railway variable set CUBE_IOS_REPRO_UPLOAD_TOKEN --stdin --service ctvd-recognizer --environment production
+railway variable set CUBE_IOS_REPRO_UPLOAD_RETENTION_DAYS=14 --service ctvd-recognizer --environment production --skip-deploys --json
+tools/deploy_railway_ctvd_recognizer.sh
+```
+
+After deploy, run the tokened upload smoke from a trusted shell:
+
+```bash
+CUBE_IOS_REPRO_UPLOAD_TOKEN="$(railway variable list --service ctvd-recognizer --environment production --json | python3 -c 'import json,sys; print(json.load(sys.stdin)["CUBE_IOS_REPRO_UPLOAD_TOKEN"])')" \
+  .venv/bin/python tools/smoke_ios_repro_upload.py
+```
+
+The endpoint stores decoded bundles under `/runs/ios-repro-uploads/<id>/` by
+default and prunes entries older than `CUBE_IOS_REPRO_UPLOAD_RETENTION_DAYS`
+days. Set the value to `0` to disable pruning during a short investigation.
+
 ## Durable Recognition Event Logging
 
 Production recognition metadata should be written to a Railway volume, not the

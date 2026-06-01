@@ -13,7 +13,9 @@ import datetime as dt
 import base64
 import io
 import json
+import os
 import sys
+import time
 from http import HTTPStatus
 from http.client import HTTPConnection
 from pathlib import Path
@@ -304,6 +306,30 @@ def test_ios_repro_upload_decodes_bundle_to_upload_folder(server, tmp_path, monk
     manifest = json.loads((upload_dir / "manifest.json").read_text())
     assert manifest["manifestSchema"] == "ctvd.iosReproBundleManifest.v1"
     assert "base64" not in manifest["images"][0]
+
+
+def test_ios_repro_upload_prunes_expired_uploads(server, tmp_path, monkeypatch):
+    upload_root = tmp_path / "uploads"
+    old_upload = upload_root / "old-upload"
+    fresh_upload = upload_root / "fresh-upload"
+    old_upload.mkdir(parents=True)
+    fresh_upload.mkdir()
+    (old_upload / "bundle.json").write_text("{}")
+    (fresh_upload / "bundle.json").write_text("{}")
+    old_mtime = time.time() - 15 * 24 * 60 * 60
+    os.utime(old_upload, (old_mtime, old_mtime))
+    monkeypatch.setenv("CUBE_IOS_REPRO_UPLOAD_TOKEN", "secret")
+    monkeypatch.setenv("CUBE_IOS_REPRO_UPLOAD_DIR", str(upload_root))
+    monkeypatch.setenv("CUBE_IOS_REPRO_UPLOAD_RETENTION_DAYS", "14")
+
+    status, payload = _post_ios_repro_bundle(server, _ios_repro_bundle_payload())
+
+    assert status == HTTPStatus.OK
+    assert payload["retentionDays"] == 14
+    assert payload["retentionDeletedCount"] == 1
+    assert not old_upload.exists()
+    assert fresh_upload.exists()
+    assert (upload_root / payload["uploadId"] / "bundle.json").exists()
 
 
 def test_ios_repro_upload_repeated_payload_gets_distinct_folder(server, tmp_path, monkeypatch):

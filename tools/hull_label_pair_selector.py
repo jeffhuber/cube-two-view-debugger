@@ -78,6 +78,7 @@ def repair_rank(evaluation: Mapping[str, Any]) -> RepairRank:
         return (9, 99, 999.0, 99, int(evaluation.get("yawQuarterTurns") or 0))
 
     canonical = _method_from_payload(payload, "canonicalCount", "canonical_count_repaired")
+    two_view = _method_from_payload(payload, "twoViewConsistency", "two_view_consistency_repaired")
     conservative = _method_from_payload(payload, "conservativeLegal", "conservative_legal_repaired")
     guarded = _method_from_payload(payload, "guardedBroadLegal", "guarded_broad_legal_repaired")
     recommended = recommended_repair(payload)
@@ -87,27 +88,34 @@ def repair_rank(evaluation: Mapping[str, Any]) -> RepairRank:
         primary = int(canonical.get("repairMoveCount") or 0)
         cost = 0.0
         changes = primary
-    elif conservative.get("validState"):
+    elif two_view.get("validState"):
         tier = 1
+        primary = _state_delta_count(two_view)
+        if primary is None:
+            primary = int(two_view.get("repairChanges") or two_view.get("repairMoveCount") or 0)
+        cost = float(two_view.get("repairCost") or 0.0)
+        changes = int(two_view.get("repairChanges") or two_view.get("repairMoveCount") or primary)
+    elif conservative.get("validState"):
+        tier = 2
         primary = _state_delta_count(conservative)
         if primary is None:
             primary = int(conservative.get("repairChanges") or conservative.get("repairMoveCount") or 0)
         cost = float(conservative.get("repairCost") or 0.0)
         changes = int(conservative.get("repairChanges") or conservative.get("repairMoveCount") or primary)
     elif guarded.get("validState"):
-        tier = 2
+        tier = 3
         primary = _state_delta_count(guarded)
         if primary is None:
             primary = int(guarded.get("repairChanges") or guarded.get("repairMoveCount") or 0)
         cost = float(guarded.get("repairCost") or 0.0)
         changes = int(guarded.get("repairChanges") or guarded.get("repairMoveCount") or primary)
     elif canonical.get("countBalanced"):
-        tier = 3
+        tier = 4
         primary = int(canonical.get("repairMoveCount") or 99)
         cost = 0.0
         changes = primary
     else:
-        tier = 4
+        tier = 5
         primary = _state_delta_count(recommended)
         if primary is None:
             primary = int(recommended.get("repairMoveCount") or 99)

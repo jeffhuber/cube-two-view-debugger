@@ -306,6 +306,111 @@ def test_two_view_consistency_gate_requires_split_cubie_evidence():
     assert "no_split_cubie_inconsistency" in rejected["gate"]["reasons"]
 
 
+def test_two_view_consistency_gate_accepts_low_cost_shadow_rescue_delta_six():
+    # Reproduces a real iOS capture shape without committing the private photo
+    # bytes: count repair leaves one split and one in-image cubie impossible
+    # under harsh right-face shadow, while the low-cost legal candidate matches
+    # the better-lit capture of the same cube.
+    baseline = "URRFURRBUBFDFRLDUDFDRDFUFRFLDLLDLRBLRLUBLDFFUBUBBBUBDL"
+    candidate = "URRFURRBUBFDFRLDUDFDRDFUFLFLDLLDLRBLLDUBLRFFUBUBBBUBRD"
+    payload = _two_view_consistency_payload(
+        {
+            "status": "legal_repair_found",
+            "state": candidate,
+            "validState": True,
+            "countBalanced": True,
+            "repairCost": 9.4278,
+            "repairChanges": 5,
+            "stateDeltaFromCanonical": state_delta_payload(baseline, candidate),
+            "sourceMode": "hull_label_sample",
+        },
+        baseline_state=baseline,
+        gt_state=None,
+    )
+
+    assert payload["status"] == "accepted_two_view_consistency_repair"
+    assert payload["gate"]["stateDeltaFromCanonical"]["count"] == 6
+    assert payload["gate"]["shadowRescueDeltaAccepted"] is True
+    assert payload["gate"]["baselineCubieConsistency"]["inconsistentSplitCount"] == 1
+    assert payload["gate"]["baselineCubieConsistency"]["inconsistentInImageCount"] == 1
+    assert payload["gate"]["candidateCubieConsistency"]["inconsistentCount"] == 0
+
+
+def test_two_view_consistency_gate_keeps_high_cost_delta_six_rejected():
+    # Set 14 from the labeled corpus is the danger case behind the original
+    # state-delta ceiling: a delta-six legal repair exists, but it is expensive
+    # and should not be auto-promoted as a shadow rescue.
+    baseline = "DRULUDBUFDRUDRRFFFDFLLFBLLUBDLUDBDRRBFRRLBRLUBDLBBUUFF"
+    candidate = "DRULUDBUFDBRRRUFDFDFLLFBLLUBDLUDFDRRBFRRLBRLUBDLBBUUFF"
+    payload = _two_view_consistency_payload(
+        {
+            "status": "legal_repair_found",
+            "state": candidate,
+            "validState": True,
+            "countBalanced": True,
+            "repairCost": 26.6913,
+            "repairChanges": 5,
+            "stateDeltaFromCanonical": state_delta_payload(baseline, candidate),
+            "sourceMode": "grid_sample",
+        },
+        baseline_state=baseline,
+        gt_state=None,
+    )
+
+    assert payload["status"] == "rejected_two_view_consistency_repair"
+    assert payload["gate"]["stateDeltaFromCanonical"]["count"] == 6
+    assert payload["gate"]["shadowRescueDeltaAccepted"] is False
+    assert "repair_cost_out_of_range" in payload["gate"]["reasons"]
+    assert "state_delta_out_of_range" in payload["gate"]["reasons"]
+
+
+def test_two_view_consistency_gate_reports_shadow_rescue_cost_boundary():
+    baseline = "URRFURRBUBFDFRLDUDFDRDFUFRFLDLLDLRBLRLUBLDFFUBUBBBUBDL"
+    candidate = "URRFURRBUBFDFRLDUDFDRDFUFLFLDLLDLRBLLDUBLRFFUBUBBBUBRD"
+    payload = _two_view_consistency_payload(
+        {
+            "status": "legal_repair_found",
+            "state": candidate,
+            "validState": True,
+            "countBalanced": True,
+            "repairCost": 10.1,
+            "repairChanges": 5,
+            "stateDeltaFromCanonical": state_delta_payload(baseline, candidate),
+            "sourceMode": "hull_label_sample",
+        },
+        baseline_state=baseline,
+        gt_state=None,
+    )
+
+    assert payload["status"] == "rejected_two_view_consistency_repair"
+    assert "shadow_rescue_repair_cost_out_of_range" in payload["gate"]["reasons"]
+    assert "state_delta_out_of_range" not in payload["gate"]["reasons"]
+
+
+def test_two_view_consistency_gate_rejects_excessive_repair_changes_before_preference():
+    solved = "".join(face * 9 for face in FACE_ORDER)
+    split_corrupt = list(solved)
+    split_corrupt[_face_index("L", 2)] = "D"
+    split_corrupt_state = "".join(split_corrupt)
+    payload = _two_view_consistency_payload(
+        {
+            "status": "legal_repair_found",
+            "state": solved,
+            "validState": True,
+            "countBalanced": True,
+            "repairCost": 3.0,
+            "repairChanges": 7,
+            "stateDeltaFromCanonical": state_delta_payload(split_corrupt_state, solved),
+            "sourceMode": "grid_sample",
+        },
+        baseline_state=split_corrupt_state,
+        gt_state=None,
+    )
+
+    assert payload["status"] == "rejected_two_view_consistency_repair"
+    assert "repair_changes_out_of_range" in payload["gate"]["reasons"]
+
+
 def test_choose_recommended_method_uses_guarded_legal_before_balanced_fallback():
     methods = {
         "canonical_count_repaired": {"validState": False, "countBalanced": True},
@@ -316,6 +421,17 @@ def test_choose_recommended_method_uses_guarded_legal_before_balanced_fallback()
     }
 
     assert choose_recommended_method(methods) == "guarded_broad_legal_repaired"
+
+
+def test_choose_recommended_method_prefers_two_view_over_conservative_legal():
+    methods = {
+        "canonical_count_repaired": {"validState": False, "countBalanced": True},
+        "conservative_legal_repaired": {"validState": True, "countBalanced": True},
+        "two_view_consistency_repaired": {"validState": True, "countBalanced": True},
+        "guarded_broad_legal_repaired": {"validState": False, "countBalanced": False},
+    }
+
+    assert choose_recommended_method(methods) == "two_view_consistency_repaired"
 
 
 def test_choose_recommended_method_prefers_two_view_over_guarded_broad():

@@ -12,6 +12,8 @@ from typing import Any, Dict, Mapping, Optional, Sequence, Tuple
 
 MAX_CANONICAL_REPAIR_MOVES = 10
 MAX_LEGAL_STATE_DELTA = 4
+MAX_TWO_VIEW_LEGAL_STATE_DELTA = 6
+MAX_TWO_VIEW_SHADOW_RESCUE_REPAIR_COST = 10.0
 MAX_LEGAL_REPAIR_COST = 20.0
 MAX_LEGAL_REPAIR_CHANGES = 6
 
@@ -147,9 +149,25 @@ def evaluate_constrained_inference_gate(
             reasons.append("canonical_repair_moves_above_gate")
     elif rank is not None and recommended_method in LEGAL_METHODS:
         _tier, state_delta, repair_cost, repair_changes, _yaw_rank = rank
-        if int(state_delta) > MAX_LEGAL_STATE_DELTA:
+        max_state_delta = (
+            MAX_TWO_VIEW_LEGAL_STATE_DELTA
+            if recommended_method == "two_view_consistency_repaired"
+            else MAX_LEGAL_STATE_DELTA
+        )
+        max_repair_cost = MAX_LEGAL_REPAIR_COST
+        if (
+            recommended_method == "two_view_consistency_repaired"
+            and int(state_delta) > MAX_LEGAL_STATE_DELTA
+        ):
+            # Delta 5-6 two-view repairs are only considered safe after
+            # _two_view_consistency_payload has accepted split-cubie evidence,
+            # in-image shadow evidence, zero candidate cubie inconsistencies,
+            # and the repair-change cap. The final gate mirrors the tighter
+            # shadow-rescue cost cap as defense in depth.
+            max_repair_cost = MAX_TWO_VIEW_SHADOW_RESCUE_REPAIR_COST
+        if int(state_delta) > max_state_delta:
             reasons.append("legal_state_delta_above_gate")
-        if float(repair_cost) > MAX_LEGAL_REPAIR_COST:
+        if float(repair_cost) > max_repair_cost:
             reasons.append("legal_repair_cost_above_gate")
         if int(repair_changes) > MAX_LEGAL_REPAIR_CHANGES:
             reasons.append("legal_repair_changes_above_gate")

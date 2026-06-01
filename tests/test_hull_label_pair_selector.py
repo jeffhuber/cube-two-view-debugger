@@ -45,7 +45,15 @@ def _diagnostic_payload(*, valid: bool, moves: int, yaw: int = 0):
     }
 
 
-def _legal_payload(*, conservative_delta=None, conservative_changes=None, guarded_delta=None, guarded_changes=None):
+def _legal_payload(
+    *,
+    two_view_delta=None,
+    two_view_changes=None,
+    conservative_delta=None,
+    conservative_changes=None,
+    guarded_delta=None,
+    guarded_changes=None,
+):
     methods = {
         "canonical_count_repaired": {
             "validState": False,
@@ -59,6 +67,13 @@ def _legal_payload(*, conservative_delta=None, conservative_changes=None, guarde
             "repairCost": 7.0,
             "repairChanges": conservative_changes,
             "stateDeltaFromCanonical": {"count": conservative_delta},
+        }
+    if two_view_delta is not None or two_view_changes is not None:
+        methods["two_view_consistency_repaired"] = {
+            "validState": True,
+            "repairCost": 6.0,
+            "repairChanges": two_view_changes,
+            "stateDeltaFromCanonical": {"count": two_view_delta},
         }
     if guarded_delta is not None or guarded_changes is not None:
         methods["guarded_broad_legal_repaired"] = {
@@ -86,8 +101,21 @@ def test_repair_rank_prefers_state_delta_for_legal_repair_candidates():
     conservative = _legal_payload(conservative_delta=2, conservative_changes=6)
     guarded = _legal_payload(guarded_delta=3, guarded_changes=1)
 
-    assert repair_rank(conservative) == (1, 2, 7.0, 6, 0)
-    assert repair_rank(guarded) == (2, 3, 8.0, 1, 0)
+    assert repair_rank(conservative) == (2, 2, 7.0, 6, 0)
+    assert repair_rank(guarded) == (3, 3, 8.0, 1, 0)
+
+
+def test_repair_rank_prefers_two_view_consistency_before_generic_legal_repairs():
+    payload = _legal_payload(
+        two_view_delta=6,
+        two_view_changes=5,
+        conservative_delta=2,
+        conservative_changes=4,
+        guarded_delta=1,
+        guarded_changes=1,
+    )
+
+    assert repair_rank(payload) == (1, 6, 6.0, 5, 0)
 
 
 def test_choose_pair_by_production_signals_ranks_without_ground_truth():

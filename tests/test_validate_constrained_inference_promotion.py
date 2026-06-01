@@ -137,6 +137,42 @@ def test_gate_rejects_legal_repair_outside_state_delta_or_cost_limits():
     assert "legal_repair_changes_above_gate" in decision["rejectReasons"]
 
 
+def test_gate_allows_two_view_consistency_repair_at_shadow_rescue_delta_six():
+    selected = _combo(
+        method="two_view_consistency_repaired",
+        rank=(1, 6, 4.9505, 5, 0),
+    )
+
+    decision = evaluate_promotion_gate(_row(selected=selected))
+
+    assert decision["accepted"] is True
+    assert decision["rejectReasons"] == []
+
+
+def test_gate_rejects_two_view_shadow_rescue_above_shadow_cost():
+    selected = _combo(
+        method="two_view_consistency_repaired",
+        rank=(1, 6, 10.1, 5, 0),
+    )
+
+    decision = evaluate_promotion_gate(_row(selected=selected))
+
+    assert decision["accepted"] is False
+    assert "legal_repair_cost_above_gate" in decision["rejectReasons"]
+
+
+def test_gate_still_rejects_conservative_legal_repair_at_delta_six():
+    selected = _combo(
+        method="conservative_legal_repaired",
+        rank=(1, 6, 4.9505, 5, 0),
+    )
+
+    decision = evaluate_promotion_gate(_row(selected=selected))
+
+    assert decision["accepted"] is False
+    assert "legal_state_delta_above_gate" in decision["rejectReasons"]
+
+
 def test_gate_rejects_diagnostic_only_broad_repair():
     selected = _combo(method="broad_legal_repaired", rank=(2, 1, 1.0, 1, 0))
 

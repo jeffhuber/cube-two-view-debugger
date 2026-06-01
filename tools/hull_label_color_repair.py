@@ -48,6 +48,9 @@ GUARDED_BROAD_MAX_REPAIR_COST = 20.0
 GUARDED_BROAD_MAX_STATE_DELTA = 4
 TWO_VIEW_MAX_REPAIR_COST = 20.0
 TWO_VIEW_MAX_STATE_DELTA = 4
+TWO_VIEW_MAX_REPAIR_CHANGES = 6
+TWO_VIEW_SHADOW_RESCUE_MAX_REPAIR_COST = 10.0
+TWO_VIEW_SHADOW_RESCUE_MAX_STATE_DELTA = 6
 
 
 @dataclass(frozen=True)
@@ -526,6 +529,7 @@ def _two_view_consistency_payload(
     candidate_state = broad_payload.get("state")
     candidate_consistency = _cubie_consistency_for_state(candidate_state if isinstance(candidate_state, str) else None)
     cost = broad_payload.get("repairCost")
+    changes = broad_payload.get("repairChanges")
     state_delta = broad_payload.get("stateDeltaFromCanonical")
     state_delta_count = (
         state_delta.get("count")
@@ -542,25 +546,58 @@ def _two_view_consistency_payload(
         if isinstance(candidate_consistency, Mapping)
         else None
     )
+    baseline_in_image_count = (
+        baseline_consistency.get("inconsistentInImageCount")
+        if isinstance(baseline_consistency, Mapping)
+        else None
+    )
+    standard_delta_accepted = (
+        isinstance(state_delta_count, int)
+        and int(state_delta_count) <= TWO_VIEW_MAX_STATE_DELTA
+    )
+    shadow_rescue_delta_accepted = (
+        isinstance(state_delta_count, int)
+        and isinstance(baseline_in_image_count, int)
+        and int(baseline_in_image_count) > 0
+        and int(state_delta_count) <= TWO_VIEW_SHADOW_RESCUE_MAX_STATE_DELTA
+        and isinstance(cost, (int, float))
+        and float(cost) <= TWO_VIEW_SHADOW_RESCUE_MAX_REPAIR_COST
+    )
 
     accepted = (
         broad_payload.get("validState") is True
         and isinstance(cost, (int, float))
+        and isinstance(changes, int)
         and isinstance(state_delta_count, int)
         and isinstance(baseline_split_count, int)
         and isinstance(candidate_inconsistent_count, int)
         and int(baseline_split_count) > 0
         and int(candidate_inconsistent_count) == 0
         and float(cost) <= TWO_VIEW_MAX_REPAIR_COST
-        and int(state_delta_count) <= TWO_VIEW_MAX_STATE_DELTA
+        and int(changes) <= TWO_VIEW_MAX_REPAIR_CHANGES
+        and (standard_delta_accepted or shadow_rescue_delta_accepted)
     )
     reasons: List[str] = []
     if broad_payload.get("validState") is not True:
         reasons.append("candidate_not_legal")
     if not isinstance(cost, (int, float)) or float(cost) > TWO_VIEW_MAX_REPAIR_COST:
         reasons.append("repair_cost_out_of_range")
-    if not isinstance(state_delta_count, int) or int(state_delta_count) > TWO_VIEW_MAX_STATE_DELTA:
-        reasons.append("state_delta_out_of_range")
+    if not isinstance(changes, int) or int(changes) > TWO_VIEW_MAX_REPAIR_CHANGES:
+        reasons.append("repair_changes_out_of_range")
+    if not isinstance(state_delta_count, int) or not (
+        standard_delta_accepted or shadow_rescue_delta_accepted
+    ):
+        if (
+            isinstance(state_delta_count, int)
+            and isinstance(baseline_in_image_count, int)
+            and int(baseline_in_image_count) > 0
+            and int(state_delta_count) <= TWO_VIEW_SHADOW_RESCUE_MAX_STATE_DELTA
+            and isinstance(cost, (int, float))
+            and float(cost) > TWO_VIEW_SHADOW_RESCUE_MAX_REPAIR_COST
+        ):
+            reasons.append("shadow_rescue_repair_cost_out_of_range")
+        else:
+            reasons.append("state_delta_out_of_range")
     if not isinstance(baseline_split_count, int) or int(baseline_split_count) <= 0:
         reasons.append("no_split_cubie_inconsistency")
     if not isinstance(candidate_inconsistent_count, int):
@@ -571,6 +608,10 @@ def _two_view_consistency_payload(
     gate = {
         "maxRepairCost": TWO_VIEW_MAX_REPAIR_COST,
         "maxStateDeltaFromCanonical": TWO_VIEW_MAX_STATE_DELTA,
+        "maxRepairChanges": TWO_VIEW_MAX_REPAIR_CHANGES,
+        "shadowRescueMaxRepairCost": TWO_VIEW_SHADOW_RESCUE_MAX_REPAIR_COST,
+        "shadowRescueMaxStateDeltaFromCanonical": TWO_VIEW_SHADOW_RESCUE_MAX_STATE_DELTA,
+        "shadowRescueDeltaAccepted": shadow_rescue_delta_accepted,
         "requiresBaselineSplitCubieInconsistency": True,
         "stateDeltaFromCanonical": state_delta,
         "baselineCubieConsistency": _compact_cubie_consistency(baseline_consistency),
@@ -667,8 +708,8 @@ def _confidence_for_method(method: Mapping[str, Any]) -> str:
 def choose_recommended_method(methods: Mapping[str, Mapping[str, Any]]) -> str:
     preferred = [
         "canonical_count_repaired",
-        "conservative_legal_repaired",
         "two_view_consistency_repaired",
+        "conservative_legal_repaired",
         "guarded_broad_legal_repaired",
         "adaptive_count_repaired",
         "canonical_center_forced",

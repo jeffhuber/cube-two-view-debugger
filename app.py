@@ -2,15 +2,18 @@ from __future__ import annotations
 
 import argparse
 import base64
+import binascii
 import csv
 import datetime as dt
 import hashlib
+import hmac
 import html
 import io
 import json
 import mimetypes
 import os
 import re
+import shutil
 import sqlite3
 import subprocess
 import sys
@@ -40,6 +43,7 @@ from rubik_recognizer.dataset import (
 from rubik_recognizer.recognizer import RecognitionResult, WhiteUpRecognizer, recognition_diagnostics
 from tools.constrained_inference_gate import evaluate_runtime_payload_gate
 from tools.hull_label_pair_selector import choose_guarded_pair, repair_rank, repair_valid
+from tools.ios_repro_bundle import unpack_bundle
 
 
 ROOT = Path(__file__).resolve().parent
@@ -53,6 +57,11 @@ CONSTRAINED_HULL_FIT_MODE_ENV = "CUBE_CONSTRAINED_HULL_FIT_MODE"
 CONSTRAINED_IMAGE_MAX_SIDE_ENV = "CUBE_CONSTRAINED_IMAGE_MAX_SIDE"
 DEFAULT_CONSTRAINED_IMAGE_MAX_SIDE = 1600
 RECOGNITION_EVENT_DB_ENV = "CUBE_RECOGNITION_EVENT_DB_PATH"
+IOS_REPRO_UPLOAD_TOKEN_ENV = "CUBE_IOS_REPRO_UPLOAD_TOKEN"
+IOS_REPRO_UPLOAD_DIR_ENV = "CUBE_IOS_REPRO_UPLOAD_DIR"
+IOS_REPRO_UPLOAD_MAX_BYTES_ENV = "CUBE_IOS_REPRO_UPLOAD_MAX_BYTES"
+DEFAULT_IOS_REPRO_UPLOAD_MAX_BYTES = 12_000_000
+_ALLOWED_IOS_REPRO_IMAGE_CONTENT_TYPES = {"image/jpeg", "image/jpg", "image/png"}
 _CONSTRAINED_SHADOW_LOG_LOCK = threading.Lock()
 _RECOGNITION_EVENT_LOG_LOCK = threading.Lock()
 _CONSTRAINED_PREWARM_LOCK = threading.Lock()
@@ -151,7 +160,10 @@ class RubikHandler(BaseHTTPRequestHandler):
         if _origin_is_allowed(origin):
             self.send_header("Access-Control-Allow-Origin", origin)
             self.send_header("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
-            self.send_header("Access-Control-Allow-Headers", "Content-Type")
+            self.send_header(
+                "Access-Control-Allow-Headers",
+                "Content-Type, X-CubeSnap-Debug-Upload-Token, Authorization",
+            )
             self.send_header("Access-Control-Max-Age", "86400")
             self.send_header("Vary", "Origin")
         super().end_headers()
@@ -228,6 +240,9 @@ class RubikHandler(BaseHTTPRequestHandler):
             return
         if path == "/api/recognize-batch":
             self._handle_batch()
+            return
+        if path == "/api/ios-repro-bundles":
+            self._handle_ios_repro_bundle_upload()
             return
         if path == "/api/labels":
             self._handle_label_save()
@@ -410,6 +425,81 @@ class RubikHandler(BaseHTTPRequestHandler):
                 HTTPStatus.INTERNAL_SERVER_ERROR,
             )
 
+    def _handle_ios_repro_bundle_upload(self) -> None:
+        configured_token = _ios_repro_upload_token()
+        if configured_token is None:
+            self._send_json(
+                {
+                    "status": "disabled",
+                    "reason": "iOS repro bundle uploads are not enabled on this server.",
+                    "failedChecks": ["ios_repro_upload_disabled"],
+                },
+                HTTPStatus.SERVICE_UNAVAILABLE,
+            )
+            return
+
+        provided_token = _ios_repro_upload_request_token(self.headers)
+        if provided_token is None or not hmac.compare_digest(provided_token, configured_token):
+            self._send_json(
+                {
+                    "status": "rejected",
+                    "reason": "Missing or invalid debug upload token.",
+                    "failedChecks": ["ios_repro_upload_unauthorized"],
+                },
+                HTTPStatus.UNAUTHORIZED,
+            )
+            return
+
+        target: Optional[Path] = None
+        try:
+            raw = self._read_json_bytes(max_bytes=_ios_repro_upload_max_bytes())
+            bundle = _ios_repro_upload_payload(raw)
+            upload_id = _ios_repro_upload_id(bundle, raw)
+            root = _ios_repro_upload_dir()
+            target = _create_ios_repro_upload_target(root, upload_id)
+            bundle_path = target / "bundle.json"
+            bundle_path.write_bytes(raw)
+            _target, manifest, decoded = unpack_bundle(
+                bundle_path,
+                out_dir=target,
+                preserve_raw_bundle=False,
+            )
+            self._send_json(
+                {
+                    "schema": "ctvd_ios_repro_bundle_upload_response_v1",
+                    "status": "ok",
+                    "uploadId": target.name,
+                    "imageCount": len(decoded),
+                    "attemptCount": len(manifest.get("attempts") or []),
+                    "manifestPath": _ios_repro_upload_http_path(target / "manifest.json"),
+                    "summaryPath": _ios_repro_upload_http_path(target / "summary.md"),
+                    "bundlePath": _ios_repro_upload_http_path(bundle_path),
+                }
+            )
+        except (ValueError, binascii.Error) as exc:
+            if target is not None:
+                shutil.rmtree(target, ignore_errors=True)
+            self._send_json(
+                {
+                    "status": "rejected",
+                    "reason": str(exc),
+                    "failedChecks": ["invalid_ios_repro_bundle"],
+                },
+                HTTPStatus.BAD_REQUEST,
+            )
+        except Exception as exc:
+            if target is not None:
+                shutil.rmtree(target, ignore_errors=True)
+            traceback.print_exc(file=sys.stderr)
+            self._send_json(
+                {
+                    "status": "rejected",
+                    "reason": "iOS repro bundle upload failed.",
+                    "failedChecks": ["internal_error"],
+                },
+                HTTPStatus.INTERNAL_SERVER_ERROR,
+            )
+
     def _query_flag(self, name: str) -> bool:
         """Return True if `name` appears in the URL query string with a
         truthy value ("1", "true", "yes" — case-insensitive). Bare
@@ -467,6 +557,17 @@ class RubikHandler(BaseHTTPRequestHandler):
             return
         self._send_file(path)
 
+    def _read_json_bytes(self, *, max_bytes: int) -> bytes:
+        content_type = self.headers.get("Content-Type", "")
+        if "application/json" not in content_type:
+            raise ValueError("Expected application/json.")
+        length = int(self.headers.get("Content-Length", "0"))
+        if length <= 0:
+            raise ValueError("Expected a JSON request body.")
+        if length > max_bytes:
+            raise ValueError("JSON payload is too large.")
+        return self.rfile.read(length)
+
     def _read_multipart(self) -> Dict[str, List[Tuple[str, bytes]]]:
         content_type = self.headers.get("Content-Type", "")
         marker = "boundary="
@@ -502,15 +603,7 @@ class RubikHandler(BaseHTTPRequestHandler):
         return fields
 
     def _read_json_body(self, *, max_bytes: int) -> Dict[str, Any]:
-        content_type = self.headers.get("Content-Type", "")
-        if "application/json" not in content_type:
-            raise ValueError("Expected application/json.")
-        length = int(self.headers.get("Content-Length", "0"))
-        if length <= 0:
-            raise ValueError("Expected a JSON request body.")
-        if length > max_bytes:
-            raise ValueError("Label payload is too large.")
-        raw = self.rfile.read(length)
+        raw = self._read_json_bytes(max_bytes=max_bytes)
         try:
             payload = json.loads(raw.decode("utf-8"))
         except json.JSONDecodeError as exc:
@@ -918,8 +1011,97 @@ def _api_routes() -> List[Dict[str, str]]:
         {"method": "POST", "path": "/api/recognize",       "brief": "Recognize one pair. Multipart fields: imageA, imageB; optional setId, expectedState. Query: ?slim=1 to omit overlays/diagnostics; ?hullLabelTier1=shadow|prefer for the hidden hull-label Tier 1 candidate path, or constrained-shadow|constrained for the hidden constrained-inference gate path. Persists a run under /runs/pairs/<id>/."},
         {"method": "POST", "path": "/api/llm-rectified-input", "brief": "Prepare two Claude/GPT-ready rectified WCA contact-sheet JPEGs from imageA/imageB. Multipart fields: imageA, imageB; optional yawQuarterTurns=0..3 or auto. Does not call an LLM or persist a run."},
         {"method": "POST", "path": "/api/recognize-batch", "brief": "Recognize multiple pairs in one call. Multipart field: images (multi-file); optional groundTruth (.csv/.tsv/.json). Pairs files by filename A/B markers or by drop order. Persists a batch under /runs/batches/<id>/."},
+        {"method": "POST", "path": "/api/ios-repro-bundles", "brief": "Opt-in debug upload for CubeSnap iOS repro bundles. Requires X-CubeSnap-Debug-Upload-Token matching CUBE_IOS_REPRO_UPLOAD_TOKEN. Persists decoded images plus manifest under /runs/ios-repro-uploads/<id>/ by default."},
         {"method": "POST", "path": "/api/labels",          "brief": "Persist one cube-geometry label JSON document under /runs/labels/."},
     ]
+
+
+def _ios_repro_upload_token() -> Optional[str]:
+    token = os.environ.get(IOS_REPRO_UPLOAD_TOKEN_ENV, "").strip()
+    return token or None
+
+
+def _ios_repro_upload_request_token(headers: Mapping[str, str]) -> Optional[str]:
+    header_token = headers.get("X-CubeSnap-Debug-Upload-Token", "").strip()
+    if header_token:
+        return header_token
+    authorization = headers.get("Authorization", "").strip()
+    prefix = "Bearer "
+    if authorization.startswith(prefix):
+        bearer = authorization.removeprefix(prefix).strip()
+        return bearer or None
+    return None
+
+
+def _ios_repro_upload_max_bytes() -> int:
+    raw = os.environ.get(IOS_REPRO_UPLOAD_MAX_BYTES_ENV, "").strip()
+    if not raw:
+        return DEFAULT_IOS_REPRO_UPLOAD_MAX_BYTES
+    try:
+        return max(1, int(raw))
+    except ValueError:
+        return DEFAULT_IOS_REPRO_UPLOAD_MAX_BYTES
+
+
+def _ios_repro_upload_dir() -> Path:
+    raw = os.environ.get(IOS_REPRO_UPLOAD_DIR_ENV, "").strip()
+    return Path(raw).expanduser() if raw else RUNS / "ios-repro-uploads"
+
+
+def _ios_repro_upload_payload(raw: bytes) -> Dict[str, Any]:
+    try:
+        payload = json.loads(raw.decode("utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ValueError("Could not parse iOS repro bundle JSON.") from exc
+    if not isinstance(payload, dict):
+        raise ValueError("iOS repro bundle payload must be a JSON object.")
+    if payload.get("formatVersion") != 1:
+        raise ValueError(f"unsupported iOS repro bundle formatVersion: {payload.get('formatVersion')!r}")
+    _validate_ios_repro_upload_image_content_types(payload)
+    return payload
+
+
+def _validate_ios_repro_upload_image_content_types(bundle: Mapping[str, Any]) -> None:
+    raw_images = bundle.get("images")
+    if not isinstance(raw_images, Sequence) or isinstance(raw_images, (str, bytes)):
+        raise ValueError("bundle.images must be an array")
+    for index, raw_image in enumerate(raw_images):
+        if not isinstance(raw_image, Mapping):
+            raise ValueError(f"bundle.images[{index}] must be an object")
+        content_type = str(raw_image.get("contentType") or "application/octet-stream").lower()
+        if content_type not in _ALLOWED_IOS_REPRO_IMAGE_CONTENT_TYPES:
+            allowed = ", ".join(sorted(_ALLOWED_IOS_REPRO_IMAGE_CONTENT_TYPES))
+            raise ValueError(
+                f"bundle.images[{index}].contentType must be one of: {allowed}"
+            )
+
+
+def _ios_repro_upload_id(bundle: Mapping[str, Any], raw: bytes) -> str:
+    generated = str(bundle.get("generatedAt") or "")
+    timestamp = re.sub(r"[^0-9A-Za-z_.-]+", "-", generated).strip("-")
+    if not timestamp:
+        timestamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    digest = hashlib.sha256(raw).hexdigest()[:12]
+    return f"{timestamp}-{digest}"
+
+
+def _create_ios_repro_upload_target(root: Path, upload_id: str) -> Path:
+    for suffix in range(1, 1000):
+        target = root / (upload_id if suffix == 1 else f"{upload_id}-{suffix}")
+        try:
+            target.mkdir(parents=True, exist_ok=False)
+            return target
+        except FileExistsError:
+            continue
+    raise ValueError("Could not allocate a unique iOS repro upload id.")
+
+
+def _ios_repro_upload_http_path(path: Path) -> Optional[str]:
+    try:
+        rel = path.resolve().relative_to(RUNS.resolve())
+    except ValueError:
+        return None
+    return "/runs/" + str(rel).replace(os.sep, "/")
 
 
 _LLM_RECTIFIED_WCA_GROUPS = {

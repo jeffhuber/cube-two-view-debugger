@@ -10,6 +10,7 @@ recognition cost — keep the fixtures small and synthetic.
 from __future__ import annotations
 
 import datetime as dt
+import base64
 import io
 import json
 import sys
@@ -45,6 +46,7 @@ def test_api_routes_lists_known_endpoints():
     assert "/api/recognize" in paths
     assert "/api/llm-rectified-input" in paths
     assert "/api/recognize-batch" in paths
+    assert "/api/ios-repro-bundles" in paths
     assert "/runs/pairs/<id>/..." in paths
     assert "/runs/labels/<id>.json" in paths
     assert "/" in paths
@@ -85,15 +87,32 @@ def _get_json(server, path):
     return response.status, json.loads(body or b"{}")
 
 
-def _post_json(server, path, payload):
+def _options(server, path, headers=None):
+    host, port = server
+    conn = HTTPConnection(host, port, timeout=5)
+    conn.request("OPTIONS", path, headers=headers or {})
+    response = conn.getresponse()
+    response.read()
+    result_headers = {key: value for key, value in response.getheaders()}
+    conn.close()
+    return response.status, result_headers
+
+
+def _post_json(server, path, payload, headers=None):
     host, port = server
     body = json.dumps(payload).encode("utf-8")
+    request_headers = {
+        "Content-Type": "application/json",
+        "Content-Length": str(len(body)),
+    }
+    if headers:
+        request_headers.update(headers)
     conn = HTTPConnection(host, port, timeout=5)
     conn.request(
         "POST",
         path,
         body=body,
-        headers={"Content-Type": "application/json", "Content-Length": str(len(body))},
+        headers=request_headers,
     )
     response = conn.getresponse()
     data = response.read()
@@ -107,6 +126,25 @@ def test_api_routes_http(server):
     assert status == HTTPStatus.OK
     assert "routes" in payload
     assert payload["routes"] == _api_routes()
+
+
+def test_cors_preflight_allows_ios_debug_upload_auth_headers(server):
+    status, headers = _options(
+        server,
+        "/api/ios-repro-bundles",
+        headers={
+            "Origin": "https://cubesnap.app",
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "content-type,x-cubesnap-debug-upload-token",
+        },
+    )
+
+    assert status == HTTPStatus.NO_CONTENT
+    assert headers["Access-Control-Allow-Origin"] == "https://cubesnap.app"
+    allowed = {part.strip().lower() for part in headers["Access-Control-Allow-Headers"].split(",")}
+    assert "content-type" in allowed
+    assert "x-cubesnap-debug-upload-token" in allowed
+    assert "authorization" in allowed
 
 
 def test_api_runs_returns_list(server):
@@ -165,6 +203,153 @@ def test_api_labels_roundtrip(server, tmp_path, monkeypatch):
     status, listed = _get_json(server, "/api/labels")
     assert status == HTTPStatus.OK
     assert listed["labels"][0]["labelId"] == saved["labelId"]
+
+
+def _ios_repro_bundle_payload():
+    image_a = b"\xff\xd8image-a\xff\xd9"
+    image_b = b"\xff\xd8image-b\xff\xd9"
+    return {
+        "formatVersion": 1,
+        "generatedAt": "2026-06-01T05:40:48Z",
+        "status": "failed",
+        "appVersion": "0.1.0(2)",
+        "buildConfiguration": "Debug",
+        "device": "iPhone",
+        "system": "iOS 26.5",
+        "requestedSizes": [1024],
+        "displayedMessage": "Try another capture.",
+        "attempts": [
+            {
+                "edgePx": 1024,
+                "bytesUploaded": len(image_a) + len(image_b),
+                "latencyMs": 1234,
+                "totalMs": 2345,
+                "status": "recognizer failed",
+                "recognitionCategory": "reject_retake",
+                "recognitionCategoryReason": "constrained_fast_reject",
+                "failedChecks": ["hull_label_no_accepted_threshold_a"],
+                "detail": "Could not separate the cube from the background.",
+            }
+        ],
+        "images": [
+            {
+                "role": "imageA",
+                "edgePx": 1024,
+                "contentType": "image/jpeg",
+                "bytes": len(image_a),
+                "base64": base64.b64encode(image_a).decode(),
+            },
+            {
+                "role": "imageB",
+                "edgePx": 1024,
+                "contentType": "image/jpeg",
+                "bytes": len(image_b),
+                "base64": base64.b64encode(image_b).decode(),
+            },
+        ],
+    }
+
+
+def _post_ios_repro_bundle(server, payload, token="secret"):
+    return _post_json(
+        server,
+        "/api/ios-repro-bundles",
+        payload,
+        headers={"X-CubeSnap-Debug-Upload-Token": token},
+    )
+
+
+def test_ios_repro_upload_disabled_without_token(server, monkeypatch):
+    monkeypatch.delenv("CUBE_IOS_REPRO_UPLOAD_TOKEN", raising=False)
+
+    status, payload = _post_json(server, "/api/ios-repro-bundles", _ios_repro_bundle_payload())
+
+    assert status == HTTPStatus.SERVICE_UNAVAILABLE
+    assert payload["status"] == "disabled"
+    assert payload["failedChecks"] == ["ios_repro_upload_disabled"]
+
+
+def test_ios_repro_upload_requires_matching_token(server, tmp_path, monkeypatch):
+    monkeypatch.setenv("CUBE_IOS_REPRO_UPLOAD_TOKEN", "secret")
+    monkeypatch.setenv("CUBE_IOS_REPRO_UPLOAD_DIR", str(tmp_path / "uploads"))
+
+    status, payload = _post_json(
+        server,
+        "/api/ios-repro-bundles",
+        _ios_repro_bundle_payload(),
+        headers={"X-CubeSnap-Debug-Upload-Token": "wrong"},
+    )
+
+    assert status == HTTPStatus.UNAUTHORIZED
+    assert payload["failedChecks"] == ["ios_repro_upload_unauthorized"]
+    assert not (tmp_path / "uploads").exists()
+
+
+def test_ios_repro_upload_decodes_bundle_to_upload_folder(server, tmp_path, monkeypatch):
+    upload_root = tmp_path / "uploads"
+    monkeypatch.setenv("CUBE_IOS_REPRO_UPLOAD_TOKEN", "secret")
+    monkeypatch.setenv("CUBE_IOS_REPRO_UPLOAD_DIR", str(upload_root))
+
+    status, payload = _post_ios_repro_bundle(server, _ios_repro_bundle_payload())
+
+    assert status == HTTPStatus.OK
+    assert payload["status"] == "ok"
+    assert payload["imageCount"] == 2
+    upload_id = payload["uploadId"]
+    upload_dir = upload_root / upload_id
+    assert (upload_dir / "bundle.json").exists()
+    assert (upload_dir / "manifest.json").exists()
+    assert (upload_dir / "summary.md").exists()
+    assert (upload_dir / "images" / "imageA_1024.jpg").read_bytes() == b"\xff\xd8image-a\xff\xd9"
+    manifest = json.loads((upload_dir / "manifest.json").read_text())
+    assert manifest["manifestSchema"] == "ctvd.iosReproBundleManifest.v1"
+    assert "base64" not in manifest["images"][0]
+
+
+def test_ios_repro_upload_repeated_payload_gets_distinct_folder(server, tmp_path, monkeypatch):
+    upload_root = tmp_path / "uploads"
+    payload = _ios_repro_bundle_payload()
+    monkeypatch.setenv("CUBE_IOS_REPRO_UPLOAD_TOKEN", "secret")
+    monkeypatch.setenv("CUBE_IOS_REPRO_UPLOAD_DIR", str(upload_root))
+
+    first_status, first = _post_ios_repro_bundle(server, payload)
+    second_status, second = _post_ios_repro_bundle(server, payload)
+
+    assert first_status == HTTPStatus.OK
+    assert second_status == HTTPStatus.OK
+    assert first["uploadId"] != second["uploadId"]
+    assert (upload_root / first["uploadId"] / "bundle.json").exists()
+    assert (upload_root / second["uploadId"] / "bundle.json").exists()
+
+
+def test_ios_repro_upload_rejects_active_content_types(server, tmp_path, monkeypatch):
+    upload_root = tmp_path / "uploads"
+    payload = _ios_repro_bundle_payload()
+    payload["images"][0]["contentType"] = "text/html"
+    monkeypatch.setenv("CUBE_IOS_REPRO_UPLOAD_TOKEN", "secret")
+    monkeypatch.setenv("CUBE_IOS_REPRO_UPLOAD_DIR", str(upload_root))
+
+    status, response = _post_ios_repro_bundle(server, payload)
+
+    assert status == HTTPStatus.BAD_REQUEST
+    assert response["failedChecks"] == ["invalid_ios_repro_bundle"]
+    assert "contentType" in response["reason"]
+    assert not upload_root.exists()
+
+
+def test_ios_repro_upload_reports_malformed_base64_as_bad_request(server, tmp_path, monkeypatch):
+    upload_root = tmp_path / "uploads"
+    payload = _ios_repro_bundle_payload()
+    payload["images"][0]["base64"] = "not valid base64!"
+    monkeypatch.setenv("CUBE_IOS_REPRO_UPLOAD_TOKEN", "secret")
+    monkeypatch.setenv("CUBE_IOS_REPRO_UPLOAD_DIR", str(upload_root))
+
+    status, response = _post_ios_repro_bundle(server, payload)
+
+    assert status == HTTPStatus.BAD_REQUEST
+    assert response["failedChecks"] == ["invalid_ios_repro_bundle"]
+    assert "internal_error" not in response["failedChecks"]
+    assert not upload_root.exists() or not any(upload_root.iterdir())
 
 
 def test_api_diag_smoke(server):

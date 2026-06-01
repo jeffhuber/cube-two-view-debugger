@@ -95,6 +95,14 @@ class ConstrainedInferenceFastReject(RuntimeError):
         self.performance = dict(performance or {})
 
 
+def _constrained_hull_fit_failure_message(side: str) -> str:
+    return (
+        "CubeSnap could not confidently separate the cube from the background "
+        f"in image {side}. Retake with the whole cube centered, separated from "
+        "the table or background, and evenly lit across the darker faces."
+    )
+
+
 def _compact_threshold_candidate(candidate: Mapping[str, Any]) -> Dict[str, Any]:
     keys = (
         "threshold",
@@ -1504,14 +1512,15 @@ def prepare_llm_rectified_input(
                 "reason": "no_accepted_hull_label_threshold",
                 "side": side,
                 "image": "imageA" if side == "A" else "imageB",
+                "qualityIssue": "cube_mask_not_accepted",
+                "retakeHint": (
+                    "Use brighter, more even light on the darker side and keep "
+                    "the cube edges visually separated from the table/background."
+                ),
                 "thresholdDiagnostics": _compact_threshold_diagnostics(threshold_diagnostics),
             }
             raise ConstrainedInferenceFastReject(
-                (
-                    "CubeSnap could not find a cube-like silhouette in image "
-                    f"{side}. Upload one clear white-up photo and one clear "
-                    "yellow-up photo of the same Rubik's cube with the whole cube in frame."
-                ),
+                _constrained_hull_fit_failure_message(side),
                 failed_checks=[
                     "non_cube_image_fast_reject",
                     f"hull_label_no_accepted_threshold_{side.lower()}",

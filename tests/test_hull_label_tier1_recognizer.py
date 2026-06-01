@@ -470,6 +470,7 @@ def test_constrained_fast_reject_skips_legacy_fallback(tmp_path, monkeypatch):
     assert recognizer.modes == []
     assert payload["status"] == "rejected"
     assert payload["recognitionCategory"] == "reject_retake"
+    assert payload["recognitionCategoryReason"] == "constrained_fast_reject"
     assert payload["failedChecks"] == [
         "non_cube_image_fast_reject",
         "hull_label_no_accepted_threshold_a",

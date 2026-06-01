@@ -722,6 +722,12 @@ def _recognition_reliability_tier(result: RecognitionResult) -> int:
 def _recognition_category_payload(result: RecognitionResult) -> Dict[str, str]:
     signals = result.recognition_signals or {}
     if result.status != "success" or not result.state:
+        constrained = signals.get("constrainedInference")
+        if isinstance(constrained, dict) and constrained.get("status") == "fast_reject":
+            return {
+                "category": "reject_retake",
+                "reason": "constrained_fast_reject",
+            }
         return {
             "category": "reject_retake",
             "reason": "recognizer_rejected",
